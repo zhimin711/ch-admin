@@ -11,6 +11,7 @@ import componentsRouter from './modules/components'
 // import chartsRouter from './modules/charts'
 // import tableRouter from './modules/table'
 // import nestedRouter from './modules/nested'
+import txRouter from './modules/txManager'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -93,7 +94,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/profile/index'),
         name: 'Profile',
-        meta: { title: 'Profile', icon: 'user', noCache: true }
+        meta: { title: '个人资料', icon: 'user', noCache: true }
       }
     ]
   }
@@ -104,6 +105,7 @@ export const constantRoutes = [
  * the routes that need to be dynamically loaded based on user roles
  */
 export const asyncRoutes = [
+  txRouter,
   {
     path: '/permission',
     component: Layout,
@@ -149,7 +151,6 @@ export const asyncRoutes = [
   // chartsRouter,
   // nestedRouter,
   // tableRouter,
-
   {
     path: '/example',
     component: Layout,

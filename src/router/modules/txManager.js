@@ -8,7 +8,7 @@ const txRouter = {
   redirect: '/tx/cluster',
   name: 'Table',
   meta: {
-    title: 'Table',
+    title: '事务管理',
     icon: 'table'
   },
   children: [
