@@ -1,8 +1,8 @@
-import request from '@/utils/request'
+import request from '@/utils/request2'
 
 export function fetchList(query) {
   return request({
-    url: '/article/list',
+    url: '/tx/model/online',
     method: 'get',
     params: query
   })

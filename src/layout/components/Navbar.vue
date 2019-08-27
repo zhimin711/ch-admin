@@ -25,13 +25,13 @@
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/profile/index">
-            <el-dropdown-item>Profile</el-dropdown-item>
+            <el-dropdown-item>个人中心</el-dropdown-item>
           </router-link>
-          <router-link to="/">
+          <!--<router-link to="/">
             <el-dropdown-item>Dashboard</el-dropdown-item>
-          </router-link>
+          </router-link>-->
           <el-dropdown-item divided>
-            <span style="display:block;" @click="logout">Log Out</span>
+            <span style="display:block;" @click="logout">登 出</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
