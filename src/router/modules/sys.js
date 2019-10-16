@@ -15,9 +15,9 @@ const sysRouter = {
   },
   children: [
     {
-      path: 'page',
-      component: () => import('@/views/permission/page'),
-      name: 'PagePermission',
+      path: 'user',
+      component: () => import('@/views/upms/permission'),
+      name: 'User',
       meta: {
         title: '用户管理',
         roles: ['admin'] // or you can only set roles in sub nav
@@ -25,17 +25,17 @@ const sysRouter = {
     },
     {
       path: 'role',
-      component: () => import('@/views/permission/role'),
-      name: 'RolePermission',
+      component: () => import('@/views/upms/role'),
+      name: 'Role',
       meta: {
         title: '角色管理',
         roles: ['admin']
       }
     },
     {
-      path: 'role',
-      component: () => import('@/views/permission/page'),
-      name: 'RolePermission',
+      path: 'permission',
+      component: () => import('@/views/upms/permission'),
+      name: 'Permission',
       meta: {
         title: '权限管理',
         roles: ['admin']

@@ -85,7 +85,8 @@ export default {
         label: 'title'
       },
       params: {
-        code: '1'
+        code: '',
+        name: ''
       }
     }
   },
@@ -96,9 +97,8 @@ export default {
   },
   created() {
     // Mock: get all routes and roles list from server
-    debugger
     this.getRoutes()
-    this.getRoles(this.params)
+    this.getRoles()
   },
   methods: {
     async getRoutes() {
@@ -106,8 +106,8 @@ export default {
       this.serviceRoutes = res.data
       this.routes = this.generateRoutes(res.data)
     },
-    async getRoles(params) {
-      const res = await getRoles(params)
+    async getRoles() {
+      const res = await getRoles(this.params)
       this.rolesList = res.data
     },
 

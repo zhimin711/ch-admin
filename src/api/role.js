@@ -7,11 +7,11 @@ export function getRoutes() {
   })
 }
 
-export function getRoles(data) {
+export function getRoles(query) {
   return request({
     url: 'upms/role/1/10',
     method: 'get',
-    param: { data }
+    params: query
   })
 }
 
