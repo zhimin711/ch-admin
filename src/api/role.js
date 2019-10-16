@@ -10,8 +10,8 @@ export function getRoutes() {
 export function getRoles(data) {
   return request({
     url: 'upms/role/1/10',
-    method: 'post',
-    data
+    method: 'get',
+    param: { data }
   })
 }
 
