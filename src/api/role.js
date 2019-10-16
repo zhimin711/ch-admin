@@ -7,9 +7,9 @@ export function getRoutes() {
   })
 }
 
-export function getRoles(query) {
+export function getRoles(pageNum, pageSize, query) {
   return request({
-    url: 'upms/role/1/10',
+    url: `upms/role/${pageNum}/${pageSize}`,
     method: 'get',
     params: query
   })

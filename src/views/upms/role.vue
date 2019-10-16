@@ -3,12 +3,12 @@
     <el-button type="primary" @click="handleAddRole">New Role</el-button>
 
     <el-table :data="rolesList" style="width: 100%;margin-top:30px;" border>
-      <el-table-column align="center" label="Role Key" width="220">
+      <el-table-column label="Role Key" width="220">
         <template slot-scope="scope">
-          {{ scope.row.key }}
+          {{ scope.row.code }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="Role Name" width="220">
+      <el-table-column label="Role Name" width="220">
         <template slot-scope="scope">
           {{ scope.row.name }}
         </template>
@@ -18,7 +18,7 @@
           {{ scope.row.description }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="Operations">
+      <el-table-column align="center" label="Operations" width="200">
         <template slot-scope="scope">
           <el-button type="primary" size="small" @click="handleEdit(scope)">Edit</el-button>
           <el-button type="danger" size="small" @click="handleDelete(scope)">Delete</el-button>
@@ -84,6 +84,9 @@ export default {
         children: 'children',
         label: 'title'
       },
+
+      page: 1,
+      limit: 20,
       params: {
         code: '',
         name: ''
@@ -107,8 +110,8 @@ export default {
       this.routes = this.generateRoutes(res.data)
     },
     async getRoles() {
-      const res = await getRoles(this.params)
-      this.rolesList = res.data
+      const res = await getRoles(this.page, this.limit, this.params)
+      this.rolesList = res.rows
     },
 
     // Reshape the routes structure so that it looks the same as the sidebar
