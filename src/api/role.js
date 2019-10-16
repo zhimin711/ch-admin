@@ -1,4 +1,4 @@
-import request from '@/utils/request'
+import request from '@/utils/request2'
 
 export function getRoutes() {
   return request({
@@ -7,10 +7,11 @@ export function getRoutes() {
   })
 }
 
-export function getRoles() {
+export function getRoles(data) {
   return request({
-    url: '/roles',
-    method: 'get'
+    url: 'upms/role/1/10',
+    method: 'post',
+    data
   })
 }
 
