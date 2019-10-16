@@ -1,6 +1,20 @@
 <template>
   <div class="app-container">
-    <el-button type="primary" @click="handleAddRole">New Role</el-button>
+    <div class="filter-container">
+      <el-input v-model="listQuery.code" placeholder="代码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" />
+      <el-select v-model="listQuery.status" placeholder="状态" class="filter-item" clearable>
+        <el-option label="启用" value="1"></el-option>
+        <el-option label="禁用" value="0"></el-option>
+      </el-select>
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+        Search
+      </el-button>
+      <!--<el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
+        Add
+      </el-button>-->
+      <el-button type="primary" class="filter-item" icon="el-icon-plus" @click="handleAddRole">New Role</el-button>
+    </div>
 
     <el-table :data="rolesList" style="width: 100%;margin-top:30px;" border>
       <el-table-column label="Role Key" width="220">
@@ -25,6 +39,7 @@
         </template>
       </el-table-column>
     </el-table>
+    <pagination v-show="total>0" :total="total" :page.sync="page" :limit.sync="limit" @pagination="getRoles" />
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit Role':'New Role'">
       <el-form :model="role" label-width="80px" label-position="left">
@@ -87,7 +102,8 @@ export default {
 
       page: 1,
       limit: 20,
-      params: {
+      total: 0,
+      listQuery: {
         code: '',
         name: ''
       }
@@ -110,10 +126,13 @@ export default {
       this.routes = this.generateRoutes(res.data)
     },
     async getRoles() {
-      const res = await getRoles(this.page, this.limit, this.params)
+      const res = await getRoles(this.page, this.limit, this.listQuery)
       this.rolesList = res.rows
+      this.total = res.total
     },
-
+    handleFilter() {
+      this.getRoles()
+    },
     // Reshape the routes structure so that it looks the same as the sidebar
     generateRoutes(routes, basePath = '/') {
       const res = []
