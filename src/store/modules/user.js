@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/user'
+import { login, logout, getInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
 
@@ -34,9 +34,9 @@ const actions = {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password }).then(response => {
-        const { data } = response
-        commit('SET_TOKEN', data.token)
-        setToken(data.token)
+        const { rows } = response
+        commit('SET_TOKEN', rows[0])
+        setToken(rows[0])
         resolve()
       }).catch(error => {
         reject(error)
@@ -48,24 +48,23 @@ const actions = {
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
       getInfo(state.token).then(response => {
-        const { data } = response
+        const { rows } = response
 
-        if (!data) {
+        if (!rows) {
           reject('Verification failed, please Login again.')
         }
 
-        const { roles, name, avatar, introduction } = data
+        const { roleList, name, avatar, introduction } = rows[0]
 
         // roles must be a non-empty array
-        if (!roles || roles.length <= 0) {
+        if (!roleList || roleList.length <= 0) {
           reject('getInfo: roles must be a non-null array!')
         }
-
-        commit('SET_ROLES', roles)
+        commit('SET_ROLES', roleList)
         commit('SET_NAME', name)
         commit('SET_AVATAR', avatar)
         commit('SET_INTRODUCTION', introduction)
-        resolve(data)
+        resolve(rows[0])
       }).catch(error => {
         reject(error)
       })

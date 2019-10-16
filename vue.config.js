@@ -52,6 +52,13 @@ module.exports = {
         pathRewrite: {
           '^/tx': ''
         }
+      },
+      '^/auth/': {
+        target: `http://127.0.0.1:7000`,
+        changeOrigin: true,
+        pathRewrite: {
+          '^/auth': ''
+        }
       }
     },
     after: require('./mock/mock-server.js')
