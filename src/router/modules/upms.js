@@ -2,12 +2,12 @@
 
 import Layout from '@/layout'
 
-const sysRouter = {
-  path: '/permission',
+const umpsRouter = {
+  path: '/upms',
   component: Layout,
-  redirect: '/permission/page',
+  redirect: '/upms/user',
   alwaysShow: true, // will always show the root menu
-  name: 'Permission',
+  name: 'User Permission Manager',
   meta: {
     title: '系统管理',
     icon: 'lock',
@@ -52,4 +52,4 @@ const sysRouter = {
     }*/
   ]
 }
-export default sysRouter
+export default umpsRouter
