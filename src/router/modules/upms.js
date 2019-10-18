@@ -16,7 +16,7 @@ const sysRouter = {
   children: [
     {
       path: 'user',
-      component: () => import('@/views/upms/permission'),
+      component: () => import('@/views/upms/user'),
       name: 'User',
       meta: {
         title: '用户管理',
@@ -40,7 +40,7 @@ const sysRouter = {
         title: '权限管理',
         roles: ['admin']
       }
-    },
+    }/*,
     {
       path: 'directive',
       component: () => import('@/views/permission/directive'),
@@ -49,7 +49,7 @@ const sysRouter = {
         title: 'Directive Permission'
         // if do not set roles, means: this page does not require permission
       }
-    }
+    }*/
   ]
 }
 export default sysRouter

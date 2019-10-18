@@ -2,7 +2,7 @@ import request from '@/utils/request2'
 
 export function getRoutes() {
   return request({
-    url: '/routes',
+    url: '/upms/permission/tree/1',
     method: 'get'
   })
 }

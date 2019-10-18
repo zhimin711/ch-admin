@@ -58,7 +58,7 @@
           <el-tree
             ref="tree"
             :check-strictly="checkStrictly"
-            :data="routesData"
+            :data="serviceRoutes"
             :props="defaultProps"
             show-checkbox
             node-key="path"
@@ -97,7 +97,7 @@ export default {
       checkStrictly: false,
       defaultProps: {
         children: 'children',
-        label: 'title'
+        label: 'label'
       },
 
       page: 1,
@@ -122,8 +122,8 @@ export default {
   methods: {
     async getRoutes() {
       const res = await getRoutes()
-      this.serviceRoutes = res.data
-      this.routes = this.generateRoutes(res.data)
+      this.serviceRoutes = res.rows
+      // this.routes = this.generateRoutes(res.data)
     },
     async getRoles() {
       const res = await getRoles(this.page, this.limit, this.listQuery)
@@ -149,8 +149,8 @@ export default {
 
         const data = {
           path: path.resolve(basePath, route.path),
-          title: route.meta && route.meta.title
-
+          title: route.meta && route.meta.title,
+          label: route.label
         }
 
         // recursive child routes
