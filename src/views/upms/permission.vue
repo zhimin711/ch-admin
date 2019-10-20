@@ -13,112 +13,88 @@
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
         重置
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleAdd">
-        添加用户
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+        添加权限
       </el-button>
       <!--<el-button type="primary" class="filter-item" icon="el-icon-plus" @click="handleAddRole">New Role</el-button>-->
     </div>
-    <el-row>
-      <el-col :span="6">
-        <el-tree :data="treeData1" :props="defaultProps" @node-click="handleNodeClick" />
 
-      </el-col>
+    <el-table v-loading="loading" :data="list" style="width: 100%;margin-bottom: 20px;" row-key="id" border :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+      <el-table-column label="名称" prop="name">
+        <template slot-scope="scope">
+          {{ scope.row.name }}
+        </template>
+      </el-table-column>
+      <el-table-column label="代码" prop="code">
+        <template slot-scope="scope">
+          {{ scope.row.code }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="type" label="类型" width="80">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.type === '1'" type="warning">目录</el-tag>
+          <el-tag v-else-if="scope.row.type === '2'" type="success">菜单</el-tag>
+          <el-tag v-else-if="scope.row.type === '3'" type="primary">按钮</el-tag>
+          <el-tag v-else-if="scope.row.type === '4'" type="default">链接</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="图标" width="80">
+        <template slot-scope="scope">
+          <i v-if="scope.row.icon" :class="scope.row.icon" />
+          <!-- <span style="color:sandybrown">{{ scope.row.event }}</span> -->
+        </template>
+      </el-table-column>
+      <el-table-column prop="sort" label="排序" width="80" />
+      <!--<el-table-column label="地址">
+          <template slot-scope="scope">
+              <span>{{ scope.row.url }}</span>
+          </template>
+      </el-table-column>-->
+      <el-table-column label="操作" width="200">
+        <template slot-scope="scope">
+          <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑
+          </el-button>
+          <el-button type="text" icon="el-icon-delete" class="red" @click="handleDel(scope.row)">删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
 
-      <el-col :span="18">
-        <el-table v-loading="listLoading" :data="list" border fit highlight-current-row style="width: 100%">
-          <el-table-column align="center" label="ID" width="80">
-            <template slot-scope="scope">
-              <span>{{ scope.row.id }}</span>
-            </template>
-          </el-table-column>
+    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-          <el-table-column width="120px" align="center" label="用户ID">
-            <template slot-scope="scope">
-              <span>{{ scope.row.userId }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column width="120px" align="center" label="用户名">
-            <template slot-scope="scope">
-              <span>{{ scope.row.username }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="用户姓名">
-            <template slot-scope="scope">
-              <span>{{ scope.row.realName }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="邮箱地址">
-            <template slot-scope="scope">
-              <span>{{ scope.row.email }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column width="180px" align="center" label="创建时间">
-            <template slot-scope="scope">
-              <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
-            </template>
-          </el-table-column>
-
-          <!-- <el-table-column width="100px" label="Importance">
-           <template slot-scope="scope">
-             <svg-icon v-for="n in +scope.row.importance" :key="n" icon-class="star" class="meta-item__icon" />
-           </template>
-         </el-table-column>-->
-
-          <!--
-              <el-table-column class-name="status-col" label="Status" width="110">
-                <template slot-scope="{row}">
-                  <el-tag :type="row.status | statusFilter">
-                    {{ row.status }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-        -->
-
-          <!--
-              <el-table-column min-width="300px" label="Title">
-                <template slot-scope="{row}">
-                  <router-link :to="'/example/edit/'+row.id" class="link-type">
-                    <span>{{ row.title }}</span>
-                  </router-link>
-                </template>
-              </el-table-column>
-        -->
-          <el-table-column align="center" label="Operations" width="200">
-            <template slot-scope="scope">
-              <el-button type="primary" size="small" @click="handleEdit(scope.row)">Edit</el-button>
-            <!--<el-button type="danger" size="small" @click="handleDelete(scope)">Delete</el-button>-->
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-      </el-col>
-    </el-row>
-
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit Role':'New Role'">
-      <el-form :model="record" label-width="80px" label-position="left">
-        <el-form-item label="用户ID">
-          <el-input v-model="record.userId" placeholder="用户ID（系统生成）" disabled="" />
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改权限':'新增权限'">
+      <el-form ref="baseForm" :model="record" :rules="rules" label-width="100px">
+        <el-form-item label="类型">
+          <el-radio-group v-model="record.type" @change="changeType">
+            <el-radio-button label="1">目录</el-radio-button>
+            <el-radio-button label="2">菜单</el-radio-button>
+            <el-radio-button label="3">按钮</el-radio-button>
+            <el-radio-button label="4">链接</el-radio-button>
+          </el-radio-group>
         </el-form-item>
-        <el-form-item label="用户名">
-          <el-input v-model="record.username" placeholder="用户名" :disabled="dialogCodeEdit" />
+        <el-form-item label="上级">
+          <el-cascader v-model="record.parent" :options="options.parents" :show-all-levels="false" />
         </el-form-item>
-        <el-form-item label="用户姓名">
-          <el-input v-model="record.realName" placeholder="用户姓名" />
+        <el-form-item label="代码" prop="code">
+          <el-input v-model="record.code" :readonly="dataForm.codeDisabled" />
         </el-form-item>
-        <el-form-item label="邮箱">
-          <el-input v-model="record.email" placeholder="电子邮箱" />
+        <el-form-item label="名称" prop="name">
+          <el-input v-model="record.name" />
         </el-form-item>
-        <el-form-item label="手机号">
-          <el-input v-model="record.mobilePhone" placeholder="手机号" />
+        <el-form-item label="图标" prop="icon">
+          <el-input v-model="record.icon" />
         </el-form-item>
-        <el-form-item label="Desc">
-          <el-input
-            v-model="record.description"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            type="textarea"
-            placeholder="Role Description"
-          />
+        <el-form-item label="地址">
+          <el-input v-model="record.url" :disabled="dataForm.urlDisabled" />
+        </el-form-item>
+        <el-form-item label="排序">
+          <el-input v-model="record.sort" />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="record.status" placeholder="请选择">
+            <el-option key="enabled" label="启用" value="1" />
+            <el-option key="disabled" label="禁用" value="0" />
+          </el-select>
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -135,7 +111,7 @@ import Pagination from '@/components/Pagination' // Secondary package based on e
 import { deepClone } from '@/utils'
 
 export default {
-  name: 'PermisionManager',
+  name: 'PermissionManager',
   components: { Pagination },
   filters: {
     statusFilter(status) {
@@ -150,12 +126,12 @@ export default {
   data() {
     return {
       treeData1: [],
+      loading: true,
       list: [],
-      total: 0,
-      listLoading: true,
       listQuery: {
         page: 1,
         limit: 10,
+        total: 0,
         params: {}
       },
       record: {},
@@ -165,42 +141,54 @@ export default {
       defaultProps: {
         children: 'children',
         label: 'name'
+      },
+      dataForm: {
+        codeDisabled: false,
+        urlDisabled: false
+      },
+      rules: {},
+      options: {
+        parents: []
       }
     }
   },
   created() {
     this.getList()
-    // this.getTree()
   },
   methods: {
-    getTree() {
-      this.listLoading = true
-      fetchTree().then(response => {
-        this.treeData1 = response.rows
-        this.listLoading = false
-      })
-    },
-    getList() {
-      this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.rows
-        this.treeData1 = response.rows
-        this.total = response.total
-        this.listLoading = false
+    getTree(type) {
+      fetchTree(type).then(response => {
+        this.options.parents = response.rows
       })
     },
     handleNodeClick(data) {
       console.log(data)
       // this.getList()
     },
+    getList() {
+      this.loading = true
+      fetchList(this.listQuery).then(response => {
+        this.list = response.rows
+        this.listQuery.total = response.total
+        this.loading = false
+      })
+    },
     handleAdd() {
       this.record = {}
+      this.record.parent = []
       this.dialogType = 'new'
       this.dialogVisible = true
       this.dialogCodeEdit = false
     },
-    handleEdit(row) {
+    handleEdit(row, index) {
       this.record = deepClone(row)
+      this.dialogType = 'edit'
+      this.dialogVisible = true
+      this.dialogCodeEdit = true
+    },
+    handleDel(row) {
+      this.record = deepClone(row)
+      this.record.parent = [row.parentId]
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.dialogCodeEdit = true
@@ -234,6 +222,11 @@ export default {
           _this.$notify.error({ title: '错误', message: err.message })
         })
       }
+    },
+    changeType(value) {
+      this.dataForm.urlDisabled = value <= 1
+      const type = (value === '1' || value === '2') ? '1' : '2'
+      this.getTree(type)
     }
   }
 }

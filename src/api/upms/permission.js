@@ -1,9 +1,9 @@
 import request from '@/utils/request2'
 
 const baseUrl = '/upms/permission'
-export function fetchTree() {
+export function fetchTree(type) {
   return request({
-    url: `${baseUrl}/tree/1`,
+    url: `${baseUrl}/tree/${type}`,
     method: 'get'
   })
 }
