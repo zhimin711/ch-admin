@@ -202,7 +202,7 @@ export default {
             this.dialogVisible = false
             this.$message({
               type: 'success',
-              message: `添加 ${this.record.username} success!`
+              message: `添加 ${this.record.name} success!`
             })
             _this.getList()
           }
@@ -213,7 +213,7 @@ export default {
             this.dialogVisible = false
             this.$message({
               type: 'success',
-              message: `修改 ${this.record.username} success!`
+              message: `修改 ${this.record.name} success!`
             })
             _this.getList()
           }
