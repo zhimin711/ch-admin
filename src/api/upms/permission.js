@@ -1,6 +1,12 @@
 import request from '@/utils/request2'
 
 const baseUrl = '/upms/permission'
+export function fetchTree() {
+  return request({
+    url: `${baseUrl}/tree/1`,
+    method: 'get'
+  })
+}
 export function fetchList(query) {
   return request({
     url: `${baseUrl}/${query.page}/${query.limit}`,

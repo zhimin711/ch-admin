@@ -4,8 +4,8 @@
       <el-input v-model="listQuery.code" placeholder="代码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" />
       <el-select v-model="listQuery.status" placeholder="状态" class="filter-item" clearable>
-        <el-option label="启用" value="1"></el-option>
-        <el-option label="禁用" value="0"></el-option>
+        <el-option label="启用" value="1" />
+        <el-option label="禁用" value="0" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         Search
@@ -77,7 +77,7 @@
 <script>
 import path from 'path'
 import { deepClone } from '@/utils'
-import { getRoutes, getRoles, addRole, deleteRole, updateRole } from '@/api/role'
+import { getRoutes, getRoles, addRole, deleteRole, updateRole } from '@/api/upms/role'
 
 const defaultRole = {
   key: '',
