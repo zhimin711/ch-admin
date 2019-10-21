@@ -61,7 +61,7 @@
             :data="serviceRoutes"
             :props="defaultProps"
             show-checkbox
-            node-key="path"
+            node-key="value"
             class="permission-tree"
           />
         </el-form-item>
@@ -77,7 +77,8 @@
 <script>
 import path from 'path'
 import { deepClone } from '@/utils'
-import { getRoutes, getRoles, addRole, deleteRole, updateRole } from '@/api/upms/role'
+import { getRoles, addRole, deleteRole, updateRole } from '@/api/upms/role'
+import { fetchTree } from '@/api/upms/permission'
 
 const defaultRole = {
   key: '',
@@ -121,9 +122,9 @@ export default {
   },
   methods: {
     async getRoutes() {
-      const res = await getRoutes()
+      const res = await fetchTree('0')
       this.serviceRoutes = res.rows
-      // this.routes = this.generateRoutes(res.data)
+      this.routes = this.generateRoutes(res.rows)
     },
     async getRoles() {
       const res = await getRoles(this.page, this.limit, this.listQuery)
@@ -205,10 +206,9 @@ export default {
           this.rolesList.splice($index, 1)
           this.$message({
             type: 'success',
-            message: 'Delete succed!'
+            message: 'Delete success!'
           })
-        })
-        .catch(err => { console.error(err) })
+        }).catch(err => { console.error(err) })
     },
     generateTree(routes, basePath = '/', checkedKeys) {
       const res = []

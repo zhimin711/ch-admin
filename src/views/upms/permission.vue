@@ -107,7 +107,7 @@
 </template>
 
 <script>
-import { fetchTree, fetchList, add, edit } from '@/api/upms/permission'
+import { fetchTree, fetchList, add, edit, del } from '@/api/upms/permission'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 
@@ -204,7 +204,21 @@ export default {
       this.getTree(row.type)
     },
     handleDel(row) {
-      this.dialogType = 'del'
+      const _this = this
+      this.$confirm('Confirm to remove the user?', 'Warning', {
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        type: 'warning'
+      })
+        .then(async() => {
+          await del(row.id)
+          _this.getList()
+          this.$message({
+            type: 'success',
+            message: 'Delete succed!'
+          })
+        })
+        .catch(err => { console.error(err) })
     },
     async handleSubmit() {
       const _this = this
