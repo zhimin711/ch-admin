@@ -73,7 +73,8 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="上级">
-          <el-cascader v-model="record.parent" :options="options.parents" :show-all-levels="false" />
+          <el-cascader ref="categoryCascader" v-model="record.parent" :options="options.parents" :show-all-levels="false" />
+          <el-icon v-show="dialogLoadingVisible" class="el-icon-loading"></el-icon>
         </el-form-item>
         <el-form-item label="代码" prop="code">
           <el-input v-model="record.code" :readonly="dataForm.codeDisabled" />
@@ -138,6 +139,7 @@ export default {
       dialogVisible: false,
       dialogType: false,
       dialogCodeEdit: false,
+      dialogLoadingVisible: false,
       defaultProps: {
         children: 'children',
         label: 'name'
@@ -157,7 +159,15 @@ export default {
   },
   methods: {
     getTree(type) {
+      if ((this.record.type === '3' || this.record.type === '4') && (type === '1' || type === '2')) {
+        this.record.parent = []
+      } else if ((this.record.type === '1' || this.record.type === '2') && (type === '3' || type === '4')) {
+        this.record.parent = []
+      }
+      this.options.parents = []
+      this.dialogLoadingVisible = true
       fetchTree(type).then(response => {
+        this.dialogLoadingVisible = false
         this.options.parents = response.rows
       })
     },
@@ -174,6 +184,7 @@ export default {
       })
     },
     handleAdd() {
+      this.getTree('0')
       this.record = {}
       this.record.parent = []
       this.dialogType = 'new'
@@ -181,7 +192,12 @@ export default {
       this.dialogCodeEdit = false
     },
     handleEdit(row, index) {
+      this.getTree(row.type)
       this.record = deepClone(row)
+      this.record.parent = []
+      if (row.parentId) {
+        this.record.parent = row.parentId.split(',')
+      }
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.dialogCodeEdit = true
@@ -193,39 +209,39 @@ export default {
       this.dialogVisible = true
       this.dialogCodeEdit = true
     },
-    handleSubmit() {
+    async handleSubmit() {
       const _this = this
       // this.record = {}
+      if (this.record.parent.length > 0) {
+        this.record.parentId = this.record.parent.join(',')
+      } else this.record.parentId = null
+      const typeLabels = this.$refs['categoryCascader'].currentLabels
+      if (typeLabels && typeLabels.length > 0) {
+        this.record.parentName = typeLabels.join('/')
+      }
+      let resp = null
+      let opName = '添加'
       if (this.dialogType === 'new') {
-        add(this.record).then(resp => {
-          if (resp.success) {
-            this.dialogVisible = false
-            this.$message({
-              type: 'success',
-              message: `添加 ${this.record.name} success!`
-            })
-            _this.getList()
-          }
-        })
+        resp = await add(this.record)
       } else if (this.dialogType === 'edit') {
-        edit(this.record.id, this.record).then(resp => {
-          if (resp.success) {
-            this.dialogVisible = false
-            this.$message({
-              type: 'success',
-              message: `修改 ${this.record.name} success!`
-            })
-            _this.getList()
-          }
-        }).catch((err) => {
-          console.log('err :', err)
-          _this.$notify.error({ title: '错误', message: err.message })
+        opName = '修改'
+        resp = await edit(this.record.id, this.record)
+      }
+      if (resp.success) {
+        this.dialogVisible = false
+        this.$message({
+          type: 'success',
+          message: `${opName} ${this.record.name} success!`
         })
+        _this.getList()
       }
     },
     changeType(value) {
       this.dataForm.urlDisabled = value <= 1
-      const type = (value === '1' || value === '2') ? '1' : '2'
+      let type = value
+      if (value === '4') {
+        type = '3'
+      }
       this.getTree(type)
     }
   }
