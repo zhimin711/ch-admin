@@ -1,5 +1,46 @@
 import request from '@/utils/request2'
 
+const baseUrl = '/upms/role'
+
+export function list(query) {
+  return request({
+    url: `${baseUrl}/${query.page}/${query.limit}`,
+    method: 'get',
+    params: query.params
+  })
+}
+
+export function get(id) {
+  return request({
+    url: `${baseUrl}/${id}`,
+    method: 'get',
+    params: { id }
+  })
+}
+
+export function add(data) {
+  return request({
+    url: `${baseUrl}/`,
+    method: 'post',
+    data
+  })
+}
+
+export function edit(id, data) {
+  return request({
+    url: `${baseUrl}/${id}`,
+    method: 'put',
+    data
+  })
+}
+
+export function del(id) {
+  return request({
+    url: `${baseUrl}/${id}`,
+    method: 'delete'
+  })
+}
+
 export function getRoutes() {
   return request({
     url: '/upms/permission/tree/1',
@@ -7,33 +48,3 @@ export function getRoutes() {
   })
 }
 
-export function getRoles(pageNum, pageSize, query) {
-  return request({
-    url: `upms/role/${pageNum}/${pageSize}`,
-    method: 'get',
-    params: query
-  })
-}
-
-export function addRole(data) {
-  return request({
-    url: '/role',
-    method: 'post',
-    data
-  })
-}
-
-export function updateRole(id, data) {
-  return request({
-    url: `/role/${id}`,
-    method: 'put',
-    data
-  })
-}
-
-export function deleteRole(id) {
-  return request({
-    url: `/role/${id}`,
-    method: 'delete'
-  })
-}

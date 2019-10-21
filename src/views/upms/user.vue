@@ -7,7 +7,7 @@
         <el-option label="启用" value="1"></el-option>
         <el-option label="禁用" value="0"></el-option>
       </el-select>
-      <el-button  class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
@@ -113,10 +113,14 @@
 import { fetchList, add, edit, del } from '@/api/upms/user'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
+import waves from '@/directive/waves/index.js' // 水波纹指令
 
 export default {
   name: 'UserManager',
   components: { Pagination },
+  directives: {
+    waves
+  },
   filters: {
     statusFilter(status) {
       const statusMap = {

@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.code" placeholder="代码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.status" placeholder="状态" class="filter-item" clearable>
+      <el-input v-model="listQuery.params.code" placeholder="代码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />
+      <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
         <el-option label="启用" value="1" />
         <el-option label="禁用" value="0" />
       </el-select>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         Search
       </el-button>
       <!--<el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
@@ -16,7 +16,7 @@
       <el-button type="primary" class="filter-item" icon="el-icon-plus" @click="handleAddRole">New Role</el-button>
     </div>
 
-    <el-table :data="rolesList" style="width: 100%;margin-top:30px;" border>
+    <el-table :data="listQuery.data" style="width: 100%;margin-top:30px;" border>
       <el-table-column label="Role Key" width="220">
         <template slot-scope="scope">
           {{ scope.row.code }}
@@ -39,7 +39,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="total>0" :total="total" :page.sync="page" :limit.sync="limit" @pagination="getRoles" />
+    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getRoles" />
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit Role':'New Role'">
       <el-form :model="role" label-width="80px" label-position="left">
@@ -77,7 +77,8 @@
 <script>
 import path from 'path'
 import { deepClone } from '@/utils'
-import { getRoles, addRole, deleteRole, updateRole } from '@/api/upms/role'
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+import { list, add, edit, del } from '@/api/upms/role'
 import { fetchTree } from '@/api/upms/permission'
 
 const defaultRole = {
@@ -88,6 +89,7 @@ const defaultRole = {
 }
 
 export default {
+  components: { Pagination },
   data() {
     return {
       role: Object.assign({}, defaultRole),
@@ -101,12 +103,12 @@ export default {
         label: 'label'
       },
 
-      page: 1,
-      limit: 20,
-      total: 0,
       listQuery: {
-        code: '',
-        name: ''
+        page: 1,
+        limit: 20,
+        total: 0,
+        data: [],
+        params: {}
       }
     }
   },
@@ -117,7 +119,7 @@ export default {
   },
   created() {
     // Mock: get all routes and roles list from server
-    this.getRoutes()
+    // this.getRoutes()
     this.getRoles()
   },
   methods: {
@@ -127,9 +129,9 @@ export default {
       this.routes = this.generateRoutes(res.rows)
     },
     async getRoles() {
-      const res = await getRoles(this.page, this.limit, this.listQuery)
-      this.rolesList = res.rows
-      this.total = res.total
+      const res = await list(this.listQuery)
+      this.listQuery.data = res.rows
+      this.listQuery.total = res.total
     },
     handleFilter() {
       this.getRoles()
@@ -202,7 +204,7 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          await deleteRole(row.key)
+          await del(row.id)
           this.rolesList.splice($index, 1)
           this.$message({
             type: 'success',
@@ -234,7 +236,7 @@ export default {
       this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/', checkedKeys)
 
       if (isEdit) {
-        await updateRole(this.role.key, this.role)
+        await edit(this.role.key, this.role)
         for (let index = 0; index < this.rolesList.length; index++) {
           if (this.rolesList[index].key === this.role.key) {
             this.rolesList.splice(index, 1, Object.assign({}, this.role))
@@ -242,7 +244,7 @@ export default {
           }
         }
       } else {
-        const { data } = await addRole(this.role)
+        const { data } = await add(this.role)
         this.role.key = data.key
         this.rolesList.push(this.role)
       }
@@ -254,7 +256,7 @@ export default {
         dangerouslyUseHTMLString: true,
         message: `
             <div>Role Key: ${key}</div>
-            <div>Role Nmae: ${name}</div>
+            <div>Role Name: ${name}</div>
             <div>Description: ${description}</div>
           `,
         type: 'success'
