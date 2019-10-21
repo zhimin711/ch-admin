@@ -73,7 +73,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="上级">
-          <el-cascader ref="categoryCascader" v-model="record.parent" :options="options.parents" :show-all-levels="false" />
+          <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" />
           <el-icon v-show="dialogLoadingVisible" class="el-icon-loading"></el-icon>
         </el-form-item>
         <el-form-item label="代码" prop="code">
@@ -136,6 +136,8 @@ export default {
         params: {}
       },
       record: {},
+      recordType: '',
+      recordParents: [],
       dialogVisible: false,
       dialogType: false,
       dialogCodeEdit: false,
@@ -159,16 +161,16 @@ export default {
   },
   methods: {
     getTree(type) {
-      if ((this.record.type === '3' || this.record.type === '4') && (type === '1' || type === '2')) {
-        this.record.parent = []
-      } else if ((this.record.type === '1' || this.record.type === '2') && (type === '3' || type === '4')) {
-        this.record.parent = []
-      }
-      this.options.parents = []
+      // this.options.parents = []
       this.dialogLoadingVisible = true
       fetchTree(type).then(response => {
         this.dialogLoadingVisible = false
         this.options.parents = response.rows
+
+        if (this.record.parentId && this.recordType === type) {
+          // this.recordParents = this.record.parentId.split(',')
+          console.log(this.recordParents)
+        }
       })
     },
     handleNodeClick(data) {
@@ -186,34 +188,29 @@ export default {
     handleAdd() {
       this.getTree('0')
       this.record = {}
-      this.record.parent = []
+      this.recordParents = []
       this.dialogType = 'new'
       this.dialogVisible = true
       this.dialogCodeEdit = false
     },
     handleEdit(row, index) {
-      this.getTree(row.type)
       this.record = deepClone(row)
-      this.record.parent = []
-      if (row.parentId) {
-        this.record.parent = row.parentId.split(',')
-      }
+      this.recordType = row.type
+      this.recordParents = this.record.parentId.split(',')
+      if (this.record.parentId === '0') this.record.parentId = undefined
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.dialogCodeEdit = true
+      this.getTree(row.type)
     },
     handleDel(row) {
-      this.record = deepClone(row)
-      this.record.parent = [row.parentId]
-      this.dialogType = 'edit'
-      this.dialogVisible = true
-      this.dialogCodeEdit = true
+      this.dialogType = 'del'
     },
     async handleSubmit() {
       const _this = this
       // this.record = {}
-      if (this.record.parent.length > 0) {
-        this.record.parentId = this.record.parent.join(',')
+      if (this.recordParents.length > 0) {
+        this.record.parentId = this.recordParents.join(',')
       } else this.record.parentId = null
       const typeLabels = this.$refs['categoryCascader'].currentLabels
       if (typeLabels && typeLabels.length > 0) {
