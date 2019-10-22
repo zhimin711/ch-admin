@@ -265,4 +265,38 @@ export function resetRouter() {
   router.matcher = newRouter.matcher // reset router
 }
 
+export function assemblyAsyncRoutes(menus) {
+  const res = []
+  menus.forEach(menu => {
+    let tmp = {}
+    if (menu.type === '2') {
+      tmp = {
+        path: menu.url,
+        component: () => import('@/views/' + menu.url),
+        name: menu.code,
+        meta: { title: menu.name }
+      }
+    } else {
+      tmp = {
+        path: '/' + menu.url,
+        meta: { title: menu.name, icon: menu.icon || 's-tools' },
+        component: Layout
+      }
+      if (menu.children) {
+        tmp.children = assemblyAsyncRoutes(menu.children)
+      } else {
+        tmp.children = [{
+          path: '/',
+          component: () => import('@/views/' + menu.url),
+          name: menu.code,
+          meta: { title: menu.name, icon: menu.icon }
+        }]
+      }
+    }
+    res.push(tmp)
+  })
+
+  return res
+}
+
 export default router

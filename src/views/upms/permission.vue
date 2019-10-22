@@ -74,7 +74,7 @@
         </el-form-item>
         <el-form-item label="上级">
           <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" />
-          <el-icon v-show="dialogLoadingVisible" class="el-icon-loading"></el-icon>
+          <el-icon v-show="dialogLoadingVisible" class="el-icon-loading" />
         </el-form-item>
         <el-form-item label="代码" prop="code">
           <el-input v-model="record.code" :readonly="dataForm.codeDisabled" />

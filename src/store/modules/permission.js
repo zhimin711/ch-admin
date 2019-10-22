@@ -1,4 +1,4 @@
-import { asyncRoutes, constantRoutes } from '@/router'
+import { asyncRoutes, constantRoutes, assemblyAsyncRoutes } from '@/router'
 
 /**
  * Use meta.role to determine if the current user has permission
@@ -57,6 +57,13 @@ const actions = {
       }
       commit('SET_ROUTES', accessedRoutes)
       resolve(accessedRoutes)
+    })
+  },
+  assemblyRouters({ commit }, menus) {
+    return new Promise(resolve => {
+      const accessedRoutes = assemblyAsyncRoutes(menus)
+      commit('SET_ROUTES', accessedRoutes)
+      // resolve(accessedRoutes)
     })
   }
 }
