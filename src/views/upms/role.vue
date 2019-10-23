@@ -58,7 +58,7 @@
           <el-tree
             ref="tree"
             :check-strictly="checkStrictly"
-            :data="serviceRoutes"
+            :data="routesData"
             :props="defaultProps"
             show-checkbox
             node-key="value"
@@ -100,6 +100,7 @@ export default {
       checkStrictly: false,
       defaultProps: {
         children: 'children',
+        value: 'value',
         label: 'label'
       },
 
@@ -119,14 +120,15 @@ export default {
   },
   created() {
     // Mock: get all routes and roles list from server
-    // this.getRoutes()
+    this.getRoutes()
     this.getRoles()
   },
   methods: {
     async getRoutes() {
       const res = await fetchTree('0')
       this.serviceRoutes = res.rows
-      this.routes = this.generateRoutes(res.rows)
+      this.routes = res.rows
+      // this.generateRoutes(res.rows)
     },
     async getRoles() {
       const res = await list(this.listQuery)
@@ -191,8 +193,8 @@ export default {
       this.checkStrictly = true
       this.role = deepClone(scope.row)
       this.$nextTick(() => {
-        const routes = this.generateRoutes(this.role.routes)
-        this.$refs.tree.setCheckedNodes(this.generateArr(routes))
+        // const routes = this.generateRoutes(this.role.routes)
+        // this.$refs.tree.setCheckedNodes(this.generateArr(routes))
         // set checked state of a node not affects its father and child nodes
         this.checkStrictly = false
       })
