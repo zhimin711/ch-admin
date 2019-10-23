@@ -265,29 +265,32 @@ export function resetRouter() {
   router.matcher = newRouter.matcher // reset router
 }
 
-export function assemblyAsyncRoutes(menus) {
+export function assemblyAsyncRoutes(menus, basePath) {
   const res = []
+  const path = basePath || ''
   menus.forEach(menu => {
     let tmp = {}
     if (menu.type === '2') {
       tmp = {
         path: menu.url,
-        component: () => import('@/views/' + menu.url),
+        // component: () => import('@/views' + path + '/' + menu.url),
+        component: resolve => require(['@/views' + path + '/' + menu.url], resolve),
         name: menu.code,
         meta: { title: menu.name }
       }
     } else {
       tmp = {
         path: '/' + menu.url,
-        meta: { title: menu.name, icon: menu.icon || 's-tools' },
+        meta: { title: menu.name, icon: menu.icon || 'lock' },
         component: Layout
       }
-      if (menu.children) {
-        tmp.children = assemblyAsyncRoutes(menu.children)
+      if (menu.children && menu.children.length > 0) {
+        tmp.children = assemblyAsyncRoutes(menu.children, path + '/' + menu.url)
       } else {
         tmp.children = [{
           path: '/',
-          component: () => import('@/views/' + menu.url),
+          // component: () => import('@/views' + path + '/' + menu.url),
+          component: resolve => require(['@/views' + path + '/' + menu.url], resolve),
           name: menu.code,
           meta: { title: menu.name, icon: menu.icon }
         }]
