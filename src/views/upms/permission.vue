@@ -41,10 +41,16 @@
       <el-table-column label="图标" width="80">
         <template slot-scope="scope">
           <i v-if="scope.row.icon" :class="scope.row.icon" />
-          <!-- <span style="color:sandybrown">{{ scope.row.event }}</span> -->
         </template>
       </el-table-column>
       <el-table-column prop="sort" label="排序" width="80" />
+      <el-table-column prop="status" label="状态" width="80">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.status === '0'" type="warning">禁用</el-tag>
+          <el-tag v-else-if="scope.row.status === '1'" type="success">启用</el-tag>
+          <el-tag v-else-if="scope.row.status === '3'" type="primary">删除</el-tag>
+        </template>
+      </el-table-column>
       <!--<el-table-column label="地址">
           <template slot-scope="scope">
               <span>{{ scope.row.url }}</span>

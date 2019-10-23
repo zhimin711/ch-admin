@@ -63,7 +63,7 @@ const actions = {
     return new Promise(resolve => {
       const accessedRoutes = assemblyAsyncRoutes(menus)
       commit('SET_ROUTES', accessedRoutes)
-      // resolve(accessedRoutes)
+      resolve(accessedRoutes)
     })
   }
 }
