@@ -13,7 +13,7 @@
       <!--<el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         Add
       </el-button>-->
-      <el-button type="primary" class="filter-item" icon="el-icon-plus" @click="handleAddRole">New Role</el-button>
+      <el-button type="primary" class="filter-item" icon="el-icon-plus" @click="handleAddRole">添加角色</el-button>
     </div>
 
     <el-table :data="listQuery.data" style="width: 100%;margin-top:30px;" border>
@@ -32,16 +32,20 @@
           {{ scope.row.description }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="Operations" width="200">
-        <template slot-scope="scope">
-          <el-button type="primary" size="small" @click="handleEdit(scope)">Edit</el-button>
-          <el-button type="danger" size="small" @click="handleDelete(scope)">Delete</el-button>
+      <el-table-column align="center" label="Operations" width="250">
+        <template v-if="scope.row.type !== '0'" slot-scope="scope">
+          <!--<el-button type="primary" size="small" @click="handleEdit(scope)">Edit</el-button>
+          <el-button type="danger" size="small" @click="handleDelete(scope)">Delete</el-button>-->
+
+          <el-link type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配权限</el-link>
+          <el-link type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
+          <el-link type="danger" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-link>
         </template>
       </el-table-column>
     </el-table>
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getRoles" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit Role':'New Role'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 角色':'New 角色'">
       <el-form :model="role" label-width="80px" label-position="left">
         <el-form-item label="Name">
           <el-input v-model="role.name" placeholder="Role Name" />
@@ -54,7 +58,15 @@
             placeholder="Role Description"
           />
         </el-form-item>
-        <el-form-item label="Menus">
+      </el-form>
+      <div style="text-align:center;">
+        <el-button type="primary" @click="confirmRole">Confirm</el-button>
+        <el-button type="danger" @click="dialogVisible=false">Cancel</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog :visible.sync="dialogVisible2" :title="'分配角色权限'">
+      <el-form :model="role" label-width="80px" label-position="left">
+        <el-form-item label="菜单">
           <el-tree
             ref="tree"
             :check-strictly="checkStrictly"
@@ -66,9 +78,9 @@
           />
         </el-form-item>
       </el-form>
-      <div style="text-align:right;">
-        <el-button type="danger" @click="dialogVisible=false">Cancel</el-button>
-        <el-button type="primary" @click="confirmRole">Confirm</el-button>
+      <div style="text-align:center;">
+        <el-button type="primary" @click="confirmRole">保存</el-button>
+        <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -100,17 +112,16 @@ export default {
       checkStrictly: false,
       defaultProps: {
         children: 'children',
-        value: 'value',
         label: 'label'
       },
-
       listQuery: {
         page: 1,
         limit: 20,
         total: 0,
         data: [],
         params: {}
-      }
+      },
+      dialogVisible2: false
     }
   },
   computed: {
@@ -187,17 +198,20 @@ export default {
       this.dialogType = 'new'
       this.dialogVisible = true
     },
-    handleEdit(scope) {
+    handleEdit(row) {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.checkStrictly = true
-      this.role = deepClone(scope.row)
+      this.role = deepClone(row)
       this.$nextTick(() => {
         // const routes = this.generateRoutes(this.role.routes)
         // this.$refs.tree.setCheckedNodes(this.generateArr(routes))
         // set checked state of a node not affects its father and child nodes
         this.checkStrictly = false
       })
+    },
+    handleAuth(row) {
+      this.dialogVisible2 = true
     },
     handleDelete({ $index, row }) {
       this.$confirm('Confirm to remove the role?', 'Warning', {
