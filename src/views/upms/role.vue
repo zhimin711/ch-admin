@@ -8,38 +8,41 @@
         <el-option label="禁用" value="0" />
       </el-select>
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        Search
+        查询
       </el-button>
-      <!--<el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
-        Add
-      </el-button>-->
-      <el-button type="primary" class="filter-item" icon="el-icon-plus" @click="handleAddRole">添加角色</el-button>
+      <el-button class="filter-item" type="" icon="el-icon-refresh" @click="listQuery.params={}">
+        重置
+      </el-button>
+      <el-button type="primary" class="filter-item" icon="el-icon-plus" @click="handleAdd">添加角色</el-button>
     </div>
 
     <el-table :data="listQuery.data" style="width: 100%;margin-top:30px;" border>
-      <el-table-column label="Role Key" width="220">
+      <el-table-column label="角色代码" width="220">
         <template slot-scope="scope">
           {{ scope.row.code }}
         </template>
       </el-table-column>
-      <el-table-column label="Role Name" width="220">
+      <el-table-column label="角色名称" width="220">
         <template slot-scope="scope">
           {{ scope.row.name }}
         </template>
       </el-table-column>
-      <el-table-column align="header-center" label="Description">
+      <el-table-column align="header-center" label="描述">
         <template slot-scope="scope">
           {{ scope.row.description }}
         </template>
       </el-table-column>
-      <el-table-column align="center" label="Operations" width="250">
+      <el-table-column prop="status" label="状态" width="80">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.status === '0'" type="warning">禁用</el-tag>
+          <el-tag v-else-if="scope.row.status === '1'" type="success">启用</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="操作" width="250">
         <template v-if="scope.row.type !== '0'" slot-scope="scope">
-          <!--<el-button type="primary" size="small" @click="handleEdit(scope)">Edit</el-button>
-          <el-button type="danger" size="small" @click="handleDelete(scope)">Delete</el-button>-->
-
           <el-link type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配权限</el-link>
           <el-link type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link type="danger" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-link>
+          <el-link type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
     </el-table>
@@ -47,21 +50,30 @@
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 角色':'New 角色'">
       <el-form :model="role" label-width="80px" label-position="left">
-        <el-form-item label="Name">
-          <el-input v-model="role.name" placeholder="Role Name" />
+        <el-form-item label="代码" prop="code">
+          <el-input v-model="role.code" placeholder="Role 代码" :disabled="dataForm.codeDisabled" />
         </el-form-item>
-        <el-form-item label="Desc">
+        <el-form-item label="名称">
+          <el-input v-model="role.name" placeholder="Role 名称" />
+        </el-form-item>
+        <el-form-item label="描述">
           <el-input
             v-model="role.description"
             :autosize="{ minRows: 2, maxRows: 4}"
             type="textarea"
-            placeholder="Role Description"
+            placeholder="Role 描述"
           />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="role.status" placeholder="请选择">
+            <el-option key="enabled" label="启用" value="1" />
+            <el-option key="disabled" label="禁用" value="0" />
+          </el-select>
         </el-form-item>
       </el-form>
       <div style="text-align:center;">
-        <el-button type="primary" @click="confirmRole">Confirm</el-button>
-        <el-button type="danger" @click="dialogVisible=false">Cancel</el-button>
+        <el-button type="primary" @click="confirmRole">保存</el-button>
+        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
       </div>
     </el-dialog>
     <el-dialog :visible.sync="dialogVisible2" :title="'分配角色权限'">
@@ -116,12 +128,15 @@ export default {
       },
       listQuery: {
         page: 1,
-        limit: 20,
+        limit: 10,
         total: 0,
         data: [],
         params: {}
       },
-      dialogVisible2: false
+      dialogVisible2: false,
+      dataForm: {
+        codeDisabled: false
+      }
     }
   },
   computed: {
@@ -190,17 +205,22 @@ export default {
       })
       return data
     },
-    handleAddRole() {
+    handleAdd() {
       this.role = Object.assign({}, defaultRole)
       if (this.$refs.tree) {
         this.$refs.tree.setCheckedNodes([])
       }
       this.dialogType = 'new'
       this.dialogVisible = true
+      this.dataForm.codeDisabled = false
     },
-    handleEdit(row) {
+    handleAuth(row) {
+      this.dialogVisible2 = true
+    },
+    handleEdit(row, $index) {
       this.dialogType = 'edit'
       this.dialogVisible = true
+      this.dataForm.codeDisabled = true
       this.checkStrictly = true
       this.role = deepClone(row)
       this.$nextTick(() => {
@@ -210,10 +230,7 @@ export default {
         this.checkStrictly = false
       })
     },
-    handleAuth(row) {
-      this.dialogVisible2 = true
-    },
-    handleDelete({ $index, row }) {
+    handleDel(row) {
       this.$confirm('Confirm to remove the role?', 'Warning', {
         confirmButtonText: 'Confirm',
         cancelButtonText: 'Cancel',
@@ -221,7 +238,7 @@ export default {
       })
         .then(async() => {
           await del(row.id)
-          this.rolesList.splice($index, 1)
+          this.getRoles()
           this.$message({
             type: 'success',
             message: 'Delete success!'
@@ -248,13 +265,13 @@ export default {
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
 
-      const checkedKeys = this.$refs.tree.getCheckedKeys()
-      this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/', checkedKeys)
+      // const checkedKeys = this.$refs.tree.getCheckedKeys()
+      // this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/', checkedKeys)
 
       if (isEdit) {
-        await edit(this.role.key, this.role)
+        await edit(this.role.id, this.role)
         for (let index = 0; index < this.rolesList.length; index++) {
-          if (this.rolesList[index].key === this.role.key) {
+          if (this.rolesList[index].id === this.role.id) {
             this.rolesList.splice(index, 1, Object.assign({}, this.role))
             break
           }
@@ -265,15 +282,14 @@ export default {
         this.rolesList.push(this.role)
       }
 
-      const { description, key, name } = this.role
+      const { code, name } = this.role
       this.dialogVisible = false
       this.$notify({
-        title: 'Success',
+        title: (isEdit ? '修改' : '创建') + '角色 Success',
         dangerouslyUseHTMLString: true,
         message: `
-            <div>Role Key: ${key}</div>
-            <div>Role Name: ${name}</div>
-            <div>Description: ${description}</div>
+            <div>角色代码: ${code}</div>
+            <div>角色名称: ${name}</div>
           `,
         type: 'success'
       })
