@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
 const baseUrl = '/upms/user'
-export function fetchList(query) {
+export function list(query) {
   return request({
     url: `${baseUrl}/${query.page}/${query.limit}`,
     method: 'get',
@@ -36,5 +36,27 @@ export function del(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'delete'
+  })
+}
+
+export function getEnableRoles() {
+  return request({
+    url: `${baseUrl}/roles`,
+    method: 'get'
+  })
+}
+
+export function getRoles(id) {
+  return request({
+    url: `${baseUrl}/${id}/roles`,
+    method: 'get'
+  })
+}
+
+export function editRoles(id, data) {
+  return request({
+    url: `${baseUrl}/${id}/roles`,
+    method: 'post',
+    data
   })
 }
