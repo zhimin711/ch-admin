@@ -16,7 +16,7 @@
       <el-button type="primary" class="filter-item" icon="el-icon-plus" @click="handleAdd">添加角色</el-button>
     </div>
 
-    <el-table :data="listQuery.data" style="width: 100%;margin-top:30px;" border>
+    <el-table v-loading="listLoading" :data="listQuery.data" style="width: 100%;margin-top:30px;" border>
       <el-table-column label="角色代码" width="220">
         <template slot-scope="scope">
           {{ scope.row.code }}
@@ -126,6 +126,7 @@ export default {
         children: 'children',
         label: 'label'
       },
+      listLoading: false,
       listQuery: {
         page: 1,
         limit: 10,
@@ -156,10 +157,13 @@ export default {
       this.routes = res.rows
       // this.generateRoutes(res.rows)
     },
-    async getRoles() {
-      const res = await list(this.listQuery)
-      this.listQuery.data = res.rows
-      this.listQuery.total = res.total
+    getRoles() {
+      this.listLoading = true
+      list(this.listQuery).then(response => {
+        this.listLoading = false
+        this.listQuery.data = response.rows
+        this.listQuery.total = response.total
+      })
     },
     handleFilter() {
       this.getRoles()
