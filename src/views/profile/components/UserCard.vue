@@ -15,6 +15,18 @@
         <div class="user-name text-center">{{ user.name }}</div>
         <div class="user-role text-center text-muted">{{ user.roleName | uppercaseFirst }}</div>
       </div>
+      <div class="box-center">
+        <div class="user-role text-center text-muted">
+          <el-select v-model="user.roleId" @change="changeRole">
+            <el-option
+              v-for="item in user.roles"
+              :key="item.code"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </div>
+      </div>
     </div>
 
     <div class="user-bio">
@@ -28,7 +40,7 @@
       </div>
 
       <div class="user-skills user-bio-section">
-        <div class="user-bio-section-header"><svg-icon icon-class="skill" /><span>Skills</span></div>
+        <div class="user-bio-section-header"><svg-icon icon-class="skill" /><span>技能</span></div>
         <div class="user-bio-section-body">
           <div class="progress-item">
             <span>Vue</span>
@@ -68,6 +80,14 @@ export default {
           roles: ''
         }
       }
+    }
+  },
+  methods: {
+    changeRole(val) {
+      console.log(val)
+      this.$store.dispatch('user/changeRoles', val).then(() => {
+        this.$emit('change')
+      })
     }
   }
 }

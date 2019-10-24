@@ -69,10 +69,10 @@
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 用户':'New 用户'">
       <el-form :model="record" label-width="80px" label-position="left">
         <el-form-item label="用户ID">
-          <el-input v-model="record.userId" placeholder="用户ID（系统生成）" :disabled="true"/>
+          <el-input v-model="record.userId" placeholder="用户ID（系统生成）" :disabled="true" />
         </el-form-item>
         <el-form-item label="用户名">
-          <el-input v-model="record.username" placeholder="用户名" :disabled="dialogCodeEdit"/>
+          <el-input v-model="record.username" placeholder="用户名" :disabled="dialogCodeEdit" />
         </el-form-item>
         <el-form-item label="用户姓名">
           <el-input v-model="record.realName" placeholder="用户姓名" />
@@ -99,7 +99,7 @@
     </el-dialog>
     <el-dialog :visible.sync="dialogVisible2" :title="'分配用户角色'">
       <div style="text-align:left;margin-bottom: 20px">
-        <el-transfer v-model="recordRoles" :data="roles" :titles="['未分配角色', '已分配角色']" :props="{ key: 'id', label: 'name' }"></el-transfer>
+        <el-transfer v-model="recordRoles" :data="roles" :titles="['未分配角色', '已分配角色']" :props="{ key: 'id', label: 'name' }" />
       </div>
       <div style="text-align:left;padding-left:170px">
         <el-button type="primary" @click="handleSubmitAuth">保存</el-button>

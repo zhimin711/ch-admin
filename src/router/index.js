@@ -281,6 +281,7 @@ export function assemblyAsyncRoutes(menus, basePath) {
     } else {
       tmp = {
         path: '/' + menu.url,
+        alwaysShow: true,
         meta: { title: menu.name, icon: menu.icon || 'lock' },
         component: Layout
       }
@@ -292,7 +293,7 @@ export function assemblyAsyncRoutes(menus, basePath) {
           // component: () => import('@/views' + path + '/' + menu.url),
           component: resolve => require(['@/views' + path + '/' + menu.url], resolve),
           name: menu.code,
-          meta: { title: menu.name, icon: menu.icon }
+          meta: { title: menu.name, icon: menu.icon || 'zip' }
         }]
       }
     }
