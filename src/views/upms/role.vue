@@ -297,7 +297,9 @@ export default {
       })
     },
     async confirmAuth() {
-      const checkedKeys = this.$refs.tree.getCheckedKeys()
+      let checkedKeys = this.$refs.tree.getCheckedKeys()
+      const checkedKeys1 = this.$refs.tree.getHalfCheckedKeys()
+      checkedKeys = [...checkedKeys, ...checkedKeys1]
       // this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/', checkedKeys)
       const resp = await editPermissions(this.role.id, checkedKeys)
       if (resp && resp.success) {
