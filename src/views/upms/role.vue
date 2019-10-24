@@ -91,7 +91,7 @@
         </el-form-item>
       </el-form>
       <div style="text-align:center;">
-        <el-button type="primary" @click="confirmRole">保存</el-button>
+        <el-button type="primary" @click="confirmAuth">保存</el-button>
         <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
       </div>
     </el-dialog>
@@ -102,11 +102,11 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import { list, add, edit, del } from '@/api/upms/role'
+import { list, add, edit, del, getPermissions, editPermissions } from '@/api/upms/role'
 import { fetchTree } from '@/api/upms/permission'
 
 const defaultRole = {
-  key: '',
+  code: '',
   name: '',
   description: '',
   routes: []
@@ -195,7 +195,7 @@ export default {
     generateArr(routes) {
       let data = []
       routes.forEach(route => {
-        data.push(route)
+        data.push(route.id)
         if (route.children) {
           const temp = this.generateArr(route.children)
           if (temp.length > 0) {
@@ -213,9 +213,6 @@ export default {
       this.dialogType = 'new'
       this.dialogVisible = true
       this.dataForm.codeDisabled = false
-    },
-    handleAuth(row) {
-      this.dialogVisible2 = true
     },
     handleEdit(row, $index) {
       this.dialogType = 'edit'
@@ -264,10 +261,6 @@ export default {
     },
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
-
-      // const checkedKeys = this.$refs.tree.getCheckedKeys()
-      // this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/', checkedKeys)
-
       if (isEdit) {
         await edit(this.role.id, this.role)
         for (let index = 0; index < this.rolesList.length; index++) {
@@ -278,7 +271,7 @@ export default {
         }
       } else {
         const { data } = await add(this.role)
-        this.role.key = data.key
+        this.role.code = data.code
         this.rolesList.push(this.role)
       }
 
@@ -292,6 +285,33 @@ export default {
             <div>角色名称: ${name}</div>
           `,
         type: 'success'
+      })
+    },
+    handleAuth(row) {
+      this.dialogVisible2 = true
+      this.role = deepClone(row)
+      getPermissions(row.id).then(resp => {
+        if (resp.success) {
+          this.$refs.tree.setCheckedKeys(this.generateArr(resp.rows))
+        }
+      })
+    },
+    async confirmAuth() {
+      const checkedKeys = this.$refs.tree.getCheckedKeys()
+      // this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/', checkedKeys)
+      const resp = await editPermissions(this.role.id, checkedKeys)
+      if (resp && resp.success) {
+        this.dialogVisible2 = false
+        /* this.$message({
+          type: 'success',
+          message: 'Auth permission success!'
+        }) */
+      }
+      this.$notify({
+        title: '角色授权',
+        dangerouslyUseHTMLString: true,
+        message: `Auth permission ` + (resp && resp.success ? 'success!' : 'error...'),
+        type: resp && resp.success ? 'success' : 'error'
       })
     },
     // reference: src/view/layout/components/Sidebar/SidebarItem.vue

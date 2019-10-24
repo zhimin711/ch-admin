@@ -41,10 +41,18 @@ export function del(id) {
   })
 }
 
-export function getRoutes() {
+export function getPermissions(id) {
   return request({
-    url: '/upms/permission/tree/1',
+    url: `${baseUrl}/${id}/permissions`,
     method: 'get'
+  })
+}
+
+export function editPermissions(id, data) {
+  return request({
+    url: `${baseUrl}/${id}/permissions`,
+    method: 'post',
+    data
   })
 }
 

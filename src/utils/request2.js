@@ -59,14 +59,15 @@ service2.interceptors.response.use(
             location.reload()
           })
         })
-      } else {
+      } else if (res.code) {
         Message({
           message: res.message || 'Error',
           type: 'error',
           duration: 5 * 1000
         })
+        return Promise.reject(new Error(res.message || 'Error'))
       }
-      return Promise.reject(new Error(res.message || 'Error'))
+      return res
     } else {
       return res
     }
