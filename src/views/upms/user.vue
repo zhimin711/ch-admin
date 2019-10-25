@@ -7,13 +7,13 @@
         <el-option label="启用" value="1">启用</el-option>
         <el-option label="禁用" value="0">禁用</el-option>
       </el-select>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-if="checkPermission2(['ADMIN_USER_SEARCH'])" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
         重置
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+      <el-button v-if="checkPermission2(['ADMIN_USER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
         添加用户
       </el-button>
       <!--<el-button type="primary" class="filter-item" icon="el-icon-plus" @click="handleAddRole">New Role</el-button>-->
@@ -57,9 +57,9 @@
         <template slot-scope="scope">
           <!--<el-button type="primary" size="small" @click="handleEdit(scope.row)">Edit</el-button>-->
           <!--<el-button type="danger" size="small" @click="handleDel(scope.row)">Delete</el-button>-->
-          <el-link type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配角色</el-link>
-          <el-link type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <el-link v-if="checkPermission2(['ADMIN_USER_ROLE'])" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配角色</el-link>
+          <el-link v-if="checkPermission2(['ADMIN_USER_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
+          <el-link v-if="checkPermission2(['ADMIN_USER_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
     </el-table>
@@ -112,6 +112,7 @@
 <script>
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
+import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import waves from '@/directive/waves/index.js' // 水波纹指令
 import { list, add, edit, del, getEnableRoles, getRoles, editRoles } from '@/api/upms/user'
 
@@ -161,6 +162,7 @@ export default {
     this.getEnableRoles()
   },
   methods: {
+    checkPermission2,
     async getEnableRoles() {
       const resp = await getEnableRoles()
       if (resp && resp.success) this.roles = resp.rows

@@ -23,3 +23,18 @@ export default function checkPermission(value) {
     return false
   }
 }
+
+export function checkPermission2(value) {
+  if (value && value instanceof Array && value.length > 0) {
+    const permissions = store.getters && store.getters.permissions
+    const permissionCodes = value
+
+    const hasPermission = permissions.some(permission => {
+      return permissionCodes.includes(permission.code)
+    })
+    return hasPermission
+  } else {
+    // console.error(`need roles! Like v-permission="['admin','editor']"`)
+    return false
+  }
+}

@@ -7,7 +7,8 @@ const state = {
   name: '',
   avatar: '',
   introduction: '',
-  roles: []
+  roles: [],
+  permissions: []
 }
 
 const mutations = {
@@ -25,6 +26,9 @@ const mutations = {
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles
+  },
+  SET_PERMISSIONS: (state, permissions) => {
+    state.permissions = permissions
   }
 }
 
@@ -54,13 +58,14 @@ const actions = {
           reject('Verification failed, please Login again.')
         }
 
-        const { roleList, username, avatar, introduction } = rows[0]
+        const { username, avatar, introduction, roleList, btnList } = rows[0]
 
         // roles must be a non-empty array
         if (!roleList || roleList.length <= 0) {
           reject('getInfo: roles must be a non-null array!')
         }
         commit('SET_ROLES', roleList)
+        commit('SET_PERMISSIONS', btnList)
         commit('SET_NAME', username)
         commit('SET_AVATAR', avatar || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
         commit('SET_INTRODUCTION', introduction)
