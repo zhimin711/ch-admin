@@ -25,12 +25,7 @@
           {{ scope.row.name }}
         </template>
       </el-table-column>
-      <el-table-column label="代码" prop="code">
-        <template slot-scope="scope">
-          {{ scope.row.code }}
-        </template>
-      </el-table-column>
-      <el-table-column prop="type" label="类型" width="80">
+      <el-table-column align="center" prop="type" label="类型" width="70">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.type === '1'" type="warning">目录</el-tag>
           <el-tag v-else-if="scope.row.type === '2'" type="success">菜单</el-tag>
@@ -38,25 +33,29 @@
           <el-tag v-else-if="scope.row.type === '4'" type="default">链接</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="图标" width="80">
+      <el-table-column label="代码" prop="code">
+        <template slot-scope="scope">
+          {{ scope.row.code }}
+        </template>
+      </el-table-column>
+      <el-table-column label="地址">
+        <template slot-scope="scope">
+          <span>{{ scope.row.url }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="图标" width="70">
         <template slot-scope="scope">
           <i v-if="scope.row.icon" :class="scope.row.icon" />
         </template>
       </el-table-column>
-      <el-table-column prop="sort" label="排序" width="80" />
-      <el-table-column prop="status" label="状态" width="80">
+      <el-table-column align="center" prop="sort" label="排序" width="69" />
+      <el-table-column align="center" prop="status" label="状态" width="69">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.status === '0'" type="warning">禁用</el-tag>
           <el-tag v-else-if="scope.row.status === '1'" type="success">启用</el-tag>
-          <el-tag v-else-if="scope.row.status === '3'" type="primary">删除</el-tag>
         </template>
       </el-table-column>
-      <!--<el-table-column label="地址">
-          <template slot-scope="scope">
-              <span>{{ scope.row.url }}</span>
-          </template>
-      </el-table-column>-->
-      <el-table-column label="操作" width="200">
+      <el-table-column align="center" label="操作" width="160">
         <template slot-scope="scope">
           <el-button v-if="checkPermission2(['ADMIN_PERMISSION_EDIT'])" type="text" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑
           </el-button>
@@ -93,6 +92,15 @@
         </el-form-item>
         <el-form-item label="地址">
           <el-input v-model="record.url" :disabled="recordForm.urlDisabled" />
+        </el-form-item>
+        <el-form-item label="请求方法">
+          <el-radio-group v-model="record.description" :disabled="recordForm.descDisabled">
+            <el-radio-button label="">ALL</el-radio-button>
+            <el-radio-button label="GET"></el-radio-button>
+            <el-radio-button label="POST"></el-radio-button>
+            <el-radio-button label="PUT"></el-radio-button>
+            <el-radio-button label="DELETE"></el-radio-button>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="排序">
           <el-input v-model="record.sort" />
@@ -147,6 +155,7 @@ export default {
       recordParents: [],
       recordForm: {
         codeDisabled: false,
+        descDisabled: false,
         urlDisabled: false
       },
       dialogVisible: false,
@@ -209,6 +218,7 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.recordForm.codeDisabled = true
+      this.recordForm.descDisabled = row.type !== '3'
       this.getTree(row.type)
     },
     handleDel(row) {
@@ -258,8 +268,13 @@ export default {
     changeType(value) {
       this.recordForm.urlDisabled = value <= 1
       let type = value
+      this.recordForm.descDisabled = true
+      this.record.description = ''
       if (value === '4') {
         type = '3'
+        this.record.description = 'GET'
+      } else if (value === '3') {
+        this.recordForm.descDisabled = false
       }
       this.getTree(type)
     }
