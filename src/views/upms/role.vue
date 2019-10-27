@@ -86,6 +86,7 @@
             :props="defaultProps"
             show-checkbox
             node-key="value"
+            :default-expanded-keys="expList"
             class="permission-tree"
           />
         </el-form-item>
@@ -127,6 +128,7 @@ export default {
         children: 'children',
         label: 'label'
       },
+      expList: [],
       listLoading: false,
       listQuery: {
         page: 1,
@@ -155,7 +157,7 @@ export default {
     checkPermission2,
     async getRoutes() {
       const res = await fetchTree('0')
-      this.serviceRoutes = res.rows
+      // this.serviceRoutes = res.rows
       this.routes = res.rows
       // this.generateRoutes(res.rows)
     },
@@ -298,7 +300,9 @@ export default {
       this.role = deepClone(row)
       getPermissions(row.id).then(resp => {
         if (resp.success) {
-          this.$refs.tree.setCheckedKeys(this.generateArr(resp.rows))
+          const authList = this.generateArr(resp.rows)
+          this.expList = authList.length > 0 ? authList : [this.routes[0].value]
+          this.$refs.tree.setCheckedKeys(authList)
         }
       })
     },

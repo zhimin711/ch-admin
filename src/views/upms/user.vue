@@ -97,7 +97,7 @@
         <el-button type="primary" @click="handleSubmit">Confirm</el-button>
       </div>
     </el-dialog>
-    <el-dialog :visible.sync="dialogVisible2" :title="'分配用户角色'">
+    <el-dialog :visible.sync="dialogVisible2" :title="'分配用户角色'" width="544px">
       <div style="text-align:left;margin-bottom: 20px">
         <el-transfer v-model="recordRoles" :data="roles" :titles="['未分配角色', '已分配角色']" :props="{ key: 'id', label: 'name' }" />
       </div>
