@@ -25,7 +25,7 @@ export function get(id) {
 
 export function add(data) {
   return request({
-    url: `${baseUrl}/`,
+    url: `${baseUrl}`,
     method: 'post',
     data
   })

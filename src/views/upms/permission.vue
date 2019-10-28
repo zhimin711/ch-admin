@@ -27,10 +27,11 @@
       </el-table-column>
       <el-table-column align="center" prop="type" label="类型" width="70">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.type === '1'" type="warning">目录</el-tag>
+          <el-tag v-if="scope.row.type === '1'" type="success">目录</el-tag>
           <el-tag v-else-if="scope.row.type === '2'" type="success">菜单</el-tag>
           <el-tag v-else-if="scope.row.type === '3'" type="primary">按钮</el-tag>
           <el-tag v-else-if="scope.row.type === '4'" type="default">链接</el-tag>
+          <el-tag v-else-if="scope.row.type === '5'" type="warning">隐藏</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="代码" prop="code">
@@ -51,7 +52,7 @@
       <el-table-column align="center" prop="sort" label="排序" width="69" />
       <el-table-column align="center" prop="status" label="状态" width="69">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.status === '0'" type="warning">禁用</el-tag>
+          <el-tag v-if="scope.row.status === '0'" type="danger">禁用</el-tag>
           <el-tag v-else-if="scope.row.status === '1'" type="success">启用</el-tag>
         </template>
       </el-table-column>
@@ -75,6 +76,7 @@
             <el-radio-button label="2">菜单</el-radio-button>
             <el-radio-button label="3">按钮</el-radio-button>
             <el-radio-button label="4">链接</el-radio-button>
+            <el-radio-button label="5">隐藏</el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="上级">
@@ -202,7 +204,7 @@ export default {
       })
     },
     handleAdd() {
-      this.getTree('0')
+      this.getTree('1')
       this.record = {}
       this.recordParents = []
       this.dialogType = 'new'
@@ -233,7 +235,7 @@ export default {
           _this.getList()
           this.$message({
             type: 'success',
-            message: 'Delete succed!'
+            message: 'Delete success!'
           })
         })
         .catch(err => { console.error(err) })

@@ -46,25 +46,11 @@ module.exports = {
           ['^' + process.env.VUE_APP_BASE_API]: ''
         }
       },
-      '^/tx/': {
-        target: `http://127.0.0.1:8899/tx`,
+      '/': {
+        target: `http://127.0.0.1:7001`,
         changeOrigin: true,
         pathRewrite: {
-          '^/tx': ''
-        }
-      },
-      '^/auth/': {
-        target: `http://127.0.0.1:7000`,
-        changeOrigin: true,
-        pathRewrite: {
-          '^/auth': ''
-        }
-      },
-      '^/upms/': {
-        target: `http://127.0.0.1:7002`,
-        changeOrigin: true,
-        pathRewrite: {
-          '^/upms': ''
+          '/': ''
         }
       }
     },
