@@ -80,7 +80,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="上级">
-          <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" />
+          <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" clearable />
           <el-icon v-show="dialogLoadingVisible" class="el-icon-loading" />
         </el-form-item>
         <el-form-item label="代码" prop="code">
@@ -93,15 +93,15 @@
           <el-input v-model="record.icon" />
         </el-form-item>
         <el-form-item label="地址">
-          <el-input v-model="record.url" :disabled="recordForm.urlDisabled" />
+          <el-input v-model="record.url" />
         </el-form-item>
         <el-form-item label="请求方法">
-          <el-radio-group v-model="record.description" :disabled="recordForm.descDisabled">
+          <el-radio-group v-model="record.method" :disabled="recordForm.descDisabled">
             <el-radio-button label="">ALL</el-radio-button>
-            <el-radio-button label="GET"></el-radio-button>
-            <el-radio-button label="POST"></el-radio-button>
-            <el-radio-button label="PUT"></el-radio-button>
-            <el-radio-button label="DELETE"></el-radio-button>
+            <el-radio-button label="GET" />
+            <el-radio-button label="POST" />
+            <el-radio-button label="PUT" />
+            <el-radio-button label="DELETE" />
           </el-radio-group>
         </el-form-item>
         <el-form-item label="排序">
@@ -115,8 +115,8 @@
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="danger" @click="dialogVisible=false">Cancel</el-button>
-        <el-button type="primary" @click="handleSubmit">Confirm</el-button>
+        <el-button type="primary" @click="handleSubmit">保存</el-button>
+        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -205,12 +205,13 @@ export default {
     },
     handleAdd() {
       this.getTree('1')
-      this.record = {}
+      this.record = { 'type': '1' }
       this.recordParents = []
       this.dialogType = 'new'
       this.dialogVisible = true
       this.recordForm.codeDisabled = false
       this.recordForm.urlDisabled = false
+      this.recordForm.descDisabled = true
     },
     handleEdit(row, index) {
       this.record = deepClone(row)

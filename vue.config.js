@@ -46,11 +46,11 @@ module.exports = {
           ['^' + process.env.VUE_APP_BASE_API]: ''
         }
       },
-      '/': {
+      [process.env.VUE_APP_API]: {
         target: `http://127.0.0.1:7001`,
         changeOrigin: true,
         pathRewrite: {
-          '/': ''
+          ['^' + process.env.VUE_APP_API]: ''
         }
       }
     },
