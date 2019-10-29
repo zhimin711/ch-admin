@@ -7,13 +7,13 @@
         <el-option label="启用" value="1" />
         <el-option label="禁用" value="0" />
       </el-select>
-      <el-button v-if="checkPermission2(['ADMIN_PERMISSION_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-if="checkPermission2(['UPMS_PERMISSION_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
         重置
       </el-button>
-      <el-button v-if="checkPermission2(['ADMIN_PERMISSION_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+      <el-button v-if="checkPermission2(['UPMS_PERMISSION_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
         添加权限
       </el-button>
       <!--<el-button type="primary" class="filter-item" icon="el-icon-plus" @click="handleAddRole">New Role</el-button>-->
@@ -58,9 +58,9 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="160">
         <template slot-scope="scope">
-          <el-button v-if="checkPermission2(['ADMIN_PERMISSION_EDIT'])" type="text" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑
+          <el-button v-if="checkPermission2(['UPMS_PERMISSION_EDIT'])" type="text" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑
           </el-button>
-          <el-button v-if="checkPermission2(['ADMIN_PERMISSION_DELETE'])" type="text" icon="el-icon-delete" class="red" @click="handleDel(scope.row)">删除
+          <el-button v-if="checkPermission2(['UPMS_PERMISSION_DELETE'])" type="text" icon="el-icon-delete" class="red" @click="handleDel(scope.row)">删除
           </el-button>
         </template>
       </el-table-column>

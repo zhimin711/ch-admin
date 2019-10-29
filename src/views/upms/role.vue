@@ -7,13 +7,13 @@
         <el-option label="启用" value="1" />
         <el-option label="禁用" value="0" />
       </el-select>
-      <el-button v-if="checkPermission2(['ADMIN_ROLE_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-button v-if="checkPermission2(['UPMS_ROLE_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         查询
       </el-button>
       <el-button class="filter-item" type="" icon="el-icon-refresh" @click="listQuery.params={}">
         重置
       </el-button>
-      <el-button v-if="checkPermission2(['ADMIN_ROLE_ADD'])" type="primary" class="filter-item" icon="el-icon-plus" @click="handleAdd">添加角色</el-button>
+      <el-button v-if="checkPermission2(['UPMS_ROLE_ADD'])" type="primary" class="filter-item" icon="el-icon-plus" @click="handleAdd">添加角色</el-button>
     </div>
 
     <el-table v-loading="listLoading" :data="listQuery.data" style="width: 100%;margin-top:30px;" border>
@@ -40,9 +40,9 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="250">
         <template v-if="scope.row.type !== '0'" slot-scope="scope">
-          <el-link v-if="checkPermission2(['ADMIN_ROLE_PERMISSION'])" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配权限</el-link>
-          <el-link v-if="checkPermission2(['ADMIN_ROLE_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link v-if="checkPermission2(['ADMIN_ROLE_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <el-link v-if="checkPermission2(['UPMS_ROLE_PERMISSION'])" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配权限</el-link>
+          <el-link v-if="checkPermission2(['UPMS_ROLE_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
+          <el-link v-if="checkPermission2(['UPMS_ROLE_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
     </el-table>
