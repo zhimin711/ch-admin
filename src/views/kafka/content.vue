@@ -1,17 +1,58 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.params.clusterName" placeholder="集群名称" style="width: 200px;" class="filter-item" />
-      <el-input v-model="listQuery.params.topicName" placeholder="主题名称" style="width: 200px;" class="filter-item" />
-      <el-button v-if="checkPermission2(['KAFKA_TOPIC_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        查询
-      </el-button>
-      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
-        重置
-      </el-button>
-      <el-button v-if="checkPermission2(['KAFKA_TOPIC_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加主题
-      </el-button>
+
+      <el-form :model="listQuery.params" :inline="true" label-width="100px" label-position="left">
+        <el-form-item label="集群名称">
+          <el-select v-model="listQuery.params.cluster" placeholder="请选择" class="filter-item" >
+            <el-option
+              v-for="item in options.clusters"
+              :key="item.clusterName"
+              :label="item.clusterName"
+              :value="item.clusterName">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="主题名称">
+          <el-select
+            v-model="listQuery.params.topic"
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请输入关键词"
+            :remote-method="remoteMethod"
+            :loading="loading">
+            <el-option
+              v-for="item in options.topics"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="搜索类型">
+          <el-radio-group v-model="listQuery.params.type" @change="handleTypeChange">
+            <el-radio-button label="0">全量</el-radio-button>
+            <el-radio-button label="1">最新</el-radio-button>
+            <el-radio-button label="2">最早</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="搜索量">
+          <el-input-number v-model="listQuery.params.limit" :min="12" :max="1000" :step="4" :disabled="limitDisabled"></el-input-number>
+        </el-form-item>
+        <el-form-item label="搜索内容">
+          <el-input v-model="listQuery.params.content" placeholder="搜索内容(关键信息)"></el-input>
+        </el-form-item>
+        <el-button v-if="checkPermission2(['KAFKA_CONTENT_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+          查询
+        </el-button>
+        <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {type: '0', limit: 12}">
+          重置
+        </el-button>
+        <el-button v-if="checkPermission2(['KAFKA_CONTENT_PUSH'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+          推送消息
+        </el-button>
+      </el-form>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
       <el-table-column width="120px" label="集群名称">
@@ -42,44 +83,14 @@
       <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
           <el-link v-if="checkPermission2(['KAFKA_TOPIC_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link v-if="checkPermission2(['KAFKA_TOPIC_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
     </el-table>
 
     <!--<pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />-->
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 主题':'New 主题'">
+    <el-dialog :visible.sync="dialogVisible" :title="'推送主题消息'">
       <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="集群名称">
-          <!--<el-input v-model="record.clusterName" placeholder="集群名称" :disabled="dialogCodeEdit" />-->
-          <el-select v-model="record.clusterName" placeholder="请选择">
-            <el-option
-              v-for="item in options.clusters"
-              :key="item.clusterName"
-              :label="item.clusterName"
-              :value="item.clusterName">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="主题名称">
-          <!--<el-input v-model="record.topicName" placeholder="主题名称" />-->
-          <el-select
-            v-model="record.topicName"
-            filterable
-            remote
-            reserve-keyword
-            placeholder="请输入关键词"
-            :remote-method="remoteMethod"
-            :loading="loading" style="width:100%">
-            <el-option
-              v-for="item in options.topics"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
         <el-form-item label="存储类型">
           <el-input v-model="record.type" placeholder="存储类型" />
         </el-form-item>
@@ -99,10 +110,11 @@
 </template>
 
 <script>
+import { Loading } from 'element-ui'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del, getClusters, getTopics } from '@/api/kafka/content'
+import { search, send, getClusters, getTopics } from '@/api/kafka/content'
 
 export default {
   name: 'UserManager',
@@ -131,13 +143,13 @@ export default {
         limit: 10,
         total: 0,
         list: [],
-        params: {}
+        params: {
+          type: '0', limit: 12
+        }
       },
+      limitDisabled: true,
       record: {},
       dialogVisible: false,
-      dialogType: false,
-      dialogCodeEdit: false,
-      dialogVisible2: false,
       loading: false,
       options: {
         clusters: [],
@@ -156,11 +168,31 @@ export default {
       if (resp && resp.success) this.options.clusters = resp.rows
     },
     getList() {
-      this.listLoading = true
-      list(this.listQuery).then(response => {
+      if (!this.listQuery.params.cluster || this.listQuery.params.cluster === '') {
+        this.$message({
+          type: 'warn',
+          message: '请先选择集群...'
+        })
+        return
+      }
+      if (!this.listQuery.params.topic || this.listQuery.params.topic === '') {
+        this.$message({
+          type: 'warn',
+          message: '请先选择主题...'
+        })
+        return
+      }
+      const loadingInstance = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
+
+      // this.listLoading = true
+      search(this.listQuery).then(response => {
         this.listQuery.list = response.rows
         this.listQuery.total = response.total
-        this.listLoading = false
+        // this.listLoading = false
+        loadingInstance.close()
+      }).catch(err => {
+        // console.error(err)
+        loadingInstance.close()
       })
     },
     handleAdd() {
@@ -175,48 +207,24 @@ export default {
       this.dialogVisible = true
       this.dialogCodeEdit = true
     },
-    handleDel(row) {
-      const _this = this
-      this.$confirm('Confirm to remove the user?', 'Warning', {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
-        type: 'warning'
-      })
-        .then(async() => {
-          await del(row.id)
-          _this.getList()
-          this.$message({
-            type: 'success',
-            message: 'Delete success!'
-          })
-        })
-        .catch(err => { console.error(err) })
-    },
     async handleSubmit() {
-      const _this = this
       let resp = null
-      let opName = '添加'
-      if (this.dialogType === 'new') {
-        resp = await add(this.record)
-      } else if (this.dialogType === 'edit') {
-        opName = '修改'
-        resp = await edit(this.record.id, this.record)
-      }
+      resp = await send(this.record)
       if (resp.success) {
         this.dialogVisible = false
         this.$notify({
-          title: `${opName}集群名称 Success!`,
+          title: `推送消息 Success!`,
           dangerouslyUseHTMLString: true,
           message: `
             <div>集群名称: ${this.record.clusterName}</div>
           `,
           type: 'success'
         })
-        _this.getList()
+        // _this.getList()
       }
     },
     async remoteMethod(query) {
-      if (!this.record.clusterName || this.record.clusterName === '') {
+      if (!this.listQuery.params.cluster || this.listQuery.params.cluster === '') {
         this.$message({
           type: 'warn',
           message: '请先选择集群...'
@@ -225,17 +233,20 @@ export default {
       }
       if (query !== '') {
         this.loading = true
-        getTopics(this.record.clusterName, query).then(response => {
+        getTopics(this.listQuery.params.cluster, query).then(response => {
           this.loading = false
           if (response.success) {
             this.options.topics = response.rows.map(item => {
-              return { value: item, label: item }
+              return { value: item.topicName, label: item.topicName }
             })
           }
         })
       } else {
         this.options.topics = []
       }
+    },
+    handleTypeChange(val) {
+      this.limitDisabled = val === '0'
     }
   }
 }

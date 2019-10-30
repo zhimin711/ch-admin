@@ -1,8 +1,8 @@
 import request from '@/utils/request2'
-const baseUrl = '/kafka/topic'
-export function list(query) {
+const baseUrl = '/kafka/content'
+export function search(query) {
   return request({
-    url: `${baseUrl}/${query.page}/${query.limit}`,
+    url: `${baseUrl}/search`,
     method: 'get',
     params: query.params
   })
@@ -16,26 +16,11 @@ export function get(id) {
   })
 }
 
-export function add(data) {
+export function send(data) {
   return request({
     url: `${baseUrl}`,
     method: 'post',
     data
-  })
-}
-
-export function edit(id, data) {
-  return request({
-    url: `${baseUrl}/${id}`,
-    method: 'put',
-    data
-  })
-}
-
-export function del(id) {
-  return request({
-    url: `${baseUrl}/${id}`,
-    method: 'delete'
   })
 }
 
