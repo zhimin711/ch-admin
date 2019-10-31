@@ -49,62 +49,46 @@
         <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {type: '0', limit: 12}">
           重置
         </el-button>
-        <el-button v-if="checkPermission2(['KAFKA_CONTENT_PUSH'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+        <el-button v-if="checkPermission2(['KAFKA_CONTENT_PUSH'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handlePush">
           推送消息
         </el-button>
       </el-form>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="120px" label="集群名称">
+      <el-table-column width="70px" align="center" label="分区ID">
         <template slot-scope="scope">
-          <span>{{ scope.row.clusterName }}</span>
+          <span>{{ scope.row.partitionId }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="主题名称">
+      <el-table-column width="66px" align="center" label="索引">
         <template slot-scope="scope">
-          <span>{{ scope.row.topicName }}</span>
+          <span>{{ scope.row.messageOffset }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="存储类型">
+      <el-table-column label="内容">
         <template slot-scope="scope">
-          <span>{{ scope.row.type }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="存储Jar包">
-        <template slot-scope="scope">
-          <span>{{ scope.row.classFile }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="存储对象">
-        <template slot-scope="scope">
-          <span>{{ scope.row.className }}</span>
+          <span>{{ scope.row.content }}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
-          <el-link v-if="checkPermission2(['KAFKA_TOPIC_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
+          <el-link type="primary" icon="el-icon-view" @click="handleView(scope.row)">JSON视图</el-link>
+          <el-link v-if="checkPermission2(['KAFKA_TOPIC_EDIT'])" type="primary" icon="el-icon-position" @click="handleResend(scope.row)">重发</el-link>
         </template>
       </el-table-column>
     </el-table>
 
     <!--<pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />-->
 
-    <el-dialog :visible.sync="dialogVisible" :title="'推送主题消息'">
-      <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="存储类型">
-          <el-input v-model="record.type" placeholder="存储类型" />
-        </el-form-item>
-        <el-form-item label="存储Jar包">
-          <el-input v-model="record.classFile" placeholder="存储Jar包" />
-        </el-form-item>
-        <el-form-item label="存储对象">
-          <el-input v-model="record.className" placeholder="存储对象" />
-        </el-form-item>
-      </el-form>
-      <div style="text-align:right;">
-        <el-button type="primary" @click="handleSubmit">保存</el-button>
-        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
+    <el-dialog :visible.sync="dialogVisible" :title="'消息JSON'" width="80%">
+      <!--<span v-html="content"></span>-->
+      <pre>{{content}}</pre>
+
+      <div style="text-align:center;">
+        <el-button type="danger" @click="dialogVisible=false">关闭</el-button>
       </div>
+    </el-dialog>
+    <el-dialog :visible.sync="dialogVisible2" :title="'推送主题消息'">
     </el-dialog>
   </div>
 </template>
@@ -144,12 +128,14 @@ export default {
         total: 0,
         list: [],
         params: {
-          type: '0', limit: 12
+          type: '1', limit: 12
         }
       },
-      limitDisabled: true,
+      limitDisabled: false,
       record: {},
+      content: '',
       dialogVisible: false,
+      dialogVisible2: false,
       loading: false,
       options: {
         clusters: [],
@@ -195,17 +181,18 @@ export default {
         loadingInstance.close()
       })
     },
-    handleAdd() {
-      this.record = {}
-      this.dialogType = 'new'
+    handleView(row) {
+      // this.content = JSON.stringify(row.content, null, 4)
+      // this.content = row.content
+      this.content = JSON.parse(row.content)
       this.dialogVisible = true
-      this.dialogCodeEdit = false
     },
-    handleEdit(row) {
+    handlePush() {
+      this.dialogVisible2 = true
+    },
+    handleResend(row) {
       this.record = deepClone(row)
-      this.dialogType = 'edit'
       this.dialogVisible = true
-      this.dialogCodeEdit = true
     },
     async handleSubmit() {
       let resp = null
