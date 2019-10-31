@@ -187,7 +187,7 @@ export default {
 
         if (this.record.parentId && this.recordType === type) {
           // this.recordParents = this.record.parentId.split(',')
-          console.log(this.recordParents)
+          // console.log(this.recordParents)
         }
       })
     },

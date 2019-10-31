@@ -1,5 +1,6 @@
 import request from '@/utils/request2'
 const baseUrl = '/kafka/content'
+
 export function search(query) {
   return request({
     url: `${baseUrl}/search`,
@@ -8,18 +9,32 @@ export function search(query) {
   })
 }
 
-export function get(id) {
+export function getStatus(sid) {
   return request({
-    url: `${baseUrl}/${id}`,
-    method: 'get',
-    params: { id }
+    url: `${baseUrl}/search/${sid}/status`,
+    method: 'get'
+  })
+}
+
+export function list(sid) {
+  return request({
+    url: `${baseUrl}/search/${sid}/records`,
+    method: 'get'
   })
 }
 
 export function send(data) {
   return request({
-    url: `${baseUrl}`,
+    url: `${baseUrl}/send`,
     method: 'post',
+    data
+  })
+}
+
+export function resend(id, data) {
+  return request({
+    url: `${baseUrl}/resend/${id}`,
+    method: 'put',
     data
   })
 }

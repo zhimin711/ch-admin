@@ -89,20 +89,59 @@
       </div>
     </el-dialog>
     <el-dialog :visible.sync="dialogVisible2" :title="'推送主题消息'">
+      <el-form :model="record" label-width="100px" label-position="left">
+        <el-form-item label="集群名称">
+          <el-select v-model="record.cluster" placeholder="请选择">
+            <el-option
+              v-for="item in options.clusters"
+              :key="item.clusterName"
+              :label="item.clusterName"
+              :value="item.clusterName">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="主题名称">
+          <el-select
+            v-model="record.topic"
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请输入关键词"
+            :remote-method="remoteMethodSend"
+            :loading="loading" style="width:100%">
+            <el-option
+              v-for="item in options.topics"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="发送消息">
+          <el-input
+            v-model="record.content"
+            :autosize="{ minRows: 5, maxRows: 15}"
+            type="textarea"
+            placeholder="发送Kafka 消息"
+          />
+        </el-form-item>
+      <div style="text-align:right;">
+        <el-button type="primary" @click="handleSubmit">发送</el-button>
+        <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
+      </div>
+      </el-form>
     </el-dialog>
   </div>
 </template>
 
 <script>
 import { Loading } from 'element-ui'
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { search, send, getClusters, getTopics } from '@/api/kafka/content'
+import { search, getStatus, list, send, resend, getClusters, getTopics } from '@/api/kafka/content'
 
 export default {
   name: 'UserManager',
-  components: { Pagination },
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -140,7 +179,9 @@ export default {
       options: {
         clusters: [],
         topics: []
-      }
+      },
+      timer: '',
+      loadingIns: null
     }
   },
   created() {
@@ -168,42 +209,57 @@ export default {
         })
         return
       }
-      const loadingInstance = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
+      this.loadingIns = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
 
       // this.listLoading = true
       search(this.listQuery).then(response => {
-        this.listQuery.list = response.rows
-        this.listQuery.total = response.total
+        if (response.code) {
+          this.sid = response.code
+          this.timer = setInterval(this.getStatus, 2000)
+        } else {
+          this.loadingIns.close()
+          this.listQuery.list = response.rows
+          this.listQuery.total = response.total
+        }
         // this.listLoading = false
-        loadingInstance.close()
-      }).catch(err => {
-        // console.error(err)
-        loadingInstance.close()
+      }).catch(() => {
+        this.loadingIns.close()
       })
     },
     handleView(row) {
-      // this.content = JSON.stringify(row.content, null, 4)
-      // this.content = row.content
       this.content = JSON.parse(row.content)
       this.dialogVisible = true
     },
     handlePush() {
+      this.record = {}
       this.dialogVisible2 = true
     },
     handleResend(row) {
       this.record = deepClone(row)
-      this.dialogVisible = true
+      this.$confirm('请确认重新发送消息到原主题?', 'Warning', {
+        confirmButtonText: '发送',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async() => {
+          await resend(row.sid, row.content)
+          this.$message({
+            type: 'success',
+            message: '发送 success!'
+          })
+        })
+        .catch(err => { console.error(err) })
     },
     async handleSubmit() {
       let resp = null
-      resp = await send(this.record)
-      if (resp.success) {
-        this.dialogVisible = false
+      resp = await send(this.record).catch(() => {})
+      if (resp && resp.success) {
+        this.dialogVisible2 = false
         this.$notify({
           title: `推送消息 Success!`,
           dangerouslyUseHTMLString: true,
           message: `
-            <div>集群名称: ${this.record.clusterName}</div>
+            <div>集群名称: ${this.record.cluster}</div>
           `,
           type: 'success'
         })
@@ -232,8 +288,47 @@ export default {
         this.options.topics = []
       }
     },
+    async remoteMethodSend(query) {
+      if (!this.record.cluster || this.record.cluster === '') {
+        this.$message({
+          type: 'warn',
+          message: '请先选择集群...'
+        })
+        return
+      }
+      if (query !== '') {
+        this.loading = true
+        getTopics(this.record.cluster, query).then(response => {
+          this.loading = false
+          if (response.success) {
+            this.options.topics = response.rows.map(item => {
+              return { value: item.topicName, label: item.topicName }
+            })
+          }
+        })
+      } else {
+        this.options.topics = []
+      }
+    },
     handleTypeChange(val) {
       this.limitDisabled = val === '0'
+    },
+    getStatus() {
+      getStatus(this.sid).then(resp => {
+        if (resp.success && resp.rows[0] !== '1') {
+          clearTimeout(this.timer)
+          this.loadingIns.close()
+          this.getAsyncList(this.sid)
+        }
+      })
+    },
+    getAsyncList(sid) {
+      this.listLoading = true
+      list(sid).then(response => {
+        this.listQuery.list = response.rows
+        this.listQuery.total = response.total
+        this.listLoading = false
+      })
     }
   }
 }
