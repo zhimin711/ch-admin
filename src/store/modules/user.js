@@ -71,6 +71,7 @@ const actions = {
         commit('SET_INTRODUCTION', introduction)
         resolve(rows[0])
       }).catch(error => {
+        console.log('getInfo' + error)
         reject(error)
       })
     })
