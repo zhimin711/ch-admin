@@ -1,5 +1,5 @@
 import { login, logout, getInfo } from '@/api/login'
-import { getToken, setToken, removeToken, getRefreshToken, setRefreshToken, removeRefreshToken } from '@/utils/auth'
+import { getToken, setToken, removeToken, setExpired, removeExpired, getRefreshToken, setRefreshToken, removeRefreshToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
 
 const state = {
@@ -42,11 +42,12 @@ const actions = {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password }).then(response => {
-        const { rows } = response
-        commit('SET_TOKEN', rows[0])
-        setToken(rows[0])
-        commit('SET_REFRESH_TOKEN', rows[1])
-        setRefreshToken(rows[1])
+        const { token, refreshToken } = response.rows[0]
+        commit('SET_TOKEN', token)
+        commit('SET_REFRESH_TOKEN', refreshToken)
+        setToken(token)
+        setRefreshToken(refreshToken)
+        setExpired()
         resolve()
       }).catch(error => {
         reject(error)
@@ -93,11 +94,22 @@ const actions = {
         commit('SET_PERMISSIONS', [])
         removeToken()
         removeRefreshToken()
+        removeExpired()
         resetRouter()
         resolve()
       }).catch(error => {
         reject(error)
       })
+    })
+  },
+
+  // remove token
+  refreshToken({ commit }, token) {
+    return new Promise(resolve => {
+      commit('SET_TOKEN', token)
+      setToken(token)
+      setExpired()
+      resolve()
     })
   },
 
