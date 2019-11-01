@@ -1,9 +1,10 @@
 import { login, logout, getInfo } from '@/api/login'
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import { getToken, setToken, removeToken, getRefreshToken, setRefreshToken, removeRefreshToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
 
 const state = {
   token: getToken(),
+  refreshToken: getRefreshToken(),
   name: '',
   avatar: '',
   introduction: '',
@@ -14,6 +15,9 @@ const state = {
 const mutations = {
   SET_TOKEN: (state, token) => {
     state.token = token
+  },
+  SET_REFRESH_TOKEN: (state, refreshToken) => {
+    state.refreshToken = refreshToken
   },
   SET_INTRODUCTION: (state, introduction) => {
     state.introduction = introduction
@@ -41,6 +45,8 @@ const actions = {
         const { rows } = response
         commit('SET_TOKEN', rows[0])
         setToken(rows[0])
+        commit('SET_REFRESH_TOKEN', rows[1])
+        setRefreshToken(rows[1])
         resolve()
       }).catch(error => {
         reject(error)
@@ -82,9 +88,11 @@ const actions = {
     return new Promise((resolve, reject) => {
       logout(state.token).then(() => {
         commit('SET_TOKEN', '')
+        commit('SET_REFRESH_TOKEN', '')
         commit('SET_ROLES', [])
         commit('SET_PERMISSIONS', [])
         removeToken()
+        removeRefreshToken()
         resetRouter()
         resolve()
       }).catch(error => {
