@@ -16,8 +16,8 @@
       <el-button v-if="checkPermission2(['UPMS_USER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
         添加用户
       </el-button>
-      <el-button v-if="checkPermission2(['UPMS_USER_PASSWORD_INIT'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加用户
+      <el-button v-if="checkPermission2(['UPMS_USER_PASSWORD_INIT'])" class="filter-item" style="margin-left: 10px;" type="warning" icon="el-icon-refresh" @click="handleAdd">
+        初始化账号密码
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
