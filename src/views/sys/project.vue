@@ -13,36 +13,25 @@
         重置
       </el-button>
       <el-button v-if="checkPermission2(['UPMS_USER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加主机
+        添加项目
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="120px" label="主机类型">
+      <el-table-column width="120px" label="上级项目">
         <template slot-scope="scope">
-          <!--<span>{{ scope.row.type }}</span>-->
           <el-tag >
-            {{ scope.row.type | convertTypeFilter }}
+            {{ scope.row.pid }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column width="180px" label="主机名称">
+      <el-table-column label="项目代码">
+        <template slot-scope="scope">
+          <span>{{ scope.row.code }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="项目名称">
         <template slot-scope="scope">
           <span>{{ scope.row.name }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="主机地址">
-        <template slot-scope="scope">
-          <span>{{ scope.row.url }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column width="120px" align="center" label="主机端口">
-        <template slot-scope="scope">
-          <span>{{ scope.row.port }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column width="120px" align="center" label="用户名">
-        <template slot-scope="scope">
-          <span>{{ scope.row.username }}</span>
         </template>
       </el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110">
@@ -117,10 +106,10 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del } from '@/api/sys/host'
+import { list, add, edit, del } from '@/api/sys/project'
 
 export default {
-  name: 'SysHostManager',
+  name: 'SysProjectManager',
   components: { Pagination },
   filters: {
     statusFilter(status) {
