@@ -80,7 +80,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="上级">
-          <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" clearable />
+          <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" :props="{ checkStrictly: true }" clearable />
           <el-icon v-show="dialogLoadingVisible" class="el-icon-loading" />
         </el-form-item>
         <el-form-item label="代码" prop="code">
