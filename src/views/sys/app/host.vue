@@ -20,7 +20,7 @@
       <el-table-column width="120px" label="主机类型">
         <template slot-scope="scope">
           <!--<span>{{ scope.row.type }}</span>-->
-          <el-tag >
+          <el-tag>
             {{ scope.row.type | convertTypeFilter }}
           </el-tag>
         </template>

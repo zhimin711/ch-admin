@@ -257,6 +257,7 @@ export default {
         resp = await add(this.record)
       } else if (this.dialogType === 'edit') {
         opName = '修改'
+        this.record.children = []
         resp = await edit(this.record.id, this.record)
       }
       if (resp.success) {

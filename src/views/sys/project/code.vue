@@ -19,7 +19,7 @@
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
       <el-table-column width="120px" label="上级项目">
         <template slot-scope="scope">
-          <el-tag >
+          <el-tag>
             {{ scope.row.pid }}
           </el-tag>
         </template>
