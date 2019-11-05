@@ -1,5 +1,5 @@
 import request from '@/utils/request2'
-const baseUrl = '/sys/project'
+const baseUrl = '/sys/project/code'
 export function list(query) {
   return request({
     url: `${baseUrl}/${query.page}/${query.limit}`,
@@ -36,5 +36,12 @@ export function del(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'delete'
+  })
+}
+
+export function getParents(type) {
+  return request({
+    url: `${baseUrl}/tree/${type}`,
+    method: 'get'
   })
 }

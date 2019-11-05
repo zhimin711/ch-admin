@@ -274,7 +274,7 @@ export default {
       let type = value
       this.recordForm.descDisabled = true
       this.record.description = ''
-      if (value === '4') {
+      if (value === '4' || value === '5') {
         type = '3'
         this.record.description = 'GET'
       } else if (value === '3') {
