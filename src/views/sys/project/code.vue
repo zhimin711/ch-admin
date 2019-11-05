@@ -57,7 +57,7 @@
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 主机':'添加 主机'">
       <el-form :model="record" label-width="80px" label-position="left">
         <el-form-item label="上级项目">
-          <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" :props="{ checkStrictly: true }" clearable />
+          <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" clearable />
         </el-form-item>
         <el-form-item label="代码">
           <el-input v-model="record.code" placeholder="项目代码" :disabled="dialogCodeEdit"/>
@@ -169,6 +169,7 @@ export default {
     handleAdd() {
       this.record = {}
       this.recordStatus = true
+      this.recordParents = []
       this.dialogType = 'new'
       this.dialogVisible = true
       this.dialogCodeEdit = false
@@ -179,6 +180,9 @@ export default {
       this.dialogVisible = true
       this.dialogCodeEdit = true
       this.recordStatus = (this.record.status === '1')
+      if (this.record.parentId > 0) {
+        this.recordParents = this.record.parentId.split(',')
+      }
     },
     handleDel(row) {
       const _this = this
