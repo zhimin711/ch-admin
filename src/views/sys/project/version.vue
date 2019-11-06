@@ -13,31 +13,36 @@
         重置
       </el-button>
       <el-button v-if="checkPermission2(['UPMS_USER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加项目
+        添加版本
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="120px" label="上级项目">
+      <el-table-column width="120px" label="项目名称">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.projectId>0">
-            {{ scope.row.projectName }}
+          <el-tag>
+            {{ scope.row.sysName }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="项目代码">
-        <template slot-scope="scope">
-          <span>{{ scope.row.code }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="项目名称">
+      <el-table-column label="版本名称">
         <template slot-scope="scope">
           <span>{{ scope.row.name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="版本号">
+        <template slot-scope="scope">
+          <span>{{ scope.row.version }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column width="160px" align="center" label="发布时间">
+        <template slot-scope="scope">
+          <span>{{ scope.row.releaseAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110">
         <template slot-scope="{row}">
           <el-tag :type="row.status | statusFilter">
-            {{ row.status }}
+            {{ row.status | statusNameFilter}}
           </el-tag>
         </template>
       </el-table-column>
@@ -54,16 +59,16 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 主机':'添加 主机'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 版本':'添加 版本'">
       <el-form :model="record" label-width="80px" label-position="left">
-        <el-form-item label="上级项目">
+        <el-form-item label="项目名称">
           <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" clearable />
         </el-form-item>
         <el-form-item label="代码">
-          <el-input v-model="record.code" placeholder="项目代码" :disabled="dialogCodeEdit"/>
+          <el-input v-model="record.code" placeholder="版本代码" :disabled="dialogCodeEdit"/>
         </el-form-item>
-        <el-form-item label="项目名称">
-          <el-input v-model="record.name" placeholder="项目名称" />
+        <el-form-item label="版本名称">
+          <el-input v-model="record.name" placeholder="版本名称" />
         </el-form-item>
         <el-form-item label="排序">
           <el-input v-model="record.sort" placeholder="排序" />
@@ -73,21 +78,8 @@
             v-model="record.description"
             :autosize="{ minRows: 2, maxRows: 4}"
             type="textarea"
-            placeholder="项目 描述"
+            placeholder="版本 描述"
           />
-        </el-form-item>
-        <el-form-item label="状态">
-          <!--<el-select v-model="record.status" placeholder="请选择">
-            <el-option key="enabled" label="启用" value="1" />
-            <el-option key="disabled" label="禁用" value="0" />
-          </el-select>-->
-          <el-switch
-            v-model="recordStatus"
-            active-color="#13ce66"
-            inactive-color="#ff4949"
-            active-text="开启"
-            inactive-text="禁用">
-          </el-switch>
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -102,10 +94,10 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del, getParents } from '@/api/sys/project/code'
+import { list, add, edit, del, getProjects } from '@/api/sys/project/version'
 
 export default {
-  name: 'SysProjectCodeManager',
+  name: 'SysProjectVersionManager',
   components: { Pagination },
   filters: {
     statusFilter(status) {
@@ -122,8 +114,8 @@ export default {
       }
       return statusMap[s]
     },
-    convertTypeFilter(type) {
-      return ['', 'DB(数据库)', '远程终端(SSH)', '(FTP)'][type]
+    statusNameFilter(type) {
+      return ['未发布', '已发布', '删除'][type]
     }
   },
   data() {
@@ -150,12 +142,12 @@ export default {
   },
   created() {
     this.getList()
-    this.getParents('1')
+    this.getProjects('1')
   },
   methods: {
     checkPermission2,
-    async getParents(type) {
-      const resp = await getParents(type)
+    async getProjects(type) {
+      const resp = await getProjects(type)
       if (resp && resp.success) this.options.parents = resp.rows
     },
     getList() {

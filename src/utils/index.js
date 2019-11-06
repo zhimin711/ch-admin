@@ -9,7 +9,7 @@
  * @returns {string}
  */
 export function parseTime(time, cFormat) {
-  if (arguments.length === 0) {
+  if (arguments.length === 0 || time === null) {
     return null
   }
   const format = cFormat || '{y}-{m}-{d} {h}:{i}:{s}'

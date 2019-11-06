@@ -13,23 +13,38 @@
         重置
       </el-button>
       <el-button v-if="checkPermission2(['UPMS_USER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加项目
+        添加脚本
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="120px" label="上级项目">
+      <el-table-column width="120px" label="项目名称">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.projectId>0">
-            {{ scope.row.projectName }}
+          <el-tag>
+            {{ scope.row.sysName }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="项目代码">
+      <el-table-column label="版本">
         <template slot-scope="scope">
-          <span>{{ scope.row.code }}</span>
+          <span>{{ scope.row.version }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="项目名称">
+      <el-table-column label="数据源">
+        <template slot-scope="scope">
+          <span>{{ scope.row.dsName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="类型" width="66" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.type }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="序号" width="66" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.sort }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="脚本名称">
         <template slot-scope="scope">
           <span>{{ scope.row.name }}</span>
         </template>
@@ -54,7 +69,7 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 主机':'添加 主机'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 脚本':'添加 脚本'">
       <el-form :model="record" label-width="80px" label-position="left">
         <el-form-item label="上级项目">
           <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" clearable />
@@ -102,10 +117,10 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del, getParents } from '@/api/sys/project/code'
+import { list, add, edit, del, getProjects } from '@/api/sys/project/sql'
 
 export default {
-  name: 'SysProjectCodeManager',
+  name: 'SysProjectSQLManager',
   components: { Pagination },
   filters: {
     statusFilter(status) {
@@ -150,12 +165,12 @@ export default {
   },
   created() {
     this.getList()
-    this.getParents('1')
+    this.getProjects('1')
   },
   methods: {
     checkPermission2,
-    async getParents(type) {
-      const resp = await getParents(type)
+    async getProjects(type) {
+      const resp = await getProjects(type)
       if (resp && resp.success) this.options.parents = resp.rows
     },
     getList() {
