@@ -45,3 +45,16 @@ export function getParents(type) {
     method: 'get'
   })
 }
+
+export function getUsers() {
+  return request({
+    url: `${baseUrl}/users`,
+    method: 'get'
+  })
+}
+export function getProjectUsers(projectId) {
+  return request({
+    url: `${baseUrl}/${projectId}/users`,
+    method: 'get'
+  })
+}

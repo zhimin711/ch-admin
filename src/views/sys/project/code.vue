@@ -44,8 +44,7 @@
 
       <el-table-column align="center" label="操作" width="200">
         <template slot-scope="scope">
-          <!--<el-button type="primary" size="small" @click="handleEdit(scope.row)">Edit</el-button>-->
-          <!--<el-button type="danger" size="small" @click="handleDel(scope.row)">Delete</el-button>-->
+          <el-link v-if="checkPermission2(['UPMS_USER_ROLE'])" type="primary" icon="el-icon-menu" @click="handleAuthUsers(scope.row)">分配用户</el-link>
           <el-link v-if="checkPermission2(['UPMS_USER_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
           <el-link v-if="checkPermission2(['UPMS_USER_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
@@ -95,6 +94,15 @@
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
       </div>
     </el-dialog>
+    <el-dialog :visible.sync="dialogVisible2" :title="'分配用户'" width="544px">
+      <div style="text-align:left;margin-bottom: 20px">
+        <el-transfer v-model="recordUsers" filterable :filter-method="filterUsersMethod" filter-placeholder="请输入城市拼音" :render-content="renderUserShow" :data="options.users" :titles="['未分配用户', '已分配用户']" :props="{ key: 'username', label: 'realName' }" />
+      </div>
+      <div style="text-align:left;padding-left:170px">
+        <el-button type="primary" @click="handleSubmitUsers">保存</el-button>
+        <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -102,7 +110,7 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del, getParents } from '@/api/sys/project/code'
+import { list, add, edit, del, getParents, getUsers, getProjectUsers } from '@/api/sys/project/code'
 
 export default {
   name: 'SysProjectCodeManager',
@@ -143,20 +151,27 @@ export default {
       dialogCodeEdit: false,
       dialogVisible2: false,
       recordParents: [],
+      recordUsers: [],
       options: {
-        parents: []
+        parents: [],
+        users: []
       }
     }
   },
   created() {
     this.getList()
     this.getParents('1')
+    this.getUsers()
   },
   methods: {
     checkPermission2,
     async getParents(type) {
       const resp = await getParents(type)
       if (resp && resp.success) this.options.parents = resp.rows
+    },
+    async getUsers() {
+      const resp = await getUsers()
+      if (resp && resp.success) this.options.users = resp.rows
     },
     getList() {
       this.listLoading = true
@@ -223,6 +238,34 @@ export default {
         })
         _this.getList()
       }
+    },
+    handleAuthUsers(row) {
+      //
+      this.dialogVisible2 = true
+
+      this.record = deepClone(row)
+      this.recordUsers = []
+      getProjectUsers(row.id).then(resp => {
+        if (resp.success) {
+          resp.rows.forEach(e => {
+            this.recordUsers.push(e)
+          })
+        }
+      })
+    },
+    handleSubmitUsers() {
+    },
+    filterUsersMethod(query, item) {
+      if (query === '') return true
+      let hasQuery = item.username.indexOf(query) > -1
+      if (!hasQuery) {
+        hasQuery = item.realName.indexOf(query) > -1
+      }
+      return hasQuery
+    },
+    renderUserShow(h, option) {
+      // return `<span>${option.username} - ${option.realName}</span>`
+      return <span>{ option.username } - { option.realName }</span>
     }
   }
 }
