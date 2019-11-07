@@ -126,6 +126,7 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
+import { validAlphabetsAndNumber } from '@/utils/validate'
 import { fetchTree, fetchList, add, edit, del } from '@/api/upms/permission'
 
 export default {
@@ -247,6 +248,10 @@ export default {
     async handleSubmit() {
       const _this = this
       // this.record = {}
+      if ((this.record.type === '1' || this.record.type === '2') && !validAlphabetsAndNumber(this.record.url)) {
+        this.$message.error(`地址格式错误，目录或菜单地址只能是字母数字!`)
+        return
+      }
       if (this.recordParents.length > 0) {
         this.record.parentId = this.recordParents.join(',')
       } else this.record.parentId = null
@@ -279,7 +284,7 @@ export default {
       this.recordParentsProps.checkStrictly = false
       if (value === '4' || value === '5') {
         type = '3'
-        this.record.description = 'GET'
+        this.record.method = 'GET'
       } else if (value === '3') {
         this.recordForm.descDisabled = false
       } else if (value === '2') {
