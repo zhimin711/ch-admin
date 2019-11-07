@@ -57,6 +57,15 @@ export function validAlphabets(str) {
 }
 
 /**
+ * @param {string} str
+ * @returns {Boolean}
+ */
+export function validAlphabetsAndNumber(str) {
+  const reg = /^[A-Za-z0-9]+$/
+  return reg.test(str)
+}
+
+/**
  * @param {string} email
  * @returns {Boolean}
  */

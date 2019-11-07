@@ -80,7 +80,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="上级">
-          <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" :props="{ checkStrictly: true }" clearable />
+          <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" :props="recordParentsProps" clearable />
           <el-icon v-show="dialogLoadingVisible" class="el-icon-loading" />
         </el-form-item>
         <el-form-item label="代码" prop="code">
@@ -155,6 +155,9 @@ export default {
       record: {},
       recordType: '',
       recordParents: [],
+      recordParentsProps: {
+        checkStrictly: false
+      },
       recordForm: {
         codeDisabled: false,
         descDisabled: false,
@@ -220,8 +223,8 @@ export default {
       if (this.record.parentId === '0') this.record.parentId = undefined
       this.dialogType = 'edit'
       this.dialogVisible = true
-      this.recordForm.codeDisabled = true
-      this.recordForm.descDisabled = row.type !== '3'
+      // this.recordForm.codeDisabled = true
+      // this.recordForm.descDisabled = row.type !== '3'
       this.getTree(row.type)
     },
     handleDel(row) {
@@ -270,15 +273,17 @@ export default {
       }
     },
     changeType(value) {
-      this.recordForm.urlDisabled = value <= 1
       let type = value
+      this.recordForm.urlDisabled = value <= 1
       this.recordForm.descDisabled = true
-      this.record.description = ''
+      this.recordParentsProps.checkStrictly = false
       if (value === '4' || value === '5') {
         type = '3'
         this.record.description = 'GET'
       } else if (value === '3') {
         this.recordForm.descDisabled = false
+      } else if (value === '2') {
+        this.recordParentsProps.checkStrictly = true
       }
       this.getTree(type)
     }
