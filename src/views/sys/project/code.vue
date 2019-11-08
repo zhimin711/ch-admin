@@ -19,8 +19,8 @@
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
       <el-table-column width="120px" label="上级项目">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.projectId>0">
-            {{ scope.row.projectName }}
+          <el-tag v-if="scope.row.parentCode">
+            {{ scope.row.parentName }}
           </el-tag>
         </template>
       </el-table-column>
@@ -53,14 +53,14 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 主机':'添加 主机'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 项目代码':'添加 项目代码'">
       <el-form :model="record" label-width="80px" label-position="left">
         <el-form-item label="上级项目">
-          <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" clearable />
+          <el-cascader ref="parentsSelect" v-model="recordParents" :options="options.parents" :show-all-levels="false" clearable @change="changeParent" />
         </el-form-item>
         <el-form-item label="代码">
           <el-input v-model="record.code" placeholder="项目代码" :disabled="dialogCodeEdit">
-            <template v-if="record.recordParents.length>0" slot="prepend">{{ record.parentCode }}</template>
+            <template v-if="recordParents.length>0" slot="prepend">{{ record.parentCode }}</template>
           </el-input>
         </el-form-item>
         <el-form-item label="项目名称">
@@ -78,10 +78,6 @@
           />
         </el-form-item>
         <el-form-item label="状态">
-          <!--<el-select v-model="record.status" placeholder="请选择">
-            <el-option key="enabled" label="启用" value="1" />
-            <el-option key="disabled" label="禁用" value="0" />
-          </el-select>-->
           <el-switch
             v-model="recordStatus"
             active-color="#13ce66"
@@ -197,8 +193,9 @@ export default {
       this.dialogVisible = true
       this.dialogCodeEdit = true
       this.recordStatus = (this.record.status === '1')
-      if (this.record.parentId > 0) {
-        this.recordParents = this.record.parentId.split(',')
+      this.recordParents = []
+      if (this.record.parentCode) {
+        this.recordParents = [this.record.parentCode]
       }
     },
     handleDel(row) {
@@ -225,6 +222,10 @@ export default {
       this.record.status = '0'
       if (this.recordStatus) {
         this.record.status = '1'
+      }
+      const typeLabels = _this.$refs['parentsSelect'].currentLabels
+      if (typeLabels && typeLabels.length > 0) {
+        this.record.parentName = typeLabels.join('/')
       }
       if (this.dialogType === 'new') {
         resp = await add(this.record)
@@ -268,6 +269,17 @@ export default {
     renderUserShow(h, option) {
       // return `<span>${option.username} - ${option.realName}</span>`
       return <span>{ option.username } - { option.realName }</span>
+    },
+    changeParent(val) {
+      this.record.parentCode = ''
+      if (val.length > 0) {
+        this.record.parentCode = val[0]
+        let obj = {}
+        obj = this.options.parents.find((item) => {
+          return item.value === val[0]
+        })
+        this.record.parentName = obj.label
+      }
     }
   }
 }
