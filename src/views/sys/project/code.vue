@@ -59,7 +59,9 @@
           <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" clearable />
         </el-form-item>
         <el-form-item label="代码">
-          <el-input v-model="record.code" placeholder="项目代码" :disabled="dialogCodeEdit"/>
+          <el-input v-model="record.code" placeholder="项目代码" :disabled="dialogCodeEdit">
+            <template v-if="record.recordParents.length>0" slot="prepend">{{ record.parentCode }}</template>
+          </el-input>
         </el-form-item>
         <el-form-item label="项目名称">
           <el-input v-model="record.name" placeholder="项目名称" />
@@ -85,8 +87,8 @@
             active-color="#13ce66"
             inactive-color="#ff4949"
             active-text="开启"
-            inactive-text="禁用">
-          </el-switch>
+            inactive-text="禁用"
+          />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
