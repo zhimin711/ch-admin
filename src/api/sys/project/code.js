@@ -58,3 +58,11 @@ export function getProjectUsers(projectId) {
     method: 'get'
   })
 }
+
+export function editProjectUsers(id, data) {
+  return request({
+    url: `${baseUrl}/${id}/users`,
+    method: 'post',
+    data
+  })
+}

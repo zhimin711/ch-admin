@@ -26,7 +26,8 @@
       </el-table-column>
       <el-table-column label="项目代码">
         <template slot-scope="scope">
-          <span>{{ scope.row.code }}</span>
+          <span v-if="scope.row.parentCode">{{ scope.row.parentCode + '-' + scope.row.code }}</span>
+          <span v-else>{{ scope.row.code }}</span>
         </template>
       </el-table-column>
       <el-table-column label="项目名称">
@@ -108,7 +109,7 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del, getParents, getUsers, getProjectUsers } from '@/api/sys/project/code'
+import { list, add, edit, del, getParents, getUsers, getProjectUsers, editProjectUsers } from '@/api/sys/project/code'
 
 export default {
   name: 'SysProjectCodeManager',
@@ -256,7 +257,17 @@ export default {
         }
       })
     },
-    handleSubmitUsers() {
+    async handleSubmitUsers() {
+      const resp = await editProjectUsers(this.record.id, this.recordUsers)
+      if (resp && resp.success) {
+        this.dialogVisible2 = false
+      }
+      this.$notify({
+        title: '用户授权',
+        dangerouslyUseHTMLString: true,
+        message: `Auth 用户 ` + (resp && resp.success ? 'success!' : 'error...'),
+        type: resp && resp.success ? 'success' : 'error'
+      })
     },
     filterUsersMethod(query, item) {
       if (query === '') return true
