@@ -95,6 +95,9 @@
         <el-form-item label="地址">
           <el-input v-model="record.url" />
         </el-form-item>
+        <el-form-item label="重定向地址" v-show="recordForm.redirectShow">
+          <el-input v-model="record.redirect" />
+        </el-form-item>
         <el-form-item label="请求方法">
           <el-radio-group v-model="record.method" :disabled="recordForm.descDisabled">
             <el-radio-button label="">ALL</el-radio-button>
@@ -162,6 +165,7 @@ export default {
       recordForm: {
         codeDisabled: false,
         descDisabled: false,
+        redirectShow: false,
         urlDisabled: false
       },
       dialogVisible: false,
@@ -216,6 +220,7 @@ export default {
       this.recordForm.codeDisabled = false
       this.recordForm.urlDisabled = false
       this.recordForm.descDisabled = true
+      this.recordForm.redirectShow = true
     },
     handleEdit(row, index) {
       this.record = deepClone(row)
@@ -225,7 +230,7 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       // this.recordForm.codeDisabled = true
-      // this.recordForm.descDisabled = row.type !== '3'
+      this.recordForm.redirectShow = row.type === '1'
       this.getTree(row.type)
     },
     handleDel(row) {
@@ -281,6 +286,7 @@ export default {
       let type = value
       this.recordForm.urlDisabled = value <= 1
       this.recordForm.descDisabled = true
+      this.recordForm.redirectShow = value === '1'
       this.recordParentsProps.checkStrictly = false
       if (value === '4' || value === '5') {
         type = '3'
