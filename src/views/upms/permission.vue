@@ -105,7 +105,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="排序">
-          <el-input v-model="record.sort" />
+          <el-input-number v-model="record.sort" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="record.status" placeholder="请选择">
@@ -209,7 +209,7 @@ export default {
     },
     handleAdd() {
       this.getTree('1')
-      this.record = { 'type': '1' }
+      this.record = { 'type': '1', sort: 1 }
       this.recordParents = []
       this.dialogType = 'new'
       this.dialogVisible = true

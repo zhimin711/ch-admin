@@ -271,35 +271,30 @@ export function assemblyAsyncRoutes(menus, basePath) {
   const isStart = !basePath
   menus.forEach(menu => {
     let tmp = {}
+    let path = menu.url
+    let path2 = menu.url
+    if (isStart) path = '/' + menu.url
+    else path2 = basePath + '/' + menu.url
     if (menu.type === '2') {
       tmp = {
-        path: menu.url,
+        path: path,
         // component: () => import('@/views' + path + '/' + menu.url),
-        component: resolve => require(['@/views' + menu.url], resolve),
+        component: resolve => require(['@/views/' + path2], resolve),
         name: menu.code,
         meta: { title: menu.name }
       }
     } else {
       tmp = {
-        path: menu.url,
+        path: path,
         // alwaysShow: true,
         component: resolve => require(['@/layout/index2'], resolve),
         meta: { title: menu.name, icon: menu.icon || 'lock' }
       }
       if (isStart) {
         tmp.component = Layout
-        tmp.path = '/' + menu.url
       }
       if (menu.children && menu.children.length > 0) {
-        tmp.children = assemblyAsyncRoutes(menu.children, menu.url)
-      } else {
-        tmp.children = [{
-          path: '/',
-          // component: () => import('@/views' + path + '/' + menu.url),
-          component: resolve => require(['@/views' + menu.url], resolve),
-          name: menu.code,
-          meta: { title: menu.name, icon: menu.icon || 'zip' }
-        }]
+        tmp.children = assemblyAsyncRoutes(menu.children, path2)
       }
     }
     res.push(tmp)
