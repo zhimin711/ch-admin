@@ -66,3 +66,30 @@ export function toThousandFilter(num) {
 export function uppercaseFirst(string) {
   return string.charAt(0).toUpperCase() + string.slice(1)
 }
+
+export function statusFilter(status) {
+  const statusMap = {
+    published: 'success',
+    draft: 'info',
+    deleted: 'danger'
+  }
+  let s = 'draft'
+  if (status === '1') {
+    s = 'published'
+  } else if (status === '3') {
+    s = 'deleted'
+  }
+  return statusMap[s]
+}
+
+export function enableStatusNameFilter(status) {
+  return ['禁用', '启用', '删除'][status]
+}
+
+export function switchStatusNameFilter(status) {
+  return ['关闭', '开启'][status]
+}
+
+export function releaseStatusNameFilter(status) {
+  return ['未发布', '已发布', '删除'][status]
+}

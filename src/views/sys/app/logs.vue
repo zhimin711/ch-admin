@@ -13,26 +13,36 @@
         重置
       </el-button>
       <el-button v-if="checkPermission2(['UPMS_USER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加项目
+        添加主机
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="120px" label="上级项目">
+      <el-table-column width="120px" label="主机类型">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.parentCode">
-            {{ scope.row.parentName }}
+          <!--<span>{{ scope.row.type }}</span>-->
+          <el-tag>
+            {{ scope.row.type | convertTypeFilter }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="项目代码">
-        <template slot-scope="scope">
-          <span v-if="scope.row.parentCode">{{ scope.row.parentCode + ':' + scope.row.code }}</span>
-          <span v-else>{{ scope.row.code }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="项目名称">
+      <el-table-column width="180px" label="主机名称">
         <template slot-scope="scope">
           <span>{{ scope.row.name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="主机地址">
+        <template slot-scope="scope">
+          <span>{{ scope.row.url }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column width="120px" align="center" label="主机端口">
+        <template slot-scope="scope">
+          <span>{{ scope.row.port }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column width="120px" align="center" label="用户名">
+        <template slot-scope="scope">
+          <span>{{ scope.row.username }}</span>
         </template>
       </el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110">
@@ -45,7 +55,8 @@
 
       <el-table-column align="center" label="操作" width="200">
         <template slot-scope="scope">
-          <el-link v-if="checkPermission2(['UPMS_USER_ROLE'])" type="primary" icon="el-icon-menu" @click="handleAuthUsers(scope.row)">分配用户</el-link>
+          <!--<el-button type="primary" size="small" @click="handleEdit(scope.row)">Edit</el-button>-->
+          <!--<el-button type="danger" size="small" @click="handleDel(scope.row)">Delete</el-button>-->
           <el-link v-if="checkPermission2(['UPMS_USER_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
           <el-link v-if="checkPermission2(['UPMS_USER_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
@@ -54,52 +65,49 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 项目代码':'添加 项目代码'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 主机':'添加 主机'">
       <el-form :model="record" label-width="80px" label-position="left">
-        <el-form-item label="上级项目">
-          <el-cascader ref="parentsSelect" v-model="recordParents" :options="options.parents" :show-all-levels="false" clearable @change="changeParent" />
+        <el-form-item label="主机类型">
+          <el-select v-model="record.type" placeholder="请选择">
+            <el-option key="1" label="DB(数据库)" value="1" />
+            <el-option key="2" label="远程终端(SSH)" value="2" />
+            <!--<el-option key="3" label="" value="3" />-->
+            <!--<el-option key="4" label="" value="4" />-->
+          </el-select>
         </el-form-item>
-        <el-form-item label="代码">
-          <el-input v-model="record.code" placeholder="项目代码" :disabled="dialogCodeEdit">
-            <template v-if="recordParents.length>0" slot="prepend">{{ record.parentCode }}</template>
-          </el-input>
+        <el-form-item label="主机名称">
+          <el-input v-model="record.name" placeholder="主机名称" />
         </el-form-item>
-        <el-form-item label="项目名称">
-          <el-input v-model="record.name" placeholder="项目名称" />
+        <el-form-item label="主机地址">
+          <el-input v-model="record.url" placeholder="主机地址" />
         </el-form-item>
-        <el-form-item label="排序">
-          <el-input v-model="record.sort" placeholder="排序" />
+        <el-form-item label="主机端口">
+          <el-input v-model="record.port" placeholder="主机端口" />
         </el-form-item>
-        <el-form-item label="描述">
+        <el-form-item label="用户名">
+          <el-input v-model="record.username" placeholder="用户名" />
+        </el-form-item>
+        <el-form-item label="用户密码">
+          <el-input v-model="record.password" type="password" placeholder="用户密码" />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="record.status" placeholder="请选择">
+            <el-option key="enabled" label="启用" value="1" />
+            <el-option key="disabled" label="禁用" value="0" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Desc">
           <el-input
             v-model="record.description"
             :autosize="{ minRows: 2, maxRows: 4}"
             type="textarea"
-            placeholder="项目 描述"
-          />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-switch
-            v-model="recordStatus"
-            active-color="#13ce66"
-            inactive-color="#ff4949"
-            active-text="开启"
-            inactive-text="禁用"
+            placeholder="主机 Description"
           />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
         <el-button type="primary" @click="handleSubmit">保存</el-button>
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-      </div>
-    </el-dialog>
-    <el-dialog :visible.sync="dialogVisible2" :title="'分配用户'" width="544px">
-      <div style="text-align:left;margin-bottom: 20px">
-        <el-transfer v-model="recordUsers" filterable :filter-method="filterUsersMethod" filter-placeholder="请输入城市拼音" :render-content="renderUserShow" :data="options.users" :titles="['未分配用户', '已分配用户']" :props="{ key: 'username', label: 'realName' }" />
-      </div>
-      <div style="text-align:left;padding-left:170px">
-        <el-button type="primary" @click="handleSubmitUsers">保存</el-button>
-        <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -109,12 +117,26 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del, getParents, getUsers, getProjectUsers, editProjectUsers } from '@/api/sys/project/code'
+import { list, add, edit, del } from '@/api/sys/host'
 
 export default {
-  name: 'SysProjectCodeManager',
+  name: 'SysHostManager',
   components: { Pagination },
   filters: {
+    statusFilter(status) {
+      const statusMap = {
+        published: 'success',
+        draft: 'info',
+        deleted: 'danger'
+      }
+      let s = 'draft'
+      if (status === '1') {
+        s = 'published'
+      } else if (status === '3') {
+        s = 'deleted'
+      }
+      return statusMap[s]
+    },
     convertTypeFilter(type) {
       return ['', 'DB(数据库)', '远程终端(SSH)', '(FTP)'][type]
     }
@@ -130,34 +152,20 @@ export default {
         params: {}
       },
       record: {},
-      recordStatus: true,
+      recordRoles: [],
       dialogVisible: false,
       dialogType: false,
       dialogCodeEdit: false,
       dialogVisible2: false,
-      recordParents: [],
-      recordUsers: [],
-      options: {
-        parents: [],
-        users: []
-      }
+      roles: []
     }
   },
   created() {
     this.getList()
-    this.getParents('1')
-    this.getUsers()
+    // this.getEnableRoles()
   },
   methods: {
     checkPermission2,
-    async getParents(type) {
-      const resp = await getParents(type)
-      if (resp && resp.success) this.options.parents = resp.rows
-    },
-    async getUsers() {
-      const resp = await getUsers()
-      if (resp && resp.success) this.options.users = resp.rows
-    },
     getList() {
       this.listLoading = true
       list(this.listQuery).then(response => {
@@ -168,8 +176,6 @@ export default {
     },
     handleAdd() {
       this.record = {}
-      this.recordStatus = true
-      this.recordParents = []
       this.dialogType = 'new'
       this.dialogVisible = true
       this.dialogCodeEdit = false
@@ -179,11 +185,6 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.dialogCodeEdit = true
-      this.recordStatus = (this.record.status === '1')
-      this.recordParents = []
-      if (this.record.parentCode) {
-        this.recordParents = [this.record.parentCode]
-      }
     },
     handleDel(row) {
       const _this = this
@@ -206,14 +207,6 @@ export default {
       const _this = this
       let resp = null
       let opName = '添加'
-      this.record.status = '0'
-      if (this.recordStatus) {
-        this.record.status = '1'
-      }
-      const typeLabels = _this.$refs['parentsSelect'].currentLabels
-      if (typeLabels && typeLabels.length > 0) {
-        this.record.parentName = typeLabels.join('/')
-      }
       if (this.dialogType === 'new') {
         resp = await add(this.record)
       } else if (this.dialogType === 'edit') {
@@ -224,58 +217,9 @@ export default {
         this.dialogVisible = false
         this.$message({
           type: 'success',
-          message: `${opName} 项目 ${this.record.name} success!`
+          message: `${opName} ${this.record.username} success!`
         })
         _this.getList()
-      }
-    },
-    handleAuthUsers(row) {
-      //
-      this.dialogVisible2 = true
-
-      this.record = deepClone(row)
-      this.recordUsers = []
-      getProjectUsers(row.id).then(resp => {
-        if (resp.success) {
-          resp.rows.forEach(e => {
-            this.recordUsers.push(e)
-          })
-        }
-      })
-    },
-    async handleSubmitUsers() {
-      const resp = await editProjectUsers(this.record.id, this.recordUsers)
-      if (resp && resp.success) {
-        this.dialogVisible2 = false
-      }
-      this.$notify({
-        title: '用户授权',
-        dangerouslyUseHTMLString: true,
-        message: `Auth 用户 ` + (resp && resp.success ? 'success!' : 'error...'),
-        type: resp && resp.success ? 'success' : 'error'
-      })
-    },
-    filterUsersMethod(query, item) {
-      if (query === '') return true
-      let hasQuery = item.username.indexOf(query) > -1
-      if (!hasQuery) {
-        hasQuery = item.realName.indexOf(query) > -1
-      }
-      return hasQuery
-    },
-    renderUserShow(h, option) {
-      // return `<span>${option.username} - ${option.realName}</span>`
-      return <span>{ option.username } - { option.realName }</span>
-    },
-    changeParent(val) {
-      this.record.parentCode = ''
-      if (val.length > 0) {
-        this.record.parentCode = val[0]
-        let obj = {}
-        obj = this.options.parents.find((item) => {
-          return item.value === val[0]
-        })
-        this.record.parentName = obj.label
       }
     }
   }

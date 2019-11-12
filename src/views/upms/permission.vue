@@ -51,9 +51,10 @@
       </el-table-column>
       <el-table-column align="center" prop="sort" label="排序" width="69" />
       <el-table-column align="center" prop="status" label="状态" width="69">
-        <template slot-scope="scope">
-          <el-tag v-if="scope.row.status === '0'" type="danger">禁用</el-tag>
-          <el-tag v-else-if="scope.row.status === '1'" type="success">启用</el-tag>
+        <template slot-scope="{row}">
+          <el-tag :type="row.status | statusFilter">
+            {{ row.status | enableStatusNameFilter}}
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="160">
@@ -135,16 +136,6 @@ import { fetchTree, fetchList, add, edit, del } from '@/api/upms/permission'
 export default {
   name: 'PermissionManager',
   components: { Pagination },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      return statusMap[status]
-    }
-  },
   data() {
     return {
       treeData1: [],
