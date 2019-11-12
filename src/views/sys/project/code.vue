@@ -26,7 +26,7 @@
       </el-table-column>
       <el-table-column label="项目代码">
         <template slot-scope="scope">
-          <span v-if="scope.row.parentCode">{{ scope.row.parentCode + '-' + scope.row.code }}</span>
+          <span v-if="scope.row.parentCode">{{ scope.row.parentCode + ':' + scope.row.code }}</span>
           <span v-else>{{ scope.row.code }}</span>
         </template>
       </el-table-column>
