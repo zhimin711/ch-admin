@@ -8,6 +8,7 @@ import Layout from '@/layout'
 
 /* Router Modules */
 import upmsRouter from './modules/upms'
+import sysRouter from './modules/sys'
 import componentsRouter from './modules/components'
 // import chartsRouter from './modules/charts'
 // import tableRouter from './modules/table'
@@ -107,6 +108,7 @@ export const constantRoutes = [
  */
 export const asyncRoutes = [
   upmsRouter,
+  sysRouter,
   txRouter,
   componentsRouter,
   // chartsRouter,

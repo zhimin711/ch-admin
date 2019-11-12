@@ -40,7 +40,7 @@
       <el-table-column class-name="status-col" label="状态" width="110">
         <template slot-scope="{row}">
           <el-tag :type="row.status | statusFilter">
-            {{ row.status | enableStatusNameFilter}}
+            {{ row.status | enableStatusNameFilter }}
           </el-tag>
         </template>
       </el-table-column>
@@ -185,10 +185,10 @@ export default {
     },
     async handleSubmit() {
       const _this = this
-      if (this.recordProjectCodes.length > 0) {
-        this.record.projectCode = this.recordProjectCodes.join(',')
-      } else this.record.projectCode = null
-      const typeLabels = this.$refs['projectsSelect'].currentLabels
+      if (_this.recordProjectCodes.length > 0) {
+        _this.record.projectCode = this.recordProjectCodes.join(',')
+      } else _this.record.projectCode = null
+      const typeLabels = _this.$refs['projectsSelect'].currentLabels
       if (typeLabels && typeLabels.length > 0) {
         this.record.projectName = typeLabels.join('/')
       }
