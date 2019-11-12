@@ -1,5 +1,5 @@
 import request from '@/utils/request2'
-const baseUrl = '/sys/host'
+const baseUrl = '/sys/app/logs'
 export function list(query) {
   return request({
     url: `${baseUrl}/${query.page}/${query.limit}`,

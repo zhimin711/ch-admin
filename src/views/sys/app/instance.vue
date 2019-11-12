@@ -13,11 +13,18 @@
         重置
       </el-button>
       <el-button v-if="checkPermission2(['UPMS_USER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加主机
+        添加应用实例
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="120px" label="主机类型">
+      <el-table-column width="120px" label="项目名称">
+        <template slot-scope="scope">
+          <el-tag>
+            {{ scope.row.sysName }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column width="120px" label="应用类型">
         <template slot-scope="scope">
           <!--<span>{{ scope.row.type }}</span>-->
           <el-tag>
@@ -25,30 +32,15 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column width="180px" label="主机名称">
+      <el-table-column label="应用名称">
         <template slot-scope="scope">
           <span>{{ scope.row.name }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="主机地址">
-        <template slot-scope="scope">
-          <span>{{ scope.row.url }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column width="120px" align="center" label="主机端口">
-        <template slot-scope="scope">
-          <span>{{ scope.row.port }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column width="120px" align="center" label="用户名">
-        <template slot-scope="scope">
-          <span>{{ scope.row.username }}</span>
         </template>
       </el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110">
         <template slot-scope="{row}">
           <el-tag :type="row.status | statusFilter">
-            {{ row.status }}
+            {{ row.status | enableStatusNameFilter}}
           </el-tag>
         </template>
       </el-table-column>
@@ -65,44 +57,39 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 主机':'添加 主机'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 实例':'添加 实例'">
       <el-form :model="record" label-width="80px" label-position="left">
-        <el-form-item label="主机类型">
+        <el-form-item label="项目">
+          <el-cascader ref="projectsSelect" v-model="recordProjectCodes" :options="options.projectCodes" :show-all-levels="false" :props="{checkStrictly: true}" clearable />
+        </el-form-item>
+        <el-form-item label="实例类型">
           <el-select v-model="record.type" placeholder="请选择">
-            <el-option key="1" label="DB(数据库)" value="1" />
-            <el-option key="2" label="远程终端(SSH)" value="2" />
-            <!--<el-option key="3" label="" value="3" />-->
-            <!--<el-option key="4" label="" value="4" />-->
+            <el-option key="1" label="JettyWeb" value="1" />
+            <el-option key="2" label="Dubbo应用" value="2" />
+            <el-option key="3" label="数据库" value="3" />
+            <el-option key="4" label="Nginx" value="4" />
+            <el-option key="5" label="Redis" value="5" />
           </el-select>
         </el-form-item>
-        <el-form-item label="主机名称">
-          <el-input v-model="record.name" placeholder="主机名称" />
+        <el-form-item label="实例代码">
+          <el-input v-model="record.code" placeholder="实例代码" />
         </el-form-item>
-        <el-form-item label="主机地址">
-          <el-input v-model="record.url" placeholder="主机地址" />
+        <el-form-item label="实例名称">
+          <el-input v-model="record.name" placeholder="实例名称" />
         </el-form-item>
-        <el-form-item label="主机端口">
-          <el-input v-model="record.port" placeholder="主机端口" />
-        </el-form-item>
-        <el-form-item label="用户名">
-          <el-input v-model="record.username" placeholder="用户名" />
-        </el-form-item>
-        <el-form-item label="用户密码">
-          <el-input v-model="record.password" type="password" placeholder="用户密码" />
+        <el-form-item label="描述">
+          <el-input
+            v-model="record.description"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            placeholder="实例 描述"
+          />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="record.status" placeholder="请选择">
             <el-option key="enabled" label="启用" value="1" />
             <el-option key="disabled" label="禁用" value="0" />
           </el-select>
-        </el-form-item>
-        <el-form-item label="Desc">
-          <el-input
-            v-model="record.description"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            type="textarea"
-            placeholder="主机 Description"
-          />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -117,26 +104,13 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del } from '@/api/sys/host'
+import { list, add, edit, del } from '@/api/sys/app/instance'
+import { getCurrentUserTree } from '@/api/sys/project/code'
 
 export default {
-  name: 'SysHostManager',
+  name: 'SysAppInstanceManager',
   components: { Pagination },
   filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      let s = 'draft'
-      if (status === '1') {
-        s = 'published'
-      } else if (status === '3') {
-        s = 'deleted'
-      }
-      return statusMap[s]
-    },
     convertTypeFilter(type) {
       return ['', 'DB(数据库)', '远程终端(SSH)', '(FTP)'][type]
     }
@@ -152,20 +126,26 @@ export default {
         params: {}
       },
       record: {},
-      recordRoles: [],
+      recordProjectCodes: ['SHIVA-TRTMS-GROUND', 'SHIVA-TRTMS-GROUND:REQUIRE'],
       dialogVisible: false,
       dialogType: false,
       dialogCodeEdit: false,
       dialogVisible2: false,
-      roles: []
+      options: {
+        projectCodes: []
+      }
     }
   },
   created() {
     this.getList()
-    // this.getEnableRoles()
+    this.getAuthProjectCodes()
   },
   methods: {
     checkPermission2,
+    async getAuthProjectCodes(type) {
+      const resp = await getCurrentUserTree()
+      if (resp && resp.success) this.options.projectCodes = resp.rows
+    },
     getList() {
       this.listLoading = true
       list(this.listQuery).then(response => {
@@ -205,6 +185,13 @@ export default {
     },
     async handleSubmit() {
       const _this = this
+      if (this.recordProjectCodes.length > 0) {
+        this.record.projectCode = this.recordProjectCodes.join(',')
+      } else this.record.projectCode = null
+      const typeLabels = this.$refs['projectsSelect'].currentLabels
+      if (typeLabels && typeLabels.length > 0) {
+        this.record.projectName = typeLabels.join('/')
+      }
       let resp = null
       let opName = '添加'
       if (this.dialogType === 'new') {

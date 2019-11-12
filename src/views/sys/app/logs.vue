@@ -117,10 +117,10 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del } from '@/api/sys/host'
+import { list, add, edit, del } from '@/api/sys/app/logs'
 
 export default {
-  name: 'SysHostManager',
+  name: 'SysAppLogsManager',
   components: { Pagination },
   filters: {
     statusFilter(status) {
