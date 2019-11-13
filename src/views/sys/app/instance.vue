@@ -188,9 +188,9 @@ export default {
       if (_this.recordProjectCodes.length > 0) {
         _this.record.projectCode = this.recordProjectCodes.join(',')
       } else _this.record.projectCode = null
-      const typeLabels = _this.$refs['projectsSelect'].currentLabels
-      if (typeLabels && typeLabels.length > 0) {
-        this.record.projectName = typeLabels.join('/')
+      const checkedNodes = _this.$refs['projectsSelect'].getCheckedNodes()
+      if (checkedNodes && checkedNodes.length > 0) {
+        this.record.projectName = checkedNodes[0].label
       }
       let resp = null
       let opName = '添加'
@@ -204,7 +204,7 @@ export default {
         this.dialogVisible = false
         this.$message({
           type: 'success',
-          message: `${opName} ${this.record.username} success!`
+          message: `${opName} ${this.record.name} success!`
         })
         _this.getList()
       }
