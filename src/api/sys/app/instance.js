@@ -11,8 +11,7 @@ export function list(query) {
 export function get(id) {
   return request({
     url: `${baseUrl}/${id}`,
-    method: 'get',
-    params: { id }
+    method: 'get'
   })
 }
 
@@ -39,3 +38,9 @@ export function del(id) {
   })
 }
 
+export function getNodes(id) {
+  return request({
+    url: `${baseUrl}/${id}/nodes`,
+    method: 'get'
+  })
+}
