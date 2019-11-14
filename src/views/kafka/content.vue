@@ -49,7 +49,7 @@
         <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {type: '0', limit: 12}">
           重置
         </el-button>
-        <el-button v-if="checkPermission2(['KAFKA_CONTENT_PUSH'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handlePush">
+        <el-button v-if="checkPermission2(['KAFKA_CONTENT_SEND'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handlePush">
           推送消息
         </el-button>
       </el-form>
@@ -73,7 +73,7 @@
       <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
           <el-link type="primary" icon="el-icon-view" @click="handleView(scope.row)">JSON视图</el-link>
-          <el-link v-if="checkPermission2(['KAFKA_TOPIC_EDIT'])" type="primary" icon="el-icon-position" @click="handleResend(scope.row)">重发</el-link>
+          <el-link v-if="checkPermission2(['KAFKA_CONTENT_RESEND'])" type="primary" icon="el-icon-position" @click="handleResend(scope.row)">重发</el-link>
         </template>
       </el-table-column>
     </el-table>

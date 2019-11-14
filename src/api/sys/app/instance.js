@@ -44,3 +44,18 @@ export function getNodes(id) {
     method: 'get'
   })
 }
+
+export function getUserInstances(name) {
+  return request({
+    url: `${baseUrl}/user`,
+    method: 'get',
+    params: { name }
+  })
+}
+
+export function getUserNodes(id) {
+  return request({
+    url: `${baseUrl}/${id}/user/nodes`,
+    method: 'get'
+  })
+}

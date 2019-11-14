@@ -1,19 +1,40 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
-        <el-option label="启用" value="1">启用</el-option>
-        <el-option label="禁用" value="0">禁用</el-option>
+      <el-select
+        v-model="listQuery.params.insId"
+        class="filter-item"
+        filterable
+        remote
+        reserve-keyword
+        placeholder="(应用实例)请输入关键词"
+        :remote-method="queryInstances"
+        :loading="loadingIns"
+        @change="changeIns">
+        <el-option
+          v-for="item in options.instances"
+          :key="item.id"
+          :label="item.name"
+          :value="item.id">
+        </el-option>
       </el-select>
+      <!--<el-input v-model="listQuery.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />-->
+      <el-select v-model="listQuery.params.type" placeholder="类型" class="filter-item" clearable>
+        <el-option label="日志" value="1">日志</el-option>
+        <el-option label="配置" value="0">配置</el-option>
+      </el-select>
+      <el-select v-model="listQuery.params.env" placeholder="环境" class="filter-item" clearable @change="changeEnv">
+        <el-option label="DEV" value="1">DEV</el-option>
+        <el-option label="TEST" value="2">TEST</el-option>
+        <el-option label="PROD" value="3">PROD</el-option>
+      </el-select>
+      <el-input v-model="listQuery.params.fileName" placeholder="文件名匹配（info.log）" style="width: 200px;" class="filter-item" />
+      <el-input v-model="listQuery.params.content" placeholder="日志内容匹配" style="width: 300px;" class="filter-item" />
       <el-button v-if="checkPermission2(['UPMS_USER_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
         重置
-      </el-button>
-      <el-button v-if="checkPermission2(['UPMS_USER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加主机
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
@@ -65,59 +86,14 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 主机':'添加 主机'">
-      <el-form :model="record" label-width="80px" label-position="left">
-        <el-form-item label="主机类型">
-          <el-select v-model="record.type" placeholder="请选择">
-            <el-option key="1" label="DB(数据库)" value="1" />
-            <el-option key="2" label="远程终端(SSH)" value="2" />
-            <!--<el-option key="3" label="" value="3" />-->
-            <!--<el-option key="4" label="" value="4" />-->
-          </el-select>
-        </el-form-item>
-        <el-form-item label="主机名称">
-          <el-input v-model="record.name" placeholder="主机名称" />
-        </el-form-item>
-        <el-form-item label="主机地址">
-          <el-input v-model="record.url" placeholder="主机地址" />
-        </el-form-item>
-        <el-form-item label="主机端口">
-          <el-input v-model="record.port" placeholder="主机端口" />
-        </el-form-item>
-        <el-form-item label="用户名">
-          <el-input v-model="record.username" placeholder="用户名" />
-        </el-form-item>
-        <el-form-item label="用户密码">
-          <el-input v-model="record.password" type="password" placeholder="用户密码" />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="record.status" placeholder="请选择">
-            <el-option key="enabled" label="启用" value="1" />
-            <el-option key="disabled" label="禁用" value="0" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="Desc">
-          <el-input
-            v-model="record.description"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            type="textarea"
-            placeholder="主机 Description"
-          />
-        </el-form-item>
-      </el-form>
-      <div style="text-align:right;">
-        <el-button type="primary" @click="handleSubmit">保存</el-button>
-        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script>
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { list, add, edit, del } from '@/api/sys/app/logs'
+import { getUserInstances, getUserNodes } from '@/api/sys/app/instance'
 
 export default {
   name: 'SysAppLogsManager',
@@ -143,7 +119,11 @@ export default {
   },
   data() {
     return {
-      listLoading: true,
+      loadingIns: false,
+      options: {
+        instances: []
+      },
+      listLoading: false,
       listQuery: {
         page: 1,
         limit: 10,
@@ -153,19 +133,22 @@ export default {
       },
       record: {},
       recordRoles: [],
-      dialogVisible: false,
-      dialogType: false,
-      dialogCodeEdit: false,
-      dialogVisible2: false,
-      roles: []
+      nodes: []
     }
   },
   created() {
-    this.getList()
-    // this.getEnableRoles()
+    this.queryInstances('')
+    // this.getList()
   },
   methods: {
     checkPermission2,
+    queryInstances(query) {
+      this.loadingIns = true
+      getUserInstances(query).then(response => {
+        this.loadingIns = false
+        this.options.instances = response.rows
+      })
+    },
     getList() {
       this.listLoading = true
       list(this.listQuery).then(response => {
@@ -174,17 +157,12 @@ export default {
         this.listLoading = false
       })
     },
-    handleAdd() {
-      this.record = {}
-      this.dialogType = 'new'
-      this.dialogVisible = true
-      this.dialogCodeEdit = false
+    changeIns(val) {
+      getUserNodes(val).then(response => {
+        this.nodes = response.rows
+      })
     },
-    handleEdit(row) {
-      this.record = deepClone(row)
-      this.dialogType = 'edit'
-      this.dialogVisible = true
-      this.dialogCodeEdit = true
+    changeEnv(val) {
     },
     handleDel(row) {
       const _this = this

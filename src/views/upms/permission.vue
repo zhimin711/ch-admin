@@ -222,7 +222,7 @@ export default {
       this.dialogVisible = true
       // this.recordForm.codeDisabled = true
       this.recordForm.redirectShow = row.type === '1'
-      this.getTree(row.type)
+      this.changeType(row.type)
     },
     handleDel(row) {
       const _this = this
