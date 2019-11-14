@@ -1,10 +1,11 @@
 import request from '@/utils/request2'
 const baseUrl = '/sys/app/logs'
-export function list(query) {
+
+export function search(data) {
   return request({
-    url: `${baseUrl}/${query.page}/${query.limit}`,
-    method: 'get',
-    params: query.params
+    url: `${baseUrl}/search`,
+    method: 'post',
+    data
   })
 }
 
