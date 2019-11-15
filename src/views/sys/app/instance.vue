@@ -94,23 +94,22 @@
             inactive-text="禁用"
           />
         </el-form-item>
-        <el-form-item label="实例节点" style="margin-bottom: 0px">
-          <el-button @click="handleAddNode" size="small">添加节点</el-button>
+        <el-form-item label="实例节点" style="margin-bottom: 0">
+          <el-button size="small" @click="handleAddNode">添加节点</el-button>
         </el-form-item>
         <el-table
           v-loading="listNodeLoading"
           :data="recordNodes"
-          style="width: 100%; margin-bottom: 10px;" >
+          style="width: 100%; margin-bottom: 10px;"
+        >
           <el-table-column prop="env" label="环境" width="110">
             <template slot-scope="{row}">
-              <template>
-                <!--<el-input v-model="row.env" class="edit-input" size="small" />-->
-                <el-select v-model="row.env" placeholder="请选择" size="small">
-                  <el-option key="1" label="DEV" value="1" />
-                  <el-option key="2" label="TEST" value="2" />
-                  <el-option key="3" label="PROD" value="3" />
-                </el-select>
-              </template>
+              <!--<el-input v-model="row.env" class="edit-input" size="small" />-->
+              <el-select v-model="row.env" placeholder="请选择" size="small">
+                <el-option key="1" label="DEV" value="1" />
+                <el-option key="2" label="TEST" value="2" />
+                <el-option key="3" label="PROD" value="3" />
+              </el-select>
             </template>
           </el-table-column>
           <el-table-column prop="name" label="名称" width="180">
