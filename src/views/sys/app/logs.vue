@@ -40,14 +40,16 @@
 
     <el-card class="box-card">
       <div slot="header" class="clearfix">
-        <span>卡片名称</span>
+        <span>搜索结果</span>
         <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
       </div>
-      <div class="text item">
-        <pre>
-          sabc
-          abc
-        </pre>
+      <div v-for="item in searchResults" :key="item" class="text item">
+        {{ item.ip }} - {{ item.dir }}
+        <el-collapse>
+          <el-collapse-item v-for="e1 in item.records" :key="e1" :title="e1.fileName" :name="e1.fileName">
+            <div v-for="e2 in e1.data" :key="e2">{{ e2.data }}</div>
+          </el-collapse-item>
+        </el-collapse>
       </div>
     </el-card>
 
@@ -87,6 +89,8 @@ export default {
         instances: []
       },
       searchParams: {},
+      searchResults: [],
+      activeNames: ['1'],
       record: {},
       nodes: []
     }
@@ -132,11 +136,15 @@ export default {
         _this.$message.error('请选择应用没有配置节点')
         return
       }
+      _this.searchResults = []
       envNodes.forEach(async node => {
         // this.recordRoles.push(route.id)
-        const resp = await search(node)
+        const searchInfo = { insId: node.insId, nodeId: node.id, env: node.env, type: 'FILE_LIST' }
+        const resp = await search(searchInfo)
         if (resp.success) {
           //
+          const obj = resp.rows[0]
+          _this.searchResults.push(obj)
         }
       })
     }
