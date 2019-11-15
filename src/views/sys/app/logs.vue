@@ -41,10 +41,10 @@
     <el-card class="box-card">
       <div slot="header" class="clearfix">
         <span>搜索结果</span>
-        <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
+        <!--<el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>-->
       </div>
       <div v-for="item in searchResults" :key="item" class="text item">
-        {{ item.ip }} - {{ item.dir }}
+        <span>{{ item.ip }} - {{ item.dir }}</span>
         <el-collapse>
           <el-collapse-item v-for="e1 in item.records" :key="e1" :title="e1.fileName" :name="e1.fileName">
             <div v-for="e2 in e1.data" :key="e2">{{ e2.data }}</div>
