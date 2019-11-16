@@ -41,7 +41,7 @@ export function del(id) {
 
 export function initPwd(id) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${baseUrl}/${id}/initPwd`,
     method: 'post'
   })
 }

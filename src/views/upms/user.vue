@@ -209,7 +209,7 @@ export default {
     },
     handleInitPwd(row) {
       const _this = this
-      this.$confirm(`请确认初始化用户[${row.username}]密码，操作不可回退?`, 'Warning', {
+      _this.$confirm(`请确认是否初始化用户[${row.username}]密码，操作不可回退?`, '', {
         confirmButtonText: '确认',
         cancelButtonText: '取消',
         type: 'warning'
@@ -217,7 +217,12 @@ export default {
         .then(async() => {
           const resp = await initPwd(row.id)
           if (resp.success) {
-            _this.$message.success('初始化成功！' + resp.rows[0])
+            _this.$alert(`初始化成功！ (${resp.rows[0]})`, `[${row.username}]用户密码`, {
+              confirmButtonText: '确定',
+              callback: action => {
+                //
+              }
+            })
           }
         })
         .catch(err => { console.error(err) })
