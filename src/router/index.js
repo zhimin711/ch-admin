@@ -288,7 +288,7 @@ export function assemblyAsyncRoutes(menus, basePath) {
     } else {
       tmp = {
         path: path,
-        // alwaysShow: true,
+        alwaysShow: true,
         component: resolve => require(['@/layout/index2'], resolve),
         redirect: menu.redirect,
         meta: { title: menu.name, icon: menu.icon || 'lock' }

@@ -8,6 +8,7 @@ const state = {
   name: '',
   avatar: '',
   introduction: '',
+  role: {},
   roles: [],
   permissions: []
 }
@@ -27,6 +28,9 @@ const mutations = {
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
+  },
+  SET_ROLE: (state, role) => {
+    state.role = role
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles
@@ -71,8 +75,15 @@ const actions = {
         if (!roleList || roleList.length <= 0) {
           reject('getInfo: roles must be a non-null array!')
         }
+        const currRoles = roleList.filter(item => { return item.id === role })
+        let currRole = roleList[0]
+        if (currRoles.length > 0) {
+          currRole = currRoles[0]
+        }
+        commit('SET_ROLE', currRole)
         commit('SET_ROLES', roleList)
         commit('SET_PERMISSIONS', btnList)
+
         commit('SET_NAME', username)
         commit('SET_AVATAR', avatar || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
         commit('SET_INTRODUCTION', introduction)
@@ -90,6 +101,7 @@ const actions = {
       logout(state.token).then(() => {
         commit('SET_TOKEN', '')
         commit('SET_REFRESH_TOKEN', '')
+        commit('SET_ROLE', {})
         commit('SET_ROLES', [])
         commit('SET_PERMISSIONS', [])
         removeToken()
@@ -117,6 +129,7 @@ const actions = {
   resetToken({ commit }) {
     return new Promise(resolve => {
       commit('SET_TOKEN', '')
+      commit('SET_ROLE', {})
       commit('SET_ROLES', [])
       commit('SET_PERMISSIONS', [])
       removeToken()
