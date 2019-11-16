@@ -16,9 +16,9 @@
       <el-button v-if="checkPermission2(['UPMS_USER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
         添加用户
       </el-button>
-      <el-button v-if="checkPermission2(['UPMS_USER_PASSWORD_INIT'])" class="filter-item" style="margin-left: 10px;" type="warning" icon="el-icon-refresh" @click="handleAdd">
-        初始化账号密码
-      </el-button>
+      <!--<el-button v-if="checkPermission2(['UPMS_USER_PASSWORD_INIT'])" class="filter-item" style="margin-left: 10px;" type="warning" icon="el-icon-refresh" @click="handleAdd">
+        初始化用户密码
+      </el-button>-->
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
       <el-table-column width="120px" align="center" label="用户ID">
@@ -59,9 +59,10 @@
         <template slot-scope="scope">
           <!--<el-button type="primary" size="small" @click="handleEdit(scope.row)">Edit</el-button>-->
           <!--<el-button type="danger" size="small" @click="handleDel(scope.row)">Delete</el-button>-->
-          <el-link v-if="checkPermission2(['UPMS_USER_ROLE'])" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配角色</el-link>
           <el-link v-if="checkPermission2(['UPMS_USER_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link v-if="checkPermission2(['UPMS_USER_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <!--<el-link v-if="checkPermission2(['UPMS_USER_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>-->
+          <el-link v-if="checkPermission2(['UPMS_USER_ROLE'])" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配角色</el-link>
+          <el-link v-if="checkPermission2(['UPMS_USER_PASSWORD_INIT'])" type="danger" icon="el-icon-refresh" @click="handleInitPwd(scope.row)">初始化密码</el-link>
         </template>
       </el-table-column>
     </el-table>
@@ -95,8 +96,8 @@
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="danger" @click="dialogVisible=false">Cancel</el-button>
-        <el-button type="primary" @click="handleSubmit">Confirm</el-button>
+        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
+        <el-button type="primary" @click="handleSubmit">保存</el-button>
       </div>
     </el-dialog>
     <el-dialog :visible.sync="dialogVisible2" :title="'分配用户角色'" width="544px">
@@ -116,7 +117,7 @@ import Pagination from '@/components/Pagination' // Secondary package based on e
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import waves from '@/directive/waves/index.js' // 水波纹指令
-import { list, add, edit, del, getEnableRoles, getRoles, editRoles } from '@/api/upms/user'
+import { list, add, edit, del, initPwd, getEnableRoles, getRoles, editRoles } from '@/api/upms/user'
 
 export default {
   name: 'UserManager',
@@ -203,6 +204,21 @@ export default {
             type: 'success',
             message: 'Delete success!'
           })
+        })
+        .catch(err => { console.error(err) })
+    },
+    handleInitPwd(row) {
+      const _this = this
+      this.$confirm(`请确认初始化用户[${row.username}]密码，操作不可回退?`, 'Warning', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async() => {
+          const resp = await initPwd(row.id)
+          if (resp.success) {
+            _this.$message.success('初始化成功！' + resp.rows[0])
+          }
         })
         .catch(err => { console.error(err) })
     },

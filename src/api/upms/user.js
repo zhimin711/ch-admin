@@ -39,6 +39,13 @@ export function del(id) {
   })
 }
 
+export function initPwd(id) {
+  return request({
+    url: `${baseUrl}/${id}`,
+    method: 'post'
+  })
+}
+
 export function getEnableRoles() {
   return request({
     url: `${baseUrl}/roles`,
