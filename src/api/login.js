@@ -16,9 +16,10 @@ export function getInfo(role) {
   })
 }
 
-export function logout() {
+export function logout(refreshToken) {
   return request({
     url: '/auth/logout/token',
-    method: 'post'
+    method: 'post',
+    params: { refreshToken }
   })
 }

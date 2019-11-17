@@ -25,6 +25,7 @@
               :value="item.id"
             />
           </el-select>
+          <el-button type="primary">设置为默认角色</el-button>
         </div>
       </div>
     </div>
@@ -85,7 +86,6 @@ export default {
   },
   methods: {
     changeRole(val) {
-      console.log(val)
       this.$store.dispatch('user/changeRoles', val).then(() => {
         this.$emit('change')
       })

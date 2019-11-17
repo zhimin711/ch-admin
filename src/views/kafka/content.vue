@@ -4,13 +4,13 @@
 
       <el-form :model="listQuery.params" :inline="true" label-width="100px" label-position="left">
         <el-form-item label="集群名称">
-          <el-select v-model="listQuery.params.cluster" placeholder="请选择" class="filter-item" >
+          <el-select v-model="listQuery.params.cluster" placeholder="请选择" class="filter-item">
             <el-option
               v-for="item in options.clusters"
               :key="item.clusterName"
               :label="item.clusterName"
-              :value="item.clusterName">
-            </el-option>
+              :value="item.clusterName"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="主题名称">
@@ -21,13 +21,14 @@
             reserve-keyword
             placeholder="请输入关键词"
             :remote-method="remoteMethod"
-            :loading="loading">
+            :loading="loading"
+          >
             <el-option
               v-for="item in options.topics"
               :key="item.value"
               :label="item.label"
-              :value="item.value">
-            </el-option>
+              :value="item.value"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="搜索类型">
@@ -38,10 +39,10 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="搜索量">
-          <el-input-number v-model="listQuery.params.limit" :min="12" :max="1000" :step="4" :disabled="limitDisabled"></el-input-number>
+          <el-input-number v-model="listQuery.params.limit" :min="12" :max="1000" :step="4" :disabled="limitDisabled" />
         </el-form-item>
         <el-form-item label="搜索内容">
-          <el-input v-model="listQuery.params.content" placeholder="搜索内容(关键信息)"></el-input>
+          <el-input v-model="listQuery.params.content" placeholder="搜索内容(关键信息)" />
         </el-form-item>
         <el-button v-if="checkPermission2(['KAFKA_CONTENT_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
           查询
@@ -82,7 +83,7 @@
 
     <el-dialog :visible.sync="dialogVisible" :title="'消息JSON'" width="80%">
       <!--<span v-html="content"></span>-->
-      <pre>{{content}}</pre>
+      <pre>{{ content }}</pre>
 
       <div style="text-align:center;">
         <el-button type="danger" @click="dialogVisible=false">关闭</el-button>
@@ -96,8 +97,8 @@
               v-for="item in options.clusters"
               :key="item.clusterName"
               :label="item.clusterName"
-              :value="item.clusterName">
-            </el-option>
+              :value="item.clusterName"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="主题名称">
@@ -108,13 +109,15 @@
             reserve-keyword
             placeholder="请输入关键词"
             :remote-method="remoteMethodSend"
-            :loading="loading" style="width:100%">
+            :loading="loading"
+            style="width:100%"
+          >
             <el-option
               v-for="item in options.topics"
               :key="item.value"
               :label="item.label"
-              :value="item.value">
-            </el-option>
+              :value="item.value"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="发送消息">
@@ -125,10 +128,10 @@
             placeholder="发送Kafka 消息"
           />
         </el-form-item>
-      <div style="text-align:right;">
-        <el-button type="primary" @click="handleSubmit">发送</el-button>
-        <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
-      </div>
+        <div style="text-align:right;">
+          <el-button type="primary" @click="handleSubmit">发送</el-button>
+          <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
+        </div>
       </el-form>
     </el-dialog>
   </div>
