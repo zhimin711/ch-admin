@@ -44,16 +44,16 @@
           <span>{{ scope.row.url }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="图标" width="70">
-        <template slot-scope="scope">
-          <i v-if="scope.row.icon" :class="scope.row.icon" />
+      <!--<el-table-column align="center" label="图标" width="70">
+        <template slot-scope="{row}">
+          <i v-if="row.icon" :class="row.icon" />
         </template>
-      </el-table-column>
+      </el-table-column>-->
       <el-table-column align="center" prop="sort" label="排序" width="69" />
       <el-table-column align="center" prop="status" label="状态" width="69">
         <template slot-scope="{row}">
           <el-tag :type="row.status | statusFilter">
-            {{ row.status | enableStatusNameFilter}}
+            {{ row.status | enableStatusNameFilter }}
           </el-tag>
         </template>
       </el-table-column>
@@ -96,7 +96,7 @@
         <el-form-item label="地址">
           <el-input v-model="record.url" />
         </el-form-item>
-        <el-form-item label="重定向地址" v-show="recordForm.redirectShow">
+        <el-form-item v-show="recordForm.redirectShow" label="重定向地址">
           <el-input v-model="record.redirect" />
         </el-form-item>
         <el-form-item label="请求方法">

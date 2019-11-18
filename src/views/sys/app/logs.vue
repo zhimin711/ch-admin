@@ -10,12 +10,15 @@
         placeholder="(应用实例)请输入关键词"
         :remote-method="queryInstances"
         :loading="loadingIns"
-        @change="changeIns">
+        @change="changeIns"
+      >
         <el-option
           v-for="item in options.instances"
           :key="item.id"
           :label="item.name"
-          :value="item.id">
+          :value="item.id"
+        >
+          {{ item.name }}
         </el-option>
       </el-select>
       <!--<el-input v-model="listQuery.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />-->
@@ -38,16 +41,20 @@
       </el-button>
     </div>
 
-    <el-card class="box-card">
+    <el-card class="box-card res-container">
       <div slot="header" class="clearfix">
         <span>搜索结果</span>
         <!--<el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>-->
       </div>
-      <div v-for="item in searchResults" :key="item" class="text item">
+      <div v-for="item in searchResults" :key="item.ip" class="text item">
         <span>{{ item.ip }} - {{ item.dir }}</span>
         <el-collapse>
-          <el-collapse-item v-for="e1 in item.records" :key="e1" :title="e1.fileName" :name="e1.fileName">
-            <div v-for="e2 in e1.data" :key="e2">{{ e2.data }}</div>
+          <el-collapse-item v-for="e1 in item.records" :key="(item.ip + e1.fileName)" :title="e1.fileName" :name="e1.fileName">
+            <div v-for="(e2,i) in e1.data" :key="(item.ip + e1.fileName + i)">{{ e2.data }}</div>
+            <el-button-group>
+              <el-button type="primary" icon="el-icon-arrow-left" @click="prePage(e1)">上一页</el-button>
+              <el-button type="primary">下一页<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+            </el-button-group>
           </el-collapse-item>
         </el-collapse>
       </div>
@@ -57,6 +64,8 @@
 </template>
 
 <script>
+
+import { Loading } from 'element-ui'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { search } from '@/api/sys/app/logs'
 import { getUserInstances, getUserNodes } from '@/api/sys/app/instance'
@@ -133,9 +142,11 @@ export default {
         return item.env === _this.searchParams.env
       })
       if (envNodes.length === 0) {
-        _this.$message.error('请选择应用没有配置节点')
+        const envName = ['', 'DEV', 'TEST', 'PROD'][_this.searchParams.env]
+        _this.$message.error(`请选择应用${envName}没有配置节点`)
         return
       }
+      const loadingS = Loading.service({ target: document.querySelector('.res-container'), fullscreen: false })
       _this.searchResults = []
       envNodes.forEach(async node => {
         // this.recordRoles.push(route.id)
@@ -144,9 +155,15 @@ export default {
         if (resp.success) {
           //
           const obj = resp.rows[0]
+          obj.insId = searchInfo.insId
+          obj.nodeId = searchInfo.nodeId
           _this.searchResults.push(obj)
+          loadingS.close()
         }
       })
+    },
+    prePage(e) {
+      console.log(e)
     }
   }
 }
