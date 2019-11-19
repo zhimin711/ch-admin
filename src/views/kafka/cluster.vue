@@ -56,12 +56,12 @@
           <el-input v-model="record.zookeeper" placeholder="zookeeper" />
         </el-form-item>
         <el-form-item label="brokers">
-          <el-input v-model="record.brokers" placeholder="brokers" />
+          <el-input v-model="record.brokers" placeholder="brokers" :disabled="true"/>
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="primary" @click="handleSubmit">保存</el-button>
-        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
+        <el-button :loading="loading.handleSubmit" type="primary" @click="handleSubmit">保存</el-button>
+        <el-button :disabled="loading.handleSubmit" type="danger" @click="dialogVisible=false">取消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -102,6 +102,7 @@ export default {
         list: [],
         params: {}
       },
+      loading: { handleSubmit: false },
       record: {},
       recordRoles: [],
       dialogVisible: false,
@@ -157,13 +158,15 @@ export default {
       const _this = this
       let resp = null
       let opName = '添加'
+      _this.loading.handleSubmit = true
       if (this.dialogType === 'new') {
-        resp = await add(this.record)
+        resp = await add(this.record).catch(() => { _this.loading.handleSubmit = false })
       } else if (this.dialogType === 'edit') {
         opName = '修改'
-        resp = await edit(this.record.id, this.record)
+        resp = await edit(this.record.id, this.record).catch(() => { _this.loading.handleSubmit = false })
       }
-      if (resp.success) {
+      _this.loading.handleSubmit = false
+      if (resp && resp.success) {
         this.dialogVisible = false
         this.$notify({
           title: `${opName}集群名称 Success!`,

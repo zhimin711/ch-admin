@@ -71,7 +71,9 @@
             reserve-keyword
             placeholder="请输入关键词"
             :remote-method="remoteMethod"
-            :loading="loading" style="width:100%">
+            :loading="loading"
+            style="width:100%"
+          >
             <el-option
               v-for="item in options.topics"
               :key="item.value"
@@ -81,7 +83,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="存储类型">
-          <el-input v-model="record.type" placeholder="存储类型" />
+          <!--<el-input v-model="record.type" placeholder="存储类型" />-->
+          <el-select v-model="record.type" placeholder="请选择">
+            <el-option key="JSON" label="JSON" value="JSON" />
+            <el-option key="STRING" label="STRING" value="STRING" />
+            <el-option key="PROTO_STUFF" label="PROTO_STUFF" value="PROTO_STUFF" />
+          </el-select>
         </el-form-item>
         <el-form-item label="存储Jar包">
           <el-input v-model="record.classFile" placeholder="存储Jar包" />
