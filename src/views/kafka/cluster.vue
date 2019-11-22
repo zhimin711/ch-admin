@@ -56,7 +56,7 @@
           <el-input v-model="record.zookeeper" placeholder="zookeeper" />
         </el-form-item>
         <el-form-item label="brokers">
-          <el-input v-model="record.brokers" placeholder="brokers" :disabled="true"/>
+          <el-input v-model="record.brokers" placeholder="brokers" :disabled="true" />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
