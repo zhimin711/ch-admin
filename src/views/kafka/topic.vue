@@ -60,11 +60,11 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 主题':'New 主题'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改主题信息':'创建主题'">
       <el-form :model="record" label-width="100px" label-position="left">
         <el-form-item label="集群名称">
           <!--<el-input v-model="record.clusterName" placeholder="集群名称" :disabled="dialogCodeEdit" />-->
-          <el-select v-model="record.clusterName" placeholder="请选择">
+          <el-select v-model="record.clusterName" placeholder="请选择" :disabled="propDisabled">
             <el-option
               v-for="item in options.clusters"
               :key="item.clusterName"
@@ -74,8 +74,8 @@
           </el-select>
         </el-form-item>
         <el-form-item label="主题名称">
-          <!--<el-input v-model="record.topicName" placeholder="主题名称" />-->
-          <el-select
+          <el-input v-model="record.topicName" placeholder="主题名称" :disabled="propDisabled" />
+          <!--<el-select
             v-model="record.topicName"
             filterable
             remote
@@ -91,7 +91,13 @@
               :label="item.label"
               :value="item.value">
             </el-option>
-          </el-select>
+          </el-select>-->
+        </el-form-item>
+        <el-form-item label="分区数">
+          <el-input-number v-model="record.partitionSize" :min="2" :max="50" :step="2" :disabled="propDisabled" />
+        </el-form-item>
+        <el-form-item label="复制数">
+          <el-input-number v-model="record.replicaSize" :min="0" :max="10" :disabled="propDisabled" />
         </el-form-item>
         <el-form-item label="存储类型">
           <!--<el-input v-model="record.type" placeholder="存储类型" />-->
@@ -106,6 +112,14 @@
         </el-form-item>
         <el-form-item label="存储对象">
           <el-input v-model="record.className" placeholder="存储对象" />
+        </el-form-item>
+        <el-form-item label="说明">
+          <el-input
+            v-model="record.description"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            placeholder="主题说明"
+          />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -173,7 +187,7 @@ export default {
       record: {},
       dialogVisible: false,
       dialogType: false,
-      dialogCodeEdit: false,
+      propDisabled: false,
       dialogVisible2: false,
       loading: false,
       options: {
@@ -201,16 +215,16 @@ export default {
       })
     },
     handleAdd() {
-      this.record = {}
+      this.record = { partitionSize: 4, replicaSize: 3, type: 'JSON' }
       this.dialogType = 'new'
       this.dialogVisible = true
-      this.dialogCodeEdit = false
+      this.propDisabled = false
     },
     handleEdit(row) {
       this.record = deepClone(row)
       this.dialogType = 'edit'
       this.dialogVisible = true
-      this.dialogCodeEdit = true
+      this.propDisabled = true
     },
     handleDel(row) {
       const _this = this
