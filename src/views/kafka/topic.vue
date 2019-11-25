@@ -1,7 +1,15 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.params.clusterName" placeholder="集群名称" style="width: 200px;" class="filter-item" />
+      <!--<el-input v-model="listQuery.params.clusterName" placeholder="集群名称" style="width: 200px;" class="filter-item" />-->
+      <el-select v-model="listQuery.params.clusterName" placeholder="请选择" class="filter-item">
+        <el-option
+          v-for="item in options.clusters"
+          :key="item.clusterName"
+          :label="item.clusterName"
+          :value="item.clusterName">
+        </el-option>
+      </el-select>
       <el-input v-model="listQuery.params.topicName" placeholder="主题名称" style="width: 200px;" class="filter-item" />
       <el-button v-if="checkPermission2(['KAFKA_TOPIC_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
@@ -9,8 +17,11 @@
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
         重置
       </el-button>
+      <el-button v-if="checkPermission2(['KAFKA_TOPIC_SYNC'])" class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-refresh" @click="handleSync">
+        同步集群主题
+      </el-button>
       <el-button v-if="checkPermission2(['KAFKA_TOPIC_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加主题
+        创建主题
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
@@ -24,19 +35,19 @@
           <span>{{ scope.row.topicName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="存储类型">
+      <el-table-column label="存储类型" width="127">
         <template slot-scope="scope">
           <span>{{ scope.row.type }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="存储Jar包">
+      <el-table-column label="分区数" width="70" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.classFile }}</span>
+          <span>{{ scope.row.partitionSize }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="存储对象">
+      <el-table-column label="复制数" width="70" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.className }}</span>
+          <span>{{ scope.row.replicaSize }}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="120">
@@ -102,14 +113,33 @@
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
       </div>
     </el-dialog>
+    <el-dialog :visible.sync="dialogVisible2" :title="'同步Kafka集群主题'" width="400px">
+      <el-form :model="record" label-width="100px" label-position="left">
+        <el-form-item label="集群名称">
+          <el-select v-model="record.clusterName" placeholder="请选择">
+            <el-option
+              v-for="item in options.clusters"
+              :key="item.clusterName"
+              :label="item.clusterName"
+              :value="item.clusterName">
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button type="primary" @click="handleSyncSubmit">提交</el-button>
+        <el-button type="danger" @click="dialogVisible2=false">关闭</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import { Loading } from 'element-ui'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del, getClusters, getTopics } from '@/api/kafka/topic'
+import { list, add, edit, del, getClusters, getTopics, syncAll } from '@/api/kafka/topic'
 
 export default {
   name: 'UserManager',
@@ -222,12 +252,35 @@ export default {
         _this.getList()
       }
     },
+    handleSync() {
+      this.record = {}
+      this.dialogType = 'new'
+      this.dialogVisible2 = true
+    },
+    async handleSyncSubmit() {
+      this.dialogVisible2 = false
+      const loadingS = Loading.service({ target: document.querySelector('.app-container'), text: `正在同步${this.record.clusterName}主题，请稍后......`, fullscreen: false })
+      const _this = this
+      const resp = await syncAll(_this.record).catch(() => { loadingS.close() })
+      loadingS.close()
+      if (resp && resp.success) {
+        this.$notify({
+          title: `Kafka集群主题同步成功!`,
+          dangerouslyUseHTMLString: true,
+          message: `
+            <div>集群名称: ${this.record.clusterName}</div>
+          `,
+          type: 'success'
+        })
+        _this.getList()
+      } else {
+        // _this.dialogVisible2 = true
+        _this.$message.error('同步失败！')
+      }
+    },
     async remoteMethod(query) {
       if (!this.record.clusterName || this.record.clusterName === '') {
-        this.$message({
-          type: 'warn',
-          message: '请先选择集群...'
-        })
+        this.$message.warn('请先选择集群...')
         return
       }
       if (query !== '') {

@@ -53,3 +53,12 @@ export function getTopics(clusterName, topicName) {
     params: { clusterName, topicName }
   })
 }
+
+export function syncAll(data) {
+  return request({
+    url: `${baseUrl}/sync`,
+    method: 'post',
+    timeout: 360000,
+    data
+  })
+}
