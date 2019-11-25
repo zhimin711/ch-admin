@@ -4,7 +4,7 @@
 
       <el-form :model="listQuery.params" :inline="true" label-width="100px" label-position="left">
         <el-form-item label="集群名称">
-          <el-select v-model="listQuery.params.cluster" placeholder="请选择" class="filter-item">
+          <el-select v-model="listQuery.params.cluster" placeholder="请选择" class="filter-item" @change="handleClusterChange">
             <el-option
               v-for="item in options.clusters"
               :key="item.clusterName"
@@ -325,6 +325,7 @@ export default {
         }
       })
     },
+    handleClusterChange(val) { this.options.topics = [] },
     getAsyncList(sid) {
       this.listLoading = true
       list(sid).then(response => {
