@@ -73,7 +73,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
-          <el-link type="primary" icon="el-icon-view" @click="handleView(scope.row)">JSON视图</el-link>
+          <el-link v-if="contentType!=='STRING'" type="primary" icon="el-icon-view" @click="handleView(scope.row)">JSON视图</el-link>
           <el-link v-if="checkPermission2(['KAFKA_CONTENT_RESEND'])" type="primary" icon="el-icon-position" @click="handleResend(scope.row)">重发</el-link>
         </template>
       </el-table-column>
@@ -145,22 +145,6 @@ import { search, getStatus, list, send, resend, getClusters, getTopics } from '@
 
 export default {
   name: 'KafkaContentManager',
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      let s = 'draft'
-      if (status === '1') {
-        s = 'published'
-      } else if (status === '3') {
-        s = 'deleted'
-      }
-      return statusMap[s]
-    }
-  },
   data() {
     return {
       listLoading: false,
