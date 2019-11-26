@@ -46,6 +46,14 @@ export function initPwd(id) {
   })
 }
 
+export function changePwd(data) {
+  return request({
+    url: `${baseUrl}/changePwd`,
+    method: 'post',
+    data
+  })
+}
+
 export function getEnableRoles() {
   return request({
     url: `${baseUrl}/roles`,

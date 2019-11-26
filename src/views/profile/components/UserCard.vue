@@ -25,6 +25,7 @@
               :value="item.id"
             />
           </el-select>
+          <el-divider></el-divider>
           <el-button type="primary">设置为默认角色</el-button>
         </div>
       </div>
