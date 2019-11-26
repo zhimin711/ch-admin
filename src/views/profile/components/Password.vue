@@ -47,7 +47,9 @@ export default {
     }
     const validatePass = (rule, value, callback) => {
       if (typeof value === 'undefined' || value === '') {
-        callback(new Error('请输入密码'))
+        callback(new Error('请输入新密码'))
+      } else if (value.length < 6) {
+        callback(new Error('新密码长度不成小于6位'))
       } else {
         if (value === this.record.pwd1) {
           callback(new Error('新密码不能与原密码相同'))
@@ -67,13 +69,13 @@ export default {
       }
     }
     return {
+      loadingSubmit: false,
       record: {
         pwd1: '',
         pwd2: '',
         pwd3: ''
       },
       rules: {
-        loadingSubmit: false,
         pwd1: [
           // { required: true, message: '请输入当前密码', trigger: 'blur' }
           { required: true, validator: validatePass3, trigger: 'blur' }
