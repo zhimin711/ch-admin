@@ -157,24 +157,8 @@ import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { list, add, edit, del, getClusters, getTopics, syncAll, refresh2 } from '@/api/kafka/topic'
 
 export default {
-  name: 'UserManager',
+  name: 'KafkaTopicManager',
   components: { Pagination },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      let s = 'draft'
-      if (status === '1') {
-        s = 'published'
-      } else if (status === '3') {
-        s = 'deleted'
-      }
-      return statusMap[s]
-    }
-  },
   data() {
     return {
       listLoading: true,

@@ -144,7 +144,7 @@ import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { search, getStatus, list, send, resend, getClusters, getTopics } from '@/api/kafka/content'
 
 export default {
-  name: 'UserManager',
+  name: 'KafkaContentManager',
   filters: {
     statusFilter(status) {
       const statusMap = {
