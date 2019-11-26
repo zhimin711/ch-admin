@@ -178,6 +178,7 @@ export default {
       content: '',
       dialogVisible: false,
       dialogVisible2: false,
+      contentType: '',
       loading: false,
       options: {
         clusters: [],
@@ -216,8 +217,10 @@ export default {
 
       // this.listLoading = true
       search(this.listQuery).then(response => {
-        if (response.code) {
-          this.sid = response.code
+        this.contentType = 'STRING'
+        if (response.extra) this.contentType = response.extra.contentType
+        if (response.extra && response.extra.searchAsync) {
+          this.sid = response.response.extra.searchId
           this.timer = setInterval(this.getStatus, 2000)
         } else {
           this.loadingIns.close()

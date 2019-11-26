@@ -50,9 +50,10 @@
           <span>{{ scope.row.replicaSize }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="120">
+      <el-table-column align="center" label="操作" width="180">
         <template slot-scope="scope">
           <el-link v-if="checkPermission2(['KAFKA_TOPIC_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
+          <el-link v-if="checkPermission2(['KAFKA_TOPIC_REFRESH'])" type="warning" icon="el-icon-refresh" @click="handleRefresh(scope.row)">重建</el-link>
           <el-link v-if="checkPermission2(['KAFKA_TOPIC_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
@@ -94,7 +95,7 @@
           </el-select>-->
         </el-form-item>
         <el-form-item label="分区数">
-          <el-input-number v-model="record.partitionSize" :min="2" :max="50" :step="2" :disabled="propDisabled" />
+          <el-input-number v-model="record.partitionSize" :min="1" :max="50" :step="2" :disabled="propDisabled" />
         </el-form-item>
         <el-form-item label="复制数">
           <el-input-number v-model="record.replicaSize" :min="0" :max="10" :disabled="propDisabled" />
@@ -153,7 +154,7 @@ import { Loading } from 'element-ui'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del, getClusters, getTopics, syncAll } from '@/api/kafka/topic'
+import { list, add, edit, del, getClusters, getTopics, syncAll, refresh2 } from '@/api/kafka/topic'
 
 export default {
   name: 'UserManager',
@@ -228,18 +229,27 @@ export default {
     },
     handleDel(row) {
       const _this = this
-      this.$confirm('Confirm to remove the user?', 'Warning', {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
+      this.$confirm('请确认是否删除主题，删除不可恢复?', 'Warning', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
         type: 'warning'
       })
         .then(async() => {
           await del(row.id)
           _this.getList()
-          this.$message({
-            type: 'success',
-            message: 'Delete success!'
-          })
+          this.$message.success('删除成功!')
+        })
+        .catch(err => { console.error(err) })
+    },
+    handleRefresh(row) {
+      this.$confirm('请确认是否重建主题，当前主题消息将删除?', '重建主题', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async() => {
+          await refresh2(row)
+          this.$message.success('重建主题成功!')
         })
         .catch(err => { console.error(err) })
     },

@@ -62,3 +62,11 @@ export function syncAll(data) {
     data
   })
 }
+
+export function refresh2(data) {
+  return request({
+    url: `${baseUrl}/refresh`,
+    method: 'post',
+    data
+  })
+}
