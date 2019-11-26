@@ -61,7 +61,7 @@
           <span>{{ scope.row.partitionId }}</span>
         </template>
       </el-table-column>
-      <el-table-column width="66px" align="center" label="索引">
+      <el-table-column width="77px" align="center" label="索引">
         <template slot-scope="scope">
           <span>{{ scope.row.messageOffset }}</span>
         </template>
