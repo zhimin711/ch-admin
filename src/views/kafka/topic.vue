@@ -25,7 +25,7 @@
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="120px" label="集群名称">
+      <el-table-column width="133px" label="集群名称">
         <template slot-scope="scope">
           <span>{{ scope.row.clusterName }}</span>
         </template>
