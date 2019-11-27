@@ -10,8 +10,7 @@ const sysRouter = {
   name: 'Platform Manager',
   meta: {
     title: '系统管理',
-    icon: 'lock',
-    roles: ['admin', 'editor'] // you can set roles in root nav
+    icon: 'lock'
   },
   children: [
     {
@@ -19,8 +18,7 @@ const sysRouter = {
       component: () => import('@/views/sys/project/code'),
       name: 'User',
       meta: {
-        title: '项目代码',
-        roles: ['admin'] // or you can only set roles in sub nav
+        title: '项目代码'
       }
     },
     {
@@ -28,8 +26,7 @@ const sysRouter = {
       component: () => import('@/views/sys/project/version'),
       name: 'Version',
       meta: {
-        title: '项目版本',
-        roles: ['admin']
+        title: '项目版本'
       }
     },
     {
@@ -37,8 +34,7 @@ const sysRouter = {
       component: () => import('@/views/sys/app/instance'),
       name: 'Instance',
       meta: {
-        title: '应用实例',
-        roles: ['admin']
+        title: '应用实例'
       }
     },
     {
@@ -46,8 +42,7 @@ const sysRouter = {
       component: () => import('@/views/sys/app/logs'),
       name: 'Logs',
       meta: {
-        title: '应用日志',
-        roles: ['admin']
+        title: '应用日志'
       }
     }/*,
     {

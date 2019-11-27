@@ -50,16 +50,30 @@
         <span>{{ item.ip }} - {{ item.dir }}</span>
         <el-collapse>
           <el-collapse-item v-for="e1 in item.records" :key="(item.ip + e1.fileName)" :title="e1.fileName" :name="e1.fileName">
-            <div v-for="(e2,i) in e1.data" :key="(item.ip + e1.fileName + i)">{{ e2.data }}</div>
-            <el-button-group>
-              <el-button type="primary" icon="el-icon-arrow-left" @click="prePage(e1)">上一页</el-button>
-              <el-button type="primary">下一页<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+            <div v-for="(e2,i) in e1.data" :key="(item.ip + e1.fileName + i)">
+              <el-button v-if="e2.number" icon="el-icon-view" size="mini" @click="handleDetail(item.searchInfo, e1, e2.number)">查看明细</el-button>
+              <el-tag v-if="e2.number" size="medium">第{{ e2.number }}行</el-tag>
+              {{ e2.data }}
+            </div>
+            <el-button-group v-if="e1.type!=='0'">
+              <el-button type="primary" icon="el-icon-arrow-left" :loading="loadingPage" @click="handlePage(item.searchInfo, e1, -1)">上一页</el-button>
+              <el-button type="primary" :loading="loadingPage" @click="handlePage(item.searchInfo, e1, 1)">下一页<i class="el-icon-arrow-right el-icon--right"></i></el-button>
             </el-button-group>
           </el-collapse-item>
         </el-collapse>
       </div>
     </el-card>
 
+    <el-dialog :visible.sync="dialogVisible" :title="'搜索明细'" width="80%">
+      <div v-for="(e2,i) in detailResult" :key="(detailInfo.dir + (detailInfo.beforeLineNum + i))">
+        {{ e2.data }}
+      </div>
+      <div style="text-align:center;">
+        <el-button type="primary" :loading="loadingPage" icon="el-icon-arrow-left" @click="handleDetailPage(-1)">上一页</el-button>
+        <el-button type="primary" :loading="loadingPage" @click="handleDetailPage(1)">下一页<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+        <el-button type="danger" @click="dialogVisible=false">关闭</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -72,28 +86,10 @@ import { getUserInstances, getUserNodes } from '@/api/sys/app/instance'
 
 export default {
   name: 'SysAppLogsManager',
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      let s = 'draft'
-      if (status === '1') {
-        s = 'published'
-      } else if (status === '3') {
-        s = 'deleted'
-      }
-      return statusMap[s]
-    },
-    convertTypeFilter(type) {
-      return ['', 'DB(数据库)', '远程终端(SSH)', '(FTP)'][type]
-    }
-  },
   data() {
     return {
       loadingIns: false,
+      loadingPage: false,
       options: {
         instances: []
       },
@@ -101,7 +97,10 @@ export default {
       searchResults: [],
       activeNames: ['1'],
       record: {},
-      nodes: []
+      nodes: [],
+      dialogVisible: false,
+      detailInfo: {},
+      detailResult: []
     }
   },
   created() {
@@ -151,19 +150,89 @@ export default {
       envNodes.forEach(async node => {
         // this.recordRoles.push(route.id)
         const searchInfo = { insId: node.insId, nodeId: node.id, env: node.env, type: 'FILE_LIST' }
+        if (_this.searchParams.fileName) {
+          searchInfo.fileName = _this.searchParams.fileName
+        }
+        if (_this.searchParams.fileContent) {
+          searchInfo.fileContent = _this.searchParams.fileContent
+        }
         const resp = await search(searchInfo)
         if (resp.success) {
           //
           const obj = resp.rows[0]
-          obj.insId = searchInfo.insId
-          obj.nodeId = searchInfo.nodeId
+          obj.searchInfo = searchInfo
+          // obj.insId = searchInfo.insId
+          // obj.nodeId = searchInfo.nodeId
           _this.searchResults.push(obj)
           loadingS.close()
         }
       })
     },
-    prePage(e) {
-      console.log(e)
+    handlePage(info, e, op) {
+      const searchInfo = { insId: info.insId, nodeId: info.nodeId, env: info.env, type: 'NEXT' }
+      searchInfo.dir = e.fileName
+      searchInfo.beforeLineNum = e.startLine
+      searchInfo.afterLineNum = e.endLine
+      if (op === -1) {
+        searchInfo.type = 'PRE'
+      }
+      this.loadingPage = true
+      search(searchInfo).then(resp => {
+        this.loadingPage = false
+        if (!resp.success) {
+          return
+        }
+        const row = resp.rows[0]
+        if (row.code === '-1') {
+          this.$message.error(row.msg)
+          return
+        }
+        e.data = row.data
+        e.startLine = row.startLine
+        e.endLine = row.endLine
+      }).catch(() => {
+        this.loadingPage = false
+      })
+    },
+    handleDetailPage(op) {
+      this.detailInfo.type = 'NEXT'
+      if (op === -1) {
+        this.detailInfo.type = 'PRE'
+      }
+      this.loadingPage = true
+      search(this.detailInfo).then(resp => {
+        this.loadingPage = false
+        if (!resp.success) {
+          return
+        }
+        const row = resp.rows[0]
+        if (row.code === '-1') {
+          this.$message.error(row.msg)
+          return
+        }
+        this.detailResult = row.data
+        this.detailInfo.beforeLineNum = row.startLine
+        this.detailInfo.afterLineNum = row.endLine
+      }).catch(() => {
+        this.loadingPage = false
+      })
+    },
+    handleDetail(info, e, number) {
+      const searchInfo = { insId: info.insId, nodeId: info.nodeId, env: info.env, type: 'DETAIL' }
+      searchInfo.dir = e.fileName
+      searchInfo.fileContent = number
+      search(searchInfo).then(resp => {
+        if (!resp.success) {
+          return
+        }
+        this.dialogVisible = true
+        const row = resp.rows[0]
+        this.detailResult = row.data
+
+        this.detailInfo = searchInfo
+        this.detailInfo.beforeLineNum = row.startLine
+        this.detailInfo.afterLineNum = row.endLine
+      })
     }
   }
 }
