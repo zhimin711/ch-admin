@@ -98,8 +98,9 @@ export default {
           changePwd({ key: _this.record.pwd1, value: _this.record.pwd2 }).then(resp => {
             _this.loadingSubmit = false
             if (resp.success) {
+              _this.record = {}
               this.$message({
-                message: 'User information has been updated successfully',
+                message: '修改密码成功！',
                 type: 'success',
                 duration: 5 * 1000
               })
