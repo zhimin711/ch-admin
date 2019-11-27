@@ -33,7 +33,7 @@
       </el-select>
       <el-input v-model="searchParams.fileName" placeholder="文件名匹配（info.log）" style="width: 200px;" class="filter-item" />
       <el-input v-model="searchParams.fileContent" placeholder="日志内容匹配" style="width: 300px;" class="filter-item" />
-      <el-button v-if="checkPermission2(['UPMS_USER_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="handleSearch">
+      <el-button v-if="checkPermission2(['SYS_APP_LOGS_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="handleSearch">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="searchParams = {}">
