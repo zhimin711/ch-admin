@@ -22,10 +22,10 @@
         </el-option>
       </el-select>
       <!--<el-input v-model="listQuery.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />-->
-      <el-select v-model="searchParams.type" placeholder="类型" class="filter-item" clearable>
+      <!--<el-select v-model="searchParams.type" placeholder="类型" class="filter-item" clearable>
         <el-option label="日志" value="1">日志</el-option>
         <el-option label="配置" value="0">配置</el-option>
-      </el-select>
+      </el-select>-->
       <el-select v-model="searchParams.env" placeholder="环境" class="filter-item" clearable @change="changeEnv">
         <el-option label="DEV" value="1">DEV</el-option>
         <el-option label="TEST" value="2">TEST</el-option>
