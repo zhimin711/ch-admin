@@ -129,10 +129,6 @@ export default {
         _this.$message.error('请选择应用')
         return
       }
-      if (!_this.searchParams.type) {
-        _this.$message.error('请选择类型')
-        return
-      }
       if (!_this.searchParams.env) {
         _this.$message.error('请选择环境')
         return

@@ -156,7 +156,7 @@ export default {
   methods: {
     checkPermission2,
     async getRoutes() {
-      const res = await fetchTree('0')
+      const res = await fetchTree('9')
       // this.serviceRoutes = res.rows
       this.routes = res.rows
       // this.generateRoutes(res.rows)
