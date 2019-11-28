@@ -47,7 +47,7 @@
         <!--<el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>-->
       </div>
       <div v-for="item in searchResults" :key="item.ip" class="text item">
-        <el-tag>{{ item.ip }} - {{ item.dir }}</el-tag>
+        <el-tag style="margin:5px 0">{{ item.ip }} - {{ item.dir }}</el-tag>
         <el-collapse>
           <el-collapse-item v-for="e1 in item.records" :key="(item.ip + e1.fileName)" :title="e1.fileName" :name="e1.fileName">
             <div v-for="(e2,i) in e1.data" :key="(item.ip + e1.fileName + i)">
