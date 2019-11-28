@@ -46,7 +46,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getRoles" />
+    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 角色':'New 角色'">
       <el-form :model="role" label-width="80px" label-position="left">
@@ -151,7 +151,7 @@ export default {
   created() {
     // Mock: get all routes and roles list from server
     this.getRoutes()
-    this.getRoles()
+    this.getList()
   },
   methods: {
     checkPermission2,
@@ -161,7 +161,7 @@ export default {
       this.routes = res.rows
       // this.generateRoutes(res.rows)
     },
-    getRoles() {
+    getList() {
       this.listLoading = true
       list(this.listQuery).then(response => {
         this.listLoading = false
@@ -170,7 +170,7 @@ export default {
       })
     },
     handleFilter() {
-      this.getRoles()
+      this.getList()
     },
     // Reshape the routes structure so that it looks the same as the sidebar
     generateRoutes(routes, basePath = '/') {
@@ -243,7 +243,7 @@ export default {
       })
         .then(async() => {
           await del(row.id)
-          this.getRoles()
+          this.getList()
           this.$message({
             type: 'success',
             message: 'Delete success!'
@@ -269,30 +269,31 @@ export default {
     },
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
+      let resp = null
       if (isEdit) {
-        await edit(this.role.id, this.role)
-        for (let index = 0; index < this.rolesList.length; index++) {
-          if (this.rolesList[index].id === this.role.id) {
-            this.rolesList.splice(index, 1, Object.assign({}, this.role))
-            break
-          }
-        }
+        resp = await edit(this.role.id, this.role)
       } else {
-        const { data } = await add(this.role)
-        this.role.code = data.code
-        this.rolesList.push(this.role)
+        resp = await add(this.role).catch(() => {})
+        if (resp && resp.success) {
+          const role = deepClone(this.role)
+          this.rolesList.push(role)
+        }
+      }
+      this.dialogVisible = false
+      let type = 'error'
+      if (resp && resp.success) {
+        type = 'success'
+        this.getList()
       }
 
-      const { code, name } = this.role
-      this.dialogVisible = false
       this.$notify({
-        title: (isEdit ? '修改' : '创建') + '角色 Success',
+        title: (isEdit ? '修改' : '创建') + '角色',
         dangerouslyUseHTMLString: true,
         message: `
-            <div>角色代码: ${code}</div>
-            <div>角色名称: ${name}</div>
+            <div>角色代码: ${this.role.code}</div>
+            <div>角色名称: ${this.role.name}</div>
           `,
-        type: 'success'
+        type: type
       })
     },
     handleAuth(row) {
