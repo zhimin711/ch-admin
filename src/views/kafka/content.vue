@@ -44,9 +44,11 @@
         <el-form-item label="搜索内容">
           <el-input v-model="listQuery.params.content" placeholder="搜索内容(关键信息)" />
         </el-form-item>
+        <el-badge :value="listQuery.total" :max="99" class="item">
         <el-button v-if="checkPermission2(['KAFKA_CONTENT_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
           查询
         </el-button>
+        </el-badge>
         <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {type: '0', limit: 12}">
           重置
         </el-button>
@@ -209,7 +211,7 @@ export default {
         } else {
           this.loadingIns.close()
           this.listQuery.list = response.rows
-          this.listQuery.total = response.total
+          this.listQuery.total = response.rows.length
         }
         // this.listLoading = false
       }).catch(() => {
@@ -317,7 +319,7 @@ export default {
       this.listLoading = true
       list(sid).then(response => {
         this.listQuery.list = response.rows
-        this.listQuery.total = response.total
+        this.listQuery.total = response.rows.length
         this.listLoading = false
       })
     }
