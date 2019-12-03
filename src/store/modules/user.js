@@ -143,6 +143,8 @@ const actions = {
       resetRouter()
       let accessRoutes = []
       if (role === 7) {
+        const currRoles = state.roles.filter(item => { return item.id === role })
+        commit('SET_ROLE', currRoles[0])
         accessRoutes = await dispatch('permission/generateRoutes', [], { root: true })
       } else {
         const { menuList } = await dispatch('getInfo', role)
