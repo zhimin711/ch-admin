@@ -140,18 +140,17 @@ const actions = {
   // dynamically modify permissions
   changeRoles({ commit, dispatch }, role) {
     return new Promise(async resolve => {
-      // const token = role + '-token'
-      // commit('SET_TOKEN', token)
-      // setToken(token)
-
-      const { menuList } = await dispatch('getInfo', role)
-
       resetRouter()
+      let accessRoutes = []
+      if (role === 7) {
+        accessRoutes = await dispatch('permission/generateRoutes', [], { root: true })
+      } else {
+        const { menuList } = await dispatch('getInfo', role)
 
-      // generate accessible routes map based on roles
-      // const accessRoutes = await dispatch('permission/generateRoutes', roles, { root: true })
-      const accessRoutes = await dispatch('permission/assemblyRouters', menuList, { root: true })
-
+        // generate accessible routes map based on roles
+        // const accessRoutes = await dispatch('permission/generateRoutes', roles, { root: true })
+        accessRoutes = await dispatch('permission/assemblyRouters', menuList, { root: true })
+      }
       // dynamically add accessible routes
       router.addRoutes(accessRoutes)
 

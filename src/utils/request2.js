@@ -69,7 +69,7 @@ service2.interceptors.response.use(
         })
       } else if (res.code) {
         Message({
-          message: res.message || 'Error',
+          message: res.message || `Unknown Error: ${res.code}`,
           type: 'error',
           duration: 5 * 1000
         })

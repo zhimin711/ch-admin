@@ -50,7 +50,7 @@
       <el-table-column class-name="status-col" label="状态" width="110">
         <template slot-scope="{row}">
           <el-tag :type="row.status | statusFilter">
-            {{ row.status }}
+            {{ row.status | enableStatusNameFilter }}
           </el-tag>
         </template>
       </el-table-column>
@@ -124,22 +124,6 @@ export default {
   components: { Pagination },
   directives: {
     waves
-  },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      let s = 'draft'
-      if (status === '1') {
-        s = 'published'
-      } else if (status === '3') {
-        s = 'deleted'
-      }
-      return statusMap[s]
-    }
   },
   data() {
     return {
