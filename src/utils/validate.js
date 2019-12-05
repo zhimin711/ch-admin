@@ -21,6 +21,23 @@ export function validUsername(str) {
 }
 
 /**
+ * @param {string} val
+ * @returns {Boolean}
+ */
+export function isNull(val) {
+  if (val === undefined || val === null) return true
+  // 去除空格
+  const str = val.replace(/(^\s*)|(\s*$)/g, '')
+  if (str === '' || str === undefined || str === null) {
+    console.log('空')
+    return true
+  } else {
+    console.log('非空')
+    return false
+  }
+}
+
+/**
  * @param {string} url
  * @returns {Boolean}
  */

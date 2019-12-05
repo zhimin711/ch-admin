@@ -130,11 +130,11 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { validAlphabetsAndNumber } from '@/utils/validate'
+import { validAlphabetsAndNumber, isNull } from '@/utils/validate'
 import { fetchTree, fetchList, add, edit, del } from '@/api/upms/permission'
 
 export default {
-  name: 'PermissionManager',
+  name: 'UpmsPermission',
   components: { Pagination },
   data() {
     return {
@@ -244,7 +244,10 @@ export default {
     async handleSubmit() {
       const _this = this
       // this.record = {}
-      if ((this.record.type === '1' || this.record.type === '2') && !validAlphabetsAndNumber(this.record.url)) {
+      if (isNull(this.record.url)) {
+        this.$message.error(`地址不能为空!`)
+        return
+      } else if ((this.record.type === '1' || this.record.type === '2') && !validAlphabetsAndNumber(this.record.url)) {
         this.$message.error(`地址格式错误，目录或菜单地址只能是字母数字!`)
         return
       }
