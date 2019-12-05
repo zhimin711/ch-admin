@@ -130,7 +130,7 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { validAlphabetsAndNumber, isNull } from '@/utils/validate'
+import { validAlphabetsAndNumber, isEmpty } from '@/utils/validate'
 import { fetchTree, fetchList, add, edit, del } from '@/api/upms/permission'
 
 export default {
@@ -244,7 +244,7 @@ export default {
     async handleSubmit() {
       const _this = this
       // this.record = {}
-      if (isNull(this.record.url)) {
+      if (isEmpty(this.record.url)) {
         this.$message.error(`地址不能为空!`)
         return
       } else if ((this.record.type === '1' || this.record.type === '2') && !validAlphabetsAndNumber(this.record.url)) {
