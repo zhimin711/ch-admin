@@ -254,10 +254,6 @@ export default {
       if (this.recordParents.length > 0) {
         this.record.parentId = this.recordParents.join(',')
       } else this.record.parentId = null
-      const typeLabels = this.$refs['categoryCascader'].currentLabels
-      if (typeLabels && typeLabels.length > 0) {
-        this.record.parentName = typeLabels.join('/')
-      }
       let resp = null
       let opName = '添加'
       if (this.dialogType === 'new') {
