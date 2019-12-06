@@ -21,7 +21,7 @@
           <el-col :span="24">
             <el-button type="primary" icon="el-icon-search" @click="getList">搜索</el-button>
             <el-button icon="el-icon-refresh" @click="listQuery.params = {}">重置</el-button>
-            <!--<el-button type="primary" icon="el-icon-plus" class="handle-del mr10" @click="baseAdd()">新增</el-button>-->
+            <el-button type="primary" icon="el-icon-plus" class="handle-del mr10" @click="handleAdd">新增</el-button>
             <!--<el-button type="primary" icon="el-icon-download" class="handle-del mr10">导出</el-button>-->
           </el-col>
         </el-row>
@@ -38,14 +38,6 @@
           </template>
         </el-table-column>
         <el-table-column prop="keywords" label="关键字">
-        </el-table-column>
-        <el-table-column prop="showMode" label="显示模式" width="110">
-          <template slot-scope="scope">
-            <el-tag type="info" v-if="scope.row.showMode === '0'">隐藏</el-tag>
-            <el-tag type="success" v-if="scope.row.showMode === '1'">公开</el-tag>
-            <el-tag type="danger" v-if="scope.row.showMode === '2'">私有</el-tag>
-            <el-tag type="default" v-if="scope.row.showMode === '3'">固定</el-tag>
-          </template>
         </el-table-column>
         <el-table-column prop="sort" label="排序" width="80">
         </el-table-column>
@@ -71,22 +63,13 @@
     <!-- 编辑弹出框 -->
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改分类':'新增分类'">
       <el-form ref="baseForm" :model="record" :rules="rules" label-width="100px">
-        <!--<el-form-item label="上级目录" v-show="baseForm.parentVisible">
-          <div class="linkage">
-            <el-select v-for="(list, index) in options.parentList"
-                       v-model="record.pidList[index]"
-                       :key="index"
-                       :placeholder="levelNames[index]"
-                       @change="(value) => fetchChild(index, value)" clearable>
-              <el-option v-for="item in list" :key="item.value" :label="item.label"
-                         :value="item.value"
-                         :disabled="item.disabled">
-                <span style="float: left">{{ item.label }}</span>
-                <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value }}</span>
-              </el-option>
-            </el-select>
-          </div>
-        </el-form-item>-->
+        <el-form-item label="上级">
+          <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" :props="recordParentsProps" clearable />
+          <el-icon v-show="dialogLoadingVisible" class="el-icon-loading" />
+        </el-form-item>
+        <el-form-item label="代码" prop="code">
+          <el-input v-model="record.code" :disabled="recordForm.codeDisabled" />
+        </el-form-item>
 
         <el-form-item label="名称" prop="name">
           <el-col :span="12">
@@ -95,14 +78,6 @@
         </el-form-item>
         <el-form-item label="关键字" prop="keywords">
           <el-input v-model="record.keywords"></el-input>
-        </el-form-item>
-        <el-form-item label="显示模式">
-          <el-radio-group v-model="record.showMode">
-            <el-radio-button label="0">隐藏</el-radio-button>
-            <el-radio-button label="1">公开</el-radio-button>
-            <el-radio-button label="2">私有</el-radio-button>
-            <el-radio-button label="3" disabled>固定</el-radio-button>
-          </el-radio-group>
         </el-form-item>
         <el-form-item label="排序">
           <el-input-number v-model="record.sort"></el-input-number>
@@ -172,6 +147,7 @@ export default {
   },
   created() {
     this.getList()
+    this.getTree('0')
   },
   methods: {
     checkPermission2,
@@ -182,7 +158,7 @@ export default {
         this.dialogLoadingVisible = false
         this.options.parents = response.rows
 
-        if (this.record.parentId && this.recordType === type) {
+        if (this.record.pid && this.recordType === type) {
           // this.recordParents = this.record.parentId.split(',')
           // console.log(this.recordParents)
         }
@@ -201,9 +177,9 @@ export default {
       })
     },
     handleAdd() {
-      this.getTree('1')
-      this.record = { 'type': '1', sort: 1 }
+      this.record = { sort: 1 }
       this.recordParents = []
+
       this.dialogType = 'new'
       this.dialogVisible = true
       this.recordForm.codeDisabled = false
@@ -214,8 +190,8 @@ export default {
     handleEdit(row, index) {
       this.record = deepClone(row)
       this.recordType = row.type
-      // this.recordParents = this.record.parentId.split(',')
-      // if (this.record.parentId === '0') this.record.parentId = undefined
+      this.recordParents = this.record.pid.split(',')
+      if (this.record.pid === '0') this.record.pid = undefined
       this.dialogType = 'edit'
       this.dialogVisible = true
       // this.recordForm.codeDisabled = true
@@ -245,14 +221,10 @@ export default {
       /*if ((this.record.type === '1' || this.record.type === '2') && !validAlphabetsAndNumber(this.record.url)) {
         this.$message.error(`地址格式错误，目录或菜单地址只能是字母数字!`)
         return
-      }
-      if (this.recordParents.length > 0) {
-        this.record.parentId = this.recordParents.join(',')
-      } else this.record.parentId = null
-      const typeLabels = this.$refs['categoryCascader'].currentLabels
-      if (typeLabels && typeLabels.length > 0) {
-        this.record.parentName = typeLabels.join('/')
       }*/
+      if (this.recordParents.length > 0) {
+        this.record.pid = this.recordParents.join(',')
+      } else this.record.pid = null
       let resp = null
       let opName = '添加'
       if (this.dialogType === 'new') {
@@ -269,6 +241,7 @@ export default {
           message: `${opName} ${this.record.name} success!`
         })
         _this.getList()
+        _this.getTree('0')
       }
     },
     changeType(value) {

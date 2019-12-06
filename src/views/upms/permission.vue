@@ -44,11 +44,12 @@
           <span>{{ scope.row.url }}</span>
         </template>
       </el-table-column>
-      <!--<el-table-column align="center" label="图标" width="70">
+      <el-table-column align="center" label="图标" width="70">
         <template slot-scope="{row}">
-          <i v-if="row.icon" :class="row.icon" />
+          <!--<i v-if="row.icon" :class="row.icon" />-->
+          <svg-icon v-if="row.icon" :icon-class="row.icon" />
         </template>
-      </el-table-column>-->
+      </el-table-column>
       <el-table-column align="center" prop="sort" label="排序" width="69" />
       <el-table-column align="center" prop="status" label="状态" width="69">
         <template slot-scope="{row}">
@@ -91,7 +92,7 @@
           <el-input v-model="record.name" />
         </el-form-item>
         <el-form-item label="图标" prop="icon">
-          <el-input v-model="record.icon" />
+          <el-input v-model="record.icon" placeholder="仅支持SVG"/>
         </el-form-item>
         <el-form-item label="地址">
           <el-input v-model="record.url" />

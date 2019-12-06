@@ -1,10 +1,10 @@
 import request from '@/utils/request2'
 
-const baseUrl = '/wiki/admin/category'
+const baseUrl = '/wiki/admin/classify'
 
-export function fetchTree(type) {
+export function fetchTree(pid) {
   return request({
-    url: `${baseUrl}/tree/${type}`,
+    url: `${baseUrl}/tree/${pid}`,
     method: 'get'
   })
 }
