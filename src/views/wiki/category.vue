@@ -37,7 +37,9 @@
             <el-tag>{{ scope.row.name }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="keywords" label="关键字">
+        <el-table-column prop="code" label="代码">
+        </el-table-column>
+        <el-table-column prop="keywords" label="标签">
         </el-table-column>
         <el-table-column prop="sort" label="排序" width="80">
         </el-table-column>
@@ -68,7 +70,7 @@
           <el-icon v-show="dialogLoadingVisible" class="el-icon-loading" />
         </el-form-item>
         <el-form-item label="代码" prop="code">
-          <el-input v-model="record.code" :disabled="recordForm.codeDisabled" />
+          <el-input v-model="record.code" :disabled="recordForm.codeDisabled" placeholder="不区分大小写（自动转换大写：EXAMPLE）" />
         </el-form-item>
 
         <el-form-item label="名称" prop="name">
@@ -76,7 +78,7 @@
             <el-input v-model="record.name"></el-input>
           </el-col>
         </el-form-item>
-        <el-form-item label="关键字" prop="keywords">
+        <el-form-item label="标签" prop="keywords">
           <el-input v-model="record.keywords"></el-input>
         </el-form-item>
         <el-form-item label="排序">
@@ -87,8 +89,8 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="record.status" placeholder="请选择">
-            <el-option key="disabled" label="禁用" value="0"></el-option>
             <el-option key="enabled" label="启用" value="1"></el-option>
+            <el-option key="disabled" label="禁用" value="0"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -124,7 +126,7 @@ export default {
       recordType: '',
       recordParents: [],
       recordParentsProps: {
-        checkStrictly: false
+        checkStrictly: true
       },
       recordForm: {
         codeDisabled: false,
@@ -218,10 +220,6 @@ export default {
     async handleSubmit() {
       const _this = this
       // this.record = {}
-      /*if ((this.record.type === '1' || this.record.type === '2') && !validAlphabetsAndNumber(this.record.url)) {
-        this.$message.error(`地址格式错误，目录或菜单地址只能是字母数字!`)
-        return
-      }*/
       if (this.recordParents.length > 0) {
         this.record.pid = this.recordParents.join(',')
       } else this.record.pid = null
@@ -232,9 +230,9 @@ export default {
       } else if (this.dialogType === 'edit') {
         opName = '修改'
         this.record.children = []
-        resp = await edit(this.record.id, this.record)
+        resp = await edit(this.record.id, this.record).catch(() => {})
       }
-      if (resp.success) {
+      if (resp && resp.success) {
         this.dialogVisible = false
         this.$message({
           type: 'success',
