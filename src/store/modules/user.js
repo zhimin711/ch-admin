@@ -132,6 +132,7 @@ const actions = {
       commit('SET_ROLE', {})
       commit('SET_ROLES', [])
       commit('SET_PERMISSIONS', [])
+      resetRouter()
       removeToken()
       resolve()
     })

@@ -1,6 +1,6 @@
 import router from './router'
 import store from './store'
-import { Message } from 'element-ui'
+import { Message, MessageBox } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
@@ -46,12 +46,27 @@ router.beforeEach(async(to, from, next) => {
           // set the replace: true, so the navigation will not leave a history record
           next({ ...to, replace: true })
         } catch (error) {
-          console.log('router==> ' + error)
-          // remove token and go to login page to re-login
-          await store.dispatch('user/resetToken')
-          Message.error(error || 'Has Error')
-          next(`/login?redirect=${to.path}`)
           NProgress.done()
+          console.log('router==> ' + error)
+          debugger
+          if (error.code === '307') {
+            // to re-login
+            MessageBox.confirm('登录已失效, 取消停留在当前页面， 或重新登录', '登录过期', {
+              confirmButtonText: '重新登录',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              store.dispatch('user/resetToken').then(() => {
+                next(`/login?redirect=${to.path}`)
+              })
+            })
+          } else {
+            Message.error(error || 'Has Error')
+          }
+          // remove token and go to login page to re-login
+          // await store.dispatch('user/resetToken')
+          // Message.error(error || 'Has Error')
+          // next(`/login?redirect=${to.path}`)
         }
       }
     }

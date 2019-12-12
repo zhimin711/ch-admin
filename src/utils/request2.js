@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
+import router from '@/router'
 import { getToken, getRefreshToken, isExpired } from '@/utils/auth'
 
 // create an axios instance
@@ -25,9 +26,12 @@ service2.interceptors.request.use(
             if (resp.data.success) {
               store.dispatch('user/refreshToken', resp.data.rows[0])
               config.headers['X-Token'] = resp.data.rows[0]
+            } else {
+              return Promise.reject(resp)
             }
           })
       }
+      // if (config.url === '/upms/user/1/10') return Promise.reject({ 'code': '307', success: false })
     }
     return config
   },
@@ -56,7 +60,7 @@ service2.interceptors.response.use(
     // if the custom code is not 000, it is judged as an error.
     if (!res.success) {
       // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
-      if (res.code === '3040' || res.code === '2000') {
+      if (res.code === '307') {
         // to re-login
         MessageBox.confirm('You have been logged out, you can cancel to stay on this page, or log in again', 'Confirm logout', {
           confirmButtonText: 'Re-Login',
@@ -64,7 +68,7 @@ service2.interceptors.response.use(
           type: 'warning'
         }).then(() => {
           store.dispatch('user/resetToken').then(() => {
-            location.reload()
+            router.push('/login')
           })
         })
       } else if (res.code) {
@@ -81,12 +85,24 @@ service2.interceptors.response.use(
     }
   },
   error => {
-    console.log('err' + error) // for debug
-    Message({
-      message: error.message,
-      type: 'error',
-      duration: 5 * 1000
-    })
+    console.debug('err: ' + JSON.stringify(error)) // for debug
+    if (error.code === '307') {
+      MessageBox.confirm('登录已失效, 取消停留在当前页面， 或重新登录', '登录过期', {
+        confirmButtonText: '重新登录',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        store.dispatch('user/resetToken').then(() => {
+          router.push('/login')
+        })
+      })
+    } else {
+      Message({
+        message: error.message,
+        type: 'error',
+        duration: 5 * 1000
+      })
+    }
     return Promise.reject(error)
   }
 )
