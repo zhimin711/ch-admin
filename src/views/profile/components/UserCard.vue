@@ -26,7 +26,7 @@
             />
           </el-select>
           <el-divider></el-divider>
-          <el-button type="primary">设置为默认角色</el-button>
+          <el-button type="primary" @click="setDefaultRole">设置为默认角色</el-button>
         </div>
       </div>
     </div>
@@ -90,6 +90,9 @@ export default {
       this.$store.dispatch('user/changeRoles', val).then(() => {
         this.$emit('change')
       })
+    },
+    setDefaultRole() {
+      //
     }
   }
 }

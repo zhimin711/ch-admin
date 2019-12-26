@@ -85,7 +85,7 @@ service2.interceptors.response.use(
     }
   },
   error => {
-    console.debug('err: ' + JSON.stringify(error)) // for debug
+    console.debug('request2 response err: ' + JSON.stringify(error)) // for debug
     if (error.code === '307') {
       MessageBox.confirm('登录已失效, 取消停留在当前页面， 或重新登录', '登录过期', {
         confirmButtonText: '重新登录',
@@ -96,7 +96,7 @@ service2.interceptors.response.use(
           router.push('/login')
         })
       })
-    } else {
+    } else if (error.message) {
       Message({
         message: error.message,
         type: 'error',
