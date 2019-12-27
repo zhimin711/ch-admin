@@ -12,12 +12,16 @@
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
         重置
       </el-button>
-      <el-button v-if="checkPermission2(['KAFKA_CLUSTER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加集群
+      <el-button v-if="checkPermission2(['KAFKA_CLUSTER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-upload" @click="handleAdd">
+        上传文件
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column label="文件名">
+      <el-table-column label="文件路径">
+        <template slot-scope="scope">
+          <span>{{ scope.row.filePath }}</span>
+        </template>
+      </el-table-column> <el-table-column label="文件名">
         <template slot-scope="scope">
           <span>{{ scope.row.originalName }}</span>
         </template>
@@ -32,7 +36,7 @@
           <span>{{ scope.row.description }}</span>
         </template>
       </el-table-column>
-      <el-table-column width="160px" align="center" label="创建时间">
+      <el-table-column width="160px" align="center" label="上传时间">
         <template slot-scope="scope">
           <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
@@ -47,16 +51,33 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 集群':'New 集群'">
+    <el-dialog :visible.sync="dialogVisible" :title="'上传文件'">
       <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="集群名称">
-          <el-input v-model="record.clusterName" placeholder="集群名称" :disabled="dialogCodeEdit" />
+        <el-form-item label="名称">
+          <el-input v-model="record.fileName" placeholder="文件名称" />
         </el-form-item>
-        <el-form-item label="zookeeper">
-          <el-input v-model="record.zookeeper" placeholder="zookeeper" />
+        <el-form-item label="版本">
+          <el-input v-model="record.version" placeholder="版本" />
         </el-form-item>
-        <el-form-item label="brokers">
-          <el-input v-model="record.brokers" placeholder="brokers" :disabled="true" />
+        <el-form-item label="文件">
+          <el-upload
+            ref="uploader"
+            name="file"
+            class="upload-doc"
+            list-type="text"
+            :auto-upload="false"
+            :multiple="false"
+            :data="uploadParams"
+            :drag="uploadDrag"
+            :action="uploadUrl"
+            :file-list="uploadList"
+            :on-remove="uploadRemove"
+            :before-upload="beforeUpload"
+            :on-success="uploadSuccess">
+            <i class="el-icon-upload"></i>
+            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+            <div class="el-upload__tip" slot="tip">只能单个上传文档或压缩文件，且不超过50M</div>
+          </el-upload>
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -69,15 +90,16 @@
 
 <script>
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import { deepClone } from '@/utils'
+// import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del } from '@/api/wiki/upload-record'
+import { list } from '@/api/wiki/upload-record'
 
 export default {
   name: 'WikiUploadRecordManager',
   components: { Pagination },
   data() {
     return {
+      uploadUrl: '',
       listLoading: true,
       listQuery: {
         page: 1,
@@ -88,12 +110,12 @@ export default {
       },
       loading: { handleSubmit: false },
       record: {},
-      recordRoles: [],
+      uploadParams: { token: '', key: '' },
       dialogVisible: false,
       dialogType: false,
-      dialogCodeEdit: false,
-      dialogVisible2: false,
-      roles: []
+      uploadList: [],
+      uploadExt: ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'chm', 'zip', 'rar', 'gz', 'tar'],
+      uploadDrag: true
     }
   },
   created() {
@@ -113,17 +135,37 @@ export default {
       this.record = {}
       this.dialogType = 'new'
       this.dialogVisible = true
-      this.dialogCodeEdit = false
     },
-    handleEdit(row) {
-      this.record = deepClone(row)
-      this.dialogType = 'edit'
-      this.dialogVisible = true
-      this.dialogCodeEdit = true
+    beforeUpload(file) {
+      const fileName = file.name
+      const ext = fileName.slice(fileName.lastIndexOf('.') + 1).toLowerCase()
+
+      let isAllow = false
+      for (let i = 0; i < this.uploadExt.length; i++) {
+        if (ext === this.uploadExt[i]) {
+          isAllow = true
+          break
+        }
+      }
+      if (!isAllow) {
+        this.$message.error('只允许文档或压缩包格式!')
+        return false
+      }
+      // var isJPG = file.type === 'image/jpeg';
+
+      const isLt50M = file.size / 1024 / 1024 < 50
+      if (!isLt50M) {
+        this.$message.error('文件大小不能超过 50MB!')
+        return false
+      }
+      return true
     },
-    handleDel(row) {
-      const _this = this
-      this.$confirm('Confirm to remove the user?', 'Warning', {
+    uploadSuccess(row) {
+      console.log('success')
+    },
+    uploadRemove(row) {
+      // const _this = this
+      /*this.$confirm('Confirm to remove the user?', 'Warning', {
         confirmButtonText: 'Confirm',
         cancelButtonText: 'Cancel',
         type: 'warning'
@@ -136,32 +178,10 @@ export default {
             message: 'Delete success!'
           })
         })
-        .catch(err => { console.error(err) })
+        .catch(err => { console.error(err) })*/
     },
-    async handleSubmit() {
-      const _this = this
-      let resp = null
-      let opName = '添加'
-      _this.loading.handleSubmit = true
-      if (this.dialogType === 'new') {
-        resp = await add(this.record).catch(() => { _this.loading.handleSubmit = false })
-      } else if (this.dialogType === 'edit') {
-        opName = '修改'
-        resp = await edit(this.record.id, this.record).catch(() => { _this.loading.handleSubmit = false })
-      }
-      _this.loading.handleSubmit = false
-      if (resp && resp.success) {
-        this.dialogVisible = false
-        this.$notify({
-          title: `${opName}集群名称 Success!`,
-          dangerouslyUseHTMLString: true,
-          message: `
-            <div>集群名称: ${this.record.clusterName}</div>
-          `,
-          type: 'success'
-        })
-        _this.getList()
-      }
+    handleSubmit() {
+      this.$refs.uploader.submit()
     }
   }
 }

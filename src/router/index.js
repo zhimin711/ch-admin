@@ -11,6 +11,7 @@ import upmsRouter from './modules/upms'
 import sysRouter from './modules/sys'
 import kafkaRouter from './modules/kafka'
 import txRouter from './modules/txManager'
+import wikiRouter from './modules/wiki'
 
 import componentsRouter from './modules/components'
 import chartsRouter from './modules/charts'
@@ -314,7 +315,8 @@ export const asyncRoutes = [
   upmsRouter,
   sysRouter,
   kafkaRouter,
-  txRouter
+  txRouter,
+  wikiRouter
 ]
 
 const createRouter = () => new Router({
