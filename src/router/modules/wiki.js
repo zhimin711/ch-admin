@@ -5,7 +5,7 @@ import Layout from '@/layout'
 const wikiRouter = {
   path: '/wiki',
   component: Layout,
-  redirect: '/wiki/cluster',
+  redirect: '/wiki/category',
   alwaysShow: true, // will always show the root menu
   name: 'Wiki Manager',
   meta: {
@@ -24,9 +24,10 @@ const wikiRouter = {
     {
       path: 'uploadFile',
       component: () => import('@/views/wiki/uploadFile'),
-      name: 'UploadFile',
+      name: 'WikiUploadRecordManager',
       meta: {
-        title: '上传记录'
+        title: '上传记录',
+        roles: ['admin']
       }
     }
   ]

@@ -1,4 +1,4 @@
-import Cookies from 'js-cookie'
+// import Cookies from 'js-cookie'
 import timeFormat from './date'
 
 const TOKEN_KEY = 'TOKEN'
@@ -6,15 +6,18 @@ const EXPIRED_KEY = 'EXPIRED'
 const REFRESH_TOKEN_KEY = 'REFRESH-TOKEN'
 
 export function getToken() {
-  return Cookies.get(TOKEN_KEY)
+  // return Cookies.get(TOKEN_KEY)
+  return sessionStorage.getItem(TOKEN_KEY)
 }
 
 export function setToken(token) {
-  return Cookies.set(TOKEN_KEY, token)
+  // return Cookies.set(TOKEN_KEY, token)
+  return sessionStorage.setItem(TOKEN_KEY, token)
 }
 
 export function removeToken() {
-  return Cookies.remove(TOKEN_KEY)
+  // return Cookies.remove(TOKEN_KEY)
+  return sessionStorage.removeItem(TOKEN_KEY)
 }
 
 export function setExpired() {

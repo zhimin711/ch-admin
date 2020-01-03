@@ -6,13 +6,13 @@
         <el-option label="启用" value="1">启用</el-option>
         <el-option label="禁用" value="0">禁用</el-option>
       </el-select>
-      <el-button v-if="checkPermission2(['KAFKA_CLUSTER_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-if="checkPermission2(['FILE_UPLOAD_RECORD_LIST'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
         重置
       </el-button>
-      <el-button v-if="checkPermission2(['KAFKA_CLUSTER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-upload" @click="handleAdd">
+      <el-button v-if="checkPermission2(['WIKI_UPLOAD_FILE'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-upload" @click="handleAdd">
         上传文件
       </el-button>
     </div>
@@ -53,35 +53,40 @@
 
     <el-dialog :visible.sync="dialogVisible" :title="'上传文件'">
       <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="名称">
-          <el-input v-model="record.fileName" placeholder="文件名称" />
+        <!--<el-form-item label="名称">
+          <el-input v-model="record.fileName" placeholder="文件名称(默认为文件名)" />
         </el-form-item>
         <el-form-item label="版本">
-          <el-input v-model="record.version" placeholder="版本" />
-        </el-form-item>
+          <el-input v-model="record.version" placeholder="版本(默认：1.0.0)" />
+        </el-form-item>-->
         <el-form-item label="文件">
           <el-upload
             ref="uploader"
-            name="file"
+            name="files[]"
             class="upload-doc"
             list-type="text"
             :auto-upload="false"
             :multiple="false"
+            :limit="1"
+            :headers="headers"
             :data="uploadParams"
             :drag="uploadDrag"
             :action="uploadUrl"
             :file-list="uploadList"
             :on-remove="uploadRemove"
+            :on-change="uploadChange"
+            :on-error="uploadError"
             :before-upload="beforeUpload"
             :on-success="uploadSuccess">
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-            <div class="el-upload__tip" slot="tip">只能单个上传文档或压缩文件，且不超过50M</div>
+            <div slot="tip" class="el-upload__tip">只允许上传<span style="color: #F56C6C">单个</span>文档或压缩文件，且不超过50M</div>
+            <!--<div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>-->
           </el-upload>
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button :loading="loading.handleSubmit" type="primary" @click="handleSubmit">保存</el-button>
+        <el-button :loading="loading.handleSubmit" type="primary" @click="handleSubmit">上传</el-button>
         <el-button :disabled="loading.handleSubmit" type="danger" @click="dialogVisible=false">取消</el-button>
       </div>
     </el-dialog>
@@ -89,6 +94,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 // import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
@@ -99,7 +105,7 @@ export default {
   components: { Pagination },
   data() {
     return {
-      uploadUrl: '',
+      uploadUrl: '/api/wiki/admin/upload',
       listLoading: true,
       listQuery: {
         page: 1,
@@ -110,7 +116,7 @@ export default {
       },
       loading: { handleSubmit: false },
       record: {},
-      uploadParams: { token: '', key: '' },
+      uploadParams: { type: '1' },
       dialogVisible: false,
       dialogType: false,
       uploadList: [],
@@ -120,6 +126,16 @@ export default {
   },
   created() {
     this.getList()
+  },
+  computed: {
+    ...mapGetters([
+      'token'
+    ]),
+    headers() {
+      return {
+        'X-Token': `${this.token}`
+      }
+    }
   },
   methods: {
     checkPermission2,
@@ -158,27 +174,30 @@ export default {
         this.$message.error('文件大小不能超过 50MB!')
         return false
       }
+      this.loading.handleSubmit = true
       return true
     },
-    uploadSuccess(row) {
-      console.log('success')
+    uploadSuccess(response, file, fileList) {
+      this.loading.handleSubmit = false
+      if (response.success) {
+        console.log('success')
+        this.dialogVisible = false
+        this.$refs.uploader.clearFiles()
+      }
     },
-    uploadRemove(row) {
+    uploadRemove(file, fileList) {
       // const _this = this
-      /*this.$confirm('Confirm to remove the user?', 'Warning', {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
-        type: 'warning'
-      })
-        .then(async() => {
-          await del(row.id)
-          _this.getList()
-          this.$message({
-            type: 'success',
-            message: 'Delete success!'
-          })
-        })
-        .catch(err => { console.error(err) })*/
+      // this.uploadDrag = true
+    },
+    uploadChange(file, fileList) {
+      // this.uploadDrag = false
+      // const fileName = file.name
+      // this.record.fileName = fileName.slice(0, fileName.lastIndexOf('.'))
+      // debugger
+    },
+    uploadError(resp) {
+      console.log(resp)
+      //
     },
     handleSubmit() {
       this.$refs.uploader.submit()
