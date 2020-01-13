@@ -92,7 +92,7 @@
           <el-input v-model="record.name" />
         </el-form-item>
         <el-form-item label="图标" prop="icon">
-          <el-input v-model="record.icon" placeholder="仅支持SVG"/>
+          <el-input v-model="record.icon" placeholder="仅支持SVG" />
         </el-form-item>
         <el-form-item label="地址">
           <el-input v-model="record.url" />
@@ -112,11 +112,23 @@
         <el-form-item label="排序">
           <el-input-number v-model="record.sort" />
         </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="record.status" placeholder="请选择">
-            <el-option key="enabled" label="启用" value="1" />
-            <el-option key="disabled" label="禁用" value="0" />
-          </el-select>
+        <el-form-item label="显示状态">
+          <el-switch
+            v-model="recordShow"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-text="显示"
+            inactive-text="隐藏"
+          />
+        </el-form-item>
+        <el-form-item label="权限状态">
+          <el-switch
+            v-model="recordStatus"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-text="开启"
+            inactive-text="禁用"
+          />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -150,6 +162,8 @@ export default {
       },
       record: {},
       recordType: '',
+      recordStatus: true,
+      recordShow: true,
       recordParents: [],
       recordParentsProps: {
         checkStrictly: false
@@ -206,6 +220,8 @@ export default {
     handleAdd() {
       this.getTree('1')
       this.record = { 'type': '1', sort: 1 }
+      this.recordStatus = true
+      this.recordShow = true
       this.recordParents = []
       this.dialogType = 'new'
       this.dialogVisible = true
@@ -219,6 +235,8 @@ export default {
       this.recordType = row.type
       this.recordParents = this.record.parentId.split(',')
       if (this.record.parentId === '0') this.record.parentId = undefined
+      this.recordStatus = (this.record.status === '1')
+      this.recordShow = (this.record.isShow === '1')
       this.dialogType = 'edit'
       this.dialogVisible = true
       // this.recordForm.codeDisabled = true
@@ -255,6 +273,14 @@ export default {
       if (this.recordParents.length > 0) {
         this.record.parentId = this.recordParents.join(',')
       } else this.record.parentId = null
+      this.record.isShow = '0'
+      if (this.recordShow) {
+        this.record.isShow = '1'
+      }
+      this.record.status = '0'
+      if (this.recordStatus) {
+        this.record.status = '1'
+      }
       let resp = null
       let opName = '添加'
       if (this.dialogType === 'new') {

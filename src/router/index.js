@@ -351,6 +351,9 @@ export function assemblyAsyncRoutes(menus, basePath) {
         name: menu.code,
         meta: { title: menu.name }
       }
+      if (menu.hidden) {
+        tmp.hidden = menu.hidden
+      }
     } else {
       tmp = {
         path: path,
