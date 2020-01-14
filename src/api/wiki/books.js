@@ -19,8 +19,7 @@ export function fetchList(query) {
 export function get(id) {
   return request({
     url: `${baseUrl}/${id}`,
-    method: 'get',
-    params: { id }
+    method: 'get'
   })
 }
 
@@ -44,5 +43,13 @@ export function del(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'delete'
+  })
+}
+
+export function fetchCatalogs(bookId, params) {
+  return request({
+    url: `${baseUrl}/${bookId}/chapters`,
+    method: 'get',
+    params: params
   })
 }

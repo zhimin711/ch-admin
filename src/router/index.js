@@ -353,6 +353,13 @@ export function assemblyAsyncRoutes(menus, basePath) {
       }
       if (menu.hidden) {
         tmp.hidden = menu.hidden
+        tmp.meta.noCache = true
+        tmp.meta.activeMenu = basePath
+        tmp.meta.activeMenu = '/wiki/books'
+        if (menu.redirect) {
+          tmp.path = menu.redirect
+          // tmp.path = '/wiki/books/:id(\\d+)'
+        }
       }
     } else {
       tmp = {

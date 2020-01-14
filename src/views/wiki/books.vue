@@ -17,7 +17,7 @@
           <el-col :span="24">
             <el-button type="primary" icon="el-icon-search" @click="getList">搜索</el-button>
             <el-button icon="el-icon-refresh" @click="listQuery.params = {}">重置</el-button>
-            <el-button type="primary" icon="el-icon-plus" class="handle-del mr10" @click="handleAdd">新增</el-button>
+            <el-button v-if="checkPermission2(['WIKI_BOOKS_ADD'])" type="primary" icon="el-icon-plus" class="handle-del mr10" @click="handleAdd">新增</el-button>
             <!--<el-button type="primary" icon="el-icon-download" class="handle-del mr10">导出</el-button>-->
           </el-col>
         </el-row>
@@ -75,7 +75,7 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 // import { deepClone } from '@/utils'
-// import { checkPermission2 } from '@/utils/permission' // 权限判断函数
+import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
 import { fetchList/*, add, edit, del*/ } from '@/api/wiki/books'
 
@@ -98,6 +98,7 @@ export default {
     this.getList()
   },
   methods: {
+    checkPermission2,
     getList() {
       this.loading = true
       fetchList(this.listQuery).then(response => {

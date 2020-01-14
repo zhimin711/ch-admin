@@ -119,6 +119,7 @@
             inactive-color="#ff4949"
             active-text="显示"
             inactive-text="隐藏"
+            @change="showRedirect"
           />
         </el-form-item>
         <el-form-item label="权限状态">
@@ -241,6 +242,9 @@ export default {
       this.dialogVisible = true
       // this.recordForm.codeDisabled = true
       this.recordForm.redirectShow = row.type === '1'
+      if (row.type === '2' || row.isShow === '0') {
+        this.recordForm.redirectShow = true
+      }
       this.changeType(row.type)
     },
     handleDel(row) {
@@ -303,7 +307,7 @@ export default {
       let type = value
       this.recordForm.urlDisabled = value <= 1
       this.recordForm.descDisabled = true
-      this.recordForm.redirectShow = value === '1'
+      this.recordForm.redirectShow = (value === '1' || (value === '2' && !this.recordShow))
       this.recordParentsProps.checkStrictly = false
       if (value === '4' || value === '5') {
         type = '3'
@@ -314,6 +318,9 @@ export default {
         this.recordParentsProps.checkStrictly = true
       }
       this.getTree(type)
+    },
+    showRedirect(val) {
+      this.recordForm.redirectShow = !val
     }
   }
 }
