@@ -116,6 +116,7 @@
             <el-option v-for="(item,index) in catalogs" :key="item+index" :label="item" :value="item" />
           </el-select>-->
         </el-form-item>
+        <el-form-item label="下一章节" />
         <el-form-item label="章节序号" prop="number">
           <el-col :span="12">
             <el-input v-model="recordCatalog.number" placeholder="请使用中文序号（例：第一集/章）" />
@@ -130,7 +131,6 @@
         <!--<el-form-item label="标签" prop="keywords">
           <el-input v-model="recordCatalog.keywords"></el-input>
         </el-form-item>-->
-        <el-form-item label="下一章节" />
       </el-form>
       <span slot="footer" class="dialog-footer">
         <!--<el-button type="primary" @click="handleSubmit('baseForm')">确 定</el-button>-->
@@ -152,12 +152,11 @@ const defaultForm = {
   status: 'draft',
   title: '', // 文章题目
   content: '', // 文章内容
-  content_short: '', // 文章摘要
+  summary: '', // 文章摘要
   source_uri: '', // 文章外链
   image_uri: '', // 文章图片
   display_time: undefined, // 前台展示时间
   id: undefined,
-  platforms: ['a-platform'],
   chapterList: [],
   comment_disabled: false,
   importance: 0
@@ -227,7 +226,7 @@ export default {
   },
   computed: {
     contentShortLength() {
-      return this.postForm.content_short.length
+      return this.postForm.summary.length
     },
     displayTime: {
       // set and get is useful when the data
@@ -260,9 +259,10 @@ export default {
       get(id).then(response => {
         this.postForm = response.rows[0]
 
+        this.getRemoteCatalogList()
         // just for test
-        this.postForm.title += `   Article Id:${this.postForm.id}`
-        this.postForm.content_short += `   Article Id:${this.postForm.id}`
+        this.postForm.title += `   Book Id:${this.postForm.id}`
+        this.postForm.summary += `   Book Id:${this.postForm.id}`
 
         // set tagsview title
         this.setTagsViewTitle()
@@ -318,9 +318,10 @@ export default {
       this.postForm.status = 'draft'
     },
     getRemoteCatalogList(query) {
-      fetchCatalogs(query).then(response => {
+      const params = {}
+      fetchCatalogs(this.postForm.id, params).then(response => {
         if (!response.data.items) return
-        this.userListOptions = response.data.items.map(v => v.name)
+        this.catalogs = response.data.items.map(v => v.name)
       })
     },
     handleEditCatalog(row) {
