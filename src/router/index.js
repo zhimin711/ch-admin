@@ -347,13 +347,15 @@ export function assemblyAsyncRoutes(menus, basePath) {
       tmp = {
         path: path,
         // component: () => import('@/views' + path + '/' + menu.url),
-        component: resolve => require(['@/views/' + path2], resolve),
+        // component: resolve => require(['@/views/' + path2], resolve),
         name: menu.code,
         meta: { title: menu.name }
       }
-
       if (menu.children && menu.children.length > 0) {
+        tmp.component = resolve => require(['@/views/' + path2 + '/index'], resolve)
         tmp.children = assemblyAsyncRoutes(menu.children, path2)
+      } else {
+        tmp.component = resolve => require(['@/views/' + path2], resolve)
       }
     } else if (menu.type === '4') {
       tmp = {
@@ -363,13 +365,12 @@ export function assemblyAsyncRoutes(menus, basePath) {
         hidden: true,
         meta: { title: menu.name, noCache: true, activeMenu: '/' + basePath }
       }
-      debugger
     } else {
       tmp = {
         path: path,
         alwaysShow: true,
         component: resolve => require(['@/layout/index2'], resolve),
-        redirect: menu.redirect,
+        redirect: menu.redirect || path,
         meta: { title: menu.name, icon: menu.icon || 'lock' }
       }
       if (isStart) {
@@ -377,6 +378,16 @@ export function assemblyAsyncRoutes(menus, basePath) {
       }
       if (menu.children && menu.children.length > 0) {
         tmp.children = assemblyAsyncRoutes(menu.children, path2)
+        let hMenus = []
+        tmp.children.forEach(e => {
+          if (!e.redirect && e.children && e.children.length > 0) {
+            hMenus = hMenus.concat(e.children)
+            e.children = undefined
+          }
+        })
+        if (hMenus.length > 0) {
+          tmp.children = tmp.children.concat(hMenus)
+        }
       }
     }
     res.push(tmp)
