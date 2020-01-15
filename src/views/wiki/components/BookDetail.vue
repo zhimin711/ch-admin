@@ -5,6 +5,8 @@
       <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
         <!--<CommentDropdown v-model="postForm.comment_disabled" />-->
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
+          添加章节
+        </el-button><el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
           保存
         </el-button>
         <el-button v-loading="loading" type="warning" @click="draftForm">
@@ -101,22 +103,36 @@
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改目录':'新增目录'">
       <el-form ref="baseForm" :model="recordCatalog" label-width="100px">
         <el-form-item label="上一章节">
-          <el-select v-model="recordCatalog.pre" placeholder="请选择">
+          <el-select v-model="pre" placeholder="请选择" value-key="id" clearable @change="(val)=> handlePreAndNext(val,-1)">
             <el-option
               v-for="item in catalogs"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              :key="item.id"
+              :label="item.number + ' - ' + item.name"
+              :value="item"
+              :disabled="recordCatalog.id===item.id"
             >
-              <span style="float: left">{{ item.label }}</span>
-              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value }}</span>
+              <span style="float: left">{{ item.number }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
             </el-option>
           </el-select>
           <!--<el-select v-model="recordCatalog.pre" :remote-method="getRemoteCatalogList" filterable default-first-option remote placeholder="Search Catalog">
             <el-option v-for="(item,index) in catalogs" :key="item+index" :label="item" :value="item" />
           </el-select>-->
         </el-form-item>
-        <el-form-item label="下一章节" />
+        <el-form-item label="下一章节">
+          <el-select v-model="next" placeholder="请选择" value-key="id" clearable @change="(val)=>handlePreAndNext(val,1)">
+            <el-option
+              v-for="(item,index) in catalogs"
+              :key="item.id+index"
+              :label="item.number + ' - ' + item.name"
+              :value="item"
+              :disabled="recordCatalog.id===item.id"
+            >
+              <span style="float: left">{{ item.number }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="章节序号" prop="number">
           <el-col :span="12">
             <el-input v-model="recordCatalog.number" placeholder="请使用中文序号（例：第一集/章）" />
@@ -133,7 +149,7 @@
         </el-form-item>-->
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <!--<el-button type="primary" @click="handleSubmit('baseForm')">确 定</el-button>-->
+        <el-button type="primary" @click="handleCatalogSubmit">确 定</el-button>
         <el-button @click="dialogVisible=false">取 消</el-button>
       </span>
     </el-dialog>
@@ -147,6 +163,7 @@ import { validURL } from '@/utils/validate'
 import Warning from './Warning'
 
 import { get, fetchCatalogs } from '@/api/wiki/books'
+import { edit } from '@/api/wiki/books/chapter'
 
 const defaultForm = {
   status: 'draft',
@@ -215,6 +232,8 @@ export default {
       dialogType: 'add',
       recordCatalog: Object.assign({}, defaultCatalog),
       catalogs: [],
+      pre: {},
+      next: {},
       rules: {
         image_uri: [{ validator: validateRequire }],
         title: [{ validator: validateRequire }],
@@ -318,17 +337,66 @@ export default {
       this.postForm.status = 'draft'
     },
     getRemoteCatalogList(query) {
-      const params = {}
+      const params = { leaf: false }
       fetchCatalogs(this.postForm.id, params).then(response => {
-        if (!response.data.items) return
-        this.catalogs = response.data.items.map(v => v.name)
+        // if (!response.data.items) return
+        // this.catalogs = response.data.items.map(v => v.name)
+        this.catalogs = response.rows
       })
     },
     handleEditCatalog(row) {
-      //
+      if (row.leaf) {
+        //
+        this.$router.push({ path: '/wiki/books/chapter/edit' })
+        // this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
+      }
       this.dialogVisible = true
       this.dialogType = 'edit'
       this.recordCatalog = row
+      this.pre = { id: row.pre }
+      this.next = { id: row.next }
+    },
+    handlePreAndNext(row, op) {
+      if (op === 1) {
+        if (row.pre === this.recordCatalog.id) {
+          this.pre = {}
+          return
+        }
+        this.pre = { id: row.pre }
+      } else if (op === -1) {
+        if (row.next === this.recordCatalog.id) {
+          this.next = {}
+          return
+        }
+        this.next = { id: row.next }
+      }
+    },
+    async handleCatalogSubmit() {
+      //
+      const _this = this
+      // this.record = {}
+      if (this.pre.id) {
+        this.recordCatalog.pre = this.pre.id
+      }
+      if (this.next.id) {
+        this.recordCatalog.next = this.next.id
+      }
+      let resp = null
+      let opName = '添加'
+      if (this.dialogType === 'new') {
+        // resp = await add(this.record)
+      } else if (this.dialogType === 'edit') {
+        opName = '修改'
+        resp = await edit(this.recordCatalog.id, this.recordCatalog).catch(() => {})
+      }
+      if (resp && resp.success) {
+        this.dialogVisible = false
+        this.$message({
+          type: 'success',
+          message: `${opName} ${this.record.name} success!`
+        })
+        _this.fetchData(this.postForm.id)
+      }
     }
   }
 }

@@ -30,7 +30,7 @@
           <el-tag v-if="scope.row.type === '1'" type="success">目录</el-tag>
           <el-tag v-else-if="scope.row.type === '2'" type="success">菜单</el-tag>
           <el-tag v-else-if="scope.row.type === '3'" type="primary">按钮</el-tag>
-          <el-tag v-else-if="scope.row.type === '4'" type="default">隐藏</el-tag>
+          <el-tag v-else-if="scope.row.type === '4'" type="info">隐藏</el-tag>
           <el-tag v-else-if="scope.row.type === '5'" type="warning">用户</el-tag>
         </template>
       </el-table-column>
