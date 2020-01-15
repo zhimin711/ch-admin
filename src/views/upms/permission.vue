@@ -30,8 +30,8 @@
           <el-tag v-if="scope.row.type === '1'" type="success">目录</el-tag>
           <el-tag v-else-if="scope.row.type === '2'" type="success">菜单</el-tag>
           <el-tag v-else-if="scope.row.type === '3'" type="primary">按钮</el-tag>
-          <el-tag v-else-if="scope.row.type === '4'" type="default">链接</el-tag>
-          <el-tag v-else-if="scope.row.type === '5'" type="warning">隐藏</el-tag>
+          <el-tag v-else-if="scope.row.type === '4'" type="default">隐藏</el-tag>
+          <el-tag v-else-if="scope.row.type === '5'" type="warning">用户</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="代码" prop="code">
@@ -77,8 +77,8 @@
             <el-radio-button label="1">目录</el-radio-button>
             <el-radio-button label="2">菜单</el-radio-button>
             <el-radio-button label="3">按钮</el-radio-button>
-            <el-radio-button label="4">链接</el-radio-button>
-            <el-radio-button label="5">隐藏</el-radio-button>
+            <el-radio-button label="4">隐藏</el-radio-button>
+            <el-radio-button label="5">用户</el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="上级">
@@ -98,7 +98,7 @@
           <el-input v-model="record.url" />
         </el-form-item>
         <el-form-item v-show="recordForm.redirectShow" label="重定向地址">
-          <el-input v-model="record.redirect" />
+          <el-input v-model="record.redirect" placeholder="目录与隐藏地址" />
         </el-form-item>
         <el-form-item label="请求方法">
           <el-radio-group v-model="record.method" :disabled="recordForm.descDisabled">
@@ -111,16 +111,6 @@
         </el-form-item>
         <el-form-item label="排序">
           <el-input-number v-model="record.sort" />
-        </el-form-item>
-        <el-form-item label="显示状态">
-          <el-switch
-            v-model="recordShow"
-            active-color="#13ce66"
-            inactive-color="#ff4949"
-            active-text="显示"
-            inactive-text="隐藏"
-            @change="showRedirect"
-          />
         </el-form-item>
         <el-form-item label="权限状态">
           <el-switch
@@ -241,10 +231,7 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       // this.recordForm.codeDisabled = true
-      this.recordForm.redirectShow = row.type === '1'
-      if (row.type === '2' || row.isShow === '0') {
-        this.recordForm.redirectShow = true
-      }
+      // this.recordForm.redirectShow = (row.type === '1' || row.type === '4')
       this.changeType(row.type)
     },
     handleDel(row) {
@@ -307,7 +294,7 @@ export default {
       let type = value
       this.recordForm.urlDisabled = value <= 1
       this.recordForm.descDisabled = true
-      this.recordForm.redirectShow = (value === '1' || (value === '2' && !this.recordShow))
+      this.recordForm.redirectShow = (value === '1' || value === '4')
       this.recordParentsProps.checkStrictly = false
       if (value === '4' || value === '5') {
         type = '3'
@@ -318,9 +305,6 @@ export default {
         this.recordParentsProps.checkStrictly = true
       }
       this.getTree(type)
-    },
-    showRedirect(val) {
-      this.recordForm.redirectShow = !val
     }
   }
 }

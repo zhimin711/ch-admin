@@ -47,8 +47,9 @@ router.beforeEach(async(to, from, next) => {
           next({ ...to, replace: true })
         } catch (error) {
           NProgress.done()
+          console.log('router ==> ' + error)
           console.log('router ==> ' + JSON.stringify(error))
-          if (error.code === '307' || error.data.code === '307') {
+          if (error != null && (error.code === '307' || error.data.code === '307')) {
             // to re-login
             MessageBox.confirm('登录已失效, 取消停留在当前页面， 或重新登录', '登录过期', {
               confirmButtonText: '重新登录',

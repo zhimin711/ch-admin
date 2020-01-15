@@ -351,16 +351,19 @@ export function assemblyAsyncRoutes(menus, basePath) {
         name: menu.code,
         meta: { title: menu.name }
       }
-      if (menu.hidden) {
-        tmp.hidden = menu.hidden
-        tmp.meta.noCache = true
-        tmp.meta.activeMenu = basePath
-        tmp.meta.activeMenu = '/wiki/books'
-        if (menu.redirect) {
-          tmp.path = menu.redirect
-          // tmp.path = '/wiki/books/:id(\\d+)'
-        }
+
+      if (menu.children && menu.children.length > 0) {
+        tmp.children = assemblyAsyncRoutes(menu.children, path2)
       }
+    } else if (menu.type === '4') {
+      tmp = {
+        path: menu.redirect || path,
+        component: resolve => require(['@/views/' + path2], resolve),
+        name: menu.code,
+        hidden: true,
+        meta: { title: menu.name, noCache: true, activeMenu: '/' + basePath }
+      }
+      debugger
     } else {
       tmp = {
         path: path,
