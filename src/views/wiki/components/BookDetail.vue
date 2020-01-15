@@ -162,6 +162,8 @@ import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
 import Warning from './Warning'
 
+import { deepClone } from '@/utils'
+
 import { get, fetchCatalogs } from '@/api/wiki/books'
 import { edit } from '@/api/wiki/books/chapter'
 
@@ -347,12 +349,12 @@ export default {
     handleEditCatalog(row) {
       if (row.leaf) {
         //
-        this.$router.push({ path: '/wiki/books/chapter/edit' })
+        this.$router.push({ path: '/wiki/books/chapter/' + row.id })
         // this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
       }
       this.dialogVisible = true
       this.dialogType = 'edit'
-      this.recordCatalog = row
+      this.recordCatalog = deepClone(row)
       this.pre = { id: row.pre }
       this.next = { id: row.next }
     },
@@ -393,7 +395,7 @@ export default {
         this.dialogVisible = false
         this.$message({
           type: 'success',
-          message: `${opName} ${this.record.name} success!`
+          message: `${opName} ${this.recordCatalog.name} success!`
         })
         _this.fetchData(this.postForm.id)
       }
