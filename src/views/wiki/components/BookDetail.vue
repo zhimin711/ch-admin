@@ -282,8 +282,8 @@ export default {
 
         this.getRemoteCatalogList()
         // just for test
-        this.postForm.title += `   Book Id:${this.postForm.id}`
-        this.postForm.summary += `   Book Id:${this.postForm.id}`
+        // this.postForm.title += `   Book Id:${this.postForm.id}`
+        // this.postForm.summary += `   Book Id:${this.postForm.id}`
 
         // set tagsview title
         this.setTagsViewTitle()

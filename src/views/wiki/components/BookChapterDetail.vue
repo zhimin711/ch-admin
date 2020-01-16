@@ -175,8 +175,8 @@ export default {
         this.postForm = response.rows[0]
 
         // just for test
-        this.postForm.title += `   Article Id:${this.postForm.id}`
-        this.postForm.content_short += `   Article Id:${this.postForm.id}`
+        // this.postForm.title += `   Article Id:${this.postForm.id}`
+        // this.postForm.content_short += `   Article Id:${this.postForm.id}`
 
         // set tagsview title
         this.setTagsViewTitle()
