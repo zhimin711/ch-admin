@@ -3,10 +3,14 @@
     <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container">
 
       <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
+        <el-button v-loading="loading" type="warning" @click="draftForm">
+          修复目录
+        </el-button>
         <!--<CommentDropdown v-model="postForm.comment_disabled" />-->
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
           添加章节
-        </el-button><el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
+        </el-button>
+        <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
           保存
         </el-button>
         <el-button v-loading="loading" type="warning" @click="draftForm">
@@ -350,6 +354,7 @@ export default {
       if (row.leaf) {
         //
         this.$router.push({ path: '/wiki/books/chapter/' + row.id })
+        return
         // this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
       }
       this.dialogVisible = true
