@@ -17,42 +17,54 @@
           <Warning />
 
           <el-col :span="24">
-            <el-form-item style="margin-bottom: 40px;" prop="title">
-              <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
-                Title
-              </MDinput>
-            </el-form-item>
 
             <div class="postInfo-container">
               <el-row>
                 <el-col :span="8">
-                  <el-form-item label-width="60px" label="Author:" class="postInfo-container-item">
-                    <!--<el-select v-model="postForm.author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="Search user">
-                      <el-option v-for="(item,index) in userListOptions" :key="item+index" :label="item" :value="item" />
-                    </el-select>-->
+                  <el-form-item label-width="80px" label="上一章节:" class="postInfo-container-item">
+                    <el-select v-model="pre" placeholder="请选择" value-key="id" clearable @change="(val)=> handlePreAndNext(val,-1)">
+                      <el-option
+                        v-for="item in catalogs"
+                        :key="item.id"
+                        :label="item.number + ' - ' + item.name"
+                        :value="item"
+                        :disabled="postForm.id===item.id"
+                      >
+                        <span style="float: left">{{ item.number }}</span>
+                        <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item label-width="80px" label="下一章节:" class="postInfo-container-item">
+                    <el-select v-model="next" placeholder="请选择" value-key="id" clearable @change="(val)=> handlePreAndNext(val,1)">
+                      <el-option
+                        v-for="item in catalogs"
+                        :key="item.id"
+                        :label="item.number + ' - ' + item.name"
+                        :value="item"
+                        :disabled="postForm.id===item.id"
+                      >
+                        <span style="float: left">{{ item.number }}</span>
+                        <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
+                      </el-option>
+                    </el-select>
                   </el-form-item>
                 </el-col>
 
-                <el-col :span="10">
-                  <el-form-item label-width="120px" label="Publish Time:" class="postInfo-container-item">
-                    <el-date-picker v-model="displayTime" type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="Select date and time" />
-                  </el-form-item>
-                </el-col>
-
-                <el-col :span="6">
-                  <el-form-item label-width="90px" label="Importance:" class="postInfo-container-item">
-                    <el-rate
-                      v-model="postForm.importance"
-                      :max="3"
-                      :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
-                      :low-threshold="1"
-                      :high-threshold="3"
-                      style="display:inline-block"
-                    />
-                  </el-form-item>
-                </el-col>
               </el-row>
             </div>
+            <el-form-item style="margin-bottom: 0px;" prop="number">
+              <MDinput v-model="postForm.number" :maxlength="100" name="number">
+                中文序号（若为空则自动生成或连接上一章）
+              </MDinput>
+            </el-form-item>
+            <el-form-item style="margin-bottom: 40px;" prop="title">
+              <MDinput v-model="postForm.name" :maxlength="100" name="name" required>
+                章节名称
+              </MDinput>
+            </el-form-item>
           </el-col>
         </el-row>
 
@@ -70,10 +82,9 @@ import Tinymce from '@/components/Tinymce'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
-import { searchUser } from '@/api/remote-search'
 import Warning from './Warning'
 
-// import { fetchCatalogs } from '@/api/wiki/books'
+import { fetchCatalogs } from '@/api/wiki/books'
 import { get/*, edit*/ } from '@/api/wiki/books/chapter'
 
 const defaultForm = {
@@ -129,7 +140,9 @@ export default {
     return {
       postForm: Object.assign({}, defaultForm),
       loading: false,
-      userListOptions: [],
+      catalogs: [],
+      pre: {},
+      next: {},
       rules: {
         image_uri: [{ validator: validateRequire }],
         title: [{ validator: validateRequire }],
@@ -174,6 +187,8 @@ export default {
       get(id).then(response => {
         this.postForm = response.rows[0]
 
+        this.pre = { id: this.postForm.pre }
+        this.next = { id: this.postForm.next }
         // just for test
         // this.postForm.title += `   Article Id:${this.postForm.id}`
         // this.postForm.content_short += `   Article Id:${this.postForm.id}`
@@ -183,6 +198,8 @@ export default {
 
         // set page title
         this.setPageTitle()
+        //
+        this.fetchCatalogList()
       }).catch(err => {
         console.log(err)
       })
@@ -231,11 +248,28 @@ export default {
       })
       this.postForm.status = 'draft'
     },
-    getRemoteUserList(query) {
-      searchUser(query).then(response => {
-        if (!response.data.items) return
-        this.userListOptions = response.data.items.map(v => v.name)
+    fetchCatalogList(query) {
+      const params = { leaf: true }
+      fetchCatalogs(this.postForm.bookId, params).then(response => {
+        // if (!response.data.items) return
+        // this.catalogs = response.data.items.map(v => v.name)
+        this.catalogs = response.rows
       })
+    },
+    handlePreAndNext(row, op) {
+      if (op === 1) {
+        if (row.pre === this.postForm.id) {
+          this.pre = {}
+          return
+        }
+        this.pre = { id: row.pre }
+      } else if (op === -1) {
+        if (row.next === this.postForm.id) {
+          this.next = {}
+          return
+        }
+        this.next = { id: row.next }
+      }
     }
   }
 }
@@ -253,7 +287,8 @@ export default {
     .postInfo-container {
       position: relative;
       @include clearfix;
-      margin-bottom: 10px;
+      margin-top: 10px;
+      margin-bottom: 0px;
 
       .postInfo-container-item {
         float: left;

@@ -299,8 +299,8 @@ export default {
       })
     },
     setTagsViewTitle() {
-      const title = '编辑 '
-      const route = Object.assign({}, this.tempRoute, { title: `${title}《${this.postForm.name}》` })
+      const title = '目录'
+      const route = Object.assign({}, this.tempRoute, { title: `《${this.postForm.name}》${title}` })
       this.$store.dispatch('tagsView/updateVisitedView', route)
     },
     setPageTitle() {
