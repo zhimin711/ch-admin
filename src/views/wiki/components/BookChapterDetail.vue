@@ -22,7 +22,7 @@
               <el-row>
                 <el-col :span="8">
                   <el-form-item label-width="80px" label="上一章节:" class="postInfo-container-item">
-                    <el-select v-model="pre" placeholder="请选择" value-key="id" clearable @change="(val)=> handlePreAndNext(val,-1)">
+                    <el-select v-model="pre" placeholder="请选择" style="display:block;" value-key="id" clearable @change="(val)=> handlePreAndNext(val,-1)">
                       <el-option
                         v-for="item in catalogs"
                         :key="item.id"
@@ -206,7 +206,7 @@ export default {
     },
     setTagsViewTitle() {
       const title = '编辑'
-      const route = Object.assign({}, this.tempRoute, { title: `${title}《${this.postForm.number + this.postForm.name}》` })
+      const route = Object.assign({}, this.tempRoute, { title: `${title}《${this.postForm.number}》` })
       this.$store.dispatch('tagsView/updateVisitedView', route)
     },
     setPageTitle() {
@@ -292,6 +292,9 @@ export default {
 
       .postInfo-container-item {
         float: left;
+        .postInfo-container-item .el-select {
+          display: block;
+        }
       }
     }
   }
