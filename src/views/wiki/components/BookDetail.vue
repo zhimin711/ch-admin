@@ -3,11 +3,11 @@
     <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container">
 
       <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
-        <el-button v-loading="loading" type="warning" @click="draftForm">
+        <el-button v-if="postForm.status === '2'" v-loading="loading" type="warning" @click="fixForm">
           修复目录
         </el-button>
         <!--<CommentDropdown v-model="postForm.comment_disabled" />-->
-        <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
+        <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="draftForm">
           添加章节
         </el-button>
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
@@ -32,16 +32,14 @@
             <div class="postInfo-container">
               <el-row>
                 <el-col :span="8">
-                  <el-form-item label-width="60px" label="Author:" class="postInfo-container-item">
-                    <!--<el-select v-model="postForm.author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="Search user">
-                      <el-option v-for="(item,index) in userListOptions" :key="item+index" :label="item" :value="item" />
-                    </el-select>-->
+                  <el-form-item label-width="80px" label="作者:" class="postInfo-container-item">
+                    <el-input v-model="postForm.author" />
                   </el-form-item>
                 </el-col>
 
                 <el-col :span="10">
-                  <el-form-item label-width="120px" label="Publish Time:" class="postInfo-container-item">
-                    <el-date-picker v-model="postForm.createAt" type="timestamp" format="yyyy-MM-dd HH:mm:ss" placeholder="Select date and time" />
+                  <el-form-item label-width="120px" label="最后更新时间:" class="postInfo-container-item">
+                    <el-date-picker v-model="postForm.latestChapterAt" type="timestamp" format="yyyy-MM-dd HH:mm:ss" placeholder="Select date and time" />
                   </el-form-item>
                 </el-col>
 
@@ -62,7 +60,7 @@
           </el-col>
         </el-row>
 
-        <el-form-item style="margin-bottom: 40px;" label-width="70px" label="Summary:">
+        <el-form-item style="margin-bottom: 40px;" label-width="80px" label="内容简介:">
           <el-input v-model="postForm.summary" :rows="1" type="textarea" class="article-textarea" autosize placeholder="Please enter the content" />
           <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
         </el-form-item>
@@ -80,6 +78,7 @@
                   <el-badge v-if="(item.pre ==='2' || item.next ==='2')" class="mark" :value="(item.pre ==='2' && item.next ==='2')?2:1" />
                 </el-button>
               </el-tooltip>
+              <el-link type="danger" icon="el-icon-close" :underline="false" @click="handleDelCatalog(item)" />
               <el-divider v-if="!item.leaf" />
               <!--{{ item }}-->
               <el-row v-if="!item.leaf">
@@ -95,6 +94,7 @@
                       <el-badge v-if="(item2.pre ==='2' || item2.next ==='2')" class="mark" :value="(item2.pre ==='2' && item2.next ==='2')?2:1" />
                     </el-button>
                   </el-tooltip>
+                  <el-link type="danger" icon="el-icon-close" :underline="false" @click="handleDelCatalog(item2)" />
                 </el-col>
               </el-row>
               <el-divider v-if="!item.leaf" />
@@ -168,20 +168,25 @@ import Warning from './Warning'
 
 import { deepClone } from '@/utils'
 
-import { get, fetchCatalogs } from '@/api/wiki/books'
-import { edit } from '@/api/wiki/books/chapter'
+import { getBook, editBook, fixBook, getBookCatalogs } from '@/api/wiki/books'
+import { editBookChapter, delBookChapter } from '@/api/wiki/books/chapter'
 
 const defaultForm = {
   status: 'draft',
-  title: '', // 文章题目
-  content: '', // 文章内容
+  name: '', // 名称
+  title: '', // 标题
+  type: '', // 类型1.小说
+  classify: '', // 分类:1.最新 2.热门 3.
   summary: '', // 文章摘要
-  source_uri: '', // 文章外链
-  image_uri: '', // 文章图片
-  display_time: undefined, // 前台展示时间
+  srcUrl: '', // 文章外链
+  image: '', // 文章图片
+  description: '', // 文章图片
+  latestChapterUrl: '', // 文章图片
+  latestChapterAt: undefined, // 前台展示时间
   id: undefined,
   chapterList: [],
   comment_disabled: false,
+  readCount: 0,
   importance: 0
 }
 const defaultCatalog = {
@@ -281,7 +286,7 @@ export default {
   },
   methods: {
     fetchData(id) {
-      get(id).then(response => {
+      getBook(id).then(response => {
         this.postForm = response.rows[0]
 
         this.getRemoteCatalogList()
@@ -312,19 +317,45 @@ export default {
       this.$refs.postForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$notify({
-            title: '成功',
-            message: '发布文章成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.postForm.status = 'published'
-          this.loading = false
+
+          editBook(this.postForm.id, this.postForm).then(resp => {
+            this.loading = false
+            if (resp.success) {
+              this.$notify({
+                title: '成功',
+                message: '修复书籍信息成功',
+                type: 'success',
+                duration: 2000
+              })
+            }
+          }).catch(err => { console.error(err); this.loading = false })
         } else {
           console.log('error submit!!')
           return false
         }
       })
+    },
+    fixForm() {
+      this.$confirm(`请确认是否修复当前目录，操作不可回退?`, '', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.loading = true
+          fixBook(this.postForm.id).then(resp => {
+            this.loading = false
+            if (resp.success) {
+              this.fetchData(this.postForm.id)
+              this.$alert(`修复成功`, `提示`, {
+                confirmButtonText: '确定',
+                callback: action => {
+                  //
+                }
+              })
+            }
+          }).catch(err => { console.error(err); this.loading = false })
+        })
     },
     draftForm() {
       if (this.postForm.content.length === 0 || this.postForm.title.length === 0) {
@@ -344,7 +375,7 @@ export default {
     },
     getRemoteCatalogList(query) {
       const params = { leaf: false }
-      fetchCatalogs(this.postForm.id, params).then(response => {
+      getBookCatalogs(this.postForm.id, params).then(response => {
         // if (!response.data.items) return
         // this.catalogs = response.data.items.map(v => v.name)
         this.catalogs = response.rows
@@ -362,6 +393,26 @@ export default {
       this.recordCatalog = deepClone(row)
       this.pre = { id: row.pre }
       this.next = { id: row.next }
+    },
+    handleDelCatalog(row) {
+      this.$confirm(`请确认是否删除当前目录/章节[${row.name}]，操作不可回退?`, '', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'danger'
+      }).then(() => {
+        this.loading = true
+        delBookChapter(row.id).then(resp => {
+          this.loading = false
+          if (resp.success) {
+            this.fetchData(this.postForm.id)
+            this.$alert(`删除成功`, `提示`, {
+              confirmButtonText: '确定',
+              callback: action => {
+              }
+            })
+          }
+        }).catch(err => { console.error(err); this.loading = false })
+      }).catch(err1 => {})
     },
     handlePreAndNext(row, op) {
       if (op === 1) {
@@ -394,7 +445,7 @@ export default {
         // resp = await add(this.record)
       } else if (this.dialogType === 'edit') {
         opName = '修改'
-        resp = await edit(this.recordCatalog.id, this.recordCatalog).catch(() => {})
+        resp = await editBookChapter(this.recordCatalog.id, this.recordCatalog).catch(() => {})
       }
       if (resp && resp.success) {
         this.dialogVisible = false

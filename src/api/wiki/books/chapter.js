@@ -2,14 +2,14 @@ import request from '@/utils/request2'
 
 const baseUrl = '/wiki/admin/books/chapter'
 
-export function get(id) {
+export function getBookChapter(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'get'
   })
 }
 
-export function add(data) {
+export function addBookChapter(data) {
   return request({
     url: `${baseUrl}`,
     method: 'post',
@@ -17,7 +17,7 @@ export function add(data) {
   })
 }
 
-export function edit(id, data) {
+export function editBookChapter(id, data) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'put',
@@ -25,7 +25,7 @@ export function edit(id, data) {
   })
 }
 
-export function del(id) {
+export function delBookChapter(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'delete'

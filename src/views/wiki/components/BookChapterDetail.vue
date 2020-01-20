@@ -85,7 +85,7 @@ import { validURL } from '@/utils/validate'
 import Warning from './Warning'
 
 import { fetchCatalogs } from '@/api/wiki/books'
-import { get/*, edit*/ } from '@/api/wiki/books/chapter'
+import { getBookChapter, addBookChapter, editBookChapter } from '@/api/wiki/books/chapter'
 
 const defaultForm = {
   status: 'draft',
@@ -184,7 +184,7 @@ export default {
   },
   methods: {
     fetchData(id) {
-      get(id).then(response => {
+      getBookChapter(id).then(response => {
         this.postForm = response.rows[0]
 
         this.pre = { id: this.postForm.pre }
@@ -205,27 +205,51 @@ export default {
       })
     },
     setTagsViewTitle() {
-      const title = '编辑'
-      const route = Object.assign({}, this.tempRoute, { title: `${title}《${this.postForm.number}》` })
+      const title = this.postForm.number || this.postForm.name
+      const route = Object.assign({}, this.tempRoute, { title: `编辑《${title}》` })
       this.$store.dispatch('tagsView/updateVisitedView', route)
     },
     setPageTitle() {
       const title = '编辑书籍章节'
-      document.title = `${title} - ${this.postForm.number + this.postForm.name}`
+      document.title = `${title} - ${this.postForm.number || this.postForm.name}`
     },
     submitForm() {
       console.log(this.postForm)
-      this.$refs.postForm.validate(valid => {
+      this.$refs.postForm.validate(async valid => {
         if (valid) {
-          this.loading = true
-          this.$notify({
-            title: '成功',
-            message: '发布文章成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.postForm.status = 'published'
+          // this.record = {}
+          if (this.pre && this.pre.id !== '') {
+            this.postForm.pre = this.pre.id
+          } else this.postForm.pre = null
+          if (this.next && this.pre.next !== '') {
+            this.postForm.next = this.next.id
+          } else this.postForm.next = null
+          let resp = null
+          let opName = '添加'
+          if (!this.isEdit) {
+            resp = await addBookChapter(this.postForm).catch(() => {})
+          } else {
+            opName = '修改'
+            resp = await editBookChapter(this.postForm.id, this.postForm).catch(() => {})
+          }
           this.loading = false
+          console.log(resp)
+          if (resp && resp.success) {
+            this.$message({
+              type: 'success',
+              message: `${opName} ${this.postForm.name} success!`
+            })
+            this.$store.dispatch('tagsView/delView', this.tempRoute)
+            this.$router.go(-1)
+          }
+          // this.loading = true
+          // this.$notify({
+          //   title: '成功',
+          //   message: '发布文章成功',
+          //   type: 'success',
+          //   duration: 2000
+          // })
+          // this.postForm.status = 'published'
         } else {
           console.log('error submit!!')
           return false

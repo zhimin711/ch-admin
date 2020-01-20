@@ -39,6 +39,7 @@
           <el-tag v-if="scope.row.status === '3'" type="warning">暂停</el-tag>
           <el-tag v-if="scope.row.status === '4'" type="danger">停止</el-tag>
           <el-tag v-if="scope.row.status === '6'" type="success">同步完成</el-tag>
+          <el-tag v-if="scope.row.status === 'x'" type="danger">已删除</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="latestChapterAt" label="最新更新时间" width="120">
@@ -58,7 +59,7 @@
       </el-table-column>-->
       <el-table-column align="center" label="Actions" width="120">
         <template slot-scope="scope">
-          <router-link :to="'/wiki/books/'+scope.row.id">
+          <router-link v-if="scope.row.status !== 'x'" :to="'/wiki/books/'+scope.row.id">
             <el-button type="primary" size="small" icon="el-icon-edit">
               Edit
             </el-button>

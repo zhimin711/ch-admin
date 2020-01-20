@@ -16,14 +16,14 @@ export function fetchList(query) {
   })
 }
 
-export function get(id) {
+export function getBook(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'get'
   })
 }
 
-export function add(data) {
+export function addBook(data) {
   return request({
     url: `${baseUrl}`,
     method: 'post',
@@ -31,7 +31,7 @@ export function add(data) {
   })
 }
 
-export function edit(id, data) {
+export function editBook(id, data) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'put',
@@ -39,17 +39,24 @@ export function edit(id, data) {
   })
 }
 
-export function del(id) {
+export function delBook(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'delete'
   })
 }
 
-export function fetchCatalogs(bookId, params) {
+export function getBookCatalogs(bookId, params) {
   return request({
     url: `${baseUrl}/${bookId}/chapters`,
     method: 'get',
     params: params
+  })
+}
+
+export function fixBook(bookId) {
+  return request({
+    url: `${baseUrl}/${bookId}/fix`,
+    method: 'post'
   })
 }
