@@ -256,7 +256,7 @@ export default {
   },
   computed: {
     contentShortLength() {
-      return this.postForm.summary.length
+      return this.postForm.summary ? this.postForm.summary.length : 0
     },
     displayTime: {
       // set and get is useful when the data

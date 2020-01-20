@@ -69,6 +69,82 @@
     </el-table>
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+
+    <!-- 编辑弹出框 -->
+    <el-dialog :title="baseForm.title" :visible.sync="baseForm.visible">
+      <el-form ref="baseForm" :model="record" label-width="100px" :disabled="baseForm.disabled">
+        <el-form-item label="类型">
+          <el-cascader
+            ref="typeCascader"
+            v-model="record.typeOptions"
+            expand-trigger="hover"
+            :options="options.bookType"
+          />
+        </el-form-item>
+        <el-form-item label="名称" prop="name">
+          <el-input v-model="record.name" />
+        </el-form-item>
+        <!--        <el-form-item label="标签" prop="description">
+          <el-input v-model="record.description"></el-input>
+        </el-form-item>-->
+        <el-form-item label="作者" prop="author">
+          <el-input v-model="record.author" />
+        </el-form-item>
+        <el-form-item label="摘要">
+          <el-input
+            v-model="record.summary"
+            type="textarea"
+            :autosize="{ minRows: 4, maxRows: 6}"
+          />
+        </el-form-item>
+        <el-form-item label="来源">
+          <el-radio-group v-model="record.srcType" @change="srcTypeChange">
+            <el-radio-button label="0">导入</el-radio-button>
+            <el-radio-button label="1">网络</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-show="baseForm.uploadShow" label="上传文件">
+          <el-upload
+            ref="uploader"
+            class="upload-book"
+            drag
+            :headers="authHeader"
+            :data="uploadParams"
+            name="files[]"
+            :limit="1"
+            :show-file-list="false"
+            :on-success="uploadSuccess"
+            :action="urls.upload"
+          >
+            <i class="el-icon-upload" />
+            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+            <div slot="tip" class="el-upload__tip">只能上传txt文件，且不超过100MB</div>
+          </el-upload>
+        </el-form-item>
+        <el-form-item v-show="!baseForm.uploadShow" label="来源地址" prop="srcUrl">
+          <el-input v-model="record.srcUrl" :disabled="baseForm.srcUrlDisabled">
+            <template v-if="baseForm.uploadDel">
+              <el-button slot="append" icon="el-icon-delete" @click.prevent="removeUpload()">删除
+              </el-button>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!--<el-form-item label="最新章节" prop="latestChapter">
+          <el-input v-model="record.latestChapter"></el-input>
+        </el-form-item>
+        <el-form-item label="最新更新时间">
+          <el-date-picker
+            type="date"
+            placeholder="最新更新时间"
+            v-model="record.latestChapterAt"
+            value-format="timestamp"></el-date-picker>
+        </el-form-item>-->
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="resetForm('baseForm')">取 消</el-button>
+        <el-button type="primary" @click="saveEdit('baseForm')">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -78,7 +154,7 @@ import Pagination from '@/components/Pagination' // Secondary package based on e
 // import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
-import { fetchList/*, add, edit, del*/ } from '@/api/wiki/books'
+import { fetchBookList, addBook/*, edit, del*/ } from '@/api/wiki/books'
 
 export default {
   name: 'WikiBooks',
@@ -92,7 +168,68 @@ export default {
         limit: 20,
         total: 0,
         params: {}
+      },
+      urls: { upload: '' },
+      baseForm: {
+        action: 'add',
+        title: '新增',
+        visible: false,
+        disabled: false,
+        codeDisabled: false,
+        srcUrlDisabled: false,
+        uploadShow: true,
+        uploadDel: false
+      },
+      record: {
+        name: '',
+        srcType: '0',
+        originalType: ''
+      },
+      options: {
+        bookType: [
+          {
+            value: '1',
+            label: '小说',
+            children: [{
+              value: '11',
+              label: '玄幻'
+            }, {
+              value: '12',
+              label: '仙侠'
+            }, {
+              value: '13',
+              label: '都市'
+            }, {
+              value: '14',
+              label: '武侠'
+            }]
+          }, {
+            value: '2',
+            label: '文学'
+          }, {
+            value: '3',
+            label: '历史'
+          }
+
+        ], classify: [
+          {
+            value: '1',
+            label: '热门'
+          }, {
+            value: '2',
+            label: '综合'
+          }
+        ]
       }
+    }
+  },
+  computed: {
+    authHeader() {
+      return {
+        'Authorization': `Bearer ${this.$store.state.token}`
+      }
+    }, uploadParams() {
+      return { type: '2', version: '1' }
     }
   },
   created() {
@@ -102,7 +239,7 @@ export default {
     checkPermission2,
     getList() {
       this.loading = true
-      fetchList(this.listQuery).then(response => {
+      fetchBookList(this.listQuery).then(response => {
         this.list = response.rows
         this.listQuery.total = response.total
         this.loading = false
@@ -110,6 +247,86 @@ export default {
     },
     handleAdd() {
       //
+      this.baseForm.visible = true
+      this.srcTypeChange(0)
+    },
+    saveEdit() {
+      this.loading = true
+      addBook(this.record).then(resp => {
+        this.loading = false
+        if (resp.success) {
+          this.baseForm.visible = false
+          this.getList()
+          this.$notify({
+            title: '成功',
+            message: '添加书籍成功',
+            type: 'success',
+            duration: 2000
+          })
+        }
+      }).catch(err => { console.error(err); this.loading = false })
+    },
+    resetForm() {
+      //
+      this.baseForm.visible = true
+    },
+    srcTypeChange(val) {
+      const hasUrl = this.record.srcUrl && Object.keys(this.record.srcUrl).length > 0
+      this.baseForm.uploadShow = true
+      this.baseForm.srcUrlDisabled = true
+      // this.record.srcUrl = '';
+      if (val === '1') {
+        // this.record.srcType = '0';
+        if (this.record.originalType === '0' && hasUrl) {
+          this.$confirm('此操作将删除已上传文件, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.removeUpload()
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '取消删除'
+            })
+            this.record.srcType = '0'
+          })
+        } else {
+          this.baseForm.uploadShow = false
+          this.baseForm.srcUrlDisabled = false
+        }
+      }
+    },
+    uploadSuccess(resp, file, fileList) {
+      // debugger;
+      if (resp.success) {
+        this.$message.success('上传成功！')
+        if (fileList.length > 1) fileList.shift()
+        this.record.latestChapterUrl = resp.rows[0]
+        this.record.srcUrl = resp.rows[1]
+        this.record.originalType = '0'
+        this.baseForm.uploadShow = false
+      } else {
+        this.$message.error('上传失败,' + resp.error.name)
+        fileList.pop()
+      }
+    },
+    removeUpload() {
+      this.$axios.get(this.urls.uploadDel + '/' + this.record.latestChapterUrl).then((res) => {
+        if (res.data.success) {
+          this.$message.success('删除上传文件成功')
+        } else {
+          this.$message.error(`删除文件失败`)
+        }
+        this.record.srcUrl = ''
+        this.record.latestChapterUrl = ''
+        this.baseForm.uploadShow = true
+        this.$refs.uploader.clearFiles()
+      }).catch(res => {
+        if (res.data && res.data.error && res.data.error !== '302') {
+          this.$message.error(`删除文件失败`)
+        }
+      })
     }
   }
 }

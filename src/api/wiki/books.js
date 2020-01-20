@@ -8,7 +8,7 @@ export function fetchTree(pid) {
     method: 'get'
   })
 }
-export function fetchList(query) {
+export function fetchBookList(query) {
   return request({
     url: `${baseUrl}/${query.page}/${query.limit}`,
     method: 'get',

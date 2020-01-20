@@ -26,7 +26,7 @@
                       <el-option
                         v-for="item in catalogs"
                         :key="item.id"
-                        :label="item.number + ' - ' + item.name"
+                        :label="item.number || item.name"
                         :value="item"
                         :disabled="postForm.id===item.id"
                       >
@@ -42,7 +42,7 @@
                       <el-option
                         v-for="item in catalogs"
                         :key="item.id"
-                        :label="item.number + ' - ' + item.name"
+                        :label="item.number || item.name"
                         :value="item"
                         :disabled="postForm.id===item.id"
                       >
@@ -84,7 +84,7 @@ import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
 import Warning from './Warning'
 
-import { fetchCatalogs } from '@/api/wiki/books'
+import { getBookCatalogs } from '@/api/wiki/books'
 import { getBookChapter, addBookChapter, editBookChapter } from '@/api/wiki/books/chapter'
 
 const defaultForm = {
@@ -274,7 +274,7 @@ export default {
     },
     fetchCatalogList(query) {
       const params = { leaf: true }
-      fetchCatalogs(this.postForm.bookId, params).then(response => {
+      getBookCatalogs(this.postForm.bookId, params).then(response => {
         // if (!response.data.items) return
         // this.catalogs = response.data.items.map(v => v.name)
         this.catalogs = response.rows
