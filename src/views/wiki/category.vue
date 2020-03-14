@@ -3,15 +3,15 @@
     <div class="filter-container">
       <el-form :inline="true" :model="listQuery" class="search-form-inline">
         <el-form-item label="名称">
-          <el-input v-model="listQuery.params.name" placeholder="名称"></el-input>
+          <el-input v-model="listQuery.params.name" placeholder="名称" />
         </el-form-item>
         <el-form-item label="关键字">
-          <el-input v-model="listQuery.params.keywords" placeholder="关键字"></el-input>
+          <el-input v-model="listQuery.params.keywords" placeholder="关键字" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="listQuery.params.status" clearable placeholder="状态">
-            <el-option key="1" label="启用" value="1"></el-option>
-            <el-option key="2" label="禁用" value="0"></el-option>
+            <el-option key="1" label="启用" value="1" />
+            <el-option key="2" label="禁用" value="0" />
           </el-select>
 
         </el-form-item>
@@ -31,18 +31,16 @@
         :data="list"
         row-key="id"
         border
-        :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+        :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      >
         <el-table-column label="名称">
           <template slot-scope="scope">
             <el-tag>{{ scope.row.name }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="code" label="代码">
-        </el-table-column>
-        <el-table-column prop="keywords" label="标签">
-        </el-table-column>
-        <el-table-column prop="sort" label="排序" width="80">
-        </el-table-column>
+        <el-table-column prop="code" label="代码" />
+        <el-table-column prop="keywords" label="标签" />
+        <el-table-column prop="sort" label="排序" width="80" />
         <!--<el-table-column label="地址">
             <template slot-scope="scope">
                 <span>{{ scope.row.url }}</span>
@@ -50,9 +48,9 @@
         </el-table-column>-->
         <el-table-column label="操作" width="200">
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑
+            <el-button v-if="checkPermission2(['WIKI_CATEGORY_EDIT'])" type="text" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑
             </el-button>
-            <el-button type="text" icon="el-icon-delete" class="red" @click="handleDel(scope.row)">删除
+            <el-button v-if="checkPermission2(['WIKI_CATEGORY_DEL'])" type="text" icon="el-icon-delete" class="red" @click="handleDel(scope.row)">删除
             </el-button>
           </template>
         </el-table-column>
@@ -75,29 +73,29 @@
 
         <el-form-item label="名称" prop="name">
           <el-col :span="12">
-            <el-input v-model="record.name"></el-input>
+            <el-input v-model="record.name" />
           </el-col>
         </el-form-item>
         <el-form-item label="标签" prop="keywords">
-          <el-input v-model="record.keywords"></el-input>
+          <el-input v-model="record.keywords" />
         </el-form-item>
         <el-form-item label="排序">
-          <el-input-number v-model="record.sort"></el-input-number>
+          <el-input-number v-model="record.sort" />
         </el-form-item>
         <el-form-item label="描述">
-          <el-input type="textarea" v-model="record.description"></el-input>
+          <el-input v-model="record.description" type="textarea" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="record.status" placeholder="请选择">
-            <el-option key="enabled" label="启用" value="1"></el-option>
-            <el-option key="disabled" label="禁用" value="0"></el-option>
+            <el-option key="enabled" label="启用" value="1" />
+            <el-option key="disabled" label="禁用" value="0" />
           </el-select>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-				<el-button type="primary" @click="handleSubmit('baseForm')">确 定</el-button>
-				<el-button @click="dialogVisible=false">取 消</el-button>
-			</span>
+        <el-button type="primary" @click="handleSubmit('baseForm')">确 定</el-button>
+        <el-button @click="dialogVisible=false">取 消</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>

@@ -42,7 +42,7 @@
           <el-tag v-if="scope.row.status === 'x'" type="danger">已删除</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="latestChapterAt" label="最新更新时间" width="120">
+      <el-table-column prop="latestChapterAt" label="最新更新时间" width="160">
         <template slot-scope="scope">
           <span>{{ scope.row.latestChapterAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>

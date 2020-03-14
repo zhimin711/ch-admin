@@ -67,7 +67,7 @@
         <div class="catalog-container">
           <el-row>
             <el-col v-for="(item,index) in postForm.chapterList" :key="item+index" :label="item" :value="item" :span="item.leaf?6:24">
-              {{ item.number }} - {{ item.name }}
+              {{ tripName(item.number + ' ' + item.name, 15) }}
               <el-tooltip placement="top" :disabled="!(item.pre ==='2' || item.next ==='2')">
                 <div slot="content">
                   <span v-if="item.pre ==='2'">上一目录错误</span>
@@ -83,7 +83,7 @@
               <!--{{ item }}-->
               <el-row v-if="!item.leaf">
                 <el-col v-for="(item2,index2) in item.children" :key="item2+index2" :label="item2" :value="item2" :span="item2.leaf?6:24">
-                  {{ item2.number }} - {{ item2.name }}
+                  {{ tripName(item2.number + ' ' + item2.name, 15) }}
                   <el-tooltip placement="top" :disabled="!(item2.pre ==='2' || item2.next ==='2')">
                     <div slot="content">
                       <span v-if="item2.pre ==='2'">上一章错误</span>
@@ -455,6 +455,12 @@ export default {
         })
         _this.fetchData(this.postForm.id)
       }
+    },
+    tripName(name, len) {
+      if (name.length > len) {
+        return name.substring(0, len) + '...'
+      }
+      return name
     }
   }
 }
