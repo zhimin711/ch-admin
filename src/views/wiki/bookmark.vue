@@ -26,7 +26,7 @@
         </template>
       </el-table-column>
       <el-table-column prop="name" label="名称" />
-      <el-table-column prop="mark" label="标签" width="150">
+      <el-table-column prop="mark" label="标签">
         <template slot-scope="scope">
           <el-link v-if="scope.row.href" type="success" :href="scope.row.href" target="_blank">
             {{ scope.row.mark }}
@@ -131,8 +131,8 @@ export default {
     },
     handleEdit(row) {
       this.record = deepClone(row)
-      // this.record.lastMarkAt = this.record.markAt
-      // this.record.markAt = new Date()
+      this.record.lastMarkAt = this.record.markAt
+      this.record.markAt = new Date()
 
       this.dialogType = 'edit'
       this.dialogVisible = true
