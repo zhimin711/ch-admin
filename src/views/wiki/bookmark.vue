@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.params.clusterName" placeholder="名称" style="width: 200px;" class="filter-item" />
+      <el-input v-model="listQuery.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />
       <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
         <el-option label="启用" value="1">启用</el-option>
         <el-option label="禁用" value="0">禁用</el-option>
@@ -18,7 +18,6 @@
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
       <el-table-column type="selection" width="55" align="center" />
-
       <el-table-column prop="type" label="类型" width="80">
         <template slot-scope="scope">
           <span v-if="scope.row.type === '1'">小说</span>
@@ -43,23 +42,34 @@
       <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
           <el-link v-if="checkPermission2(['WIKI_BOOKMARK_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link v-if="checkPermission2(['WIKI_BOOKMARK_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <el-link v-if="checkPermission2(['WIKI_BOOKMARK_DEL'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
     </el-table>
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 集群':'New 集群'">
-      <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="集群名称">
-          <el-input v-model="record.clusterName" placeholder="集群名称" :disabled="dialogCodeEdit" />
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑书签':'创建书签'">
+      <el-form ref="recordForm" :model="record" label-width="100px">
+        <el-form-item label="类型">
+          <el-radio-group v-model="record.type">
+            <el-radio-button label="1">小说</el-radio-button>
+            <el-radio-button label="2">漫画</el-radio-button>
+            <el-radio-button label="3">视频</el-radio-button>
+          </el-radio-group>
         </el-form-item>
-        <el-form-item label="zookeeper">
-          <el-input v-model="record.zookeeper" placeholder="zookeeper" />
+        <el-form-item label="名称" prop="name">
+          <el-input v-model="record.name" />
         </el-form-item>
-        <el-form-item label="brokers">
-          <el-input v-model="record.brokers" placeholder="brokers" :disabled="true" />
+        <el-form-item label="标签" prop="mark">
+          <el-input v-model="record.mark" />
+        </el-form-item>
+        <el-form-item label="链接" prop="href">
+          <el-input v-model="record.href" />
+        </el-form-item>
+        <el-form-item label="时间">
+          <el-date-picker v-model="record.markAt" type="datetime" placeholder="选择日期" value-format="timestamp" />
+          <span v-if="record.lastMarkAt" class="form-item-desc">上次时间：{{ record.lastMarkAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -76,27 +86,11 @@ import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { listBookmark, addBookmark, editBookmark, delBookmark } from '@/api/wiki/bookmark'
 
-const defaultRecord = { sort: 1, status: '1' }
+const defaultRecord = { type: '2', status: '0' }
 
 export default {
-  name: 'KafkaClusterManager',
+  name: 'WikiBookmarkManager',
   components: { Pagination },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      let s = 'draft'
-      if (status === '1') {
-        s = 'published'
-      } else if (status === '3') {
-        s = 'deleted'
-      }
-      return statusMap[s]
-    }
-  },
   data() {
     return {
       record: Object.assign({}, defaultRecord),
@@ -111,10 +105,7 @@ export default {
       loading: { handleSubmit: false },
       recordRoles: [],
       dialogVisible: false,
-      dialogType: false,
-      dialogCodeEdit: false,
-      dialogVisible2: false,
-      roles: []
+      dialogType: false
     }
   },
   created() {
@@ -132,21 +123,25 @@ export default {
     },
     handleAdd() {
       this.record = Object.assign({}, defaultRecord)
+      this.record.markAt = new Date()
+      this.record.lastMarkAt = ''
+
       this.dialogType = 'new'
       this.dialogVisible = true
-      this.dialogCodeEdit = false
     },
     handleEdit(row) {
       this.record = deepClone(row)
+      // this.record.lastMarkAt = this.record.markAt
+      // this.record.markAt = new Date()
+
       this.dialogType = 'edit'
       this.dialogVisible = true
-      this.dialogCodeEdit = true
     },
     handleDel(row) {
       const _this = this
-      this.$confirm('Confirm to remove the user?', 'Warning', {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
+      this.$confirm('是否确认删除书签，删除将不可恢复?', 'Warning', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
         type: 'warning'
       })
         .then(async() => {
@@ -154,7 +149,7 @@ export default {
           _this.getList()
           this.$message({
             type: 'success',
-            message: 'Delete success!'
+            message: '删除成功!'
           })
         })
         .catch(err => { console.error(err) })
@@ -171,16 +166,17 @@ export default {
         resp = await editBookmark(this.record.id, this.record).catch(() => { _this.loading.handleSubmit = false })
       }
       _this.loading.handleSubmit = false
-      if (resp && resp.success) {
-        this.dialogVisible = false
-        this.$notify({
-          title: `${opName}集群名称 Success!`,
-          dangerouslyUseHTMLString: true,
-          message: `
-            <div>集群名称: ${this.record.clusterName}</div>
+      const ok = resp && resp.success
+      this.$notify({
+        title: `${opName} 书签 ${ok ? '成功' : '失败'}!`,
+        dangerouslyUseHTMLString: true,
+        message: `
+            <div>书签: ${this.record.name}</div>
           `,
-          type: 'success'
-        })
+        type: ok ? 'success' : 'error'
+      })
+      if (ok) {
+        this.dialogVisible = false
         _this.getList()
       }
     }
