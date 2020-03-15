@@ -58,12 +58,12 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="160">
+      <el-table-column align="center" label="操作" width="200">
         <template slot-scope="scope">
           <el-button v-if="checkPermission2(['UPMS_PERMISSION_EDIT'])" type="text" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑
           </el-button>
-          <el-button v-if="checkPermission2(['UPMS_PERMISSION_DELETE'])" type="text" icon="el-icon-delete" class="red" @click="handleDel(scope.row)">删除
-          </el-button>
+          <el-link v-if="checkPermission2(['UPMS_PERMISSION_COPY'])" type="success" icon="el-icon-document-copy" @click="handleCopy(scope.row)">复制</el-link>
+          <el-link v-if="checkPermission2(['UPMS_PERMISSION_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
     </el-table>
@@ -234,6 +234,19 @@ export default {
       // this.recordForm.redirectShow = (row.type === '1' || row.type === '4')
       this.changeType(row.type)
     },
+    handleCopy(row, index) {
+      this.record = deepClone(row)
+      this.record.id = null
+      this.record.sort += 1
+      this.recordType = row.type
+      this.recordParents = this.record.parentId.split(',')
+      if (this.record.parentId === '0') this.record.parentId = undefined
+      this.recordStatus = (this.record.status === '1')
+      this.recordShow = (this.record.isShow === '1')
+      this.dialogType = 'copy'
+      this.dialogVisible = true
+      this.changeType(row.type)
+    },
     handleDel(row) {
       const _this = this
       this.$confirm('Confirm to remove the user?', 'Warning', {
@@ -274,7 +287,7 @@ export default {
       }
       let resp = null
       let opName = '添加'
-      if (this.dialogType === 'new') {
+      if (this.dialogType === 'new' || this.dialogType === 'copy') {
         resp = await add(this.record)
       } else if (this.dialogType === 'edit') {
         opName = '修改'

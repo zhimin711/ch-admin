@@ -3,12 +3,14 @@
     <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container">
 
       <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
-
+        <CommentDropdown v-model="postForm.comment_disabled" />
+        <PlatformDropdown v-model="postForm.platforms" />
+        <SourceUrlDropdown v-model="postForm.source_uri" />
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
-          保存
+          Publish
         </el-button>
         <el-button v-loading="loading" type="warning" @click="draftForm">
-          草稿
+          Draft
         </el-button>
       </sticky>
 
@@ -17,61 +19,57 @@
           <Warning />
 
           <el-col :span="24">
+            <el-form-item style="margin-bottom: 40px;" prop="title">
+              <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
+                Title
+              </MDinput>
+            </el-form-item>
 
             <div class="postInfo-container">
               <el-row>
                 <el-col :span="8">
-                  <el-form-item label-width="80px" label="上一章节:" class="postInfo-container-item">
-                    <el-select v-model="pre" placeholder="请选择" style="display:block;" value-key="id" clearable @change="(val)=> handlePreAndNext(val,-1)">
-                      <el-option
-                        v-for="item in catalogs"
-                        :key="item.id"
-                        :label="item.number || item.name"
-                        :value="item"
-                        :disabled="postForm.id===item.id"
-                      >
-                        <span style="float: left">{{ item.number }}</span>
-                        <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="8">
-                  <el-form-item label-width="80px" label="下一章节:" class="postInfo-container-item">
-                    <el-select v-model="next" placeholder="请选择" value-key="id" clearable @change="(val)=> handlePreAndNext(val,1)">
-                      <el-option
-                        v-for="item in catalogs"
-                        :key="item.id"
-                        :label="item.number || item.name"
-                        :value="item"
-                        :disabled="postForm.id===item.id"
-                      >
-                        <span style="float: left">{{ item.number }}</span>
-                        <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
-                      </el-option>
+                  <el-form-item label-width="60px" label="Author:" class="postInfo-container-item">
+                    <el-select v-model="postForm.author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="Search user">
+                      <el-option v-for="(item,index) in userListOptions" :key="item+index" :label="item" :value="item" />
                     </el-select>
                   </el-form-item>
                 </el-col>
 
+                <el-col :span="10">
+                  <el-form-item label-width="120px" label="Publish Time:" class="postInfo-container-item">
+                    <el-date-picker v-model="postForm.publishAt" type="datetime" format="yyyy-MM-dd HH:mm:ss" value-format="timestamp" placeholder="Select date and time" />
+                  </el-form-item>
+                </el-col>
+
+                <el-col :span="6">
+                  <el-form-item label-width="90px" label="Importance:" class="postInfo-container-item">
+                    <el-rate
+                      v-model="postForm.importance"
+                      :max="3"
+                      :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
+                      :low-threshold="1"
+                      :high-threshold="3"
+                      style="display:inline-block"
+                    />
+                  </el-form-item>
+                </el-col>
               </el-row>
             </div>
-            <el-form-item style="margin-bottom: 0px;" prop="number">
-              <MDinput v-model="postForm.number" :maxlength="100" name="number">
-                中文序号（若为空则自动生成或连接上一章）
-              </MDinput>
-            </el-form-item>
-            <el-form-item style="margin-bottom: 40px;" prop="title">
-              <MDinput v-model="postForm.name" :maxlength="100" name="name" required>
-                章节名称
-              </MDinput>
-            </el-form-item>
           </el-col>
         </el-row>
+
+        <el-form-item style="margin-bottom: 40px;" label-width="70px" label="Summary:">
+          <el-input v-model="postForm.description" :rows="1" type="textarea" class="article-textarea" autosize placeholder="Please enter the content" />
+          <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
+        </el-form-item>
 
         <el-form-item prop="content" style="margin-bottom: 30px;">
           <Tinymce ref="editor" v-model="postForm.content" :height="400" />
         </el-form-item>
 
+        <el-form-item prop="image_uri" style="margin-bottom: 30px;">
+          <Upload v-model="postForm.image_uri" />
+        </el-form-item>
       </div>
     </el-form>
   </div>
@@ -79,19 +77,21 @@
 
 <script>
 import Tinymce from '@/components/Tinymce'
+import Upload from '@/components/Upload/SingleImage3'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
+import { getArticle } from '@/api/wiki/article'
+import { searchUser } from '@/api/remote-search'
 import Warning from './Warning'
-
-import { getBookCatalogs } from '@/api/wiki/books'
-import { getBookChapter, addBookChapter, editBookChapter } from '@/api/wiki/books/chapter'
+import { CommentDropdown, PlatformDropdown, SourceUrlDropdown } from './Dropdown'
 
 const defaultForm = {
   status: 'draft',
   title: '', // 文章题目
   content: '', // 文章内容
   content_short: '', // 文章摘要
+  description: '', // 文章摘要
   source_uri: '', // 文章外链
   image_uri: '', // 文章图片
   display_time: undefined, // 前台展示时间
@@ -102,8 +102,8 @@ const defaultForm = {
 }
 
 export default {
-  name: 'BookChapterDetail',
-  components: { Tinymce, MDinput, Sticky, Warning },
+  name: 'ArticleDetail',
+  components: { Tinymce, MDinput, Upload, Sticky, Warning, CommentDropdown, PlatformDropdown, SourceUrlDropdown },
   props: {
     isEdit: {
       type: Boolean,
@@ -140,9 +140,7 @@ export default {
     return {
       postForm: Object.assign({}, defaultForm),
       loading: false,
-      catalogs: [],
-      pre: {},
-      next: {},
+      userListOptions: [],
       rules: {
         image_uri: [{ validator: validateRequire }],
         title: [{ validator: validateRequire }],
@@ -154,7 +152,7 @@ export default {
   },
   computed: {
     contentShortLength() {
-      return this.postForm.content_short.length
+      return this.postForm.description.length
     },
     displayTime: {
       // set and get is useful when the data
@@ -184,72 +182,42 @@ export default {
   },
   methods: {
     fetchData(id) {
-      getBookChapter(id).then(response => {
+      getArticle(id).then(response => {
         this.postForm = response.rows[0]
 
-        this.pre = { id: this.postForm.pre }
-        this.next = { id: this.postForm.next }
         // just for test
-        // this.postForm.title += `   Article Id:${this.postForm.id}`
-        // this.postForm.content_short += `   Article Id:${this.postForm.id}`
 
         // set tagsview title
         this.setTagsViewTitle()
 
         // set page title
         this.setPageTitle()
-        //
-        this.fetchCatalogList()
       }).catch(err => {
         console.log(err)
       })
     },
     setTagsViewTitle() {
-      const title = this.postForm.number || this.postForm.name
-      const route = Object.assign({}, this.tempRoute, { title: `编辑《${title}》` })
+      const title = 'Edit Article'
+      const route = Object.assign({}, this.tempRoute, { title: `${title}-${this.postForm.id}` })
       this.$store.dispatch('tagsView/updateVisitedView', route)
     },
     setPageTitle() {
-      const title = '编辑书籍章节'
-      document.title = `${title} - ${this.postForm.number || this.postForm.name}`
+      const title = 'Edit Article'
+      document.title = `${title} - ${this.postForm.id}`
     },
     submitForm() {
       console.log(this.postForm)
-      this.$refs.postForm.validate(async valid => {
+      this.$refs.postForm.validate(valid => {
         if (valid) {
-          // this.record = {}
-          if (this.pre && this.pre.id !== '') {
-            this.postForm.pre = this.pre.id
-          } else this.postForm.pre = null
-          if (this.next && this.pre.next !== '') {
-            this.postForm.next = this.next.id
-          } else this.postForm.next = null
-          let resp = null
-          let opName = '添加'
-          if (!this.isEdit) {
-            resp = await addBookChapter(this.postForm).catch(() => {})
-          } else {
-            opName = '修改'
-            resp = await editBookChapter(this.postForm.id, this.postForm).catch(() => {})
-          }
+          this.loading = true
+          this.$notify({
+            title: '成功',
+            message: '发布文章成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.postForm.status = 'published'
           this.loading = false
-          console.log(resp)
-          if (resp && resp.success) {
-            this.$message({
-              type: 'success',
-              message: `${opName} ${this.postForm.name} success!`
-            })
-            this.$store.dispatch('tagsView/delView', this.tempRoute)
-            this.$router.go(-1)
-          }
-          // this.loading = true
-          // this.$notify({
-          //   title: '成功',
-          //   message: '发布文章成功',
-          //   type: 'success',
-          //   duration: 2000
-          // })
-          // this.postForm.status = 'published'
         } else {
           console.log('error submit!!')
           return false
@@ -272,28 +240,11 @@ export default {
       })
       this.postForm.status = 'draft'
     },
-    fetchCatalogList(query) {
-      const params = { leaf: true }
-      getBookCatalogs(this.postForm.bookId, params).then(response => {
-        // if (!response.data.items) return
-        // this.catalogs = response.data.items.map(v => v.name)
-        this.catalogs = response.rows
+    getRemoteUserList(query) {
+      searchUser(query).then(response => {
+        if (!response.data.items) return
+        this.userListOptions = response.data.items.map(v => v.name)
       })
-    },
-    handlePreAndNext(row, op) {
-      if (op === 1) {
-        if (row.pre === this.postForm.id) {
-          this.pre = {}
-          return
-        }
-        this.pre = { id: row.pre }
-      } else if (op === -1) {
-        if (row.next === this.postForm.id) {
-          this.next = {}
-          return
-        }
-        this.next = { id: row.next }
-      }
     }
   }
 }
@@ -311,14 +262,10 @@ export default {
     .postInfo-container {
       position: relative;
       @include clearfix;
-      margin-top: 10px;
-      margin-bottom: 0px;
+      margin-bottom: 10px;
 
       .postInfo-container-item {
         float: left;
-        .postInfo-container-item .el-select {
-          display: block;
-        }
       }
     }
   }
