@@ -39,6 +39,15 @@
           <span>{{ scope.row.markAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
+      <el-table-column prop="status" label="状态" width="80">
+        <template slot-scope="scope">
+          <span v-if="scope.row.status === '0'">连载中</span>
+          <span v-if="scope.row.status === '1'">已完结</span>
+          <!--<span v-if="scope.row.status === '2'">漫画</span>-->
+          <span v-if="scope.row.status === '3'">已中止</span>
+          <span v-if="scope.row.status === '4'">已停更</span>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
           <el-link v-if="checkPermission2(['WIKI_BOOKMARK_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
@@ -69,7 +78,17 @@
         </el-form-item>
         <el-form-item label="时间">
           <el-date-picker v-model="record.markAt" type="datetime" placeholder="选择日期" value-format="timestamp" />
-          <span v-if="record.lastMarkAt" class="form-item-desc">上次时间：{{ record.lastMarkAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+          <span v-if="record.lastMarkAt" class="form-item-desc">
+            <el-checkbox v-model="unmark">不更新（上次时间：{{ record.lastMarkAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}）</el-checkbox>
+          </span>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="record.status" placeholder="书签状态">
+            <el-option key="status0" label="连载中" value="0" />
+            <el-option key="status1" label="已完结" value="1" />
+            <el-option key="status3" label="已中止" value="3" />
+            <el-option key="status4" label="已停更" value="4" />
+          </el-select>
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
@@ -105,6 +124,7 @@ export default {
       loading: { handleSubmit: false },
       recordRoles: [],
       dialogVisible: false,
+      unmark: false,
       dialogType: false
     }
   },
@@ -136,6 +156,7 @@ export default {
 
       this.dialogType = 'edit'
       this.dialogVisible = true
+      this.unmark = false
     },
     handleDel(row) {
       const _this = this
@@ -162,6 +183,9 @@ export default {
       if (this.dialogType === 'new') {
         resp = await addBookmark(this.record).catch(() => { _this.loading.handleSubmit = false })
       } else if (this.dialogType === 'edit') {
+        if (this.unmark) {
+          this.record.markAt = this.record.lastMarkAt
+        }
         opName = '修改'
         resp = await editBookmark(this.record.id, this.record).catch(() => { _this.loading.handleSubmit = false })
       }
@@ -170,9 +194,7 @@ export default {
       this.$notify({
         title: `${opName} 书签 ${ok ? '成功' : '失败'}!`,
         dangerouslyUseHTMLString: true,
-        message: `
-            <div>书签: ${this.record.name}</div>
-          `,
+        message: `<div>书签: ${this.record.name}</div>`,
         type: ok ? 'success' : 'error'
       })
       if (ok) {
