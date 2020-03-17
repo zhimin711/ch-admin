@@ -25,7 +25,7 @@ service2.interceptors.request.use(
           .then(resp => {
             if (resp.data.success) {
               store.dispatch('user/refreshToken', resp.data.rows[0])
-              config.headers['X-Token'] = resp.data.rows[0]
+              config.headers['X-Token'] = resp.data.rows[0].token
             } else {
               return Promise.reject(resp)
             }

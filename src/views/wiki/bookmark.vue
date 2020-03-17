@@ -1,15 +1,31 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
-        <el-option label="启用" value="1">启用</el-option>
-        <el-option label="禁用" value="0">禁用</el-option>
-      </el-select>
+      <el-form :inline="true" :model="listQuery.params" class="search-form-inline">
+        <el-form-item label="名称">
+          <el-input v-model="listQuery.params.name" placeholder="名称" />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="listQuery.params.status" placeholder="全部" clearable>
+            <el-option key="status0" label="连载中" value="0" />
+            <el-option key="status1" label="已完结" value="1" />
+            <el-option key="status3" label="已中止" value="3" />
+            <el-option key="status4" label="已停更" value="4" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="类型">
+          <el-select v-model="listQuery.params.type" placeholder="全部" clearable>
+            <el-option key="type1" label="小说" value="1" />
+            <el-option key="type2" label="漫画" value="2" />
+            <el-option key="type3" label="视频" value="3" />
+            <el-option key="type4" label="文章" value="4" />
+          </el-select>
+        </el-form-item>
+      </el-form>
       <el-button v-if="checkPermission2(['WIKI_BOOKMARK_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
-      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
+      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = { status: '0', type: '2' }">
         重置
       </el-button>
       <el-button v-if="checkPermission2(['WIKI_BOOKMARK_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
@@ -23,6 +39,7 @@
           <span v-if="scope.row.type === '1'">小说</span>
           <span v-if="scope.row.type === '2'">漫画</span>
           <span v-if="scope.row.type === '3'">视频</span>
+          <span v-if="scope.row.type === '4'">文章</span>
         </template>
       </el-table-column>
       <el-table-column prop="name" label="名称" />
@@ -65,6 +82,7 @@
             <el-radio-button label="1">小说</el-radio-button>
             <el-radio-button label="2">漫画</el-radio-button>
             <el-radio-button label="3">视频</el-radio-button>
+            <el-radio-button label="4">文章</el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="名称" prop="name">
@@ -119,7 +137,7 @@ export default {
         limit: 10,
         total: 0,
         list: [],
-        params: {}
+        params: { status: '0', type: '2' }
       },
       loading: { handleSubmit: false },
       recordRoles: [],
