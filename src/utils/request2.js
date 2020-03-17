@@ -37,8 +37,13 @@ service2.interceptors.request.use(
   },
   error => {
     // do something with request error
-    console.log(error) // for debug
-    return Promise.reject(error)
+    // console.log(error) // for debug
+    console.debug('request2 request err: ' + JSON.stringify(error)) // for debug
+    if (error.code === '307') {
+      toLogin()
+    } else {
+      return Promise.reject(error)
+    }
   }
 )
 
@@ -47,7 +52,7 @@ service2.interceptors.response.use(
   /**
    * If you want to get http information such as headers or status
    * Please return  response => response
-  */
+   */
 
   /**
    * Determine the request status by custom code
@@ -60,24 +65,15 @@ service2.interceptors.response.use(
     // if the custom code is not 000, it is judged as an error.
     if (!res.success) {
       // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
-      if (res.code === '307') {
-        // to re-login
-        MessageBox.confirm('You have been logged out, you can cancel to stay on this page, or log in again', 'Confirm logout', {
-          confirmButtonText: 'Re-Login',
-          cancelButtonText: 'Cancel',
-          type: 'warning'
-        }).then(() => {
-          store.dispatch('user/resetToken').then(() => {
-            router.push('/login')
-          })
-        })
+      if (res.code === '304' || res.code === '307') {
+        toLogin()
       } else if (res.code) {
         Message({
           message: res.message || `Unknown Error: ${res.code}`,
           type: 'error',
           duration: 5 * 1000
         })
-        return Promise.reject(new Error(res.message || 'Error'))
+        return Promise.reject(res)
       }
       return res
     } else {
@@ -86,16 +82,8 @@ service2.interceptors.response.use(
   },
   error => {
     console.debug('request2 response err: ' + JSON.stringify(error)) // for debug
-    if (error.code === '307') {
-      MessageBox.confirm('登录已失效, 取消停留在当前页面， 或重新登录', '登录过期', {
-        confirmButtonText: '重新登录',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        store.dispatch('user/resetToken').then(() => {
-          router.push('/login')
-        })
-      })
+    if (error.code === '307' || (error.data && error.data.code === '307')) {
+      toLogin()
     } else if (error.message) {
       Message({
         message: error.message,
@@ -106,5 +94,18 @@ service2.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+function toLogin() {
+  // to re-login
+  MessageBox.confirm('登录已失效, 取消停留在当前页面， 或重新登录', '登录过期', {
+    confirmButtonText: '重新登录',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    store.dispatch('user/resetToken').then(() => {
+      router.push('/login')
+    })
+  })
+}
 
 export default service2

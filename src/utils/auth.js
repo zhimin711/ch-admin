@@ -23,9 +23,13 @@ export function removeToken() {
   return localStorage.removeItem(TOKEN_KEY)
 }
 
-export function setExpired() {
+export function setExpired(expireAt) {
   const date = new Date()
-  date.setMinutes(date.getMinutes() + 30)
+  if (expireAt) {
+    date.setTime(expireAt)
+  } else {
+    date.setMinutes(date.getMinutes() + 30)
+  }
   const dateStr = timeFormat(date, 'yyyymmddhhMMss')
   return sessionStorage.setItem(EXPIRED_KEY, dateStr)
 }

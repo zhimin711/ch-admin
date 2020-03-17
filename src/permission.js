@@ -47,18 +47,16 @@ router.beforeEach(async(to, from, next) => {
           next({ ...to, replace: true })
         } catch (error) {
           NProgress.done()
-          console.log('router ==> ' + error)
           console.log('router ==> ' + JSON.stringify(error))
-          if (error != null && (error.code === '307' || error.data.code === '307')) {
+          if (error != null && (error.code === '307' || error.code === '304' || error.data.code === '307')) {
             // to re-login
-            MessageBox.confirm('登录已失效, 取消停留在当前页面， 或重新登录', '登录过期', {
+            MessageBox.alert('登录已失效,请重新登录', '登录过期', {
               confirmButtonText: '重新登录',
-              cancelButtonText: '取消',
-              type: 'warning'
-            }).then(() => {
-              store.dispatch('user/resetToken').then(() => {
-                next(`/login?redirect=${to.path}`)
-              })
+              callback: () => {
+                store.dispatch('user/resetToken').then(() => {
+                  next(`/login?redirect=${to.path}`)
+                })
+              }
             })
           } else {
             Message.error(error || 'Has Error')

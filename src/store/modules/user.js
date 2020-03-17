@@ -46,12 +46,12 @@ const actions = {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password }).then(response => {
-        const { token, refreshToken } = response.rows[0]
+        const { token, refreshToken, expireAt } = response.rows[0]
         commit('SET_TOKEN', token)
         commit('SET_REFRESH_TOKEN', refreshToken)
         setToken(token)
         setRefreshToken(refreshToken)
-        setExpired()
+        setExpired(expireAt)
         resolve()
       }).catch(error => {
         reject(error)
@@ -116,11 +116,12 @@ const actions = {
   },
 
   // remove token
-  refreshToken({ commit }, token) {
+  refreshToken({ commit }, tokenInfo) {
     return new Promise(resolve => {
+      const { token, expireAt } = tokenInfo
       commit('SET_TOKEN', token)
       setToken(token)
-      setExpired()
+      setExpired(expireAt)
       resolve()
     })
   },

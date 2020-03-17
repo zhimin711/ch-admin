@@ -17,7 +17,7 @@
           <el-col :span="24">
             <el-button type="primary" icon="el-icon-search" @click="doSearch">搜索</el-button>
             <el-button icon="el-icon-refresh" @click="search = {}">重置</el-button>
-            <el-button type="primary" icon="el-icon-plus" class="handle-del mr10" @click="baseAdd()">新增
+            <el-button v-if="checkPermission2(['WIKI_AD_ADD'])" type="primary" icon="el-icon-plus" class="handle-del mr10" @click="baseAdd()">新增
             </el-button>
             <!--<el-button type="primary" icon="el-icon-download" class="handle-del mr10">导出</el-button>-->
           </el-col>
@@ -39,16 +39,26 @@
           </template>
         </el-table-column>
         <el-table-column prop="sort" label="排序" width="60" align="center" />
+        <!--<el-table-column prop="createAt" label="创建时间" width="160">
+          <template slot-scope="scope">
+            <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+          </template>
+        </el-table-column>-->
+        <el-table-column prop="validAt" label="开始时间" width="160">
+          <template slot-scope="scope">
+            <span>{{ scope.row.validAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="invalidAt" label="结束时间" width="160">
+          <template slot-scope="scope">
+            <span>{{ scope.row.invalidAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" width="80" align="center">
           <template slot-scope="scope">
             <el-tag v-if="scope.row.status === '0'" type="primary">待处理</el-tag>
             <el-tag v-if="scope.row.status === '1'" type="success">有效</el-tag>
             <el-tag v-if="scope.row.status === '2'" type="danger">删除</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createAt" label="创建时间" width="160">
-          <template slot-scope="scope">
-            <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="130" align="center">
@@ -161,6 +171,7 @@
     <!-- 引用el的dialog弹框组件，默认data中设置croppaVisible=true -->
     <el-dialog title="图片裁剪" :visible.sync="cropDialogVisible" :width="'60%'">
       <el-row>
+        <!--<img class="pic-404__parent" src="@/assets/0_images/0_ad.jpg">-->
         <el-col :span="15">
           <div>
             <VueCropper
@@ -248,7 +259,7 @@ export default {
       cropDialogVisible: false,
       cropperOptions: {
         fileName: '', // 裁剪图片的地址
-        img: '/static/images/img-null3.jpg', // 裁剪图片的地址
+        img: '/api/wiki/assets/i/ad-null6.jpg', // 裁剪图片的地址
         info: true, // 裁剪框的大小信息
         ratio: 2.4,
         outputSize: 0.8, // 裁剪生成图片的质量
