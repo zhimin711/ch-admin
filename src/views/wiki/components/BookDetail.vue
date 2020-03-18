@@ -1,20 +1,20 @@
 <template>
   <div class="createPost-container">
-    <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container">
+    <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container book-catalog">
 
       <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
-        <el-button v-if="postForm.status === '2'" v-loading="loading" type="warning" @click="fixForm">
-          修复目录
-        </el-button>
         <!--<CommentDropdown v-model="postForm.comment_disabled" />-->
-        <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="draftForm">
+        <el-button v-if="checkPermission2(['WIKI_BOOKS_CHAPTER'])" v-loading="loading" style="margin-left: 10px;" type="success" @click="handleAdd">
+          添加目录
+        </el-button>
+        <el-button v-if="checkPermission2(['WIKI_BOOKS_CHAPTER'])" v-loading="loading" style="margin-left: 10px;" type="success" @click="handleAdd(2)">
           添加章节
         </el-button>
-        <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
-          保存
+        <el-button v-if="checkPermission2(['WIKI_BOOKS_EDIT'])" v-loading="loading" style="margin-left: 10px;" type="warning" @click="submitForm">
+          保存信息
         </el-button>
-        <el-button v-loading="loading" type="warning" @click="draftForm">
-          草稿
+        <el-button v-if="checkPermission2(['WIKI_BOOKS_CATALOG_FIX']) && postForm.status === '2'" v-loading="loading" type="danger" @click="fixForm">
+          修复目录链接
         </el-button>
       </sticky>
 
@@ -23,9 +23,9 @@
           <Warning />
 
           <el-col :span="24">
-            <el-form-item style="margin-bottom: 40px;" prop="title">
+            <el-form-item style="margin-bottom: 40px;" prop="name">
               <MDinput v-model="postForm.name" :maxlength="100" name="name" required>
-                Title
+                名称
               </MDinput>
             </el-form-item>
 
@@ -39,7 +39,7 @@
 
                 <el-col :span="10">
                   <el-form-item label-width="120px" label="最后更新时间:" class="postInfo-container-item">
-                    <el-date-picker v-model="postForm.latestChapterAt" type="timestamp" format="yyyy-MM-dd HH:mm:ss" placeholder="Select date and time" />
+                    <el-date-picker v-model="postForm.latestChapterAt" type="datetime" value-format="timestamp" format="yyyy-MM-dd HH:mm:ss" placeholder="请选择时间" />
                   </el-form-item>
                 </el-col>
 
@@ -65,40 +65,63 @@
           <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
         </el-form-item>
         <div class="catalog-container">
-          <el-row>
-            <el-col v-for="(item,index) in postForm.chapterList" :key="item+index" :label="item" :value="item" :span="item.leaf?6:24">
-              {{ tripName(item.number + ' ' + item.name, 15) }}
-              <el-tooltip placement="top" :disabled="!(item.pre ==='2' || item.next ==='2')">
-                <div slot="content">
-                  <span v-if="item.pre ==='2'">上一目录错误</span>
-                  <br v-if="item.pre ==='2' && item.next ==='2'">
-                  <span v-if="item.next ==='2'">下一目录错误</span>
+          <el-row v-if="postForm.description === '1'">
+            <el-col v-for="(item,index) in postForm.chapterList" :key="item+index" :label="item" :value="item" :span="6">
+              <el-popover
+                placement="right-start"
+                :title="tripName(item.number, item.name, 0)"
+                width="200"
+                trigger="hover"
+              >
+                <p v-if="(item.pre ==='2' || item.next ==='2')">链接<span v-if="item.pre ==='2'">[上一目录]</span>
+                  <span v-if="item.pre ==='2' && item.next ==='2'">与</span>
+                  <span v-if="item.next ==='2'">[下一目录]</span> 错误</p>
+                <div style="text-align: right; margin: 0">
+                  <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_EDIT'])" type="primary" size="mini" icon="el-icon-edit" :underline="false" @click="handleEditCatalog(item)">编辑</el-link>
+                  <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_INFO'])" type="primary" size="mini" icon="el-icon-view" :underline="false" @click="handlePreview(item)">预览</el-link>
+                  <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_DEL'])" type="danger" size="mini" icon="el-icon-close" :underline="false" @click="handleDelCatalog(item)">删除</el-link>
                 </div>
-                <el-button type="text" @click="handleEditCatalog(item)">编辑
+                <el-button slot="reference" type="text">{{ tripName(item.number, item.name, 15) }}
                   <el-badge v-if="(item.pre ==='2' || item.next ==='2')" class="mark" :value="(item.pre ==='2' && item.next ==='2')?2:1" />
                 </el-button>
-              </el-tooltip>
-              <el-link type="danger" icon="el-icon-close" :underline="false" @click="handleDelCatalog(item)" />
-              <el-divider v-if="!item.leaf" />
-              <!--{{ item }}-->
-              <el-row v-if="!item.leaf">
-                <el-col v-for="(item2,index2) in item.children" :key="item2+index2" :label="item2" :value="item2" :span="item2.leaf?6:24">
-                  {{ tripName(item2.number + ' ' + item2.name, 15) }}
-                  <el-tooltip placement="top" :disabled="!(item2.pre ==='2' || item2.next ==='2')">
-                    <div slot="content">
-                      <span v-if="item2.pre ==='2'">上一章错误</span>
-                      <br v-if="item2.pre ==='2' && item2.next ==='2'">
-                      <span v-if="item2.next ==='2'">下一章错误</span>
-                    </div>
-                    <el-button type="text" @click="handleEditCatalog(item2)">编辑
-                      <el-badge v-if="(item2.pre ==='2' || item2.next ==='2')" class="mark" :value="(item2.pre ==='2' && item2.next ==='2')?2:1" />
-                    </el-button>
-                  </el-tooltip>
-                  <el-link type="danger" icon="el-icon-close" :underline="false" @click="handleDelCatalog(item2)" />
+              </el-popover>
+            </el-col>
+          </el-row>
+          <el-row v-if="postForm.description === '2'">
+            <el-row v-for="(item,index) in postForm.chapterList" :key="item+index" :label="item" :value="item">
+              <el-row>
+                <el-col :span="24" align="center">
+                  {{ tripName(item.number, item.name, 15) }}
+                  <el-button v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_EDIT'])" type="text" icon="el-icon-edit" @click="handleEditCatalog(item)">编辑</el-button>
+                  <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_DEL'])" type="danger" icon="el-icon-close" :underline="false" @click="handleDelCatalog(item)">删除</el-link>
                 </el-col>
               </el-row>
-              <el-divider v-if="!item.leaf" />
-            </el-col>
+              <el-divider />
+              <el-row>
+                <el-col v-for="(item2,index2) in item.children" :key="item2+index2" :label="item2" :value="item2" :span="6">
+                  <el-popover
+                    placement="right-start"
+                    :title="tripName(item2.number, item2.name, 0)"
+                    width="200"
+                    trigger="hover"
+                  >
+                    <p v-if="(item2.pre ==='2' || item2.next ==='2')">链接<span v-if="item2.pre ==='2'">[上一目录]</span>
+                      <span v-if="item2.pre ==='2' && item2.next ==='2'">与</span>
+                      <span v-if="item2.next ==='2'">[下一目录]</span> 错误</p>
+                    <div style="text-align: right; margin: 0">
+                      <!--<el-button size="mini" type="text" @click="handleEditCatalog(item2)">编辑</el-button>-->
+                      <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_EDIT'])" type="primary" size="mini" icon="el-icon-edit" :underline="false" @click="handleEditCatalog(item2)">编辑</el-link>
+                      <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_INFO'])" type="primary" size="mini" icon="el-icon-view" :underline="false" @click="handlePreview(item2)">预览</el-link>
+                      <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_DEL'])" type="danger" size="mini" icon="el-icon-close" :underline="false" @click="handleDelCatalog(item2)">删除
+                      </el-link>
+                    </div>
+                    <el-button slot="reference" type="text">{{ tripName(item2.number, item2.name, 15) }}
+                    </el-button>
+                  </el-popover>
+                </el-col>
+              </el-row>
+              <el-divider />
+            </el-row>
           </el-row>
         </div>
       </div>
@@ -157,6 +180,18 @@
         <el-button @click="dialogVisible=false">取 消</el-button>
       </span>
     </el-dialog>
+    <el-dialog
+      :title="previewTitle"
+      :visible.sync="previewDialogVisible"
+      width="80%"
+      :center="true"
+      :before-close="handlePreviewClose"
+    >
+      <div v-html="previewContent" />
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="handlePreviewClose">关 闭</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -166,10 +201,14 @@ import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
 import Warning from './Warning'
 
+import { Loading } from 'element-ui'
+
+import { checkPermission2 } from '@/utils/permission' // 权限判断函数
+
 import { deepClone } from '@/utils'
 
 import { getBook, editBook, fixBook, getBookCatalogs } from '@/api/wiki/books'
-import { editBookChapter, delBookChapter } from '@/api/wiki/books/chapter'
+import { editBookChapter, delBookChapter, getBookChapter } from '@/api/wiki/books/chapter'
 
 const defaultForm = {
   status: 'draft',
@@ -251,7 +290,10 @@ export default {
         content: [{ validator: validateRequire }],
         source_uri: [{ validator: validateSourceUri, trigger: 'blur' }]
       },
-      tempRoute: {}
+      tempRoute: {},
+      previewDialogVisible: false,
+      previewTitle: '',
+      previewContent: ''
     }
   },
   computed: {
@@ -285,10 +327,12 @@ export default {
     this.tempRoute = Object.assign({}, this.$route)
   },
   methods: {
+    checkPermission2,
     fetchData(id) {
+      const loadingS = Loading.service({ target: document.querySelector('.catalog-container'), text: '正在加载目录，请稍后......', fullscreen: false })
       getBook(id).then(response => {
+        loadingS.close()
         this.postForm = response.rows[0]
-
         this.getRemoteCatalogList()
         // just for test
         // this.postForm.title += `   Book Id:${this.postForm.id}`
@@ -299,7 +343,11 @@ export default {
 
         // set page title
         this.setPageTitle()
+        if (this.postForm.status === '2' && checkPermission2(['WIKI_BOOKS_CATALOG_FIX'])) {
+          this.fixForm()
+        }
       }).catch(err => {
+        loadingS.close()
         console.log(err)
       })
     },
@@ -336,7 +384,7 @@ export default {
       })
     },
     fixForm() {
-      this.$confirm(`请确认是否修复当前目录，操作不可回退?`, '', {
+      this.$confirm(`当前目录链接存在错误，请确认是否修复?`, '', {
         confirmButtonText: '确认',
         cancelButtonText: '取消',
         type: 'warning'
@@ -380,6 +428,20 @@ export default {
         // this.catalogs = response.data.items.map(v => v.name)
         this.catalogs = response.rows
       })
+    },
+    handleAdd(op) {
+      if (op === 2) {
+        //
+        this.$router.push({ path: '/wiki/books/chapter/add' })
+        return
+      }
+      this.dialogVisible = true
+      this.dialogType = 'add'
+      this.recordCatalog = Object.assign({}, defaultCatalog)
+      this.next = { id: null }
+      if (this.postForm.chapterList.length > 0) {
+        this.pre = { id: this.postForm.chapterList[this.postForm.chapterList.length - 1].id }
+      }
     },
     handleEditCatalog(row) {
       if (row.leaf) {
@@ -429,6 +491,21 @@ export default {
         this.next = { id: row.next }
       }
     },
+    handlePreview(row) {
+      //
+      getBookChapter(row.id).then(resp => {
+        if (resp.success) {
+          this.previewDialogVisible = true
+          this.previewTitle = resp.rows[0].number + resp.rows[0].name
+          this.previewContent = resp.rows[0].content
+        }
+      })
+    },
+    handlePreviewClose() {
+      this.previewDialogVisible = false
+      this.previewTitle = ''
+      this.previewContent = ''
+    },
     async handleCatalogSubmit() {
       //
       const _this = this
@@ -456,11 +533,12 @@ export default {
         _this.fetchData(this.postForm.id)
       }
     },
-    tripName(name, len) {
-      if (name.length > len) {
-        return name.substring(0, len) + '...'
+    tripName(num, name, len) {
+      const str = ((num || '') + ' ' + (name || '')).trim()
+      if (len > 0 && str.length > len) {
+        return str.substring(0, len) + '...'
       }
-      return name
+      return str
     }
   }
 }

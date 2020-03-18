@@ -23,7 +23,7 @@ router.beforeEach(async(to, from, next) => {
   if (hasToken) {
     if (to.path === '/login') {
       // if is logged in, redirect to the home page
-      next({ path: '/' })
+      next({ path: '/dashboard' })
       NProgress.done()
     } else {
       // determine whether the user has obtained his permission roles through getInfo
@@ -48,16 +48,25 @@ router.beforeEach(async(to, from, next) => {
         } catch (error) {
           NProgress.done()
           console.log('router ==> ' + JSON.stringify(error))
-          if (error != null && (error.code === '307' || error.code === '304' || error.data.code === '307')) {
-            // to re-login
-            MessageBox.alert('登录已失效,请重新登录', '登录过期', {
-              confirmButtonText: '重新登录',
-              callback: () => {
-                store.dispatch('user/resetToken').then(() => {
-                  next(`/login?redirect=${to.path}`)
-                })
-              }
-            })
+          if (error != null) {
+            if (error.code === 'ECONNABORTED') {
+              MessageBox.alert('连接超时，请刷新重试...', '超时', {
+                confirmButtonText: '刷新',
+                callback: () => {
+                  location.reload()
+                }
+              })
+            } else if (error.code === '307' || error.code === '304' || error.data && error.data.code === '307') {
+              // to re-login
+              MessageBox.alert('登录已失效,请重新登录', '登录过期', {
+                confirmButtonText: '重新登录',
+                callback: () => {
+                  store.dispatch('user/resetToken').then(() => {
+                    next(`/login?redirect=${to.path}`)
+                  })
+                }
+              })
+            }
           } else {
             Message.error(error || 'Has Error')
           }
