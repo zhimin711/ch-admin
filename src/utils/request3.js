@@ -36,7 +36,7 @@ service3.interceptors.request.use(
   error => {
     // do something with request error
     // console.log(error) // for debug
-    console.debug('request3 request err: ' + JSON.stringify(error)) // for debug
+    console.log('request3 request err: ' + JSON.stringify(error)) // for debug
     return Promise.reject(error)
   }
 )
@@ -57,7 +57,7 @@ service3.interceptors.response.use(
     return response.data
   },
   error => {
-    console.debug('request3 response err: ' + JSON.stringify(error)) // for debug
+    console.log('request3 response err: ' + JSON.stringify(error)) // for debug
     return Promise.reject(error)
   }
 )

@@ -185,7 +185,7 @@
       :visible.sync="previewDialogVisible"
       width="80%"
       :center="true"
-      :before-close="handlePreviewClose"
+      :close="handlePreviewClose"
     >
       <div v-html="previewContent" />
       <span slot="footer" class="dialog-footer">
@@ -329,7 +329,7 @@ export default {
   methods: {
     checkPermission2,
     fetchData(id) {
-      const loadingS = Loading.service({ target: document.querySelector('.catalog-container'), text: '正在加载目录，请稍后......', fullscreen: false })
+      const loadingS = Loading.service({ target: document.querySelector('.createPost-container'), text: '正在加载目录，请稍后......', fullscreen: false })
       getBook(id).then(response => {
         loadingS.close()
         this.postForm = response.rows[0]
@@ -493,6 +493,8 @@ export default {
     },
     handlePreview(row) {
       //
+      this.previewTitle = ''
+      this.previewContent = ''
       getBookChapter(row.id).then(resp => {
         if (resp.success) {
           this.previewDialogVisible = true
@@ -503,8 +505,6 @@ export default {
     },
     handlePreviewClose() {
       this.previewDialogVisible = false
-      this.previewTitle = ''
-      this.previewContent = ''
     },
     async handleCatalogSubmit() {
       //

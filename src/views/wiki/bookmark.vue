@@ -95,7 +95,7 @@
           <el-input v-model="record.href" />
         </el-form-item>
         <el-form-item label="时间">
-          <el-date-picker v-model="record.markAt" type="datetime" placeholder="选择日期" value-format="timestamp" />
+          <el-date-picker v-model="record.currMarkAt" type="datetime" placeholder="选择日期" value-format="timestamp" />
           <span v-if="record.lastMarkAt" class="form-item-desc">
             <el-checkbox v-model="unmark">不更新（上次时间：{{ record.lastMarkAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}）</el-checkbox>
           </span>
@@ -161,7 +161,7 @@ export default {
     },
     handleAdd() {
       this.record = Object.assign({}, defaultRecord)
-      this.record.markAt = new Date()
+      this.record.currMarkAt = new Date()
       this.record.lastMarkAt = ''
 
       this.dialogType = 'new'
@@ -170,7 +170,7 @@ export default {
     handleEdit(row) {
       this.record = deepClone(row)
       this.record.lastMarkAt = this.record.markAt
-      this.record.markAt = new Date()
+      this.record.currMarkAt = new Date()
 
       this.dialogType = 'edit'
       this.dialogVisible = true
@@ -201,8 +201,8 @@ export default {
       if (this.dialogType === 'new') {
         resp = await addBookmark(this.record).catch(() => { _this.loading.handleSubmit = false })
       } else if (this.dialogType === 'edit') {
-        if (this.unmark) {
-          this.record.markAt = this.record.lastMarkAt
+        if (!this.unmark) {
+          this.record.markAt = this.record.currMarkAt
         }
         opName = '修改'
         resp = await editBookmark(this.record.id, this.record).catch(() => { _this.loading.handleSubmit = false })

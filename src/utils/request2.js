@@ -38,7 +38,7 @@ service2.interceptors.request.use(
   error => {
     // do something with request error
     // console.log(error) // for debug
-    console.debug('request2 request err: ' + JSON.stringify(error)) // for debug
+    console.log('request2 request err: ' + JSON.stringify(error)) // for debug
     if (error.code === '307') {
       toLogin()
     } else {
@@ -81,8 +81,14 @@ service2.interceptors.response.use(
     }
   },
   error => {
-    console.debug('request2 response err: ' + JSON.stringify(error)) // for debug
-    if (error.code === '307' || (error.data && error.data.code === '307')) {
+    console.log('request2 response err: ' + JSON.stringify(error)) // for debug
+    if (error.code === 'ECONNABORTED') {
+      Message({
+        message: '请求超时，请重试...',
+        type: 'error',
+        duration: 5 * 1000
+      })
+    } else if (error.code === '307' || (error.data && error.data.code === '307')) {
       toLogin()
     } else if (error.message) {
       Message({
