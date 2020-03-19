@@ -77,8 +77,9 @@
             :on-change="uploadChange"
             :on-error="uploadError"
             :before-upload="beforeUpload"
-            :on-success="uploadSuccess">
-            <i class="el-icon-upload"></i>
+            :on-success="uploadSuccess"
+          >
+            <i class="el-icon-upload" />
             <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
             <div slot="tip" class="el-upload__tip">只允许上传<span style="color: #F56C6C">单个</span>文档或压缩文件，且不超过50M</div>
             <!--<div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>-->
@@ -145,7 +146,7 @@ export default {
         this.listQuery.list = response.rows
         this.listQuery.total = response.total
         this.listLoading = false
-      })
+      }).catch(() => { this.loading = false })
     },
     handleAdd() {
       this.record = {}

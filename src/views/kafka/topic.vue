@@ -7,8 +7,8 @@
           v-for="item in options.clusters"
           :key="item.clusterName"
           :label="item.clusterName"
-          :value="item.clusterName">
-        </el-option>
+          :value="item.clusterName"
+        />
       </el-select>
       <el-input v-model="listQuery.params.topicName" placeholder="主题名称" style="width: 200px;" class="filter-item" />
       <el-button v-if="checkPermission2(['KAFKA_TOPIC_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
@@ -70,8 +70,8 @@
               v-for="item in options.clusters"
               :key="item.clusterName"
               :label="item.clusterName"
-              :value="item.clusterName">
-            </el-option>
+              :value="item.clusterName"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="主题名称">
@@ -136,8 +136,8 @@
               v-for="item in options.clusters"
               :key="item.clusterName"
               :label="item.clusterName"
-              :value="item.clusterName">
-            </el-option>
+              :value="item.clusterName"
+            />
           </el-select>
         </el-form-item>
       </el-form>
@@ -197,7 +197,7 @@ export default {
         this.listQuery.list = response.rows
         this.listQuery.total = response.total
         this.listLoading = false
-      })
+      }).catch(() => { this.loading = false })
     },
     handleAdd() {
       this.record = { partitionSize: 4, replicaSize: 3, type: 'JSON' }

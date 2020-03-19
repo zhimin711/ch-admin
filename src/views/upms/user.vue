@@ -160,7 +160,7 @@ export default {
         this.listQuery.list = response.rows
         this.listQuery.total = response.total
         this.listLoading = false
-      })
+      }).catch(() => { this.loading = false })
     },
     handleAdd() {
       this.record = {}
