@@ -1,19 +1,19 @@
 <template>
   <div class="createPost-container">
-    <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container book-catalog">
+    <el-form ref="postForm" v-loading="loading" :model="postForm" :rules="rules" class="form-container">
 
       <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
         <!--<CommentDropdown v-model="postForm.comment_disabled" />-->
-        <el-button v-if="checkPermission2(['WIKI_BOOKS_CHAPTER'])" v-loading="loading" style="margin-left: 10px;" type="success" @click="handleAdd">
+        <el-button v-if="checkPermission2(['WIKI_BOOKS_CHAPTER'])" style="margin-left: 10px;" type="success" @click="handleAdd">
           添加目录
         </el-button>
-        <el-button v-if="checkPermission2(['WIKI_BOOKS_CHAPTER'])" v-loading="loading" style="margin-left: 10px;" type="success" @click="handleAdd(2)">
+        <el-button v-if="checkPermission2(['WIKI_BOOKS_CHAPTER'])" style="margin-left: 10px;" type="success" @click="handleAdd(2)">
           添加章节
         </el-button>
-        <el-button v-if="checkPermission2(['WIKI_BOOKS_EDIT'])" v-loading="loading" style="margin-left: 10px;" type="warning" @click="submitForm">
+        <el-button v-if="checkPermission2(['WIKI_BOOKS_EDIT'])" style="margin-left: 10px;" type="warning" @click="submitForm">
           保存信息
         </el-button>
-        <el-button v-if="checkPermission2(['WIKI_BOOKS_CATALOG_FIX']) && postForm.status === '2'" v-loading="loading" type="danger" @click="fixForm">
+        <el-button v-if="checkPermission2(['WIKI_BOOKS_CATALOG_FIX']) && postForm.status === '2'" type="danger" @click="fixForm">
           修复目录链接
         </el-button>
       </sticky>
@@ -78,7 +78,7 @@
                   <span v-if="item.next ==='2'">[下一目录]</span> 错误</p>
                 <div style="text-align: right; margin: 0">
                   <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_EDIT'])" type="primary" size="mini" icon="el-icon-edit" :underline="false" @click="handleEditCatalog(item)">编辑</el-link>
-                  <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_INFO'])" type="primary" size="mini" icon="el-icon-view" :underline="false" @click="handlePreview(item)">预览</el-link>
+                  <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_INFO'])" type="primary" size="mini" icon="el-icon-view" :underline="false" @click="handlePreview(item.id)">预览</el-link>
                   <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_DEL'])" type="danger" size="mini" icon="el-icon-close" :underline="false" @click="handleDelCatalog(item)">删除</el-link>
                 </div>
                 <el-button slot="reference" type="text">{{ tripName(item.number, item.name, 15) }}
@@ -111,7 +111,7 @@
                     <div style="text-align: right; margin: 0">
                       <!--<el-button size="mini" type="text" @click="handleEditCatalog(item2)">编辑</el-button>-->
                       <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_EDIT'])" type="primary" size="mini" icon="el-icon-edit" :underline="false" @click="handleEditCatalog(item2)">编辑</el-link>
-                      <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_INFO'])" type="primary" size="mini" icon="el-icon-view" :underline="false" @click="handlePreview(item2)">预览</el-link>
+                      <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_INFO'])" type="primary" size="mini" icon="el-icon-view" :underline="false" @click="handlePreview(item2.id)">预览</el-link>
                       <el-link v-if="checkPermission2(['WIKI_BOOKS_CHAPTER_DEL'])" type="danger" size="mini" icon="el-icon-close" :underline="false" @click="handleDelCatalog(item2)">删除
                       </el-link>
                     </div>
@@ -185,11 +185,13 @@
       :visible.sync="previewDialogVisible"
       width="80%"
       :center="true"
-      :close="handlePreviewClose"
+      :before-close="handlePreviewClose"
     >
-      <div v-html="previewContent" />
+      <div class="chapter-preview" v-html="previewRecord.content" />
       <span slot="footer" class="dialog-footer">
+        <el-button @click="handlePreview(previewRecord.pre)">上一章</el-button>
         <el-button @click="handlePreviewClose">关 闭</el-button>
+        <el-button @click="handlePreview(previewRecord.next)">下一章</el-button>
       </span>
     </el-dialog>
   </div>
@@ -200,8 +202,6 @@ import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
 import Warning from './Warning'
-
-import { Loading } from 'element-ui'
 
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
@@ -292,8 +292,8 @@ export default {
       },
       tempRoute: {},
       previewDialogVisible: false,
-      previewTitle: '',
-      previewContent: ''
+      previewRecord: {},
+      previewTitle: ''
     }
   },
   computed: {
@@ -329,9 +329,9 @@ export default {
   methods: {
     checkPermission2,
     fetchData(id) {
-      const loadingS = Loading.service({ target: document.querySelector('.createPost-container'), text: '正在加载目录，请稍后......', fullscreen: false })
+      this.loading = true
       getBook(id).then(response => {
-        loadingS.close()
+        this.loading = false
         this.postForm = response.rows[0]
         this.getRemoteCatalogList()
         // just for test
@@ -347,7 +347,7 @@ export default {
           this.fixForm()
         }
       }).catch(err => {
-        loadingS.close()
+        this.loading = false
         console.log(err)
       })
     },
@@ -491,19 +491,21 @@ export default {
         this.next = { id: row.next }
       }
     },
-    handlePreview(row) {
+    handlePreview(id) {
+      if (id === null || id === '') return
       //
-      this.previewTitle = ''
-      this.previewContent = ''
-      getBookChapter(row.id).then(resp => {
+      this.previewTitle = '正在加载章节内容...'
+      this.previewRecord = { content: '' }
+      getBookChapter(id).then(resp => {
         if (resp.success) {
           this.previewDialogVisible = true
-          this.previewTitle = resp.rows[0].number + resp.rows[0].name
-          this.previewContent = resp.rows[0].content
+          this.previewRecord = resp.rows[0]
+          this.previewTitle = this.previewRecord.number + this.previewRecord.name
         }
       })
     },
     handlePreviewClose() {
+      // this.previewRecord = { content: '' }
       this.previewDialogVisible = false
     },
     async handleCatalogSubmit() {
@@ -569,6 +571,9 @@ export default {
     position: absolute;
     right: 10px;
     top: 0px;
+  }
+  .chapter-preview {
+    font-size: 1.2rem
   }
 }
 

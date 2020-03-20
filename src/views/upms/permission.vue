@@ -124,7 +124,7 @@
       </el-form>
       <div style="text-align:right;">
         <el-button type="primary" @click="handleSubmit">保存</el-button>
-        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
+        <el-button type="danger" @click="dialogVisible = false">取消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -288,13 +288,13 @@ export default {
       let resp = null
       let opName = '添加'
       if (this.dialogType === 'new' || this.dialogType === 'copy') {
-        resp = await add(this.record)
+        resp = await add(this.record).catch(() => {})
       } else if (this.dialogType === 'edit') {
         opName = '修改'
         this.record.children = []
         resp = await edit(this.record.id, this.record)
       }
-      if (resp.success) {
+      if (resp && resp.success) {
         this.dialogVisible = false
         this.$message({
           type: 'success',

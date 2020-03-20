@@ -1,12 +1,20 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.params.clusterName" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
-        <el-option label="启用" value="1">启用</el-option>
-        <el-option label="禁用" value="0">禁用</el-option>
+      <el-input v-model="listQuery.params.originalName" placeholder="名称" style="width: 200px;" class="filter-item" />
+      <el-select v-model="listQuery.params.fileType" placeholder="文件类型" class="filter-item" clearable>
+        <el-option label="doc" value=".doc">doc</el-option>
+        <el-option label="docx" value=".docx">docx</el-option>
+        <el-option label="gif" value=".gif">gif</el-option>
+        <el-option label="jpg" value=".jpg">jpg</el-option>
+        <el-option label="pdf" value=".pdf">pdf</el-option>
+        <el-option label="png" value=".png">png</el-option>
+        <el-option label="pptx" value=".pptx">pptx</el-option>
+        <el-option label="txt" value=".txt">txt</el-option>
+        <el-option label="zip" value=".zip">zip</el-option>
+        <el-option label="rar" value=".rar">rar</el-option>
       </el-select>
-      <el-button v-if="checkPermission2(['FILE_UPLOAD_RECORD_LIST'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-if="checkPermission2(['WIKI_UPLOAD_FILE_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
@@ -181,9 +189,9 @@ export default {
     uploadSuccess(response, file, fileList) {
       this.loading.handleSubmit = false
       if (response.success) {
-        console.log('success')
         this.dialogVisible = false
         this.$refs.uploader.clearFiles()
+        this.getList()
       }
     },
     uploadRemove(file, fileList) {
