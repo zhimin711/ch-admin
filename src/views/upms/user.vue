@@ -117,6 +117,9 @@ import Pagination from '@/components/Pagination' // Secondary package based on e
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import waves from '@/directive/waves/index.js' // 水波纹指令
+
+import { handleClipboard2 } from '@/utils/clipboard' // use clipboard directly
+
 import { list, add, edit, del, initPwd, getEnableRoles, getRoles, editRoles } from '@/api/upms/user'
 
 export default {
@@ -201,10 +204,13 @@ export default {
         .then(async() => {
           const resp = await initPwd(row.id)
           if (resp.success) {
-            _this.$alert(`初始化成功！ (${resp.rows[0]})`, `[${row.username}]用户密码`, {
-              confirmButtonText: '确定',
+            _this.$confirm(`初始化成功！ (${resp.rows[0]})`, `[${row.username}]用户密码`, {
+              confirmButtonText: '复制',
+              cancelButtonText: '关闭',
               callback: action => {
-                //
+                if (action === 'confirm') {
+                  handleClipboard2(resp.rows[0])
+                }
               }
             })
           }
