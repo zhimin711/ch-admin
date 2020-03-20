@@ -23,7 +23,7 @@ export function handleClipboard2(text) {
   oInput.value = text
   document.body.appendChild(oInput)
   oInput.select() // 选择对象;
-  console.log(oInput.value)
+  // console.log(oInput.value)
   document.execCommand('Copy') // 执行浏览器复制命令
   oInput.remove()
   clipboardSuccess()
