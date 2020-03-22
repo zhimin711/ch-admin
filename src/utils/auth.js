@@ -27,8 +27,9 @@ export function setExpired(expireAt) {
   const date = new Date()
   if (expireAt) {
     date.setTime(expireAt)
+    date.setMinutes(date.getMinutes() - 1)
   } else {
-    date.setMinutes(date.getMinutes() + 30)
+    date.setMinutes(date.getMinutes() + 29)
   }
   const dateStr = timeFormat(date, 'yyyymmddhhMMss')
   return sessionStorage.setItem(EXPIRED_KEY, dateStr)
