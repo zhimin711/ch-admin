@@ -25,9 +25,9 @@
           <span>{{ scope.row.authCode }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="用户" width="120px">
+      <el-table-column prop="requestTime" label="登录时间" width="160">
         <template slot-scope="scope">
-          <span>{{ scope.row.operator }}</span>
+          <span>{{ scope.row.requestTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="耗时（毫秒）" width="120px">

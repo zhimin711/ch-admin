@@ -134,7 +134,7 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 10,
+        limit: 20,
         total: 0,
         list: [],
         params: { status: '0', type: '2' }
