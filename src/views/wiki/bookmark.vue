@@ -197,17 +197,18 @@ export default {
       const _this = this
       let resp = null
       let opName = '添加'
-      _this.loading.handleSubmit = true
+      this.loading.handleSubmit = true
       if (this.dialogType === 'new') {
-        resp = await addBookmark(this.record).catch(() => { _this.loading.handleSubmit = false })
+        this.record.markAt = this.record.currMarkAt
+        resp = await addBookmark(this.record).catch(() => { this.loading.handleSubmit = false })
       } else if (this.dialogType === 'edit') {
         if (!this.unmark) {
           this.record.markAt = this.record.currMarkAt
         }
         opName = '修改'
-        resp = await editBookmark(this.record.id, this.record).catch(() => { _this.loading.handleSubmit = false })
+        resp = await editBookmark(this.record.id, this.record).catch(() => { this.loading.handleSubmit = false })
       }
-      _this.loading.handleSubmit = false
+      this.loading.handleSubmit = false
       const ok = resp && resp.success
       this.$notify({
         title: `${opName} 书签 ${ok ? '成功' : '失败'}!`,
