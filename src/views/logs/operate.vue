@@ -30,6 +30,11 @@
           <span>{{ scope.row.operator }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="操作IP">
+        <template slot-scope="scope">
+          <span>{{ scope.row.requestIp }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作时间" width="160px">
         <template slot-scope="scope">
           <span>{{ scope.row.requestTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>

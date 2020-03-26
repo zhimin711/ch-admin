@@ -1,8 +1,9 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.params.userId" placeholder="代码" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
-      <el-input v-model="listQuery.params.username" placeholder="名称" style="width: 200px;" class="filter-item" />
+      <el-input v-model="listQuery.params.userId" placeholder="用户ID" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
+      <el-input v-model="listQuery.params.username" placeholder="用户名" style="width: 200px;" class="filter-item" />
+      <el-input v-model="listQuery.params.realName" placeholder="用户真实名称" style="width: 200px;" class="filter-item" />
       <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
         <el-option label="启用" value="1">启用</el-option>
         <el-option label="禁用" value="0">禁用</el-option>

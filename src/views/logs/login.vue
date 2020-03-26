@@ -25,6 +25,11 @@
           <span>{{ scope.row.authCode }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="登录IP">
+        <template slot-scope="scope">
+          <span>{{ scope.row.requestIp }}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="requestTime" label="登录时间" width="160">
         <template slot-scope="scope">
           <span>{{ scope.row.requestTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>

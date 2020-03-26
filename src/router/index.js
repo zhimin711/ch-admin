@@ -10,7 +10,6 @@ import Layout from '@/layout'
 import upmsRouter from './modules/upms'
 import sysRouter from './modules/sys'
 import kafkaRouter from './modules/kafka'
-import txRouter from './modules/txManager'
 import wikiRouter from './modules/wiki'
 
 import componentsRouter from './modules/components'
@@ -315,7 +314,6 @@ export const asyncRoutes = [
   upmsRouter,
   sysRouter,
   kafkaRouter,
-  txRouter,
   wikiRouter
 ]
 

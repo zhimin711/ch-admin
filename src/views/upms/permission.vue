@@ -255,11 +255,14 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          await del(row.id)
-          _this.getList()
-          this.$message({
-            type: 'success',
-            message: 'Delete success!'
+          await del(row.id).then(resp => {
+            if (resp.success) {
+              _this.getList()
+              this.$message({
+                type: 'success',
+                message: 'Delete success!'
+              })
+            }
           })
         })
         .catch(err => { console.error(err) })
