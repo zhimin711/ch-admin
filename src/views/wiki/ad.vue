@@ -113,14 +113,10 @@
                 <i v-else class="el-icon-plus ad-uploader-icon" />
               </div>
             </el-col>
+            <el-col :span="24">
+              <el-button icon="el-icon-folder-checked" @click="imageSelectVisible = true">图片选择</el-button>
+            </el-col>
           </el-row>
-          <!--<el-row>
-              <el-radio-group v-model="cover.src" @change="coverSrcChange">
-                  <el-radio-button label="2">选择</el-radio-button>
-                  <el-radio-button label="0">上传</el-radio-button>
-                  <el-radio-button label="1">网络</el-radio-button>
-              </el-radio-group>
-          </el-row>-->
         </el-form-item>
         <el-form-item label="标题" prop="name">
           <el-input v-model="record.title" />
@@ -169,9 +165,8 @@
       </span>
     </el-dialog>
     <!-- 引用el的dialog弹框组件，默认data中设置croppaVisible=true -->
-    <el-dialog title="图片裁剪" :visible.sync="cropDialogVisible" :width="'60%'">
+    <el-dialog title="广告图片裁剪" :visible.sync="cropDialogVisible" :width="'60%'">
       <el-row>
-        <!--<img class="pic-404__parent" src="@/assets/0_images/0_ad.jpg">-->
         <el-col :span="15">
           <div>
             <VueCropper
@@ -211,6 +206,22 @@
         </el-row>
       </div>
     </el-dialog>
+    <el-dialog title="广告图片选择" :visible.sync="imageSelectVisible" width="512px" center>
+      <div class="demo-image__lazy">
+        <ul class="el-image-list">
+          <li v-for="image in imageList" :key="image.id" :class="{'is-success':imageSelectId===image.id}" class="el-image-list__item" @click="selectImage(image)">
+            <label class="el-image-list__item-status-label"><i class="el-icon-upload-success el-icon-check" /></label>
+            <el-image :src="image.path" lazy />
+          </li>
+        </ul>
+        <p v-if="!imagesQuery.noMore" align="center"><el-button type="text" @click="loadImages">加载更多</el-button></p>
+        <p v-if="imagesQuery.noMore" align="center">没有更多了</p>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="imageSelectVisible = false">关 闭</el-button>
+        <!--<el-button type="primary" @click="deleteRow">确 定</el-button>-->
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -220,13 +231,14 @@ import Pagination from '@/components/Pagination' // Secondary package based on e
 
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
-import { getAdList, addAd/*, edit, del*/, uploadAd } from '@/api/wiki/ad'
+import { getAdList, addAd/*, edit, del*/, uploadAd, getAdImageList } from '@/api/wiki/ad'
 
 import VueCropper from 'vue-cropperjs'
 import 'cropperjs/dist/cropper.css'
 import { isEmpty } from '@/utils/validate'
 
-const defaultRecord = { sort: 1, status: '1' }
+const defaultRecord = { sort: 1, status: '1', srcType: 0 }
+const imgAd = require('@/assets/0_images/0_ad2.jpg') // 裁剪图片的地址
 
 export default {
   name: 'AdManager',
@@ -255,11 +267,20 @@ export default {
         codeDisabled: false
       },
       delVisible: false,
+      imageSelectVisible: false,
+      imageSelectId: -1,
+      imagesQuery: {
+        page: 1,
+        limit: 5,
+        total: 0,
+        noMore: false
+      },
+      imageList: [],
       // 防止重复提交
       cropDialogVisible: false,
       cropperOptions: {
         fileName: '', // 裁剪图片的地址
-        img: '/api/wiki/assets/i/ad-null6.jpg', // 裁剪图片的地址
+        img: '', // 裁剪图片的地址
         info: true, // 裁剪框的大小信息
         ratio: 2.4,
         outputSize: 0.8, // 裁剪生成图片的质量
@@ -294,6 +315,18 @@ export default {
   },
   methods: {
     checkPermission2,
+    selectImage(row) {
+      this.imageSelectId = row.id
+      this.record.image = row.path
+    },
+    loadImages() {
+      if (this.imagesQuery.page * this.imagesQuery.limit > this.imagesQuery.total) {
+        this.$message.warning('已加载到后一页！')
+        return
+      }
+      this.imagesQuery.page++
+      this.getImageList()
+    },
     setImage(e) {
       const file = e.target.files[0]
       if (!file.type.includes('image/')) {
@@ -304,7 +337,7 @@ export default {
       if (typeof FileReader === 'function') {
         const reader = new FileReader()
         reader.onload = (event) => {
-          this.imgSrc = event.target.result
+          // this.imgSrc = event.target.result
           // rebuild cropperjs with the updated source
           this.$refs.cropper.replace(event.target.result)
         }
@@ -321,6 +354,17 @@ export default {
     },
     openUploadImg() {
       this.cropDialogVisible = true
+      let isChange = true
+      if (!this.record.image) {
+        this.cropperOptions.img = imgAd
+      } else {
+        isChange = this.cropperOptions.img !== this.record.image
+        this.cropperOptions.img = this.record.image
+      }
+
+      if (isChange && this.$refs.cropper) {
+        this.$refs.cropper.replace(this.cropperOptions.img)
+      }
     },
     uploadImg() {
       if (isEmpty(this.cropperOptions.fileName)) {
@@ -334,14 +378,13 @@ export default {
       // Upload cropped image to server if the browser supports `HTMLCanvasElement.toBlob`
       this.$refs.cropper.getCroppedCanvas().toBlob((blob) => {
         _data.fileName = this.cropperOptions.fileName
-        // Use `jQuery.ajax` method
         uploadAd(_data, blob).then((resp) => {
-          if (resp.data.success) {
+          if (resp.success) {
             _this.cropDialogVisible = false
             _this.cropperOptions.fileName = ''
-            _this.$refs.cropper.replace('/static/images/img-null3.jpg')
+            // _this.$refs.cropper.replace(imgAd)
             _this.$message.success('上传成功！')
-            _this.record.image = resp.data.rows[0].url
+            _this.record.image = resp.rows[0].url
           } else {
             _this.$message.error('上传失败！')
           }
@@ -356,6 +399,19 @@ export default {
         this.loading = false
       }).catch(() => { this.loading = false })
     },
+    getImageList() {
+      this.loading = true
+      getAdImageList(this.imagesQuery).then(response => {
+        if (this.imagesQuery.page === 1) {
+          this.imageList = response.rows
+        } else {
+          this.imageList = this.imageList.concat(response.rows)
+        }
+        this.imagesQuery.total = response.total
+        this.imagesQuery.noMore = this.imagesQuery.page * this.imagesQuery.limit > this.imagesQuery.total
+        this.loading = false
+      }).catch(() => { this.loading = false })
+    },
     doSearch() {
       this.is_search = true
       this.getList()
@@ -364,22 +420,16 @@ export default {
       this.record = Object.assign({}, defaultRecord)
       this.baseForm.action = 'add'
       this.baseForm.visible = true
-      // this.baseForm.title = '新增'
-      // this.baseForm.codeDisabled = false
+      this.getImageList()
     },
     baseEdit(index, row) {
       this.record = Object.assign({}, row)
       this.baseForm.action = 'edit'
       this.baseForm.visible = true
       this.baseForm.title = '编辑'
-      // this.baseForm.codeDisabled = true
     },
     baseDel(index, row) {
-      this.baseTable.idx = index
       this.delVisible = true
-    },
-    handleSelectionChange(val) {
-      this.baseTable.multipleSelection = val
     },
     // 保存编辑
     saveEdit(formName) {
@@ -421,9 +471,9 @@ export default {
     },
     // 确定删除
     deleteRow() {
-      this.baseTable.rows.splice(this.idx, 1)
       this.$message.success('删除成功')
       this.delVisible = false
+      this.getList()
     }
   }
 }
@@ -484,6 +534,9 @@ export default {
     border-color: #67c23a;
   }
 
+  .pic__space{
+    /*display: none;*/
+  }
   .ad-avatar {
     /*margin-left: 10px;*/
     /*border: 1px solid #eff2f6;*/
@@ -544,5 +597,91 @@ export default {
     width: 178px;
     height: 178px;
     display: block;
+  }
+
+  .demo-image__lazy {
+    height: 400px;
+    overflow-y: auto;
+  }
+
+  .demo-image__lazy .el-image {
+    display: block;
+    height: 100%;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04)
+  }
+
+  .el-image-list__item {
+    transition: all .5s cubic-bezier(.55, 0, .1, 1);
+    font-size: 14px;
+    color: #606266;
+    line-height: 1.8;
+    margin-top: 5px;
+    position: relative;
+    box-sizing: border-box;
+    border-radius: 4px;
+    width: 100%;
+  }
+
+  .el-image-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .el-image-list .el-image-list__item {
+    overflow: hidden;
+    z-index: 0;
+    background-color: #fff;
+    border: 1px solid #c0ccda;
+    border-radius: 6px;
+    box-sizing: border-box;
+    margin-top: 10px;
+    padding: 15px 15px 15px 15px;
+    height: 213px;
+  }
+
+  .el-image-list__item:first-child {
+    margin-top: 10px;
+  }
+
+  .el-image-list__item-status-label {
+    position: absolute;
+    right: 5px;
+    top: 0;
+    line-height: inherit;
+    display: none;
+  }
+
+  .el-image-list .el-image-list__item-status-label {
+    position: absolute;
+    right: -17px;
+    top: -7px;
+    width: 46px;
+    height: 26px;
+    background: #13ce66;
+    text-align: center;
+    transform: rotate(45deg);
+    box-shadow: 0 1px 1px #ccc;
+  }
+
+  .el-image-list__item.is-success .el-image-list__item-status-label {
+    display: block;
+  }
+
+  .el-image-list .el-image-list__item .el-icon-check, .el-image-list .el-image-list__item .el-icon-circle-check {
+    color: #fff;
+  }
+
+  .el-image-list .el-image-list__item-status-label i {
+    font-size: 12px;
+    margin-top: 12px;
+    transform: rotate(-45deg);
+  }
+
+  .el-image-list__item .el-icon-upload-success {
+    color: #67c23a;
   }
 </style>

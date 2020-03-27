@@ -11,6 +11,14 @@ export function getAdList(query) {
   })
 }
 
+export function getAdImageList(query) {
+  return request({
+    url: `${baseUrl}/images/${query.page}/${query.limit}`,
+    method: 'get',
+    params: query.params
+  })
+}
+
 export function getAd(id) {
   return request({
     url: `${baseUrl}/${id}`,
@@ -53,6 +61,6 @@ export function uploadAd(data, blob) {
   return request({
     url: `${uploadImg}`,
     method: 'post',
-    formData
+    data: formData
   })
 }

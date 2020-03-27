@@ -505,8 +505,8 @@ export default {
       })
     },
     handlePreviewClose() {
-      // this.previewRecord = { content: '' }
       this.previewDialogVisible = false
+      // this.previewRecord = { content: '' }
     },
     async handleCatalogSubmit() {
       //
