@@ -35,7 +35,8 @@
       </el-table-column>-->
       <el-table-column prop="image" label="图片" width="205" class-name="col-img">
         <template slot-scope="scope">
-          <img :src="scope.row.image" width="180" height="100">
+          <!--<img :src="scope.row.image | imgFilter" width="180" height="100">-->
+          <el-image :src="scope.row.image | imgFilter" class="el-article-list-image" />
         </template>
       </el-table-column>
       <el-table-column prop="publishAt" label="发布时间" width="160">
@@ -83,12 +84,23 @@ import Pagination from '@/components/Pagination' // Secondary package based on e
 
 // import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
+import { isEmpty } from '@/utils/validate'
 
 import { listArticle } from '@/api/wiki/article'
+
+const imgCloud = require('@/assets/0_images/0_cloud2.jpg') // 裁剪图片的地址
 
 export default {
   name: 'WikiArticle',
   components: { Pagination },
+  filters: {
+    imgFilter(url) {
+      if (isEmpty(url)) {
+        return imgCloud
+      }
+      return url
+    }
+  },
   data() {
     return {
       list: [],
@@ -123,12 +135,26 @@ export default {
 </script>
 
 <style scoped>
-.edit-input {
-  padding-right: 100px;
-}
-.cancel-btn {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-}
+  .edit-input {
+    padding-right: 100px;
+  }
+
+  .cancel-btn {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+  }
+
+  .el-article-list-image {
+    width: 180px;
+    height: 100px;
+  }
+  .el-image__error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    color: #c0c4cc;
+    vertical-align: middle;
+  }
 </style>

@@ -115,6 +115,7 @@
             </el-col>
             <el-col :span="24">
               <el-button icon="el-icon-folder-checked" @click="imageSelectVisible = true">图片选择</el-button>
+              <ImageSelector v-model="record.image" title="广告图选择" :show.sync="imageSelectVisible" type="ad" />
             </el-col>
           </el-row>
         </el-form-item>
@@ -206,22 +207,6 @@
         </el-row>
       </div>
     </el-dialog>
-    <el-dialog title="广告图片选择" :visible.sync="imageSelectVisible" width="512px" center>
-      <div class="demo-image__lazy">
-        <ul class="el-image-list">
-          <li v-for="image in imageList" :key="image.id" :class="{'is-success':imageSelectId===image.id}" class="el-image-list__item" @click="selectImage(image)">
-            <label class="el-image-list__item-status-label"><i class="el-icon-upload-success el-icon-check" /></label>
-            <el-image :src="image.path" lazy />
-          </li>
-        </ul>
-        <p v-if="!imagesQuery.noMore" align="center"><el-button type="text" @click="loadImages">加载更多</el-button></p>
-        <p v-if="imagesQuery.noMore" align="center">没有更多了</p>
-      </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="imageSelectVisible = false">关 闭</el-button>
-        <!--<el-button type="primary" @click="deleteRow">确 定</el-button>-->
-      </span>
-    </el-dialog>
   </div>
 </template>
 
@@ -229,9 +214,11 @@
 
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
+import ImageSelector from '@/components/ImageSelector'
+
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
-import { getAdList, addAd/*, edit, del*/, uploadAd, getAdImageList } from '@/api/wiki/ad'
+import { getAdList, addAd/*, edit, del*/, uploadAd } from '@/api/wiki/ad'
 
 import VueCropper from 'vue-cropperjs'
 import 'cropperjs/dist/cropper.css'
@@ -242,7 +229,7 @@ const imgAd = require('@/assets/0_images/0_ad2.jpg') // 裁剪图片的地址
 
 export default {
   name: 'AdManager',
-  components: { Pagination, VueCropper },
+  components: { Pagination, VueCropper, ImageSelector },
   data() {
     return {
       record: Object.assign({}, defaultRecord),
@@ -268,14 +255,6 @@ export default {
       },
       delVisible: false,
       imageSelectVisible: false,
-      imageSelectId: -1,
-      imagesQuery: {
-        page: 1,
-        limit: 5,
-        total: 0,
-        noMore: false
-      },
-      imageList: [],
       // 防止重复提交
       cropDialogVisible: false,
       cropperOptions: {
@@ -315,18 +294,6 @@ export default {
   },
   methods: {
     checkPermission2,
-    selectImage(row) {
-      this.imageSelectId = row.id
-      this.record.image = row.path
-    },
-    loadImages() {
-      if (this.imagesQuery.page * this.imagesQuery.limit > this.imagesQuery.total) {
-        this.$message.warning('已加载到后一页！')
-        return
-      }
-      this.imagesQuery.page++
-      this.getImageList()
-    },
     setImage(e) {
       const file = e.target.files[0]
       if (!file.type.includes('image/')) {
@@ -399,19 +366,6 @@ export default {
         this.loading = false
       }).catch(() => { this.loading = false })
     },
-    getImageList() {
-      this.loading = true
-      getAdImageList(this.imagesQuery).then(response => {
-        if (this.imagesQuery.page === 1) {
-          this.imageList = response.rows
-        } else {
-          this.imageList = this.imageList.concat(response.rows)
-        }
-        this.imagesQuery.total = response.total
-        this.imagesQuery.noMore = this.imagesQuery.page * this.imagesQuery.limit > this.imagesQuery.total
-        this.loading = false
-      }).catch(() => { this.loading = false })
-    },
     doSearch() {
       this.is_search = true
       this.getList()
@@ -420,7 +374,6 @@ export default {
       this.record = Object.assign({}, defaultRecord)
       this.baseForm.action = 'add'
       this.baseForm.visible = true
-      this.getImageList()
     },
     baseEdit(index, row) {
       this.record = Object.assign({}, row)

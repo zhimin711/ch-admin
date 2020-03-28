@@ -16,7 +16,7 @@
 
       <div class="createPost-main-container">
         <el-row>
-          <Warning />
+          <!--<Warning />-->
 
           <el-col :span="24">
             <el-form-item style="margin-bottom: 40px;" prop="title">
@@ -58,7 +58,7 @@
           </el-col>
         </el-row>
 
-        <el-form-item style="margin-bottom: 40px;" label-width="70px" label="Summary:">
+        <el-form-item style="margin-bottom: 40px;" label-width="100px" label="文章简介:">
           <el-input v-model="postForm.description" :rows="1" type="textarea" class="article-textarea" autosize placeholder="Please enter the content" />
           <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
         </el-form-item>
@@ -67,9 +67,18 @@
           <Tinymce ref="editor" v-model="postForm.content" :height="400" />
         </el-form-item>
 
-        <el-form-item prop="image_uri" style="margin-bottom: 30px;">
-          <Upload v-model="postForm.image_uri" />
+        <el-form-item prop="image" style="margin-bottom: 30px;" label-width="100px" label="概要图:">
+          <el-row>
+            <el-col :span="24">
+              <Upload v-model="postForm.image" title="文章概要图裁剪及上传" :data="{srcType: 'article-cover'}" />
+            </el-col>
+            <el-col :span="24" style="margin-left: 50px; margin-top: 5px;">
+              <el-button icon="el-icon-folder-checked" @click="imageSelectVisible = true">图片选择</el-button>
+              <ImageSelector v-model="postForm.image" title="文章概要图选择" :show.sync="imageSelectVisible" type="article-cover" />
+            </el-col>
+          </el-row>
         </el-form-item>
+
       </div>
     </el-form>
   </div>
@@ -77,13 +86,14 @@
 
 <script>
 import Tinymce from '@/components/Tinymce'
-import Upload from '@/components/Upload/SingleImage3'
+import Upload from '@/components/Upload/SingleImageCrop'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
 import { getArticle } from '@/api/wiki/article'
 import { searchUser } from '@/api/remote-search'
-import Warning from './Warning'
+// import Warning from './Warning'
+import ImageSelector from '@/components/ImageSelector'
 import { CommentDropdown, PlatformDropdown, SourceUrlDropdown } from './Dropdown'
 
 const defaultForm = {
@@ -103,7 +113,7 @@ const defaultForm = {
 
 export default {
   name: 'ArticleDetail',
-  components: { Tinymce, MDinput, Upload, Sticky, Warning, CommentDropdown, PlatformDropdown, SourceUrlDropdown },
+  components: { Tinymce, MDinput, Upload, Sticky, ImageSelector, CommentDropdown, PlatformDropdown, SourceUrlDropdown },
   props: {
     isEdit: {
       type: Boolean,
@@ -140,6 +150,7 @@ export default {
     return {
       postForm: Object.assign({}, defaultForm),
       loading: false,
+      imageSelectVisible: false,
       userListOptions: [],
       rules: {
         image_uri: [{ validator: validateRequire }],
@@ -197,13 +208,13 @@ export default {
       })
     },
     setTagsViewTitle() {
-      const title = 'Edit Article'
-      const route = Object.assign({}, this.tempRoute, { title: `${title}-${this.postForm.id}` })
+      const title = '编辑文章'
+      const route = Object.assign({}, this.tempRoute, { title: `${title}《${this.postForm.title}》` })
       this.$store.dispatch('tagsView/updateVisitedView', route)
     },
     setPageTitle() {
-      const title = 'Edit Article'
-      document.title = `${title} - ${this.postForm.id}`
+      const title = '编辑文章'
+      document.title = `${title}《${this.postForm.title}》`
     },
     submitForm() {
       console.log(this.postForm)
