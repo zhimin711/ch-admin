@@ -9,3 +9,11 @@ export function listImage(query) {
     params: query.params
   })
 }
+
+export function searchImage(query) {
+  return request({
+    url: `${baseUrl}/_search/${query.page}/${query.limit}`,
+    method: 'get',
+    params: query.params
+  })
+}

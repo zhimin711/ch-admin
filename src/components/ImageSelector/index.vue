@@ -1,10 +1,15 @@
 <template>
   <div class="selector-container">
     <el-dialog :title="title" :visible.sync="visible" width="512px" center>
-      <div class="demo-image__lazy">
+      <el-input v-model="imageQuery.params.name" placeholder="请输入内容" class="input-with-select">
+        <el-button slot="append" icon="el-icon-search" @click="searchImages" />
+      </el-input>
+      <div class="demo-image__lazy" :style="{height:viewHeight}">
         <ul class="el-image-list">
-          <li v-for="image in imageList" :key="image.id" :class="{'is-success':value===image.path}" class="el-image-list__item" @click="selectImage(image)">
-            <label class="el-image-list__item-status-label"><i class="el-icon-upload-success el-icon-check" /></label>
+          <li v-for="image in imageList" :key="image.path" :class="{'is-success':value===image.path}" class="el-image-list__item" :style="{height:imageHeight}" @click="selectImage(image)">
+            <label class="el-image-list__item-status-label">
+              <i class="el-icon-upload-success el-icon-check" />
+            </label>
             <el-image :src="image.path" lazy />
           </li>
         </ul>
@@ -20,7 +25,7 @@
 </template>
 
 <script>
-import { listImage } from '@/api/wiki/image-info'
+import { searchImage } from '@/api/wiki/image-info'
 
 export default {
   name: 'ImageSelector',
@@ -30,6 +35,14 @@ export default {
       default: '图片选择'
     },
     show: Boolean,
+    viewHeight: {
+      type: String,
+      default: '400px'
+    },
+    imageHeight: {
+      type: String,
+      default: '180px'
+    },
     type: {
       type: String,
       default: ''
@@ -53,9 +66,6 @@ export default {
     }
   },
   computed: {
-    errorLogs() {
-      return this.$store.getters.errorLogs
-    },
     visible: {
       get() {
         return this.show
@@ -72,7 +82,7 @@ export default {
     getImageList() {
       this.loading = true
       this.imageQuery.params = Object.assign({}, this.imageQuery.params, { srcType: this.type })
-      listImage(this.imageQuery).then(response => {
+      searchImage(this.imageQuery).then(response => {
         if (this.imageQuery.page === 1) {
           this.imageList = response.rows
         } else {
@@ -89,6 +99,11 @@ export default {
         return
       }
       this.imageQuery.page++
+      this.getImageList()
+    },
+    searchImages() {
+      this.imageList = []
+      this.imageQuery.page = 1
       this.getImageList()
     },
     selectImage(row) {

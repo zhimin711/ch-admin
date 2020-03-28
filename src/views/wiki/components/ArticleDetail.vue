@@ -21,7 +21,7 @@
           <el-col :span="24">
             <el-form-item style="margin-bottom: 40px;" prop="title">
               <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
-                Title
+                文章标题
               </MDinput>
             </el-form-item>
 
@@ -74,7 +74,7 @@
             </el-col>
             <el-col :span="24" style="margin-left: 50px; margin-top: 5px;">
               <el-button icon="el-icon-folder-checked" @click="imageSelectVisible = true">图片选择</el-button>
-              <ImageSelector v-model="postForm.image" title="文章概要图选择" :show.sync="imageSelectVisible" type="article-cover" />
+              <ImageSelector v-model="postForm.image" title="文章概要图选择" :show.sync="imageSelectVisible" type="article-cover" image-height="247px" />
             </el-col>
           </el-row>
         </el-form-item>
