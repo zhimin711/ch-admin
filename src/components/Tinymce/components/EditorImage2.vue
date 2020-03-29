@@ -7,13 +7,16 @@
       <el-upload
         class="editor-slide-upload"
         drag
+        name="files[]"
+        :headers="headers"
+        :data="params"
         :file-list="fileList"
         :on-remove="handleRemove"
         :on-success="handleSuccess"
         :before-upload="beforeUpload"
         list-type="picture"
         accept="image/png, image/jpeg, image/gif, image/jpg"
-        action="https://httpbin.org/post"
+        action="/api/wiki/admin/upload/img"
         multiple
       >
         <i class="el-icon-upload" />
@@ -33,7 +36,7 @@
 
 <script>
 // import { getToken } from 'api/qiniu'
-
+import { mapGetters } from 'vuex'
 export default {
   name: 'EditorSlideUpload2',
   props: {
@@ -46,7 +49,21 @@ export default {
     return {
       dialogVisible: false,
       listObj: {},
+      params: {
+        srcType: 'article-content',
+        type: 'image'
+      },
       fileList: []
+    }
+  },
+  computed: {
+    ...mapGetters([
+      'token'
+    ]),
+    headers() {
+      return {
+        'X-Token': `${this.token}`
+      }
     }
   },
   methods: {
@@ -69,7 +86,7 @@ export default {
       const objKeyArr = Object.keys(this.listObj)
       for (let i = 0, len = objKeyArr.length; i < len; i++) {
         if (this.listObj[objKeyArr[i]].uid === uid) {
-          this.listObj[objKeyArr[i]].url = response.files.file
+          this.listObj[objKeyArr[i]].url = response.rows[0].url
           this.listObj[objKeyArr[i]].hasSuccess = true
           return
         }
@@ -106,8 +123,8 @@ export default {
 <style lang="scss" scoped>
 .editor-slide-upload {
   margin-bottom: 20px;
-  /deep/ .el-upload--picture-card {
-    width: 100%;
+  /deep/ .el-upload-list__item-thumbnail {
+    width: auto;
   }
 }
 </style>

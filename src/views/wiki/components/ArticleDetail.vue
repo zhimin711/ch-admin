@@ -2,10 +2,10 @@
   <div class="createPost-container">
     <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container">
 
-      <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
-        <CategoryDropdown v-model="postForm.category" />
-        <CommentDropdown v-model="postForm.comment_disabled" />
-        <SourceUrlDropdown v-model="postForm.source_uri" />
+      <sticky :z-index="10" :class-name="'sub-navbar '+stickyStatus">
+        <CategoryDropdown v-model="categoryValues" />
+        <CommentDropdown v-model="postForm.commentDisabled" />
+        <SourceUrlDropdown v-model="postForm.href" />
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
           {{ isEdit?'更新':'发布' }}
         </el-button>
@@ -97,25 +97,24 @@ import Tinymce from '@/components/Tinymce'
 import Upload from '@/components/Upload/SingleImageCrop'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
-import { validURL, isEmpty } from '@/utils/validate'
-import { getArticle } from '@/api/wiki/article'
-import { searchUser } from '@/api/wiki/remote-search'
 // import Warning from './Warning'
 import ImageSelector from '@/components/ImageSelector'
 import { CommentDropdown, SourceUrlDropdown, CategoryDropdown } from './Dropdown'
 
+import { validURL, isEmpty } from '@/utils/validate'
+import { getArticle, addArticle, editArticle } from '@/api/wiki/article'
+import { searchUser } from '@/api/wiki/remote-search'
+
 const defaultForm = {
-  status: 'draft',
+  status: '0',
   title: '', // 文章题目
   content: '', // 文章内容
-  content_short: '', // 文章摘要
   description: '', // 文章摘要
-  source_uri: '', // 文章外链
-  image_uri: '', // 文章图片
-  display_time: undefined, // 前台展示时间
+  href: '', // 文章外链
+  image: '', // 文章图片
+  publishAt: undefined, // 前台展示时间
   id: undefined,
-  category: [],
-  comment_disabled: false,
+  commentDisabled: false,
   author: ''
 }
 
@@ -159,12 +158,14 @@ export default {
       postForm: Object.assign({}, defaultForm),
       loading: false,
       imageSelectVisible: false,
+      stickyStatus: 'draft',
       userListOptions: [],
+      categoryValues: [],
       rules: {
-        image_uri: [{ validator: validateRequire }],
+        // image: [{ validator: validateRequire }],
         title: [{ validator: validateRequire }],
         content: [{ validator: validateRequire }],
-        source_uri: [{ validator: validateSourceUri, trigger: 'blur' }]
+        href: [{ validator: validateSourceUri, trigger: 'blur' }]
       },
       tags: {
         options: [{
@@ -195,16 +196,17 @@ export default {
       // back end return => "2013-06-25 06:59:25"
       // front end need timestamp => 1372114765000
       get() {
-        return (+new Date(this.postForm.display_time))
+        return (+new Date(this.postForm.publishAt))
       },
       set(val) {
-        this.postForm.display_time = new Date(val)
+        this.postForm.publishAt = new Date(val)
       }
     }
   },
   created() {
     if (this.isEdit) {
       const id = this.$route.params && this.$route.params.id
+      this.stickyStatus = 'published'
       this.fetchData(id)
     } else {
       this.postForm = Object.assign({}, defaultForm)
@@ -219,9 +221,9 @@ export default {
     fetchData(id) {
       getArticle(id).then(response => {
         this.postForm = response.rows[0]
-        this.postForm.category = []
+        this.categoryValues = []
         if (this.postForm.categoryId) {
-          this.postForm.category = this.postForm.categoryId.split(',')
+          this.categoryValues = this.postForm.categoryId.split(',')
         }
         this.getRemoteUserList(this.postForm.author)
         this.tags.values = []
@@ -249,18 +251,29 @@ export default {
       document.title = `${title}《${this.postForm.title}》`
     },
     submitForm() {
-      console.log(this.postForm)
-      this.$refs.postForm.validate(valid => {
+      this.$refs.postForm.validate(async valid => {
         if (valid) {
           this.loading = true
-          this.$notify({
-            title: '成功',
-            message: '发布文章成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.postForm.status = 'published'
+          if (this.categoryValues.length > 0) {
+            this.postForm.categoryId = this.categoryValues.join(',')
+          }
+          let resp
+          if (!this.isEdit) {
+            resp = await addArticle(this.postForm)
+          } else {
+            resp = await editArticle(this.postForm.id, this.postForm)
+          }
           this.loading = false
+          if (resp && resp.success) {
+            this.$confirm('发布文章成功', '文章', {
+              confirmButtonText: '返回列表',
+              cancelButtonText: '继续编辑',
+              type: 'warning'
+            }).then(() => {
+              this.$store.dispatch('tagsView/delView', this.tempRoute)
+              this.$router.go(-1)
+            })
+          }
         } else {
           console.log('error submit!!')
           return false

@@ -3,7 +3,7 @@
     <div class="filter-container">
       <el-input v-model="listQuery.params.userId" placeholder="用户ID" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
       <el-input v-model="listQuery.params.username" placeholder="用户名" style="width: 200px;" class="filter-item" />
-      <el-input v-model="listQuery.params.realName" placeholder="用户真实名称" style="width: 200px;" class="filter-item" />
+      <el-input v-model="listQuery.params.realName" placeholder="真实姓名" style="width: 200px;" class="filter-item" />
       <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
         <el-option label="启用" value="1">启用</el-option>
         <el-option label="禁用" value="0">禁用</el-option>
@@ -21,14 +21,14 @@
           <span>{{ scope.row.userId }}</span>
         </template>
       </el-table-column>
-      <el-table-column width="120px" align="center" label="用户名">
+      <el-table-column label="用户名">
         <template slot-scope="scope">
           <span>{{ scope.row.username }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="用户姓名">
+      <el-table-column label="昵称">n
         <template slot-scope="scope">
-          <span>{{ scope.row.realName }}</span>
+          <span>{{ scope.row.nickname }}</span>
         </template>
       </el-table-column>
       <el-table-column label="邮箱地址">
@@ -36,9 +36,14 @@
           <span>{{ scope.row.email }}</span>
         </template>
       </el-table-column>
-      <el-table-column width="180px" align="center" label="创建时间">
+      <el-table-column label="来源" width="80">
         <template slot-scope="scope">
-          <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+          <span>{{ scope.row.createBy }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column width="180px" align="center" label="最后登录时间">
+        <template slot-scope="scope">
+          <span>{{ scope.row.lastLoginAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
 
@@ -91,7 +96,7 @@
       </el-form>
       <div style="text-align:right;">
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">保存</el-button>
+        <!--<el-button type="primary" @click="handleSubmit">保存</el-button>-->
       </div>
     </el-dialog>
   </div>
@@ -132,7 +137,6 @@ export default {
   },
   created() {
     this.getList()
-    this.getEnableRoles()
   },
   methods: {
     checkPermission2,

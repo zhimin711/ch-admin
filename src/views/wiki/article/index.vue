@@ -63,7 +63,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="Actions" width="120">
+      <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
           <router-link v-if="checkPermission2(['WIKI_ARTICLE_EDIT']) && scope.row.status !== 'x'" :to="'/wiki/article/'+scope.row.id">
             <el-button type="primary" size="small" icon="el-icon-edit">

@@ -132,6 +132,7 @@ export default {
         imagetools_cors_hosts: ['www.tinymce.com', 'codepen.io'],
         default_link_target: '_blank',
         link_title: false,
+        convert_urls: false,
         nonbreaking_force_tab: true, // inserting nonbreaking space &nbsp; need Nonbreaking Space Plugin
         init_instance_callback: editor => {
           if (_this.value) {
@@ -203,6 +204,7 @@ export default {
       const _this = this
       arr.forEach(v => {
         window.tinymce.get(_this.tinymceId).insertContent(`<img class="wscnph" src="${v.url}" >`)
+        // window.tinymce.get(_this.tinymceId).execCommand('mceInsertContent', false, '<img alt="Smiley face" src="' + v.url + '"/>')
       })
     }
   }
