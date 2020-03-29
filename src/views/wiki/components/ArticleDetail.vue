@@ -3,14 +3,14 @@
     <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container">
 
       <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
+        <CategoryDropdown v-model="postForm.category" />
         <CommentDropdown v-model="postForm.comment_disabled" />
-        <PlatformDropdown v-model="postForm.platforms" />
         <SourceUrlDropdown v-model="postForm.source_uri" />
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
-          Publish
+          {{ isEdit?'更新':'发布' }}
         </el-button>
         <el-button v-loading="loading" type="warning" @click="draftForm">
-          Draft
+          草稿
         </el-button>
       </sticky>
 
@@ -28,29 +28,37 @@
             <div class="postInfo-container">
               <el-row>
                 <el-col :span="8">
-                  <el-form-item label-width="60px" label="Author:" class="postInfo-container-item">
-                    <el-select v-model="postForm.author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="Search user">
-                      <el-option v-for="(item,index) in userListOptions" :key="item+index" :label="item" :value="item" />
+                  <el-form-item label-width="100px" label="作者:" class="postInfo-container-item">
+                    <el-select v-model="postForm.author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="Search user" :disabled="isEdit">
+                      <el-option v-for="(item) in userListOptions" :key="item.userId" :label="item.nickname" :value="item.userId" />
                     </el-select>
                   </el-form-item>
                 </el-col>
 
-                <el-col :span="10">
-                  <el-form-item label-width="120px" label="Publish Time:" class="postInfo-container-item">
-                    <el-date-picker v-model="postForm.publishAt" type="datetime" format="yyyy-MM-dd HH:mm:ss" value-format="timestamp" placeholder="Select date and time" />
+                <el-col :span="6">
+                  <el-form-item label-width="120px" label="发布时间:" class="postInfo-container-item">
+                    <el-date-picker v-model="postForm.publishAt" type="datetime" format="yyyy-MM-dd HH:mm:ss" value-format="timestamp" placeholder="默认当前时间（定时发布）" :disabled="isEdit" />
                   </el-form-item>
                 </el-col>
 
-                <el-col :span="6">
-                  <el-form-item label-width="90px" label="Importance:" class="postInfo-container-item">
-                    <el-rate
-                      v-model="postForm.importance"
-                      :max="3"
-                      :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
-                      :low-threshold="1"
-                      :high-threshold="3"
-                      style="display:inline-block"
-                    />
+                <el-col :span="8">
+                  <el-form-item label-width="90px" label="文章标签:" class="postInfo-container-item__block">
+                    <el-select
+                      v-model="tags.values"
+                      multiple
+                      filterable
+                      allow-create
+                      default-first-option
+                      placeholder="请选择文章标签"
+                      class="block"
+                    >
+                      <el-option
+                        v-for="item in tags.options"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
+                      />
+                    </el-select>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -59,7 +67,7 @@
         </el-row>
 
         <el-form-item style="margin-bottom: 40px;" label-width="100px" label="文章简介:">
-          <el-input v-model="postForm.description" :rows="1" type="textarea" class="article-textarea" autosize placeholder="Please enter the content" />
+          <el-input v-model="postForm.description" :rows="1" type="textarea" class="article-textarea" autosize placeholder="请输入文章简要信息" />
           <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
         </el-form-item>
 
@@ -89,12 +97,12 @@ import Tinymce from '@/components/Tinymce'
 import Upload from '@/components/Upload/SingleImageCrop'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
-import { validURL } from '@/utils/validate'
+import { validURL, isEmpty } from '@/utils/validate'
 import { getArticle } from '@/api/wiki/article'
-import { searchUser } from '@/api/remote-search'
+import { searchUser } from '@/api/wiki/remote-search'
 // import Warning from './Warning'
 import ImageSelector from '@/components/ImageSelector'
-import { CommentDropdown, PlatformDropdown, SourceUrlDropdown } from './Dropdown'
+import { CommentDropdown, SourceUrlDropdown, CategoryDropdown } from './Dropdown'
 
 const defaultForm = {
   status: 'draft',
@@ -106,14 +114,14 @@ const defaultForm = {
   image_uri: '', // 文章图片
   display_time: undefined, // 前台展示时间
   id: undefined,
-  platforms: ['a-platform'],
+  category: [],
   comment_disabled: false,
-  importance: 0
+  author: ''
 }
 
 export default {
-  name: 'ArticleDetail',
-  components: { Tinymce, MDinput, Upload, Sticky, ImageSelector, CommentDropdown, PlatformDropdown, SourceUrlDropdown },
+  name: 'WikiArticleDetail',
+  components: { Tinymce, MDinput, Upload, Sticky, ImageSelector, CommentDropdown, SourceUrlDropdown, CategoryDropdown },
   props: {
     isEdit: {
       type: Boolean,
@@ -158,6 +166,22 @@ export default {
         content: [{ validator: validateRequire }],
         source_uri: [{ validator: validateSourceUri, trigger: 'blur' }]
       },
+      tags: {
+        options: [{
+          value: 'JAVA',
+          label: 'JAVA'
+        }, {
+          value: 'HTML/CSS/JavaScript',
+          label: 'HTML/CSS/JavaScript'
+        }, {
+          value: '数据库',
+          label: '数据库'
+        }, {
+          value: '中间件',
+          label: '中间件'
+        }],
+        values: []
+      },
       tempRoute: {}
     }
   },
@@ -195,7 +219,15 @@ export default {
     fetchData(id) {
       getArticle(id).then(response => {
         this.postForm = response.rows[0]
-
+        this.postForm.category = []
+        if (this.postForm.categoryId) {
+          this.postForm.category = this.postForm.categoryId.split(',')
+        }
+        this.getRemoteUserList(this.postForm.author)
+        this.tags.values = []
+        if (!isEmpty(this.postForm.keywords)) {
+          this.tags.values = this.postForm.keywords.split(',')
+        }
         // just for test
 
         // set tagsview title
@@ -253,8 +285,8 @@ export default {
     },
     getRemoteUserList(query) {
       searchUser(query).then(response => {
-        if (!response.data.items) return
-        this.userListOptions = response.data.items.map(v => v.name)
+        if (!response.success) return
+        this.userListOptions = response.rows
       })
     }
   }
@@ -277,6 +309,16 @@ export default {
 
       .postInfo-container-item {
         float: left;
+      }
+
+      .postInfo-container-item__block {
+        float: left;
+        width: 100%;
+      }
+
+      .postInfo-container-item__block .el-select {
+        float: left;
+        width: 100%;
       }
     }
   }
