@@ -256,11 +256,14 @@ export default {
     submitForm(status) {
       this.$refs.postForm.validate(async valid => {
         if (valid) {
-          this.loading = true
           this.postForm.status = status
           if (this.categoryValues.length > 0) {
             this.postForm.categoryId = this.categoryValues.join(',')
+          } else {
+            this.$message.error('请选择文章分类')
+            return false
           }
+          this.loading = true
           let resp
           if (!this.isEdit) {
             resp = await addArticle(this.postForm)
@@ -272,12 +275,17 @@ export default {
           if (resp && resp.success) {
             this.$confirm(`${tipStr}成功`, '文章', {
               confirmButtonText: '返回列表',
-              cancelButtonText: '继续编辑',
+              cancelButtonText: `继续${this.isEdit ? '编辑' : '创建'}`,
               type: 'warning'
             }).then(() => {
               this.$store.dispatch('tagsView/delView', this.tempRoute)
               this.$router.go(-1)
-            }).catch(() => {})
+            }).catch(() => {
+              if (!this.isEdit) {
+                this.postForm = Object.assign({}, defaultForm)
+                this.postForm.content = 'clean'
+              }
+            })
           }
         } else {
           console.log('error submit!!')

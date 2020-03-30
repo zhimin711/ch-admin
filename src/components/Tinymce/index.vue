@@ -86,7 +86,13 @@ export default {
   },
   watch: {
     value(val) {
-      if (!this.hasChange && this.hasInit) {
+      // console.log('tinymce watch value' + val)
+      if (val === 'clean' && this.hasInit) {
+        this.$nextTick(() => {
+          window.tinymce.get(this.tinymceId).setContent('')
+          // this.$emit('input', '')
+        })
+      } else if (!this.hasChange && this.hasInit) {
         this.$nextTick(() =>
           window.tinymce.get(this.tinymceId).setContent(val || ''))
       }
@@ -209,7 +215,6 @@ export default {
       const _this = this
       arr.forEach(v => {
         window.tinymce.get(_this.tinymceId).insertContent(`<img class="wscnph" src="${v.url}" >`)
-        // window.tinymce.get(_this.tinymceId).execCommand('mceInsertContent', false, '<img alt="Smiley face" src="' + v.url + '"/>')
       })
     }
   }

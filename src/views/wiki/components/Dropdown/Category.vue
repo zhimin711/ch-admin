@@ -1,5 +1,5 @@
 <template>
-  <el-cascader v-model="category" expand-trigger="hover" clearable placeholder="文章分类" :options="categories" />
+  <el-cascader v-model="category" :props="{ expandTrigger: 'hover' }" clearable placeholder="文章分类" :options="categories" />
 </template>
 
 <script>
@@ -36,7 +36,6 @@ export default {
   },
   methods: {
     loadCategories() {
-      console.log(this.value)
       fetchTree(this.type).then(response => {
         this.categories = response.rows
       })
