@@ -2,7 +2,8 @@
   <div :class="{fullscreen:fullscreen}" class="tinymce-container" :style="{width:containerWidth}">
     <textarea :id="tinymceId" class="tinymce-textarea" />
     <div class="editor-custom-btn-container">
-      <editorImage color="#1890ff" class="editor-upload-btn" @successCBK="imageSuccessCBK" />
+      <!--<editorImage color="#1890ff" class="editor-upload-btn" @successCBK="imageSuccessCBK" />-->
+      <editor-image class="editor-upload-btn" color="#1890ff" :url="uploadUrl" :data="{srcType: 'article-content', type: 'image'}" @successCBK="imageSuccessCBK" />
     </div>
   </div>
 </template>
@@ -12,7 +13,7 @@
  * docs:
  * https://panjiachen.github.io/vue-element-admin-site/feature/component/rich-editor.html#tinymce
  */
-import editorImage from './components/EditorImage2'
+import editorImage from '@/components/Upload/MultiImage'
 import plugins from './plugins'
 import toolbar from './toolbar'
 import load from './dynamicLoadScript'
@@ -54,6 +55,10 @@ export default {
       type: [Number, String],
       required: false,
       default: 'auto'
+    },
+    uploadUrl: {
+      type: String,
+      default: ''
     }
   },
   data() {

@@ -49,17 +49,17 @@
           <span>{{ scope.row.updateAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="approveStatus" label="审核状态" width="80">
+      <el-table-column prop="status" label="状态" width="100" align="center">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.showMode === '1' && (scope.row.approveStatus === '0' || scope.row.approveStatus === null || scope.row.approveStatus === '2')" type="warning">
+          <el-tag v-if="scope.row.status === 1 && (scope.row.approveStatus === '0' || scope.row.approveStatus === null || scope.row.approveStatus === '2')" type="warning">
             待审核
           </el-tag>
-          <el-tag v-else-if="scope.row.showMode === '1' && scope.row.approveStatus === '1'" type="success">通过
+          <el-tag v-else-if="scope.row.status === 1 && scope.row.approveStatus === '1'" type="success">审核通过
           </el-tag>
-          <el-tag v-else-if="scope.row.showMode === '1' && scope.row.approveStatus === '4'" type="danger">驳回
+          <el-tag v-else-if="scope.row.status === 1 && scope.row.approveStatus === '4'" type="danger">审核驳回
           </el-tag>
           <el-tag v-else>
-            非公开
+            草稿
           </el-tag>
         </template>
       </el-table-column>

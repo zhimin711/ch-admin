@@ -6,8 +6,8 @@
         <CategoryDropdown v-model="categoryValues" />
         <CommentDropdown v-model="postForm.commentDisabled" />
         <SourceUrlDropdown v-model="postForm.href" />
-        <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
-          {{ isEdit?'更新':'发布' }}
+        <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm(1)">
+          {{ isReleased?'更新':'发布' }}
         </el-button>
         <el-button v-loading="loading" type="warning" @click="draftForm">
           草稿
@@ -37,7 +37,7 @@
 
                 <el-col :span="6">
                   <el-form-item label-width="120px" label="发布时间:" class="postInfo-container-item">
-                    <el-date-picker v-model="postForm.publishAt" type="datetime" format="yyyy-MM-dd HH:mm:ss" value-format="timestamp" placeholder="默认当前时间（定时发布）" :disabled="isEdit" />
+                    <el-date-picker v-model="postForm.publishAt" type="datetime" format="yyyy-MM-dd HH:mm:ss" value-format="timestamp" placeholder="默认当前时间（定时发布）" :disabled="!isReleased" />
                   </el-form-item>
                 </el-col>
 
@@ -72,7 +72,7 @@
         </el-form-item>
 
         <el-form-item prop="content" style="margin-bottom: 30px;">
-          <Tinymce ref="editor" v-model="postForm.content" :height="400" />
+          <Tinymce ref="editor" v-model="postForm.content" :height="400" upload-url="/api/wiki/admin/upload/img" />
         </el-form-item>
 
         <el-form-item prop="image" style="margin-bottom: 30px;" label-width="100px" label="概要图:">
@@ -106,7 +106,7 @@ import { getArticle, addArticle, editArticle } from '@/api/wiki/article'
 import { searchUser } from '@/api/wiki/remote-search'
 
 const defaultForm = {
-  status: '0',
+  status: 0,
   title: '', // 文章题目
   content: '', // 文章内容
   description: '', // 文章摘要
@@ -158,7 +158,8 @@ export default {
       postForm: Object.assign({}, defaultForm),
       loading: false,
       imageSelectVisible: false,
-      stickyStatus: 'draft',
+      // stickyStatus: 'draft',
+      isReleased: false,
       userListOptions: [],
       categoryValues: [],
       rules: {
@@ -190,6 +191,9 @@ export default {
     contentShortLength() {
       return this.postForm.description.length
     },
+    stickyStatus() {
+      return this.postForm.status === 1 ? 'published' : 'draft'
+    },
     displayTime: {
       // set and get is useful when the data
       // returned by the back end api is different from the front end
@@ -206,7 +210,6 @@ export default {
   created() {
     if (this.isEdit) {
       const id = this.$route.params && this.$route.params.id
-      this.stickyStatus = 'published'
       this.fetchData(id)
     } else {
       this.postForm = Object.assign({}, defaultForm)
@@ -230,8 +233,8 @@ export default {
         if (!isEmpty(this.postForm.keywords)) {
           this.tags.values = this.postForm.keywords.split(',')
         }
-        // just for test
-
+        // this.stickyStatus = this.postForm.status === 1 ? 'published' : 'draft'
+        this.isReleased = this.postForm.approveStatus === '1'
         // set tagsview title
         this.setTagsViewTitle()
 
@@ -250,10 +253,11 @@ export default {
       const title = '编辑文章'
       document.title = `${title}《${this.postForm.title}》`
     },
-    submitForm() {
+    submitForm(status) {
       this.$refs.postForm.validate(async valid => {
         if (valid) {
           this.loading = true
+          this.postForm.status = status
           if (this.categoryValues.length > 0) {
             this.postForm.categoryId = this.categoryValues.join(',')
           }
@@ -264,15 +268,16 @@ export default {
             resp = await editArticle(this.postForm.id, this.postForm)
           }
           this.loading = false
+          const tipStr = this.postForm.status === 1 ? '发布文章' : '保存草稿'
           if (resp && resp.success) {
-            this.$confirm('发布文章成功', '文章', {
+            this.$confirm(`${tipStr}成功`, '文章', {
               confirmButtonText: '返回列表',
               cancelButtonText: '继续编辑',
               type: 'warning'
             }).then(() => {
               this.$store.dispatch('tagsView/delView', this.tempRoute)
               this.$router.go(-1)
-            })
+            }).catch(() => {})
           }
         } else {
           console.log('error submit!!')
@@ -281,20 +286,7 @@ export default {
       })
     },
     draftForm() {
-      if (this.postForm.content.length === 0 || this.postForm.title.length === 0) {
-        this.$message({
-          message: '请填写必要的标题和内容',
-          type: 'warning'
-        })
-        return
-      }
-      this.$message({
-        message: '保存成功',
-        type: 'success',
-        showClose: true,
-        duration: 1000
-      })
-      this.postForm.status = 'draft'
+      this.submitForm(0)
     },
     getRemoteUserList(query) {
       searchUser(query).then(response => {
