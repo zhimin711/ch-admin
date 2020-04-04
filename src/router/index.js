@@ -369,7 +369,7 @@ export function assemblyAsyncRoutes(menus, basePath) {
         alwaysShow: true,
         component: resolve => require(['@/layout/index2'], resolve),
         redirect: menu.redirect || path,
-        meta: { title: menu.name, icon: menu.icon || 'lock' }
+        meta: { title: menu.name, icon: menu.icon || 'nested' }
       }
       if (isStart) {
         tmp.component = Layout

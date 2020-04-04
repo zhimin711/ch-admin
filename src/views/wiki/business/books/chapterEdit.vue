@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import BookChapterDetail from '../components/BookChapterDetail'
+import BookChapterDetail from '../../components/BookChapterDetail'
 
 export default {
   name: 'EditForm',

@@ -76,6 +76,8 @@ export default {
     }
   },
   mounted() {
+    // console.log('mounted')
+    this.imageQuery.page = 1
     this.getImageList()
   },
   methods: {

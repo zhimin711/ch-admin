@@ -13,23 +13,23 @@ const wikiRouter = {
     icon: 'lock'
   },
   children: [
-    {
-      path: 'category',
-      component: () => import('@/views/wiki/category'),
-      name: 'Category',
-      meta: {
-        title: '分类管理'
-      }
-    },
-    {
-      path: 'uploadFile',
-      component: () => import('@/views/wiki/uploadFile'),
-      name: 'WikiUploadRecordManager',
-      meta: {
-        title: '上传记录',
-        roles: ['admin']
-      }
-    }
+    // {
+    //   path: 'category',
+    //   component: () => import('@/views/wiki/category'),
+    //   name: 'Category',
+    //   meta: {
+    //     title: '分类管理'
+    //   }
+    // },
+    // {
+    //   path: 'uploadFile',
+    //   component: () => import('@/views/wiki/uploadFile'),
+    //   name: 'WikiUploadRecordManager',
+    //   meta: {
+    //     title: '上传记录',
+    //     roles: ['admin']
+    //   }
+    // }
   ]
 }
 export default wikiRouter
