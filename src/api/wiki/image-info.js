@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
 
-const baseUrl = '/wiki/admin/image'
+const baseUrl = '/wiki/admin/images'
 
 export function listImage(query) {
   return request({

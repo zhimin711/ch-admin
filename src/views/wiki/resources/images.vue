@@ -68,7 +68,7 @@ import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { list } from '@/api/wiki/images'
 
 export default {
-  name: 'WikiUploadRecordManager',
+  name: 'WikiResourcesImagesManager',
   components: { Pagination, EditorImage },
   data() {
     return {

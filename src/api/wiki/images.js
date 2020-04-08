@@ -1,5 +1,5 @@
 import request from '@/utils/request2'
-const baseUrl = '/wiki/admin/image'
+const baseUrl = '/wiki/admin/images'
 export function list(query) {
   return request({
     url: `${baseUrl}/${query.page}/${query.limit}`,
