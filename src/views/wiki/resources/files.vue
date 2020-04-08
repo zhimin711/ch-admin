@@ -8,13 +8,13 @@
         <el-option label="代码" value="2">代码</el-option>
         <el-option label="其他" value="3">其他</el-option>
       </el-select>
-      <el-button v-if="checkPermission2(['WIKI_UPLOAD_FILE_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-if="checkPermission2(['WIKI_RESOURCES_FILE_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
         重置
       </el-button>
-      <editor-image class="editor-upload-btn filter-item" color="#1890ff" size="" url="/api/wiki/admin/upload/img" :data="{srcType: 'images', type: 'image'}" @successCBK="imageUploadSuccess" />
+      <!--<editor-image class="editor-upload-btn filter-item" color="#1890ff" size="" url="/api/wiki/admin/upload/img" :data="{srcType: 'images', type: 'image'}" @successCBK="imageUploadSuccess" />-->
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
       <el-table-column label="分类">
@@ -50,14 +50,14 @@
 <script>
 import { mapGetters } from 'vuex'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import EditorImage from '@/components/Upload/MultiImage'
+// import EditorImage from '@/components/Upload/MultiImage'
 // import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { list } from '@/api/wiki/files'
 
 export default {
   name: 'WikiResourcesFilesManager',
-  components: { Pagination, EditorImage },
+  components: { Pagination/*, EditorImage*/ },
   data() {
     return {
       uploadUrl: '/api/wiki/admin/upload',

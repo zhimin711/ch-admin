@@ -29,7 +29,11 @@ router.beforeEach(async(to, from, next) => {
       // determine whether the user has obtained his permission roles through getInfo
       const hasRoles = store.getters.roles && store.getters.roles.length > 0
       if (hasRoles) {
-        next()
+        if (to.matched.length === 0) {
+          next('/404') // 判断此跳转路由的来源路由是否存在，存在的情况跳转到来源路由，否则跳转到404页面
+        } else {
+          next()
+        }
       } else {
         try {
           // get user info
