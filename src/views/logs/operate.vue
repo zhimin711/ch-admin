@@ -15,7 +15,7 @@
         <template slot-scope="scope">
           <span>{{ scope.row.url }}</span>
         </template>
-      </el-table-column> <el-table-column label="方法" width="70px">
+      </el-table-column> <el-table-column label="方法" width="70px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.method }}</span>
         </template>
@@ -43,6 +43,11 @@
       <el-table-column label="耗时（毫秒）" width="120px">
         <template slot-scope="scope">
           <span>{{ scope.row.responseTime - scope.row.requestTime }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="错误信息">
+        <template slot-scope="scope">
+          <span>{{ scope.row.errorMessage }}</span>
         </template>
       </el-table-column>
     </el-table>

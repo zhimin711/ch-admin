@@ -40,6 +40,11 @@
           <span>{{ scope.row.responseTime - scope.row.requestTime }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="错误信息">
+        <template slot-scope="scope">
+          <span>{{ scope.row.errorMessage }}</span>
+        </template>
+      </el-table-column>
     </el-table>
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
