@@ -95,8 +95,7 @@ export default {
       list(this.listQuery).then(response => {
         this.listQuery.list = response.rows
         this.listQuery.total = response.total
-        this.listLoading = false
-      }).catch(() => { this.loading = false })
+      }).finally(() => { this.listLoading = false })
     },
     imageUploadSuccess(rows) {
       this.getList()

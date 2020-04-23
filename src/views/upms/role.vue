@@ -167,7 +167,7 @@ export default {
         this.listLoading = false
         this.listQuery.data = response.rows
         this.listQuery.total = response.total
-      }).catch(() => { this.loading = false })
+      }).finally(() => { this.listLoading = false })
     },
     handleFilter() {
       this.getList()

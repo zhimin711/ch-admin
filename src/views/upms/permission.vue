@@ -205,8 +205,7 @@ export default {
       fetchList(this.listQuery).then(response => {
         this.list = response.rows
         this.listQuery.total = response.total
-        this.loading = false
-      }).catch(() => { this.loading = false })
+      }).finally(() => { this.loading = false })
     },
     handleAdd() {
       this.getTree('1')
