@@ -3,7 +3,7 @@
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" autocomplete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <h3 class="title">欢迎登录朝华平台</h3>
       </div>
 
       <el-form-item prop="username">
@@ -13,7 +13,7 @@
         <el-input
           ref="username"
           v-model="loginForm.username"
-          placeholder="Username"
+          placeholder="用户名"
           name="username"
           type="text"
           tabindex="1"
@@ -31,7 +31,7 @@
             ref="password"
             v-model="loginForm.password"
             :type="passwordType"
-            placeholder="Password"
+            placeholder="密码"
             name="password"
             tabindex="2"
             autocomplete="on"
@@ -44,7 +44,22 @@
           </span>
         </el-form-item>
       </el-tooltip>
-
+      <el-form-item prop="captchaCode">
+        <span class="svg-container"><i class="el-icon-tickets" /></span>
+        <el-input
+          ref="username"
+          v-model="loginForm.captchaCode"
+          placeholder="验证码"
+          name="username"
+          type="text"
+          tabindex="3"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          maxlength="4"
+        />
+        <span class="captcha-code"><img ref="code" src="" height="48" alt="验证码" @click="changeCode"></span>
+      </el-form-item>
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
 
       <div style="position:relative;display: none">
@@ -95,17 +110,27 @@ export default {
         callback()
       }
     }
+    const validateCaptchaCode = (rule, value, callback) => {
+      if (value.length !== 4) {
+        callback(new Error('The verify code must be equals 4 digits'))
+      } else {
+        callback()
+      }
+    }
     return {
       loginForm: {
         username: '',
-        password: ''
+        password: '',
+        captchaCode: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        password: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        captchaCode: [{ required: true, trigger: 'blur', validator: validateCaptchaCode }]
       },
       passwordType: 'password',
       capsTooltip: false,
+      captchaTooltip: false,
       loading: false,
       showDialog: false,
       redirect: undefined,
@@ -133,6 +158,8 @@ export default {
     } else if (this.loginForm.password === '') {
       this.$refs.password.focus()
     }
+    // 得到验证码图片
+    this.changeCode()
   },
   destroyed() {
     // window.removeEventListener('storage', this.afterQRScan)
@@ -171,6 +198,10 @@ export default {
             .catch(error => {
               this.$message.error(`${error.message}!`)
               this.loading = false
+              if (error.code === '306') {
+                this.captchaTooltip = true
+                this.changeCode()
+              }
             })
         } else {
           console.log('error submit!!')
@@ -185,6 +216,16 @@ export default {
         }
         return acc
       }, {})
+    },
+    getCaptchaKey() {
+      // let random = Math.random()
+      return Math.random().toString(36).substring(2)
+      // return ''
+    },
+    changeCode() {
+      const captchaKey = this.getCaptchaKey()
+      this.loginForm.captchaKey = captchaKey
+      this.$refs.code.setAttribute('src', process.env.VUE_APP_API + '/auth/login/captcha?captchaKey=' + captchaKey)
     }
     // afterQRScan() {
     //   if (e.key === 'x-admin-oauth-code') {
@@ -311,6 +352,16 @@ $light_gray:#eee;
     position: absolute;
     right: 10px;
     top: 7px;
+    font-size: 16px;
+    color: $dark_gray;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .captcha-code {
+    position: absolute;
+    right: 0px;
+    top: 1px;
     font-size: 16px;
     color: $dark_gray;
     cursor: pointer;
