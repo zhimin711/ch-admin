@@ -47,10 +47,10 @@
       <el-form-item prop="captchaCode">
         <span class="svg-container"><i class="el-icon-tickets" /></span>
         <el-input
-          ref="username"
+          ref="captchaCode"
           v-model="loginForm.captchaCode"
           placeholder="验证码"
-          name="username"
+          name="captchaCode"
           type="text"
           tabindex="3"
           autocomplete="off"
@@ -60,7 +60,7 @@
         />
         <span class="captcha-code"><img ref="code" src="" height="48" alt="验证码" @click="changeCode"></span>
       </el-form-item>
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
 
       <div style="position:relative;display: none">
         <div class="tips">
@@ -130,7 +130,6 @@ export default {
       },
       passwordType: 'password',
       capsTooltip: false,
-      captchaTooltip: false,
       loading: false,
       showDialog: false,
       redirect: undefined,
@@ -151,6 +150,7 @@ export default {
   },
   created() {
     // window.addEventListener('storage', this.afterQRScan)
+    window.addEventListener('keyup', this.enterKey)
   },
   mounted() {
     if (this.loginForm.username === '') {
@@ -163,8 +163,15 @@ export default {
   },
   destroyed() {
     // window.removeEventListener('storage', this.afterQRScan)
+    window.removeEventListener('keyup', this.enterKey)
   },
   methods: {
+    enterKey(event) {
+      const code = event.keyCode || event.which || event.charCode
+      if (code === 13) {
+        this.handleLogin()
+      }
+    },
     checkCapslock({ shiftKey, key } = {}) {
       if (key && key.length === 1) {
         if (shiftKey && (key >= 'a' && key <= 'z') || !shiftKey && (key >= 'A' && key <= 'Z')) {
@@ -198,10 +205,9 @@ export default {
             .catch(error => {
               this.$message.error(`${error.message}!`)
               this.loading = false
-              if (error.code === '306') {
-                this.captchaTooltip = true
-                this.changeCode()
-              }
+              // if (error.code === '306') {}
+              this.loginForm.captchaCode = ''
+              this.changeCode()
             })
         } else {
           console.log('error submit!!')
