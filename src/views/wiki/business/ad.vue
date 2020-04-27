@@ -109,7 +109,7 @@
           <el-row>
             <el-col :span="24">
               <div class="ad-img-uploader" @click="openUploadImg">
-                <img v-if="record.image" :src="record.image" class="ad-img">
+                <img v-if="record.image" :src="record.image" width="390" height="160">
                 <i v-else class="el-icon-plus ad-uploader-icon" />
               </div>
             </el-col>
@@ -147,8 +147,8 @@
       <el-row slot="footer">
         <el-col :span="20" :offset="4">
           <span class="dialog-footer">
-            <el-button @click="resetForm('baseForm')">取 消</el-button>
-            <el-button type="primary" @click="saveEdit('baseForm')">确 定</el-button>
+            <el-button :loading="baseForm.loading" @click="resetForm('baseForm')">取 消</el-button>
+            <el-button :loading="baseForm.loading" type="primary" @click="saveEdit('baseForm')">确 定</el-button>
           </span>
         </el-col>
       </el-row>
@@ -218,7 +218,7 @@ import ImageSelector from '@/components/ImageSelector'
 
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
-import { getAdList, addAd/*, edit, del*/, uploadAd } from '@/api/wiki/ad'
+import { getAdList, addAd, editAd/*, del*/, uploadAd } from '@/api/wiki/ad'
 
 import VueCropper from 'vue-cropperjs'
 import 'cropperjs/dist/cropper.css'
@@ -250,6 +250,7 @@ export default {
       baseForm: {
         action: 'add',
         title: '编辑',
+        loading: false,
         visible: false,
         codeDisabled: false
       },
@@ -385,32 +386,29 @@ export default {
     },
     // 保存编辑
     saveEdit(formName) {
-      this.$refs[formName].validate((valid) => {
+      this.$refs[formName].validate(async(valid) => {
         if (valid) {
-          addAd(this.record).then((res) => {
-            const tip_key = this.record.title
-            if (res.data.success) {
-              if (this.baseForm.action === 'edit') {
-                // this.$set(this.baseTable.rows, this.baseTable.idx, this.record)
-                this.$message.success(`修改 ${tip_key} 成功!`)
-              } else {
-                this.$message.success(`添加 ${tip_key}成功!`)
-                this.fetchData()
-              }
-              this.baseForm.visible = false
-              this.record = {}
-            } else {
-              if (this.baseForm.action === 'edit') {
-                this.$message.error(`修改第${tip_key} 失败!`)
-              } else {
-                if (res.data.error.code === '303') {
-                  this.$message.error(res.data.error.name)
-                } else {
-                  this.$message.error(`添加${tip_key} 失败!`)
-                }
-              }
-            }
+          const _this = this
+          let resp = null
+          let opName = '添加'
+          this.baseForm.loading = true
+          if (this.baseForm.action === 'add') {
+            resp = await addAd(this.record).finally(() => { this.baseForm.loading = false })
+          } else if (this.baseForm.action === 'edit') {
+            opName = '修改'
+            resp = await editAd(this.record.id, this.record).finally(() => { this.baseForm.loading = false })
+          }
+          const ok = resp && resp.success
+          this.$notify({
+            title: `广告 ${opName} ${ok ? '成功' : '失败'}!`,
+            dangerouslyUseHTMLString: true,
+            message: `<div>${this.record.title}</div>`,
+            type: ok ? 'success' : 'error'
           })
+          if (ok) {
+            this.baseForm.visible = false
+            _this.getList()
+          }
         } else {
           console.log('error submit!!')
           return false
@@ -530,8 +528,6 @@ export default {
   }
 
   .ad-img-uploader .ad-img {
-    /*width: 100%;*/
-    /*height: 100%;*/
     width: 24rem;
     height: 10rem;
   }

@@ -2,7 +2,7 @@
   <div class="upload-container">
     <div class="image-preview image-app-preview" :style="{height:height,width:width}">
       <div class="ad-img-uploader">
-        <img v-if="imageUrl.length>1" :src="imageUrl" class="ad-img">
+        <img v-if="imageUrl.length>1" :src="imageUrl" width="100%" height="100%">
         <i v-else class="el-icon-plus ad-uploader-icon" @click="openUploadImg" />
         <div v-if="imageUrl.length>1" class="image-preview-action">
           <i class="el-icon-delete" @click="rmImage" />
@@ -321,6 +321,8 @@ export default {
     width: 178px;
     height: 178px;
     display: block;
+  }
+  .ad-img-uploader {
   }
   .ad-img-uploader .ad-img {
     width: 100%;
