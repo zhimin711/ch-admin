@@ -1,6 +1,6 @@
 import axios from 'axios'
 import store from '@/store'
-import { getToken, getRefreshToken, isExpired } from '@/utils/auth'
+import { isExpired } from '@/utils/auth'
 
 // create an axios instance
 const service3 = axios.create({
@@ -17,9 +17,9 @@ service3.interceptors.request.use(
       // let each request carry token
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
-      config.headers['X-Token'] = getToken()
+      config.headers['X-Token'] = store.getters.token
       if (isExpired()) {
-        await axios.get(process.env.VUE_APP_API + '/auth/login/token/refresh?token=' + getToken() + '&refreshToken=' + getRefreshToken())
+        await axios.get(process.env.VUE_APP_API + '/auth/login/token/refresh?token=' + store.getters.token + '&refreshToken=' + store.getters.refreshToken)
           .then(resp => {
             if (resp.data.success) {
               store.dispatch('user/refreshToken', resp.data.rows[0])
@@ -36,7 +36,7 @@ service3.interceptors.request.use(
   error => {
     // do something with request error
     // console.log(error) // for debug
-    console.log('request3 request err: ' + JSON.stringify(error)) // for debug
+    // console.log('request3 request err: ' + JSON.stringify(error)) // for debug
     return Promise.reject(error)
   }
 )

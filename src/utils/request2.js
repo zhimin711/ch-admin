@@ -2,7 +2,7 @@ import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
 import router from '@/router'
-import { getToken, getRefreshToken, isExpired } from '@/utils/auth'
+import { isExpired } from '@/utils/auth'
 
 // create an axios instance
 const service2 = axios.create({
@@ -19,9 +19,9 @@ service2.interceptors.request.use(
       // let each request carry token
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
-      config.headers['X-Token'] = getToken()
+      config.headers['X-Token'] = store.getters.token
       if (isExpired()) {
-        await axios.get(process.env.VUE_APP_API + '/auth/login/token/refresh?token=' + getToken() + '&refreshToken=' + getRefreshToken())
+        await axios.get(process.env.VUE_APP_API + '/auth/login/token/refresh?token=' + store.getters.token + '&refreshToken=' + store.getters.refreshToken)
           .then(resp => {
             if (resp.data.success) {
               store.dispatch('user/refreshToken', resp.data.rows[0])
@@ -81,7 +81,7 @@ service2.interceptors.response.use(
     }
   },
   error => {
-    console.log('request2 response err: ' + JSON.stringify(error)) // for debug
+    // console.log('request2 response err: ' + JSON.stringify(error)) // for debug
     if (error.code === 'ECONNABORTED') {
       Message({
         message: '请求超时，请重试...',
