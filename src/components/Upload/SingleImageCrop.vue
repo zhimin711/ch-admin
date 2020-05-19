@@ -2,15 +2,15 @@
   <div class="upload-container">
     <div class="image-preview image-app-preview" :style="{height:height,width:width}">
       <div class="ad-img-uploader">
-        <img v-if="imageUrl.length>1" :src="imageUrl" width="100%" height="100%">
-        <i v-else class="el-icon-plus ad-uploader-icon" @click="openUploadImg" />
-        <div v-if="imageUrl.length>1" class="image-preview-action">
+        <img v-if="imageUrl && imageUrl.length>1" :src="imageUrl" width="100%" height="100%">
+        <i v-else class="el-icon-plus ad-uploader-icon" :style="{'line-height':height}" @click="openUploadImg" />
+        <div v-if="imageUrl && imageUrl.length>1" class="image-preview-action" :style="{'line-height':height}">
           <i class="el-icon-delete" @click="rmImage" />
         </div>
       </div>
     </div>
     <!-- 引用el的dialog弹框组件，默认data中设置croppaVisible=true -->
-    <el-dialog :title="title" :visible.sync="cropDialogVisible" :width="'60%'">
+    <el-dialog :title="title" :visible.sync="cropDialogVisible" :width="'60%'" :append-to-body="appendToBody">
       <el-row>
         <el-col :span="15">
           <div>
@@ -18,7 +18,7 @@
               ref="cropper"
               alt="请选择图片！"
               :view-mode="2"
-              :aspect-ratio="ratio"
+              :aspect-ratio="aspectRatio"
               :src="cropperOptions.img"
               :preview="cropperOptions.preview"
               :img-style="{ 'width': '400px', 'height': '300px' }"
@@ -34,7 +34,7 @@
           <el-col :span="15">
             <div class="scope-btn">
               <label class="btn" for="uploads">更换图片</label>
-              <input id="uploads" type="file" style="position:absolute; clip:rect(0 0 0 0);" accept="image/png, image/jpeg, image/gif, image/jpg" @change="setImage">
+              <input id="uploads" :value="fileVal" type="file" style="position:absolute; clip:rect(0 0 0 0);" accept="image/png, image/jpeg, image/gif, image/jpg" @change="setImage">
               <el-button @click="changeScale(0.1)">+</el-button>
               <el-button @click="changeScale(-0.1)">-</el-button>
               <el-button @click="changeRotate(-90)">↺</el-button>
@@ -80,7 +80,11 @@ export default {
       type: String,
       default: ''
     },
-    ratio: {
+    appendToBody: {
+      type: Boolean,
+      default: false
+    },
+    aspectRatio: {
       type: Number,
       default: 1.8
     },
@@ -92,13 +96,14 @@ export default {
   data() {
     return {
       tempUrl: '',
+      fileVal: '',
       dataObj: { type: 'image', srcType: '' },
       cropDialogVisible: false,
       cropperOptions: {
         fileName: '', // 裁剪图片的地址
         img: '', // 裁剪图片的地址
         info: true, // 裁剪框的大小信息
-        ratio: 1.8,
+        ratio: 1.3,
         outputSize: 0.8, // 裁剪生成图片的质量
         outputType: 'jpeg', // 裁剪生成图片的格式
         canScale: false, // 图片是否允许滚轮缩放
@@ -131,7 +136,7 @@ export default {
     },
     setImage(e) {
       const file = e.target.files[0]
-      if (!file.type.includes('image/')) {
+      if (!file.type || !file.type.includes('image/')) {
         this.$message.error('Please select an image file')
         return
       }
@@ -185,6 +190,7 @@ export default {
             _this.cropDialogVisible = false
             _this.cropperOptions.fileName = ''
             // _this.$refs.cropper.replace(imgAd)
+            _this.fileVal = ''
             _this.$message.success('上传成功！')
             this.emitInput(resp.rows[0].url)
           } else {
@@ -266,29 +272,6 @@ export default {
     }
   }
 
-  .btn {
-    outline: none;
-    display: inline-block;
-    line-height: 1;
-    white-space: nowrap;
-    cursor: pointer;
-    -webkit-appearance: none;
-    text-align: center;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    outline: 0;
-    margin: 0;
-    -webkit-transition: .1s;
-    transition: .1s;
-    font-weight: 500;
-    padding: 9px 15px;
-    font-size: 12px;
-    border-radius: 3px;
-    color: #fff;
-    background-color: #67c23a;
-    border-color: #67c23a;
-  }
-
   .pic__space{
     /*display: none;*/
   }
@@ -335,10 +318,34 @@ export default {
     font-size: 28px;
     color: #8c939d;
     width: 100%;
-    height: 178px;
+    height: 100%;
+    /*height: 178px;*/
     line-height: 178px;
     text-align: center;
   }
 
+}
+
+.btn {
+  outline: none;
+  display: inline-block;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-appearance: none;
+  text-align: center;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  outline: 0;
+  margin: 0;
+  -webkit-transition: .1s;
+  transition: .1s;
+  font-weight: 500;
+  padding: 9px 15px;
+  font-size: 12px;
+  border-radius: 3px;
+  color: #fff;
+  background-color: #67c23a;
+  border-color: #67c23a;
 }
 </style>

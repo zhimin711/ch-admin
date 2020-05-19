@@ -86,10 +86,24 @@
           <el-input v-model="record.description" type="textarea" />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="record.status" placeholder="请选择">
-            <el-option key="enabled" label="启用" value="1" />
-            <el-option key="disabled" label="禁用" value="0" />
-          </el-select>
+          <el-switch
+            v-model="recordStatus"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-text="开启"
+            inactive-text="禁用"
+          />
+        </el-form-item>
+        <el-form-item prop="image" style="margin-bottom: 30px;" label-width="100px" label="分类图:">
+          <el-row>
+            <el-col :span="24">
+              <UploadImageCrop v-model="record.image" title="分类图裁剪及上传" :data="{srcType: 'CLASSIFY_COVER'}" :append-to-body="true" :aspect-ratio="1.5" height="213px" />
+            </el-col>
+            <el-col :span="24" style="margin-left: 50px; margin-top: 5px;">
+              <el-button icon="el-icon-folder-checked" @click="imageSelectVisible = true">图片选择</el-button>
+              <ImageSelector v-model="record.image" title="分类图选择" :show.sync="imageSelectVisible" type="CLASSIFY_COVER" image-height="275px" :append-to-body="true" />
+            </el-col>
+          </el-row>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -102,13 +116,17 @@
 
 <script>
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+
+import UploadImageCrop from '@/components/Upload/SingleImageCrop'
+import ImageSelector from '@/components/ImageSelector'
+
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { fetchTree, fetchList, add, edit, del } from '@/api/wiki/category'
 
 export default {
   name: 'WikiCategory',
-  components: { Pagination },
+  components: { Pagination, UploadImageCrop, ImageSelector },
   data() {
     return {
       treeData1: [],
@@ -122,6 +140,7 @@ export default {
       },
       record: {},
       recordType: '',
+      recordStatus: true,
       recordParents: [],
       recordParentsProps: {
         checkStrictly: true
@@ -135,6 +154,7 @@ export default {
       dialogVisible: false,
       dialogType: false,
       dialogLoadingVisible: false,
+      imageSelectVisible: false,
       defaultProps: {
         children: 'children',
         label: 'name'
@@ -182,6 +202,7 @@ export default {
 
       this.dialogType = 'new'
       this.dialogVisible = true
+      this.recordStatus = true
       this.recordForm.codeDisabled = false
       this.recordForm.urlDisabled = false
       this.recordForm.descDisabled = true
@@ -192,6 +213,7 @@ export default {
       this.recordType = row.type
       this.recordParents = this.record.pid.split(',')
       if (this.record.pid === '0') this.record.pid = undefined
+      this.recordStatus = (this.record.status === '1')
       this.dialogType = 'edit'
       this.dialogVisible = true
       // this.recordForm.codeDisabled = true

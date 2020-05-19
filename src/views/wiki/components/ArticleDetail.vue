@@ -3,7 +3,7 @@
     <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container">
 
       <sticky :z-index="10" :class-name="'sub-navbar '+stickyStatus">
-        <CategoryDropdown v-model="categoryValues" />
+        <CategoryDropdown v-model="categoryValues" type="35" />
         <CommentDropdown v-model="postForm.commentDisabled" />
         <SourceUrlDropdown v-model="postForm.href" />
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm(1)">
@@ -78,11 +78,11 @@
         <el-form-item prop="image" style="margin-bottom: 30px;" label-width="100px" label="概要图:">
           <el-row>
             <el-col :span="24">
-              <Upload v-model="postForm.image" title="文章概要图裁剪及上传" :data="{srcType: 'article-cover'}" />
+              <Upload v-model="postForm.image" title="文章概要图裁剪及上传" :data="{srcType: 'ARTICLE_COVER'}" />
             </el-col>
             <el-col :span="24" style="margin-left: 50px; margin-top: 5px;">
               <el-button icon="el-icon-folder-checked" @click="imageSelectVisible = true">图片选择</el-button>
-              <ImageSelector v-model="postForm.image" title="文章概要图选择" :show.sync="imageSelectVisible" type="article-cover" image-height="247px" />
+              <ImageSelector v-model="postForm.image" title="文章概要图选择" :show.sync="imageSelectVisible" type="ARTICLE_COVER" image-height="247px" />
             </el-col>
           </el-row>
         </el-form-item>

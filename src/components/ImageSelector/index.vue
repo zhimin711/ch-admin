@@ -1,6 +1,6 @@
 <template>
   <div class="selector-container">
-    <el-dialog :title="title" :visible.sync="visible" width="512px" center>
+    <el-dialog :title="title" :visible.sync="visible" width="512px" center :append-to-body="appendToBody">
       <el-input v-model="imageQuery.params.name" placeholder="请输入内容" class="input-with-select">
         <el-button slot="append" icon="el-icon-search" @click="searchImages" />
       </el-input>
@@ -42,6 +42,10 @@ export default {
     imageHeight: {
       type: String,
       default: '180px'
+    },
+    appendToBody: {
+      type: Boolean,
+      default: false
     },
     type: {
       type: String,

@@ -65,10 +65,18 @@
           />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="role.status" placeholder="请选择">
+          <!--<el-select v-model="role.status" placeholder="请选择">
             <el-option key="enabled" label="启用" value="1" />
             <el-option key="disabled" label="禁用" value="0" />
-          </el-select>
+          </el-select>-->
+
+          <el-switch
+            v-model="recordStatus"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-text="开启"
+            inactive-text="禁用"
+          />
         </el-form-item>
       </el-form>
       <div style="text-align:center;">
@@ -138,6 +146,7 @@ export default {
         params: {}
       },
       dialogVisible2: false,
+      recordStatus: true,
       dataForm: {
         codeDisabled: false
       }
@@ -221,6 +230,7 @@ export default {
       this.dialogType = 'new'
       this.dialogVisible = true
       this.dataForm.codeDisabled = false
+      this.recordStatus = true
     },
     handleEdit(row, $index) {
       this.dialogType = 'edit'
@@ -228,6 +238,7 @@ export default {
       this.dataForm.codeDisabled = true
       this.checkStrictly = true
       this.role = deepClone(row)
+      this.recordStatus = (this.role.status === '1')
       this.$nextTick(() => {
         // const routes = this.generateRoutes(this.role.routes)
         // this.$refs.tree.setCheckedNodes(this.generateArr(routes))
