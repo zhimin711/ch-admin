@@ -1,6 +1,7 @@
 import request from '@/utils/request2'
 const baseUrl = '/wiki/admin/images'
-export function list(query) {
+
+export function listImage(query) {
   return request({
     url: `${baseUrl}/${query.page}/${query.limit}`,
     method: 'get',
@@ -16,15 +17,15 @@ export function get(id) {
   })
 }
 
-export function add(data) {
+export function batchEditImage(data) {
   return request({
-    url: `${baseUrl}`,
+    url: `${baseUrl}/batchEdit`,
     method: 'post',
     data
   })
 }
 
-export function edit(id, data) {
+export function editImage(id, data) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'put',

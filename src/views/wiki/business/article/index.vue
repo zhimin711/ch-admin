@@ -11,6 +11,14 @@
             <el-option key="2" label="禁用" value="0" />
           </el-select>
         </el-form-item>
+        <el-form-item label="审核状态">
+          <el-select v-model="listQuery.params.approveStatus" clearable placeholder="审核状态">
+            <el-option key="1" label="审核通过" value="1" />
+            <el-option key="4" label="审核驳回" value="4" />
+            <el-option key="0" label="待审核" value="0" />
+            <el-option key="2" label="待重新审核" value="2" />
+          </el-select>
+        </el-form-item>
       </el-form>
       <div class="handle-box">
         <el-row>

@@ -1,5 +1,5 @@
 <template>
-  <el-cascader v-model="category" :props="{ expandTrigger: 'hover' }" clearable placeholder="文章分类" :options="categories" />
+  <el-cascader v-model="category" :props="{ expandTrigger: 'hover' }" clearable :placeholder="placeholder" :options="categories" />
 </template>
 
 <script>
@@ -9,6 +9,10 @@ export default {
     type: {
       type: String,
       default: '0'
+    },
+    placeholder: {
+      type: String,
+      default: '文章分类'
     },
     value: {
       // required: true,

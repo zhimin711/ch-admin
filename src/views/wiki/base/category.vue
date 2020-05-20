@@ -39,13 +39,13 @@
           </template>
         </el-table-column>
         <el-table-column prop="code" label="代码" />
-        <el-table-column prop="keywords" label="标签" />
         <el-table-column prop="sort" label="排序" width="80" />
-        <!--<el-table-column label="地址">
-            <template slot-scope="scope">
-                <span>{{ scope.row.url }}</span>
-            </template>
-        </el-table-column>-->
+        <el-table-column prop="status" label="状态" width="80">
+          <template slot-scope="scope">
+            <el-tag v-if="scope.row.status === '0'" type="warning">禁用</el-tag>
+            <el-tag v-else-if="scope.row.status === '1'" type="success">启用</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="200">
           <template slot-scope="scope">
             <el-button v-if="checkPermission2(['WIKI_CATEGORY_EDIT'])" type="text" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑
@@ -243,6 +243,8 @@ export default {
       if (this.recordParents.length > 0) {
         this.record.pid = this.recordParents.join(',')
       } else this.record.pid = null
+      this.record.status = '0'
+      if (this.recordStatus) this.record.status = '1'
       let resp = null
       let opName = '添加'
       if (this.dialogType === 'new') {
