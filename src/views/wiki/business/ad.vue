@@ -108,12 +108,9 @@
         <el-form-item label="广告图">
           <el-row>
             <el-col :span="24">
-              <div class="ad-img-uploader" @click="openUploadImg">
-                <img v-if="record.image" :src="record.image" width="390" height="160">
-                <i v-else class="el-icon-plus ad-uploader-icon" />
-              </div>
+              <UploadImageCrop v-model="record.image" title="广告图裁剪及上传" :data="{srcType: 'AD', action: 'scale'}" :aspect-ratio="2.4" width="390px" height="162px" />
             </el-col>
-            <el-col :span="24">
+            <el-col :span="24" style="margin-left: 50px; margin-top: 5px;">
               <el-button icon="el-icon-folder-checked" @click="imageSelectVisible = true">图片选择</el-button>
               <ImageSelector v-model="record.image" title="广告图选择" :show.sync="imageSelectVisible" type="ad" />
             </el-col>
@@ -165,48 +162,6 @@
         <el-button type="primary" @click="deleteRow">确 定</el-button>
       </span>
     </el-dialog>
-    <!-- 引用el的dialog弹框组件，默认data中设置croppaVisible=true -->
-    <el-dialog title="广告图片裁剪" :visible.sync="cropDialogVisible" :width="'60%'">
-      <el-row>
-        <el-col :span="15">
-          <div>
-            <VueCropper
-              ref="cropper"
-              alt="请选择图片！"
-              :src="cropperOptions.img"
-              :aspect-ratio="cropperOptions.ratio"
-              :view-mode="2"
-              :preview="cropperOptions.preview"
-              :img-style="{ 'width': '400px', 'height': '300px' }"
-            />
-          </div>
-        </el-col>
-        <el-col :span="8" :offset="1">
-          <div class="img-preview ad-avatar" />
-        </el-col>
-      </el-row>
-      <div slot="footer" class="footer-btn dialog-footer">
-        <el-row class="align-center">
-          <el-col :span="15">
-            <div class="scope-btn">
-              <label class="btn" for="uploads">更换图片</label>
-              <input id="uploads" type="file" style="position:absolute; clip:rect(0 0 0 0);" accept="image/png, image/jpeg, image/gif, image/jpg" @change="setImage">
-              <el-button @click="changeScale(0.1)">+</el-button>
-              <el-button @click="changeScale(-0.1)">-</el-button>
-              <el-button @click="changeRotate(-90)">↺</el-button>
-              <el-button @click="changeRotate(90)">↻</el-button>
-            </div>
-          </el-col>
-          <el-col :span="8">
-            <!--<el-button @click="down('blob')">
-                <i class="el-icon-upload"></i> 完成
-            </el-button>-->
-            <el-button type="primary" @click="uploadImg">完成<i class="el-icon-upload el-icon--right" />
-            </el-button>
-          </el-col>
-        </el-row>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
@@ -214,22 +169,20 @@
 
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
+import UploadImageCrop from '@/components/Upload/SingleImageCrop'
 import ImageSelector from '@/components/ImageSelector'
 
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
-import { getAdList, addAd, editAd/*, del*/, uploadAd } from '@/api/wiki/ad'
+import { getAdList, addAd, editAd/*, del*/ } from '@/api/wiki/ad'
 
-import VueCropper from 'vue-cropperjs'
 import 'cropperjs/dist/cropper.css'
-import { isEmpty } from '@/utils/validate'
 
 const defaultRecord = { sort: 1, status: '1', srcType: 0 }
-const imgAd = require('@/assets/0_images/0_ad2.jpg') // 裁剪图片的地址
 
 export default {
   name: 'AdManager',
-  components: { Pagination, VueCropper, ImageSelector },
+  components: { Pagination, UploadImageCrop, ImageSelector },
   data() {
     return {
       record: Object.assign({}, defaultRecord),
@@ -258,27 +211,6 @@ export default {
       imageSelectVisible: false,
       // 防止重复提交
       cropDialogVisible: false,
-      cropperOptions: {
-        fileName: '', // 裁剪图片的地址
-        img: '', // 裁剪图片的地址
-        info: true, // 裁剪框的大小信息
-        ratio: 2.4,
-        outputSize: 0.8, // 裁剪生成图片的质量
-        outputType: 'jpeg', // 裁剪生成图片的格式
-        canScale: false, // 图片是否允许滚轮缩放
-        autoCrop: true, // 是否默认生成截图框
-        // autoCropWidth: 300, // 默认生成截图框宽度
-        // autoCropHeight: 200, // 默认生成截图框高度
-        fixedBox: true, // 固定截图框大小 不允许改变
-        fixed: true, // 是否开启截图框宽高固定比例
-        fixedNumber: [7, 5], // 截图框的宽高比例
-        full: true, // 是否输出原图比例的截图
-        canMoveBox: false, // 截图框能否拖动
-        original: false, // 上传图片按照原始比例渲染
-        centerBox: false, // 截图框是否被限制在图片里面
-        infoTrue: true, // true 为展示真实输出图片宽高 false 展示看到的截图框宽高
-        preview: '.ad-avatar'
-      },
       rules: {
         url: [
           {
@@ -295,75 +227,13 @@ export default {
   },
   methods: {
     checkPermission2,
-    setImage(e) {
-      const file = e.target.files[0]
-      if (!file.type.includes('image/')) {
-        this.$message.error('Please select an image file')
-        return
-      }
-      this.cropperOptions.fileName = file.name
-      if (typeof FileReader === 'function') {
-        const reader = new FileReader()
-        reader.onload = (event) => {
-          // this.imgSrc = event.target.result
-          // rebuild cropperjs with the updated source
-          this.$refs.cropper.replace(event.target.result)
-        }
-        reader.readAsDataURL(file)
-      } else {
-        this.$message.error('Sorry, FileReader API not supported')
-      }
-    },
-    changeScale(ratio) {
-      this.$refs.cropper.relativeZoom(ratio)
-    },
-    changeRotate(degree) {
-      this.$refs.cropper.rotate(degree)
-    },
-    openUploadImg() {
-      this.cropDialogVisible = true
-      let isChange = true
-      if (!this.record.image) {
-        this.cropperOptions.img = imgAd
-      } else {
-        isChange = this.cropperOptions.img !== this.record.image
-        this.cropperOptions.img = this.record.image
-      }
-
-      if (isChange && this.$refs.cropper) {
-        this.$refs.cropper.replace(this.cropperOptions.img)
-      }
-    },
-    uploadImg() {
-      if (isEmpty(this.cropperOptions.fileName)) {
-        this.$message.warning('请选择图片...')
-        return
-      }
-      const _this = this
-      // 输出
-      const _data = this.$refs.cropper.getData((data) => {
-      })
-      // Upload cropped image to server if the browser supports `HTMLCanvasElement.toBlob`
-      this.$refs.cropper.getCroppedCanvas().toBlob((blob) => {
-        _data.fileName = this.cropperOptions.fileName
-        uploadAd(_data, blob).then((resp) => {
-          if (resp.success) {
-            _this.cropDialogVisible = false
-            _this.cropperOptions.fileName = ''
-            // _this.$refs.cropper.replace(imgAd)
-            _this.$message.success('上传成功！')
-            _this.record.image = resp.rows[0].url
-          } else {
-            _this.$message.error('上传失败！')
-          }
-        })
-      })
-    },
     getList() {
       this.loading = true
-      getAdList(this.listQuery).then(response => {
-        this.list = response.rows
-        this.listQuery.total = response.total
+      getAdList(this.listQuery).then(resp => {
+        if (resp.success) {
+          this.list = resp.rows
+          this.listQuery.total = resp.total
+        }
       }).finally(() => { this.loading = false })
     },
     doSearch() {
@@ -459,177 +329,5 @@ export default {
 
   .red {
     color: #ff0000;
-  }
-
-  .btn {
-    outline: none;
-    display: inline-block;
-    line-height: 1;
-    white-space: nowrap;
-    cursor: pointer;
-    -webkit-appearance: none;
-    text-align: center;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-    outline: 0;
-    margin: 0;
-    -webkit-transition: .1s;
-    transition: .1s;
-    font-weight: 500;
-    padding: 9px 15px;
-    font-size: 12px;
-    border-radius: 3px;
-    color: #fff;
-    background-color: #67c23a;
-    border-color: #67c23a;
-  }
-
-  .pic__space{
-    /*display: none;*/
-  }
-  .ad-avatar {
-    /*margin-left: 10px;*/
-    /*border: 1px solid #eff2f6;*/
-    width: 250px;
-    height: 150px;
-  }
-
-  .img-preview {
-    float: left;
-    margin-top: 15px;
-    margin-right: 15px;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    background-color: #fff;
-    overflow: hidden;
-  }
-
-  .avatar {
-    width: 100%;
-    height: 100%;
-    display: block;
-    border-radius: 6px;
-    /*background-image: url("/static/img/img.jpg");*/
-    border: 0;
-  }
-
-  .ad-img-uploader {
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    width: 381px;
-    max-height: 160px;
-  }
-
-  .ad-img-uploader:hover {
-    border-color: #409EFF;
-  }
-
-  .ad-img-uploader .ad-img {
-    width: 24rem;
-    height: 10rem;
-  }
-
-  .ad-uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    width: 100%;
-    height: 178px;
-    line-height: 178px;
-    text-align: center;
-  }
-
-  .avatar {
-    width: 178px;
-    height: 178px;
-    display: block;
-  }
-
-  .demo-image__lazy {
-    height: 400px;
-    overflow-y: auto;
-  }
-
-  .demo-image__lazy .el-image {
-    display: block;
-    height: 100%;
-    margin-bottom: 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04)
-  }
-
-  .el-image-list__item {
-    transition: all .5s cubic-bezier(.55, 0, .1, 1);
-    font-size: 14px;
-    color: #606266;
-    line-height: 1.8;
-    margin-top: 5px;
-    position: relative;
-    box-sizing: border-box;
-    border-radius: 4px;
-    width: 100%;
-  }
-
-  .el-image-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .el-image-list .el-image-list__item {
-    overflow: hidden;
-    z-index: 0;
-    background-color: #fff;
-    border: 1px solid #c0ccda;
-    border-radius: 6px;
-    box-sizing: border-box;
-    margin-top: 10px;
-    padding: 15px 15px 15px 15px;
-    height: 213px;
-  }
-
-  .el-image-list__item:first-child {
-    margin-top: 10px;
-  }
-
-  .el-image-list__item-status-label {
-    position: absolute;
-    right: 5px;
-    top: 0;
-    line-height: inherit;
-    display: none;
-  }
-
-  .el-image-list .el-image-list__item-status-label {
-    position: absolute;
-    right: -17px;
-    top: -7px;
-    width: 46px;
-    height: 26px;
-    background: #13ce66;
-    text-align: center;
-    transform: rotate(45deg);
-    box-shadow: 0 1px 1px #ccc;
-  }
-
-  .el-image-list__item.is-success .el-image-list__item-status-label {
-    display: block;
-  }
-
-  .el-image-list .el-image-list__item .el-icon-check, .el-image-list .el-image-list__item .el-icon-circle-check {
-    color: #fff;
-  }
-
-  .el-image-list .el-image-list__item-status-label i {
-    font-size: 12px;
-    margin-top: 12px;
-    transform: rotate(-45deg);
-  }
-
-  .el-image-list__item .el-icon-upload-success {
-    color: #67c23a;
   }
 </style>

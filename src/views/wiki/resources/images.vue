@@ -170,8 +170,10 @@ export default {
     getList() {
       this.listLoading = true
       listImage(this.listQuery).then(response => {
-        this.listQuery.list = response.rows
-        this.listQuery.total = response.total
+        if (response.success) {
+          this.listQuery.list = response.rows
+          this.listQuery.total = response.total
+        }
       }).finally(() => { this.listLoading = false })
     },
     imageUploadSuccess(rows) {

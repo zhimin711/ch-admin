@@ -78,7 +78,7 @@
         <el-form-item prop="image" style="margin-bottom: 30px;" label-width="100px" label="概要图:">
           <el-row>
             <el-col :span="24">
-              <Upload v-model="postForm.image" title="文章概要图裁剪及上传" :data="{srcType: 'ARTICLE_COVER'}" />
+              <Upload v-model="postForm.image" title="文章概要图裁剪及上传" :data="{srcType: 'ARTICLE_COVER', action: 'scale'}" />
             </el-col>
             <el-col :span="24" style="margin-left: 50px; margin-top: 5px;">
               <el-button icon="el-icon-folder-checked" @click="imageSelectVisible = true">图片选择</el-button>

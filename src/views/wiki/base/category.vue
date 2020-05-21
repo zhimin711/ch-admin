@@ -97,7 +97,7 @@
         <el-form-item prop="image" style="margin-bottom: 30px;" label-width="100px" label="分类图:">
           <el-row>
             <el-col :span="24">
-              <UploadImageCrop v-model="record.image" title="分类图裁剪及上传" :data="{srcType: 'CLASSIFY_COVER'}" :append-to-body="true" :aspect-ratio="1.5" height="213px" />
+              <UploadImageCrop v-model="record.image" title="分类图裁剪及上传" :data="{srcType: 'CLASSIFY_COVER', action: 'scale'}" :append-to-body="true" :aspect-ratio="1.6" height="200px" />
             </el-col>
             <el-col :span="24" style="margin-left: 50px; margin-top: 5px;">
               <el-button icon="el-icon-folder-checked" @click="imageSelectVisible = true">图片选择</el-button>
