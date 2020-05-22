@@ -100,7 +100,7 @@ const actions = {
   },
 
   // user logout
-  logout({ commit, state }) {
+  logout({ commit, state, dispatch }) {
     return new Promise((resolve, reject) => {
       logout(state.refreshToken).then(() => {
         commit('SET_TOKEN', '')
@@ -111,6 +111,7 @@ const actions = {
         removeToken()
         removeRefreshToken()
         removeExpired()
+        dispatch('tagsView/delAllViews')
         resetRouter()
         resolve()
       }).catch(error => {

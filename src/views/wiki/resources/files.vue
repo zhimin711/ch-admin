@@ -15,15 +15,25 @@
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
         重置
       </el-button>
+      <el-button v-if="checkPermission2(['WIKI_RESOURCES_FILE_BATCH_APPROVE'])" class="filter-item" type="primary" icon="el-icon-edit-outline" @click="handleEditBatch">
+        审核（批量）
+      </el-button>
     </div>
-    <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column label="分类">
+    <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" align="center" />
+      <el-table-column label="分类" width="150">
         <template slot-scope="scope">
           <span>{{ scope.row.categoryName }}</span>
         </template>
-      </el-table-column><el-table-column label="名称">
+      </el-table-column>
+      <el-table-column label="名称">
         <template slot-scope="scope">
           <span>{{ scope.row.title }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="大小" width="120">
+        <template slot-scope="scope">
+          <span>{{ scope.row.fileId }}</span>
         </template>
       </el-table-column>
       <el-table-column label="地址">
@@ -34,6 +44,20 @@
       <el-table-column width="160px" align="center" label="上传时间">
         <template slot-scope="scope">
           <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="status" label="状态" width="100" align="center">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.status === '1' && (scope.row.approveStatus === '0' || scope.row.approveStatus === null || scope.row.approveStatus === '2')" type="warning">
+            待审核
+          </el-tag>
+          <el-tag v-else-if="scope.row.status === '1' && scope.row.approveStatus === '1'" type="success">审核通过
+          </el-tag>
+          <el-tag v-else-if="scope.row.status === '1' && scope.row.approveStatus === '4'" type="danger">审核驳回
+          </el-tag>
+          <el-tag v-else>
+            草稿
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="120">
@@ -49,7 +73,7 @@
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <!-- 编辑弹出框 -->
-    <el-dialog title="编辑图片信息" :visible.sync="dialogVisible" width="50%">
+    <el-dialog title="编辑资源信息" :visible.sync="dialogVisible" width="50%">
       <el-form ref="baseForm" :model="record" label-width="100px">
         <el-form-item label="分类">
           <CategoryDropdown v-model="categoryValues" type="4" placeholder="资源分类" />
@@ -74,13 +98,30 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="图片路径" prop="url">
+        <el-form-item label="资源路径" prop="url">
           <el-input v-model="record.url" disabled />
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button :loading="loading.handleSubmit" type="primary" @click="handleSubmit">保存</el-button>
         <el-button :disabled="loading.handleSubmit" type="danger" @click="dialogVisible=false">取消</el-button>
+      </span>
+    </el-dialog>
+
+    <el-dialog title="资源审核" :visible.sync="approve.visible" :width="'50%'" center>
+      <el-table :data="approve.data">
+        <el-table-column property="categoryName" label="分类" width="150" />
+        <el-table-column property="title" label="名称" />
+        <el-table-column width="160px" align="center" label="上传时间">
+          <template slot-scope="scope">
+            <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="success" @click="submitApprove(1)">通 过</el-button>
+        <el-button type="danger" @click="submitApprove(2)">驳 回</el-button>
+        <el-button @click="approve.visible = false">取 消</el-button>
       </span>
     </el-dialog>
   </div>
@@ -92,7 +133,7 @@ import Pagination from '@/components/Pagination' // Secondary package based on e
 import { CategoryDropdown } from '../components/Dropdown'
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { listResourceInfo, editResourceInfo } from '@/api/wiki/files'
+import { listResourceInfo, editResourceInfo, batchApproveResource } from '@/api/wiki/files'
 
 export default {
   name: 'WikiResourcesFilesManager',
@@ -109,6 +150,7 @@ export default {
         categoryValues: [],
         params: {}
       },
+      multipleSelection: [],
       loading: { handleSubmit: false },
       record: {},
       uploadExt: ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'chm', 'zip', 'rar', 'gz', 'tar'],
@@ -116,7 +158,8 @@ export default {
       dialogVisible: false,
       categoryValues: [],
       options: { category: [] },
-      values: { tags: [] }
+      values: { tags: [] },
+      approve: { visible: false, data: [] }
     }
   },
   computed: {
@@ -155,6 +198,10 @@ export default {
       if (this.record.categoryId) {
         this.categoryValues = this.record.categoryId.split(',')
       }
+      this.values.tags = []
+      if (this.record.keywords) {
+        this.values.tags = this.record.keywords.split(',')
+      }
 
       this.dialogVisible = true
     },
@@ -181,6 +228,41 @@ export default {
         this.dialogVisible = false
         _this.getList()
       }
+    },
+    handleSelectionChange(val) {
+      this.multipleSelection = val
+    },
+    handleEditBatch() {
+      if (this.multipleSelection.length === 0) {
+        this.$message.warning('请选择待审核资源！')
+        return
+      }
+      this.approve.data = []
+      for (const i in this.multipleSelection) {
+        const row = this.multipleSelection[i]
+        if (row.status !== '1' || (row.approveStatus !== null && row.approveStatus !== '0' && row.approveStatus !== '2')) {
+          this.$message.warning('选择资源包含非待审核状态！')
+          return
+        }
+        this.approve.data.push({ id: row.id, categoryName: row.categoryName, title: row.title, createAt: row.createAt })
+      }
+      this.approve.visible = true
+    },
+    async submitApprove(op) {
+      this.record.ids = this.approve.data.map((row) => { return row.id })
+      this.record.status = op
+      this.loading.handleSubmit = true
+      await batchApproveResource(this.record).then(resp => {
+        if (resp.success) {
+          this.$message.success('审核成功！')
+          this.getList()
+        } else {
+          this.$message.error('审核失败！数据变动，请刷新重试...')
+        }
+        this.approve.visible = false
+      }).finally(() => {
+        this.loading.handleSubmit = false
+      })
     }
   }
 }

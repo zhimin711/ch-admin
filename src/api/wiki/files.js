@@ -17,9 +17,9 @@ export function getResourceInfo(id) {
   })
 }
 
-export function addResourceInfo(data) {
+export function batchApproveResource(data) {
   return request({
-    url: `${baseUrl}`,
+    url: `${baseUrl}/batchApprove`,
     method: 'post',
     data
   })

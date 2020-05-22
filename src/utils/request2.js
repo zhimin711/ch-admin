@@ -108,7 +108,7 @@ function toLogin() {
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    store.dispatch('user/resetToken').then(() => {
+    store.dispatch('user/logout').then(() => {
       router.push('/login')
     })
   })

@@ -64,7 +64,7 @@ router.beforeEach(async(to, from, next) => {
             MessageBox.alert('登录已失效,请重新登录', '登录过期', {
               confirmButtonText: '重新登录',
               callback: () => {
-                store.dispatch('user/resetToken').then(() => {
+                store.dispatch('user/logout').then(() => {
                   next(`/login?redirect=${to.path}`)
                 })
               }
