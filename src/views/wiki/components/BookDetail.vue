@@ -1,9 +1,10 @@
 <template>
   <div class="createPost-container">
-    <el-form ref="postForm" v-loading="loading" :model="postForm" :rules="rules" class="form-container">
+    <el-form ref="record" v-loading="loading" :model="record" :rules="rules" class="form-container">
 
-      <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
-        <!--<CommentDropdown v-model="postForm.comment_disabled" />-->
+      <sticky :z-index="10" :class-name="'sub-navbar '+record.statusClass">
+        <!--<CommentDropdown v-model="record.comment_disabled" />-->
+        <CategoryDropdown v-model="categoryValues" type="37" placeholder="书箱分类" />
         <el-button v-if="checkPermission2(['WIKI_BOOKS_CHAPTER'])" style="margin-left: 10px;" type="success" @click="handleAdd">
           添加目录
         </el-button>
@@ -13,7 +14,7 @@
         <el-button v-if="checkPermission2(['WIKI_BOOKS_EDIT'])" style="margin-left: 10px;" type="warning" @click="submitForm">
           保存信息
         </el-button>
-        <el-button v-if="checkPermission2(['WIKI_BOOKS_CATALOG_FIX']) && postForm.status === '2'" type="danger" @click="fixForm">
+        <el-button v-if="checkPermission2(['WIKI_BOOKS_CATALOG_FIX']) && record.status === '2'" type="danger" @click="fixForm">
           修复目录链接
         </el-button>
       </sticky>
@@ -24,7 +25,7 @@
 
           <el-col :span="24">
             <el-form-item style="margin-bottom: 40px;" prop="name">
-              <MDinput v-model="postForm.name" :maxlength="100" name="name" required>
+              <MDinput v-model="record.name" :maxlength="100" name="name" required>
                 名称
               </MDinput>
             </el-form-item>
@@ -33,20 +34,20 @@
               <el-row>
                 <el-col :span="8">
                   <el-form-item label-width="80px" label="作者:" class="postInfo-container-item">
-                    <el-input v-model="postForm.author" />
+                    <el-input v-model="record.author" />
                   </el-form-item>
                 </el-col>
 
                 <el-col :span="10">
                   <el-form-item label-width="120px" label="最后更新时间:" class="postInfo-container-item">
-                    <el-date-picker v-model="postForm.latestChapterAt" type="datetime" value-format="timestamp" format="yyyy-MM-dd HH:mm:ss" placeholder="请选择时间" />
+                    <el-date-picker v-model="record.latestChapterAt" type="datetime" value-format="timestamp" format="yyyy-MM-dd HH:mm:ss" placeholder="请选择时间" />
                   </el-form-item>
                 </el-col>
 
                 <el-col :span="6">
                   <el-form-item label-width="90px" label="Importance:" class="postInfo-container-item">
                     <el-rate
-                      v-model="postForm.importance"
+                      v-model="record.importance"
                       :max="3"
                       :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
                       :low-threshold="1"
@@ -61,12 +62,12 @@
         </el-row>
 
         <el-form-item style="margin-bottom: 40px;" label-width="80px" label="内容简介:">
-          <el-input v-model="postForm.summary" :rows="1" type="textarea" class="article-textarea" autosize placeholder="Please enter the content" />
+          <el-input v-model="record.summary" :rows="1" type="textarea" class="article-textarea" autosize placeholder="Please enter the content" />
           <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
         </el-form-item>
         <div class="catalog-container">
-          <el-row v-if="postForm.description === '1'">
-            <el-col v-for="(item,index) in postForm.chapterList" :key="item+index" :label="item" :value="item" :span="6">
+          <el-row v-if="record.description === '1'">
+            <el-col v-for="(item,index) in record.chapterList" :key="item+index" :label="item" :value="item" :span="6">
               <el-popover
                 placement="right-start"
                 :title="tripName(item.number, item.name, 0)"
@@ -87,8 +88,8 @@
               </el-popover>
             </el-col>
           </el-row>
-          <el-row v-if="postForm.description === '2'">
-            <el-row v-for="(item,index) in postForm.chapterList" :key="item+index" :label="item" :value="item">
+          <el-row v-if="record.description === '2'">
+            <el-row v-for="(item,index) in record.chapterList" :key="item+index" :label="item" :value="item">
               <el-row>
                 <el-col :span="24" align="center">
                   {{ tripName(item.number, item.name, 15) }}
@@ -200,6 +201,7 @@
 <script>
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
+import { CategoryDropdown } from './Dropdown'
 import { validURL } from '@/utils/validate'
 import Warning from './Warning'
 
@@ -211,7 +213,7 @@ import { getBook, editBook, fixBook, getBookCatalogs } from '@/api/wiki/books'
 import { editBookChapter, delBookChapter, getBookChapter } from '@/api/wiki/books/chapter'
 
 const defaultForm = {
-  status: 'draft',
+  statusClass: 'draft',
   name: '', // 名称
   title: '', // 标题
   type: '', // 类型1.小说
@@ -229,7 +231,7 @@ const defaultForm = {
   importance: 0
 }
 const defaultCatalog = {
-  status: 'draft',
+  statusClass: 'draft',
   title: '', // 文章题目
   content: '', // 文章内容
   image_uri: '', // 文章图片
@@ -241,7 +243,7 @@ const defaultCatalog = {
 
 export default {
   name: 'BookDetail',
-  components: { MDinput, Sticky, Warning },
+  components: { MDinput, Sticky, Warning, CategoryDropdown },
   props: {
     isEdit: {
       type: Boolean,
@@ -276,12 +278,13 @@ export default {
       }
     }
     return {
-      postForm: Object.assign({}, defaultForm),
+      record: Object.assign({}, defaultForm),
       loading: false,
       dialogVisible: false,
       dialogType: 'add',
       recordCatalog: Object.assign({}, defaultCatalog),
       catalogs: [],
+      categoryValues: [],
       pre: {},
       next: {},
       rules: {
@@ -298,7 +301,7 @@ export default {
   },
   computed: {
     contentShortLength() {
-      return this.postForm.summary ? this.postForm.summary.length : 0
+      return this.record.summary ? this.record.summary.length : 0
     },
     displayTime: {
       // set and get is useful when the data
@@ -306,10 +309,10 @@ export default {
       // back end return => "2013-06-25 06:59:25"
       // front end need timestamp => 1372114765000
       get() {
-        return (+new Date(this.postForm.display_time))
+        return (+new Date(this.record.display_time))
       },
       set(val) {
-        this.postForm.display_time = new Date(val)
+        this.record.display_time = new Date(val)
       }
     }
   },
@@ -318,7 +321,7 @@ export default {
       const id = this.$route.params && this.$route.params.id
       this.fetchData(id)
     } else {
-      this.postForm = Object.assign({}, defaultForm)
+      this.record = Object.assign({}, defaultForm)
     }
 
     // Why need to make a copy of this.$route here?
@@ -332,19 +335,22 @@ export default {
       this.loading = true
       getBook(id).then(response => {
         this.loading = false
-        this.postForm = response.rows[0]
+        this.record = response.rows[0]
         this.getRemoteCatalogList()
         // just for test
-        // this.postForm.title += `   Book Id:${this.postForm.id}`
-        // this.postForm.summary += `   Book Id:${this.postForm.id}`
+        // this.record.title += `   Book Id:${this.record.id}`
+        // this.record.summary += `   Book Id:${this.record.id}`
 
         // set tagsview title
         this.setTagsViewTitle()
 
         // set page title
         this.setPageTitle()
-        if (this.postForm.status === '2' && checkPermission2(['WIKI_BOOKS_CATALOG_FIX'])) {
+        if (this.record.status === '2' && checkPermission2(['WIKI_BOOKS_CATALOG_FIX'])) {
           this.fixForm()
+        }
+        if (this.record.classify) {
+          this.categoryValues = this.record.classify.split(',')
         }
       }).catch(err => {
         this.loading = false
@@ -353,25 +359,27 @@ export default {
     },
     setTagsViewTitle() {
       const title = '目录'
-      const route = Object.assign({}, this.tempRoute, { title: `《${this.postForm.name}》${title}` })
+      const route = Object.assign({}, this.tempRoute, { title: `《${this.record.name}》${title}` })
       this.$store.dispatch('tagsView/updateVisitedView', route)
     },
     setPageTitle() {
       const title = '编辑 '
-      document.title = `${title} - 《${this.postForm.name}》`
+      document.title = `${title} - 《${this.record.name}》`
     },
     submitForm() {
-      console.log(this.postForm)
-      this.$refs.postForm.validate(valid => {
+      this.$refs.record.validate(valid => {
         if (valid) {
           this.loading = true
+          if (this.categoryValues.length > 0) {
+            this.record.classify = this.categoryValues.join(',')
+          }
 
-          editBook(this.postForm.id, this.postForm).then(resp => {
+          editBook(this.record.id, this.record).then(resp => {
             this.loading = false
             if (resp.success) {
               this.$notify({
                 title: '成功',
-                message: '修复书籍信息成功',
+                message: '修改 书籍信息成功',
                 type: 'success',
                 duration: 2000
               })
@@ -391,10 +399,10 @@ export default {
       })
         .then(() => {
           this.loading = true
-          fixBook(this.postForm.id).then(resp => {
+          fixBook(this.record.id).then(resp => {
             this.loading = false
             if (resp.success) {
-              this.fetchData(this.postForm.id)
+              this.fetchData(this.record.id)
               this.$alert(`修复成功`, `提示`, {
                 confirmButtonText: '确定',
                 callback: action => {
@@ -406,7 +414,7 @@ export default {
         })
     },
     draftForm() {
-      if (this.postForm.content.length === 0 || this.postForm.title.length === 0) {
+      if (this.record.content.length === 0 || this.record.title.length === 0) {
         this.$message({
           message: '请填写必要的标题和内容',
           type: 'warning'
@@ -419,11 +427,12 @@ export default {
         showClose: true,
         duration: 1000
       })
-      this.postForm.status = 'draft'
+      this.record.statusClass = 'draft'
+      this.record.status = '0'
     },
     getRemoteCatalogList(query) {
       const params = { leaf: false }
-      getBookCatalogs(this.postForm.id, params).then(response => {
+      getBookCatalogs(this.record.id, params).then(response => {
         // if (!response.data.items) return
         // this.catalogs = response.data.items.map(v => v.name)
         this.catalogs = response.rows
@@ -439,8 +448,8 @@ export default {
       this.dialogType = 'add'
       this.recordCatalog = Object.assign({}, defaultCatalog)
       this.next = { id: null }
-      if (this.postForm.chapterList.length > 0) {
-        this.pre = { id: this.postForm.chapterList[this.postForm.chapterList.length - 1].id }
+      if (this.record.chapterList.length > 0) {
+        this.pre = { id: this.record.chapterList[this.record.chapterList.length - 1].id }
       }
     },
     handleEditCatalog(row) {
@@ -466,7 +475,7 @@ export default {
         delBookChapter(row.id).then(resp => {
           this.loading = false
           if (resp.success) {
-            this.fetchData(this.postForm.id)
+            this.fetchData(this.record.id)
             this.$alert(`删除成功`, `提示`, {
               confirmButtonText: '确定',
               callback: action => {
@@ -532,7 +541,7 @@ export default {
           type: 'success',
           message: `${opName} ${this.recordCatalog.name} success!`
         })
-        _this.fetchData(this.postForm.id)
+        _this.fetchData(this.record.id)
       }
     },
     tripName(num, name, len) {

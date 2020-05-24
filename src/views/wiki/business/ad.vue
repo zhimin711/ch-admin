@@ -63,7 +63,7 @@
         </el-table-column>
         <el-table-column label="操作" width="130" align="center">
           <template slot-scope="scope">
-            <el-button v-if="checkPermission2(['WIKI_AD_EDIT'])" v-show="scope.row.type !== '0'" type="text" icon="el-icon-edit" @click="baseEdit(scope.$index, scope.row)">编辑
+            <el-button v-if="checkPermission2(['WIKI_AD_EDIT'])" v-show="scope.row.type !== '0'" type="text" icon="el-icon-edit" @click="baseEdit(scope.row)">编辑
             </el-button>
             <el-button v-if="checkPermission2(['WIKI_AD_DEL'])" v-show="scope.row.type !== '0'" type="text" icon="el-icon-delete" class="red" @click="baseDel(scope.$index, scope.row)">删除
             </el-button>
@@ -245,7 +245,7 @@ export default {
       this.baseForm.action = 'add'
       this.baseForm.visible = true
     },
-    baseEdit(index, row) {
+    baseEdit(row, index) {
       this.record = Object.assign({}, row)
       this.baseForm.action = 'edit'
       this.baseForm.visible = true

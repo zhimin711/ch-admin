@@ -1,8 +1,8 @@
 <template>
   <div class="createPost-container">
-    <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container">
+    <el-form ref="record" :model="record" :rules="rules" class="form-container">
 
-      <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
+      <sticky :z-index="10" :class-name="'sub-navbar '+record.status">
 
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
           保存
@@ -28,7 +28,7 @@
                         :key="item.id"
                         :label="item.number || item.name"
                         :value="item"
-                        :disabled="postForm.id===item.id"
+                        :disabled="record.id===item.id"
                       >
                         <span style="float: left">{{ item.number }}</span>
                         <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
@@ -44,7 +44,7 @@
                         :key="item.id"
                         :label="item.number || item.name"
                         :value="item"
-                        :disabled="postForm.id===item.id"
+                        :disabled="record.id===item.id"
                       >
                         <span style="float: left">{{ item.number }}</span>
                         <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
@@ -56,12 +56,12 @@
               </el-row>
             </div>
             <el-form-item style="margin-bottom: 0px;" prop="number">
-              <MDinput v-model="postForm.number" :maxlength="100" name="number">
+              <MDinput v-model="record.number" :maxlength="100" name="number">
                 中文序号（若为空则自动生成或连接上一章）
               </MDinput>
             </el-form-item>
             <el-form-item style="margin-bottom: 40px;" prop="title">
-              <MDinput v-model="postForm.name" :maxlength="100" name="name" required>
+              <MDinput v-model="record.name" :maxlength="100" name="name" required>
                 章节名称
               </MDinput>
             </el-form-item>
@@ -69,7 +69,7 @@
         </el-row>
 
         <el-form-item prop="content" style="margin-bottom: 30px;">
-          <Tinymce ref="editor" v-model="postForm.content" :height="400" />
+          <Tinymce ref="editor" v-model="record.content" :height="400" />
         </el-form-item>
 
       </div>
@@ -88,7 +88,7 @@ import { getBookCatalogs } from '@/api/wiki/books'
 import { getBookChapter, addBookChapter, editBookChapter } from '@/api/wiki/books/chapter'
 
 const defaultForm = {
-  status: 'draft',
+  status: '1',
   title: '', // 文章题目
   content: '', // 文章内容
   content_short: '', // 文章摘要
@@ -138,7 +138,7 @@ export default {
       }
     }
     return {
-      postForm: Object.assign({}, defaultForm),
+      record: Object.assign({}, defaultForm),
       loading: false,
       catalogs: [],
       pre: {},
@@ -154,7 +154,7 @@ export default {
   },
   computed: {
     contentShortLength() {
-      return this.postForm.content_short.length
+      return this.record.content_short.length
     },
     displayTime: {
       // set and get is useful when the data
@@ -162,10 +162,10 @@ export default {
       // back end return => "2013-06-25 06:59:25"
       // front end need timestamp => 1372114765000
       get() {
-        return (+new Date(this.postForm.display_time))
+        return (+new Date(this.record.display_time))
       },
       set(val) {
-        this.postForm.display_time = new Date(val)
+        this.record.display_time = new Date(val)
       }
     }
   },
@@ -174,7 +174,7 @@ export default {
       const id = this.$route.params && this.$route.params.id
       this.fetchData(id)
     } else {
-      this.postForm = Object.assign({}, defaultForm)
+      this.record = Object.assign({}, defaultForm)
     }
 
     // Why need to make a copy of this.$route here?
@@ -185,13 +185,13 @@ export default {
   methods: {
     fetchData(id) {
       getBookChapter(id).then(response => {
-        this.postForm = response.rows[0]
+        this.record = response.rows[0]
 
-        this.pre = { id: this.postForm.pre }
-        this.next = { id: this.postForm.next }
+        this.pre = { id: this.record.pre }
+        this.next = { id: this.record.next }
         // just for test
-        // this.postForm.title += `   Article Id:${this.postForm.id}`
-        // this.postForm.content_short += `   Article Id:${this.postForm.id}`
+        // this.record.title += `   Article Id:${this.record.id}`
+        // this.record.content_short += `   Article Id:${this.record.id}`
 
         // set tagsview title
         this.setTagsViewTitle()
@@ -205,39 +205,39 @@ export default {
       })
     },
     setTagsViewTitle() {
-      const title = this.postForm.number || this.postForm.name
+      const title = this.record.number || this.record.name
       const route = Object.assign({}, this.tempRoute, { title: `编辑《${title}》` })
       this.$store.dispatch('tagsView/updateVisitedView', route)
     },
     setPageTitle() {
       const title = '编辑书籍章节'
-      document.title = `${title} - ${this.postForm.number || this.postForm.name}`
+      document.title = `${title} - ${this.record.number || this.record.name}`
     },
     submitForm() {
-      console.log(this.postForm)
-      this.$refs.postForm.validate(async valid => {
+      console.log(this.record)
+      this.$refs.record.validate(async valid => {
         if (valid) {
           // this.record = {}
           if (this.pre && this.pre.id !== '') {
-            this.postForm.pre = this.pre.id
-          } else this.postForm.pre = null
+            this.record.pre = this.pre.id
+          } else this.record.pre = null
           if (this.next && this.pre.next !== '') {
-            this.postForm.next = this.next.id
-          } else this.postForm.next = null
+            this.record.next = this.next.id
+          } else this.record.next = null
           let resp = null
           let opName = '添加'
           if (!this.isEdit) {
-            resp = await addBookChapter(this.postForm).catch(() => {})
+            resp = await addBookChapter(this.record).catch(() => {})
           } else {
             opName = '修改'
-            resp = await editBookChapter(this.postForm.id, this.postForm).catch(() => {})
+            resp = await editBookChapter(this.record.id, this.record).catch(() => {})
           }
           this.loading = false
           console.log(resp)
           if (resp && resp.success) {
             this.$message({
               type: 'success',
-              message: `${opName} ${this.postForm.name} success!`
+              message: `${opName} ${this.record.name} success!`
             })
             this.$store.dispatch('tagsView/delView', this.tempRoute)
             this.$router.go(-1)
@@ -249,7 +249,7 @@ export default {
           //   type: 'success',
           //   duration: 2000
           // })
-          // this.postForm.status = 'published'
+          // this.record.status = 'published'
         } else {
           console.log('error submit!!')
           return false
@@ -257,7 +257,7 @@ export default {
       })
     },
     draftForm() {
-      if (this.postForm.content.length === 0 || this.postForm.title.length === 0) {
+      if (this.record.content.length === 0 || this.record.title.length === 0) {
         this.$message({
           message: '请填写必要的标题和内容',
           type: 'warning'
@@ -270,11 +270,11 @@ export default {
         showClose: true,
         duration: 1000
       })
-      this.postForm.status = 'draft'
+      this.record.status = 'draft'
     },
     fetchCatalogList(query) {
       const params = { leaf: true }
-      getBookCatalogs(this.postForm.bookId, params).then(response => {
+      getBookCatalogs(this.record.bookId, params).then(response => {
         // if (!response.data.items) return
         // this.catalogs = response.data.items.map(v => v.name)
         this.catalogs = response.rows
@@ -282,13 +282,13 @@ export default {
     },
     handlePreAndNext(row, op) {
       if (op === 1) {
-        if (row.pre === this.postForm.id) {
+        if (row.pre === this.record.id) {
           this.pre = {}
           return
         }
         this.pre = { id: row.pre }
       } else if (op === -1) {
-        if (row.next === this.postForm.id) {
+        if (row.next === this.record.id) {
           this.next = {}
           return
         }

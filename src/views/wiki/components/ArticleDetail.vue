@@ -29,7 +29,7 @@
               <el-row>
                 <el-col :span="8">
                   <el-form-item label-width="100px" label="作者:" class="postInfo-container-item">
-                    <el-select v-model="postForm.author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="Search user" :disabled="isEdit">
+                    <el-select v-model="postForm.author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="用户" :disabled="isEdit">
                       <el-option v-for="(item) in userListOptions" :key="item.userId" :label="item.nickname" :value="item.userId" />
                     </el-select>
                   </el-form-item>
@@ -130,10 +130,7 @@ export default {
   data() {
     const validateRequire = (rule, value, callback) => {
       if (value === '') {
-        this.$message({
-          message: rule.field + '为必传项',
-          type: 'error'
-        })
+        // this.$message.error(rule.field + '为必传项')
         callback(new Error(rule.field + '为必传项'))
       } else {
         callback()
@@ -144,10 +141,7 @@ export default {
         if (validURL(value)) {
           callback()
         } else {
-          this.$message({
-            message: '外链url填写不正确',
-            type: 'error'
-          })
+          // this.$message.error('外链url填写不正确')
           callback(new Error('外链url填写不正确'))
         }
       } else {

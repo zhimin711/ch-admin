@@ -26,9 +26,9 @@
     <el-table v-loading="loading" :data="list" border fit highlight-current-row style="width: 100%">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column prop="title" label="类型" width="200" />
-      <el-table-column prop="name" label="名称" width="200" />
-      <el-table-column prop="author" label="作者" />
-      <el-table-column prop="description" label="标签" />
+      <el-table-column prop="name" label="名称" />
+      <el-table-column prop="author" label="作者" width="180" />
+      <!--<el-table-column prop="description" label="标签" />-->
       <el-table-column prop="sort" label="排序" width="80" />
 
       <el-table-column prop="status" label="状态" width="100">
@@ -47,21 +47,16 @@
           <span>{{ scope.row.latestChapterAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <!-- <el-table-column label="操作" width="280" align="center">
+      <el-table-column align="center" label="操作" width="180">
         <template slot-scope="scope">
-          <el-button type="text" icon="el-icon-refresh" @click="bookSync(scope.row)">同步</el-button>
-          <el-button type="text" icon="el-icon-edit" @click="baseEdit(scope.$index, scope.row)">编辑
+          <router-link v-if="checkPermission2(['WIKI_BOOKS_EDIT']) && scope.row.type === '1' && scope.row.status !== 'x'" :to="'/wiki/books/'+scope.row.id">
+            <el-button type="text" icon="el-icon-edit">编辑
+            </el-button>
+          </router-link>
+          <el-button v-if="checkPermission2(['WIKI_AD_EDIT'])" v-show="scope.row.type === '2' && scope.row.status !== 'x'" type="text" icon="el-icon-edit" @click="handleEdit(scope.row)">编辑
           </el-button>
-          <el-button type="text" icon="el-icon-delete" class="red"
-                     @click="baseDelete(scope.$index, scope.row)">删除
-          </el-button>
-        </template>
-      </el-table-column>-->
-      <el-table-column align="center" label="Actions" width="120">
-        <template slot-scope="scope">
-          <router-link v-if="scope.row.status !== 'x'" :to="'/wiki/books/'+scope.row.id">
-            <el-button type="primary" size="small" icon="el-icon-edit">
-              Edit
+          <router-link v-if="checkPermission2(['WIKI_BOOKS_INFO']) && scope.row.type === '2' && scope.row.status !== 'x'" :to="'/wiki/books/preview/'+scope.row.id">
+            <el-button type="text" icon="el-icon-view">阅读
             </el-button>
           </router-link>
         </template>
@@ -74,12 +69,13 @@
     <el-dialog :title="baseForm.title" :visible.sync="baseForm.visible">
       <el-form ref="baseForm" :model="record" label-width="100px" :disabled="baseForm.disabled">
         <el-form-item label="类型">
-          <el-cascader
-            ref="typeCascader"
-            v-model="record.typeOptions"
-            expand-trigger="hover"
-            :options="options.bookType"
-          />
+          <el-radio-group v-model="record.type" :disabled="baseForm.codeDisabled">
+            <el-radio-button label="1">目录</el-radio-button>
+            <el-radio-button label="2">图片</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="分类">
+          <CategoryDropdown v-model="categoryValues" type="37" placeholder="书箱分类" />
         </el-form-item>
         <el-form-item label="名称" prop="name">
           <el-input v-model="record.name" />
@@ -104,7 +100,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item v-show="baseForm.uploadShow" label="上传文件">
-          <el-upload
+          <!--<el-upload
             ref="uploader"
             class="upload-book"
             drag
@@ -119,9 +115,10 @@
             <i class="el-icon-upload" />
             <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
             <div slot="tip" class="el-upload__tip">只能上传txt文件，且不超过100MB</div>
-          </el-upload>
+          </el-upload>-->
+          <UploadSingleFile v-model="record.srcUrl" :data="{'type':'2'}" />
         </el-form-item>
-        <el-form-item v-show="!baseForm.uploadShow" label="来源地址" prop="srcUrl">
+        <el-form-item v-show="record.srcUrl && record.srcUrl.length>1" label="来源地址" prop="srcUrl">
           <el-input v-model="record.srcUrl" :disabled="baseForm.srcUrlDisabled">
             <template v-if="baseForm.uploadDel">
               <el-button slot="append" icon="el-icon-delete" @click.prevent="removeUpload()">删除
@@ -129,20 +126,10 @@
             </template>
           </el-input>
         </el-form-item>
-        <!--<el-form-item label="最新章节" prop="latestChapter">
-          <el-input v-model="record.latestChapter"></el-input>
-        </el-form-item>
-        <el-form-item label="最新更新时间">
-          <el-date-picker
-            type="date"
-            placeholder="最新更新时间"
-            v-model="record.latestChapterAt"
-            value-format="timestamp"></el-date-picker>
-        </el-form-item>-->
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="resetForm('baseForm')">取 消</el-button>
-        <el-button type="primary" @click="saveEdit('baseForm')">确 定</el-button>
+        <el-button type="primary" @click="handleSubmit">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -150,15 +137,24 @@
 
 <script>
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+import UploadSingleFile from '@/components/Upload/SingleFile' // Secondary package based on el-pagination
+import { CategoryDropdown } from '../../components/Dropdown'
 
 // import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
-import { fetchBookList, addBook/*, edit, del*/ } from '@/api/wiki/books'
+import { fetchBookList, addBook, editBook } from '@/api/wiki/books'
+
+const defaultRecord = {
+  type: '1',
+  srcType: '0',
+  srcUrl: '',
+  originalType: ''
+}
 
 export default {
   name: 'WikiBooks',
-  components: { Pagination },
+  components: { Pagination, CategoryDropdown, UploadSingleFile },
   data() {
     return {
       list: [],
@@ -170,6 +166,7 @@ export default {
         params: {}
       },
       urls: { upload: '' },
+      categoryValues: [],
       baseForm: {
         action: 'add',
         title: '新增',
@@ -180,47 +177,7 @@ export default {
         uploadShow: true,
         uploadDel: false
       },
-      record: {
-        name: '',
-        srcType: '0',
-        originalType: ''
-      },
-      options: {
-        bookType: [
-          {
-            value: '1',
-            label: '小说',
-            children: [{
-              value: '11',
-              label: '玄幻'
-            }, {
-              value: '12',
-              label: '仙侠'
-            }, {
-              value: '13',
-              label: '都市'
-            }, {
-              value: '14',
-              label: '武侠'
-            }]
-          }, {
-            value: '2',
-            label: '文学'
-          }, {
-            value: '3',
-            label: '历史'
-          }
-
-        ], classify: [
-          {
-            value: '1',
-            label: '热门'
-          }, {
-            value: '2',
-            label: '综合'
-          }
-        ]
-      }
+      record: {}
     }
   },
   computed: {
@@ -246,28 +203,55 @@ export default {
     },
     handleAdd() {
       //
+      this.record = Object.assign({}, defaultRecord)
+      this.categoryValues = []
+
+      this.baseForm.action = 'add'
+      this.baseForm.title = '新增'
       this.baseForm.visible = true
+      this.baseForm.codeDisabled = false
       this.srcTypeChange(0)
     },
-    saveEdit() {
+    handleEdit(row, index) {
+      this.record = Object.assign({}, row)
+      this.baseForm.action = 'edit'
+      this.baseForm.title = '编辑'
+      this.baseForm.visible = true
+      this.baseForm.codeDisabled = true
+      this.baseForm.srcUrlDisabled = this.record.srcType === '0'
+      this.categoryValues = []
+      if (this.record.classify) {
+        this.categoryValues = this.record.classify.split(',')
+      }
+    },
+    async handleSubmit() {
+      this.record.classify = undefined
+      this.record.title = undefined
+      if (this.categoryValues.length > 0) {
+        this.record.classify = this.categoryValues.join(',')
+      }
       this.loading = true
-      addBook(this.record).then(resp => {
-        this.loading = false
-        if (resp.success) {
-          this.baseForm.visible = false
-          this.getList()
-          this.$notify({
-            title: '成功',
-            message: '添加书籍成功',
-            type: 'success',
-            duration: 2000
-          })
-        }
-      }).catch(err => { console.error(err); this.loading = false })
+      let resp
+      if (this.baseForm.action === 'add') {
+        resp = await addBook(this.record)
+      } else {
+        resp = await editBook(this.record.id, this.record)
+      }
+      this.loading = false
+      if (resp && resp.success) {
+        this.baseForm.visible = false
+        this.getList()
+        this.$notify({
+          title: '成功',
+          message: `${this.baseForm.title}书籍成功`,
+          type: 'success',
+          duration: 2000
+        })
+      }
     },
     resetForm() {
       //
-      this.baseForm.visible = true
+      this.baseForm.visible = false
     },
     srcTypeChange(val) {
       const hasUrl = this.record.srcUrl && Object.keys(this.record.srcUrl).length > 0

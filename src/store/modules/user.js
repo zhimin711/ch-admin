@@ -111,8 +111,9 @@ const actions = {
         removeToken()
         removeRefreshToken()
         removeExpired()
-        dispatch('tagsView/delAllViews')
         resetRouter()
+
+        dispatch('tagsView/delAllViews')
         resolve()
       }).catch(error => {
         reject(error)
@@ -120,7 +121,7 @@ const actions = {
     })
   },
 
-  // remove token
+  // refresh token
   refreshToken({ commit }, tokenInfo) {
     return new Promise(resolve => {
       const { token, expireAt } = tokenInfo
@@ -132,7 +133,7 @@ const actions = {
   },
 
   // remove token
-  resetToken({ commit }) {
+  removeToken({ commit, dispatch }) {
     return new Promise(resolve => {
       commit('SET_TOKEN', '')
       commit('SET_ROLE', {})
@@ -140,6 +141,8 @@ const actions = {
       commit('SET_PERMISSIONS', [])
       resetRouter()
       removeToken()
+
+      dispatch('tagsView/delAllViews')
       resolve()
     })
   },
