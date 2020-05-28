@@ -26,7 +26,7 @@
     <el-table v-loading="loading" :data="list" border fit highlight-current-row style="width: 100%">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column prop="title" label="类型" width="200" />
-      <el-table-column prop="name" label="名称" />
+      <el-table-column prop="name" label="名称" min-width="200" />
       <el-table-column prop="author" label="作者" width="180" />
       <!--<el-table-column prop="description" label="标签" />-->
       <el-table-column prop="sort" label="排序" width="80" />
@@ -196,9 +196,11 @@ export default {
     checkPermission2,
     getList() {
       this.loading = true
-      fetchBookList(this.listQuery).then(response => {
-        this.list = response.rows
-        this.listQuery.total = response.total
+      fetchBookList(this.listQuery).then(resp => {
+        if (resp.success) {
+          this.list = resp.rows
+          this.listQuery.total = resp.total
+        }
       }).finally(() => { this.loading = false })
     },
     handleAdd() {

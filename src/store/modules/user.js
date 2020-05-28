@@ -103,6 +103,7 @@ const actions = {
   logout({ commit, state, dispatch }) {
     return new Promise((resolve, reject) => {
       logout(state.refreshToken).then(() => {
+        dispatch('tagsView/delAllViews', null, { root: true })
         commit('SET_TOKEN', '')
         commit('SET_REFRESH_TOKEN', '')
         commit('SET_ROLE', {})
@@ -113,7 +114,6 @@ const actions = {
         removeExpired()
         resetRouter()
 
-        dispatch('tagsView/delAllViews')
         resolve()
       }).catch(error => {
         reject(error)
@@ -135,14 +135,14 @@ const actions = {
   // remove token
   removeToken({ commit, dispatch }) {
     return new Promise(resolve => {
+      dispatch('tagsView/delAllViews')
+
       commit('SET_TOKEN', '')
       commit('SET_ROLE', {})
       commit('SET_ROLES', [])
       commit('SET_PERMISSIONS', [])
       resetRouter()
       removeToken()
-
-      dispatch('tagsView/delAllViews')
       resolve()
     })
   },
