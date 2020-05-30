@@ -195,12 +195,16 @@
         <el-button @click="handlePreview(previewRecord.next)">下一章</el-button>
       </span>
     </el-dialog>
+    <el-tooltip placement="top" content="返回顶部">
+      <back-to-top :custom-style="myBackToTopStyle" :visibility-height="300" :back-position="50" transition-name="fade" />
+    </el-tooltip>
   </div>
 </template>
 
 <script>
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
+import BackToTop from '@/components/BackToTop'
 import { CategoryDropdown } from './Dropdown'
 import { validURL } from '@/utils/validate'
 import Warning from './Warning'
@@ -243,7 +247,7 @@ const defaultCatalog = {
 
 export default {
   name: 'BookDetail',
-  components: { MDinput, Sticky, Warning, CategoryDropdown },
+  components: { MDinput, Sticky, Warning, CategoryDropdown, BackToTop },
   props: {
     isEdit: {
       type: Boolean,
@@ -296,7 +300,17 @@ export default {
       tempRoute: {},
       previewDialogVisible: false,
       previewRecord: {},
-      previewTitle: ''
+      previewTitle: '',
+      // customizable button style, show/hide critical point, return position
+      myBackToTopStyle: {
+        right: '50px',
+        bottom: '50px',
+        width: '40px',
+        height: '40px',
+        'border-radius': '4px',
+        'line-height': '45px', // 请保持与高度一致以垂直居中 Please keep consistent with height to center vertically
+        background: '#e7eaf1'// 按钮的背景颜色 The background color of the button
+      }
     }
   },
   computed: {
