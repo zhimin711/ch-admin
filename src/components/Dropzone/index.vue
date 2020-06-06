@@ -7,7 +7,6 @@
 <script>
 import Dropzone from 'dropzone'
 import 'dropzone/dist/dropzone.css'
-// import { getToken } from 'api/qiniu';
 
 Dropzone.autoDiscover = false
 
@@ -127,14 +126,6 @@ export default {
         }
       },
       accept: (file, done) => {
-        /* 七牛*/
-        // const token = this.$store.getters.token;
-        // getToken(token).then(response => {
-        //   file.token = response.data.qiniu_token;
-        //   file.key = response.data.qiniu_key;
-        //   file.url = response.data.qiniu_url;
-        //   done();
-        // })
         done()
       },
       sending: (file, xhr, formData) => {

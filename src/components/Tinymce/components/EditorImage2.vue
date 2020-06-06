@@ -35,7 +35,6 @@
 </template>
 
 <script>
-// import { getToken } from 'api/qiniu'
 import { mapGetters } from 'vuex'
 export default {
   name: 'EditorSlideUpload2',
