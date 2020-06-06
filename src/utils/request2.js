@@ -63,7 +63,9 @@ service2.interceptors.response.use(
     const res = response.data
 
     // if the custom code is not 000, it is judged as an error.
-    if (!res.success) {
+    if (res.success || res.code === 20000) {
+      return res
+    } else {
       // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
       if (res.code === '304' || res.code === '307') {
         toLogin()
@@ -75,8 +77,6 @@ service2.interceptors.response.use(
         })
         // return Promise.reject(res)
       }
-      return res
-    } else {
       return res
     }
   },
