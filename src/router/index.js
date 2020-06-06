@@ -15,7 +15,6 @@ import wikiRouter from './modules/wiki'
 import componentsRouter from './modules/components'
 import chartsRouter from './modules/charts'
 import tableRouter from './modules/table'
-import nestedRouter from './modules/nested'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -167,7 +166,6 @@ export const exampleRoutes = [
   },
   componentsRouter,
   chartsRouter,
-  nestedRouter,
   tableRouter,
   {
     path: '/example',
