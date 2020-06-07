@@ -73,7 +73,7 @@ const actions = {
           reject('Verification failed, please Login again.')
         }
 
-        const { username, avatar, introduction, roleList, btnList } = rows[0]
+        const { username, token, avatar, introduction, roleList, btnList } = rows[0]
 
         // roles must be a non-empty array
         if (!roleList || roleList.length <= 0) {
@@ -83,6 +83,9 @@ const actions = {
         let currRole = roleList[0]
         if (currRoles.length > 0) {
           currRole = currRoles[0]
+        }
+        if (token) {
+          commit('SET_TOKEN', token)
         }
         commit('SET_ROLE', currRole)
         commit('SET_ROLES', roleList)
@@ -151,7 +154,7 @@ const actions = {
     return new Promise(async resolve => {
       resetRouter()
       let accessRoutes = []
-      if (role === 7) {
+      if (role === -1) {
         const currRoles = state.roles.filter(item => { return item.id === role })
         commit('SET_ROLE', currRoles[0])
         accessRoutes = await dispatch('permission/generateRoutes', [], { root: true })
