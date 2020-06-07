@@ -42,7 +42,7 @@ export function deleteCanalCluster(id) {
 
 export function getClustersAndServers() {
   return request({
-    url: '/canal/clustersAndServers',
+    url: `${baseUrl}sAndServers`,
     method: 'get'
   })
 }

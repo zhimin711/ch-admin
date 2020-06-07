@@ -123,27 +123,27 @@
               </el-form-item>
               <el-form-item label="模式">
                 <el-select v-model="canalClusterConfig.redisMode">
-                  <el-option key="mode0" label="单机" value="0" />
-                  <el-option key="mode1" label="哨兵" value="1" />
-                  <el-option key="mode2" label="集群" value="2" />
+                  <el-option key="mode0" label="单机" value="standalone" />
+                  <el-option key="mode1" label="哨兵" value="sentinel" />
+                  <el-option key="mode2" label="集群" value="cluster" />
                 </el-select>
               </el-form-item>
-              <el-form-item v-if="canalClusterConfig.redisMode==='0'" label="域名或IP">
+              <el-form-item v-if="canalClusterConfig.redisMode==='standalone'" label="域名或IP">
                 <el-input v-model="canalClusterConfig.redisHost" />
               </el-form-item>
-              <el-form-item v-if="canalClusterConfig.redisMode==='0'" label="端口">
+              <el-form-item v-if="canalClusterConfig.redisMode==='standalone'" label="端口">
                 <el-input v-model="canalClusterConfig.redisPort" />
               </el-form-item>
-              <el-form-item v-if="canalClusterConfig.redisMode==='1'" label="主节点名称">
+              <el-form-item v-if="canalClusterConfig.redisMode==='sentinel'" label="主节点名称">
                 <el-input v-model="canalClusterConfig.redisSentinelMaster" />
               </el-form-item>
-              <el-form-item v-if="canalClusterConfig.redisMode==='1'" label="地址">
+              <el-form-item v-if="canalClusterConfig.redisMode==='sentinel'" label="地址">
                 <el-input v-model="canalClusterConfig.redisSentinelNodes" placeholder="域名或IP:端口(多个','拼接)" />
               </el-form-item>
-              <el-form-item v-if="canalClusterConfig.redisMode==='2'" label="地址">
+              <el-form-item v-if="canalClusterConfig.redisMode==='cluster'" label="地址">
                 <el-input v-model="canalClusterConfig.redisClusterNodes" placeholder="域名或IP:端口(多个','拼接)" />
               </el-form-item>
-              <el-form-item v-if="canalClusterConfig.redisMode!=='2'" label="dbIndex">
+              <el-form-item v-if="canalClusterConfig.redisMode!=='cluster'" label="dbIndex">
                 <el-input v-model="canalClusterConfig.redisDatabase" />
               </el-form-item>
               <el-form-item label="超时">
