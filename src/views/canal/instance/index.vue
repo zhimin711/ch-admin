@@ -79,16 +79,13 @@
         </el-form-item>
         <el-form-item label="游标Binlog">
           <el-input v-model="metaPosition.postion.journalName" />
-          <span class="form-item-desc">
-            <b class="el-alert el-alert--info">show binary logs;</b>可查询当前实例Binlog
-          </span>
+          -- 可查询当前实例Binlog
+          <el-aside width="100%">show binary logs;</el-aside>
         </el-form-item>
         <el-form-item label="当前游标位置">
           <el-input v-model="metaPosition.postion.position" />
-          <span class="form-item-desc">
-            <b class="el-alert el-alert--info" style="font-size: 12px">show BINLOG EVENTS in '{{ metaPosition.postion.journalName }}' from {{ metaPosition.postion.position }};</b>
-            可查询Binlog可用位置
-          </span>
+          -- 可查询Binlog当前游标位置
+          <el-aside width="100%">show BINLOG EVENTS in '{{ metaPosition.postion.journalName }}' from {{ metaPosition.postion.position }};</el-aside>
         </el-form-item>
         <el-form-item label="游标时间戳">
           <!--<el-input v-model="metaPosition.postion.timestamp" disabled />-->
