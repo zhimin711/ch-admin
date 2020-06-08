@@ -67,12 +67,12 @@
               操作<i class="el-icon-arrow-down el-icon--right" />
             </el-button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item @click.native="handleConfig(scope.row)">配置</el-dropdown-item>
-              <el-dropdown-item @click.native="handleUpdate(scope.row)">修改</el-dropdown-item>
-              <el-dropdown-item @click.native="handleDelete(scope.row)">删除</el-dropdown-item>
-              <el-dropdown-item @click.native="handleStart(scope.row)">启动</el-dropdown-item>
-              <el-dropdown-item @click.native="handleStop(scope.row)">停止</el-dropdown-item>
-              <el-dropdown-item @click.native="handleInstances(scope.row)">详情</el-dropdown-item>
+              <!--<el-dropdown-item v-if="checkPermission2(['CANAL_SERVER_INSTANCES'])" @click.native="handleConfig(scope.row)">配置</el-dropdown-item>-->
+              <el-dropdown-item v-if="checkPermission2(['CANAL_SERVERS_EDIT'])" @click.native="handleUpdate(scope.row)">修改</el-dropdown-item>
+              <el-dropdown-item v-if="checkPermission2(['CANAL_SERVERS_DELETE'])" @click.native="handleDelete(scope.row)">删除</el-dropdown-item>
+              <el-dropdown-item v-if="checkPermission2(['CANAL_SERVER_STOP'])" @click.native="handleStart(scope.row)">启动</el-dropdown-item>
+              <el-dropdown-item v-if="checkPermission2(['CANAL_SERVER_STOP'])" @click.native="handleStop(scope.row)">停止</el-dropdown-item>
+              <el-dropdown-item v-if="checkPermission2(['CANAL_SERVER_INSTANCES'])" @click.native="handleInstances(scope.row)">详情</el-dropdown-item>
               <el-dropdown-item @click.native="handleLog(scope.row)">日志</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
@@ -158,6 +158,7 @@ import { addNodeServer, getNodeServers, updateNodeServer, deleteNodeServer, star
 import { getActiveInstances, stopInstance, startInstance } from '@/api/canal/instance'
 import { getCanalClusters } from '@/api/canal/cluster'
 import Pagination from '@/components/Pagination'
+import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
 export default {
   components: { Pagination },
@@ -233,6 +234,7 @@ export default {
     this.fetchData()
   },
   methods: {
+    checkPermission2,
     fetchData() {
       this.listLoading = true
       getNodeServers(this.listQuery).then(res => {

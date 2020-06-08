@@ -321,6 +321,7 @@ export default {
       })
     },
     initConfig() {
+      this.activeName = 'first'
       if (this.canalInstanceConfig.clusterId) {
         this.canalInstanceConfig.clusterServerId = 'cluster:' + this.canalInstanceConfig.clusterId
       } else if (this.canalInstanceConfig.serverId) {
@@ -501,7 +502,7 @@ export default {
           this.metaPosition.isStop = row.nodeServer === null
           this.dialogFormVisible = true
         } else {
-          this.$message({ message: '当前Instance未使用Redis游标或未开始同步数据', type: 'warning' })
+          this.$message({ message: '当前Instance Meta未使用Redis存储或Zookeeper存储或未开始同步数据', type: 'warning' })
         }
       }).finally(() => {
         this.listLoading = false

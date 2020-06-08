@@ -69,7 +69,7 @@ service2.interceptors.response.use(
       // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
       if (res.code === '304' || res.code === '307') {
         toLogin()
-      } else if (res.code) {
+      } else if (res.code && res.code !== 50000) {
         Message({
           message: res.message || `Unknown Error: ${res.code}`,
           type: 'error',

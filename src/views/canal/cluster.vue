@@ -60,6 +60,7 @@
           <el-tab-pane label="权限配置" name="first">
             <el-form-item label="本机IP" prop="canalIp">
               <el-input v-model="canalClusterConfig.canalIp" />
+              <el-aside width="100%">canal server绑定的本地IP信息，如果不配置，默认选择一个本机IP进行启动服务</el-aside>
             </el-form-item>
             <el-form-item label="端口" prop="canalPort">
               <el-input v-model="canalClusterConfig.canalPort" />
@@ -72,6 +73,7 @@
             </el-form-item>
             <el-form-item label="注册IP" prop="canalRegisterIp">
               <el-input v-model="canalClusterConfig.canalRegisterIp" placeholder="register ip to zookeeper" />
+              <el-aside width="100%">canal server注册到外部zookeeper、admin的ip信息 (针对docker的外部可见ip)</el-aside>
             </el-form-item>
           </el-tab-pane>
           <el-tab-pane label="管理配置" name="second">

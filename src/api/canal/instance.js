@@ -47,7 +47,7 @@ export function instanceStatus(id, option) {
 
 export function getActiveInstances(serverId) {
   return request({
-    url: '/canal/active/instances/' + serverId,
+    url: `/canal/v1/active/instances/` + serverId,
     method: 'get'
   })
 }
