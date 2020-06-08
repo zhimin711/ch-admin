@@ -17,29 +17,6 @@ export function canalInstanceDetail(id) {
   })
 }
 
-export function updateCanalInstance(data) {
-  return request({
-    url: `${baseUrl}`,
-    method: 'put',
-    data
-  })
-}
-
-export function addCanalInstance(data) {
-  return request({
-    url: `${baseUrl}`,
-    method: 'post',
-    data
-  })
-}
-
-export function deleteCanalInstance(id) {
-  return request({
-    url: `${baseUrl}/` + id,
-    method: 'delete'
-  })
-}
-
 export function startInstance(id, nodeId) {
   return request({
     url: `${baseUrl}/start/` + id + '/' + nodeId,
@@ -82,11 +59,26 @@ export function getCanalInstanceTemplate(id) {
   })
 }
 
+export function addCanalInstanceTemplate(data) {
+  return request({
+    url: `${baseUrl}/template`,
+    method: 'post',
+    data
+  })
+}
+
 export function updateCanalInstanceTemplate(data) {
   return request({
     url: `${baseUrl}/template`,
     method: 'put',
     data
+  })
+}
+
+export function deleteCanalInstanceTemplate(id) {
+  return request({
+    url: `${baseUrl}/template/` + id,
+    method: 'delete'
   })
 }
 

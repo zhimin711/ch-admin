@@ -102,10 +102,23 @@
     </el-dialog>
     <el-dialog :visible.sync="dialogFormVisible2" :title="textMap[dialogStatus]" width="80%">
       <el-form ref="data2Form" :rules="rules" :model="canalInstanceConfig" label-position="left" label-width="150px">
+        <el-form-item label="实例名称" prop="name">
+          <el-input v-model="canalInstanceConfig.name" :disabled="dialogStatus === 'update'" />
+        </el-form-item>
+        <el-form-item label="集群/主机">
+          <el-select v-model="canalInstanceConfig.clusterServerId" placeholder="所属集群/主机">
+            <el-option-group v-for="group in options" :key="group.label" :label="group.label">
+              <el-option v-for="item in group.options" :key="item.value" :label="item.label" :value="item.value" />
+            </el-option-group>
+          </el-select>
+        </el-form-item>
         <el-tabs v-model="activeName" @tab-click="handleClick">
           <el-tab-pane label="基础配置" name="first">
             <el-form-item label="数据域名或IP" prop="canalInstanceMasterAddress">
               <el-input v-model="canalInstanceConfig.canalInstanceMasterAddress" />
+            </el-form-item>
+            <el-form-item label="编码">
+              <el-input v-model="canalInstanceConfig.canalInstanceConnectionCharset" disabled />
             </el-form-item>
             <el-form-item label="用户名" prop="canalInstanceDbUsername">
               <el-input v-model="canalInstanceConfig.canalInstanceDbUsername" />
@@ -113,8 +126,17 @@
             <el-form-item label="密码" prop="canalInstanceDbPassword">
               <el-input v-model="canalInstanceConfig.canalInstanceDbPassword" />
             </el-form-item>
-            <el-form-item label="编码">
-              <el-input v-model="canalInstanceConfig.canalInstanceConnectionCharset" disabled />
+            <el-form-item label="Druid加密">
+              <el-switch
+                v-model="canalInstanceConfig.canalInstanceEnableDruid"
+                :active-color="'#13ce66'"
+                :inactive-color="'#ff4949'"
+                active-text="开启"
+                inactive-text="关闭"
+              />
+            </el-form-item>
+            <el-form-item v-if="canalInstanceConfig.canalInstanceEnableDruid" label="公钥">
+              <el-input v-model="canalInstanceConfig.canalInstancePwdPublicKey" />
             </el-form-item>
           </el-tab-pane>
           <el-tab-pane label="规则配置" name="second">
@@ -188,20 +210,25 @@
         </el-tabs>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible2 = false">取消</el-button>
-        <el-button type="primary" @click="dataOperation2()">确定</el-button>
+        <el-button @click="closeAndReset()">取消</el-button>
+        <el-button type="primary" @click="submitCanalInstanceConfig()">确定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getCanalInstances, deleteCanalInstance, getCanalInstanceTemplate, updateCanalInstanceTemplate, instanceStatus, getRedisPosition, updateRedisPosition } from '@/api/canal/instance'
+import { getCanalInstances, deleteCanalInstanceTemplate, getCanalInstanceTemplate, addCanalInstanceTemplate, updateCanalInstanceTemplate, instanceStatus, getRedisPosition, updateRedisPosition } from '@/api/canal/instance'
 import Pagination from '@/components/Pagination'
 import { getClustersAndServers } from '@/api/canal/cluster'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { isEmpty } from '@/utils/validate'
 
+const defaultRecord = {
+  canalInstanceFilterRegex: '.*\\..*',
+  canalMqPartition: 0,
+  canalInstanceConnectionCharset: 'UTF-8'
+}
 export default {
   components: { Pagination },
   filters: {
@@ -238,15 +265,19 @@ export default {
       currentId: null,
       canalInstanceConfig: {},
       textMap: {
-        create: '新建集群信息',
-        update: '修改集群信息',
-        instanceConfigEdit: '编辑实例配置信息'
+        create: '新建实例配置信息',
+        update: '编辑实例配置信息'
       },
       dialogStatus: 'create',
       dialogFormVisible2: false,
       activeName: 'first',
       dbTables: [],
       rules: {
+        name: [{ required: true, message: '名称不能为空', trigger: 'change' }],
+        // cluster: [{ required: true, message: '集群／主机不能为空', trigger: 'change' }],
+        canalInstanceMasterAddress: [{ required: true, message: '数据连接不能为空', trigger: 'change' }],
+        canalInstanceDbUsername: [{ required: true, message: '用户不能为空', trigger: 'change' }],
+        canalInstanceDbPassword: [{ required: true, message: '密码不能为空', trigger: 'change' }],
         id: [{ required: true, message: '请选择运行Server', trigger: 'change' }]
       }
     }
@@ -273,11 +304,15 @@ export default {
       })
     },
     handleCreate() {
-      this.$router.push('/canalServer/canalInstance/add')
+      // this.$router.push('/canalServer/canalInstance/add')
+      this.dialogStatus = 'create'
+      this.canalInstanceConfig = Object.assign({}, defaultRecord)
+      this.initConfig()
+      this.dialogFormVisible2 = true
     },
     handleUpdate(row) {
       // this.$router.push('/canalServer/canalInstance/modify?id=' + row.id)
-      this.dialogStatus = 'instanceConfigEdit'
+      this.dialogStatus = 'update'
       getCanalInstanceTemplate(row.id).then(resp => {
         this.canalInstanceConfig = resp.data
         // this.dbTables = [{}]
@@ -286,6 +321,11 @@ export default {
       })
     },
     initConfig() {
+      if (this.canalInstanceConfig.clusterId) {
+        this.canalInstanceConfig.clusterServerId = 'cluster:' + this.canalInstanceConfig.clusterId
+      } else if (this.canalInstanceConfig.serverId) {
+        this.canalInstanceConfig.clusterServerId = 'server:' + this.canalInstanceConfig.serverId
+      }
       if (this.canalInstanceConfig.tableRules && this.canalInstanceConfig.tableRules.length > 0) {
         return
       } else {
@@ -301,6 +341,23 @@ export default {
         this.handleAddNode()
       }
     },
+    submitCanalInstanceConfig() {
+      if (this.dialogStatus === 'update') {
+        this.$confirm(
+          '修改Instance配置可能会导致重启，是否继续？',
+          '确定修改',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        ).then(() => {
+          this.dataOperation2()
+        })
+      } else {
+        this.dataOperation2()
+      }
+    },
     dataOperation2() {
       let ruleOk = true
       this.canalInstanceConfig.tableRules.forEach((row, index) => {
@@ -314,12 +371,45 @@ export default {
       }
       this.$refs['data2Form'].validate((valid) => {
         if (valid) {
-          updateCanalInstanceTemplate(this.canalInstanceConfig).then(res => {
-            // this.operationRes(res, true)
-            this.dialogFormVisible2 = false
-          })
+          if (isEmpty(this.canalInstanceConfig.clusterServerId)) {
+            this.$message.error(`集群／主机不能为空，请检查！`)
+            return false
+          }
+          if (this.canalInstanceConfig.clusterServerId.startsWith('cluster:')) {
+            this.canalInstanceConfig.clusterId = this.canalInstanceConfig.clusterServerId.substring(8)
+          } else if (this.canalInstanceConfig.clusterServerId.startsWith('server:')) {
+            this.canalInstanceConfig.clusterId = this.canalInstanceConfig.clusterServerId.substring(7)
+          }
+          if (this.dialogStatus === 'update') {
+            updateCanalInstanceTemplate(this.canalInstanceConfig).then(res => {
+              this.operationRes(res)
+            })
+          } else {
+            addCanalInstanceTemplate(this.canalInstanceConfig).then(res => {
+              this.operationRes(res)
+            })
+          }
         }
       })
+    },
+    operationRes(res, noRefresh) {
+      if (res.data === 'success') {
+        if (!noRefresh) this.queryData()
+        this.closeAndReset()
+        this.$message({
+          message: this.textMap[this.dialogStatus] + '成功',
+          type: 'success'
+        })
+      } else {
+        this.$message({
+          message: this.textMap[this.dialogStatus] + '失败',
+          type: 'error'
+        })
+      }
+    },
+    closeAndReset() {
+      this.dialogFormVisible2 = false
+      this.$refs['data2Form'].resetFields()
     },
     handleDelete(row) {
       this.$confirm('删除Instance配置会导致停止', '确定删除Instance信息', {
@@ -327,7 +417,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        deleteCanalInstance(row.id).then((res) => {
+        deleteCanalInstanceTemplate(row.id).then((res) => {
           if (res.data === 'success') {
             this.fetchData()
             this.$message({
