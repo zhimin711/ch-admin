@@ -143,6 +143,9 @@
             <el-form-item label="默认MQ分区">
               <el-input v-model="canalInstanceConfig.canalMqPartition" />
             </el-form-item>
+            <el-form-item label="默认MQ分区数">
+              <el-input v-model="canalInstanceConfig.canalMqPartitionsNum" />
+            </el-form-item>
             <el-form-item label="同步表规则">
               <el-table
                 :data="canalInstanceConfig.tableRules"
@@ -180,7 +183,7 @@
                 <el-table-column prop="mqPartitionsNum" label="Mq分区数" width="95">
                   <template slot-scope="{row}">
                     <template>
-                      <el-input v-model="row.mqPartitionsNum" class="edit-input" size="small" placeholder="分区数" />
+                      <el-input v-model="row.mqPartitionNum" class="edit-input" size="small" placeholder="分区数" />
                     </template>
                   </template>
                 </el-table-column>
