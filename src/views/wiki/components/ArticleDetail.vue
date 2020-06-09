@@ -29,7 +29,7 @@
               <el-row>
                 <el-col :span="8">
                   <el-form-item label-width="100px" label="作者:" class="postInfo-container-item">
-                    <el-select v-model="postForm.author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="用户" :disabled="isEdit">
+                    <el-select v-model="postForm.author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="用户">
                       <el-option v-for="(item) in userListOptions" :key="item.userId" :label="item.nickname" :value="item.userId" />
                     </el-select>
                   </el-form-item>

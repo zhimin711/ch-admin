@@ -3,16 +3,16 @@
     <div class="filter-container">
       <el-form :inline="true" :model="listQuery" class="search-form-inline">
         <el-form-item label="名称">
-          <el-input v-model="listQuery.params.name" placeholder="名称" />
+          <el-input v-model="listQuery.params.title" placeholder="名称" />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="listQuery.params.status" clearable placeholder="状态">
-            <el-option key="1" label="启用" value="1" />
-            <el-option key="2" label="禁用" value="0" />
+          <el-select v-model="listQuery.params.status" clearable placeholder="全部">
+            <el-option key="1" label="草稿" value="0" />
+            <el-option key="2" label="已发布" value="1" />
           </el-select>
         </el-form-item>
         <el-form-item label="审核状态">
-          <el-select v-model="listQuery.params.approveStatus" clearable placeholder="审核状态">
+          <el-select v-model="listQuery.params.approveStatus" clearable placeholder="全部">
             <el-option key="1" label="审核通过" value="1" />
             <el-option key="4" label="审核驳回" value="4" />
             <el-option key="0" label="待审核" value="0" />
