@@ -291,6 +291,7 @@ export default {
       this.submitForm(0)
     },
     getRemoteUserList(query) {
+      if (isEmpty(query)) return
       searchUser(query).then(response => {
         if (!response.success) return
         this.userListOptions = response.rows
