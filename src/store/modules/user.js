@@ -143,8 +143,8 @@ const actions = {
       commit('SET_ROLES', [])
       commit('SET_PERMISSIONS', [])
       resetRouter()
-      dispatch('tagsView/delAllViews', null, { root: true })
       removeToken()
+      dispatch('tagsView/delAllViews', null, { root: true })
       resolve()
     })
   },
