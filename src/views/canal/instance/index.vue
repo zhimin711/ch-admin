@@ -137,15 +137,26 @@
             </el-form-item>
           </el-tab-pane>
           <el-tab-pane label="规则配置" name="second">
-            <el-form-item label="默认MQ队列">
-              <el-input v-model="canalInstanceConfig.canalMqTopic" />
+            <el-form-item label="默认MQ主题">
+              <el-switch
+                v-model="canalInstanceConfig.canalMqDefaultTopicEnable"
+                :active-color="'#13ce66'"
+                :inactive-color="'#ff4949'"
+                active-text="开启"
+                inactive-text="关闭"
+              />
             </el-form-item>
-            <el-form-item label="默认MQ分区">
-              <el-input v-model="canalInstanceConfig.canalMqPartition" />
-            </el-form-item>
-            <el-form-item label="默认MQ分区数">
-              <el-input v-model="canalInstanceConfig.canalMqPartitionsNum" />
-            </el-form-item>
+            <el-row v-if="canalInstanceConfig.canalMqDefaultTopicEnable">
+              <el-form-item label="默认MQ队列">
+                <el-input v-model="canalInstanceConfig.canalMqTopic" />
+              </el-form-item>
+              <el-form-item label="默认MQ分区">
+                <el-input v-model="canalInstanceConfig.canalMqPartition" />
+              </el-form-item>
+              <el-form-item label="默认MQ分区数">
+                <el-input v-model="canalInstanceConfig.canalMqPartitionsNum" />
+              </el-form-item>
+            </el-row>
             <el-form-item label="同步表规则">
               <el-table
                 :data="canalInstanceConfig.tableRules"
