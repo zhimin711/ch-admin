@@ -64,6 +64,7 @@
             </el-form-item>
             <el-form-item label="端口" prop="canalPort">
               <el-input v-model="canalClusterConfig.canalPort" />
+              <el-aside width="100%">canal server提供socket服务的端口</el-aside>
             </el-form-item>
             <el-form-item label="用户名" prop="canalUser">
               <el-input v-model="canalClusterConfig.canalUser" />
@@ -93,6 +94,7 @@
           <el-tab-pane label="服务配置" name="third">
             <el-form-item label="zkServer地址" prop="canalZkServers">
               <el-input v-model="canalClusterConfig.canalZkServers" placeholder="zookeeper address(HA模式)" />
+              <el-aside width="100%">canal server链接zookeeper集群,例子：10.20.144.22:2181,10.20.144.51:2181</el-aside>
             </el-form-item>
             <el-form-item label="Netty" prop="canalWithoutNetty">
               <!--<el-input v-model="canalClusterConfig.canalWithoutNetty"/>-->
@@ -303,6 +305,7 @@
                 active-text="开启"
                 inactive-text="关闭"
               />
+              <el-aside width="100%">使用druid处理所有的ddl解析来获取库和表名</el-aside>
             </el-form-item>
             <el-form-item label="QueryDdl">
               <el-switch
@@ -311,7 +314,7 @@
                 :inactive-color="'#ff4949'"
                 active-text="开启"
                 inactive-text="关闭"
-              />
+              /><el-aside width="100%">忽略dcl语句</el-aside>
             </el-form-item>
             <el-form-item label="QueryDml">
               <el-switch
@@ -320,7 +323,7 @@
                 :inactive-color="'#ff4949'"
                 active-text="开启"
                 inactive-text="关闭"
-              />
+              /><el-aside width="100%">忽略dml语句</el-aside>
             </el-form-item>
             <el-form-item label="Rows">
               <el-switch
@@ -329,7 +332,7 @@
                 :inactive-color="'#ff4949'"
                 active-text="开启"
                 inactive-text="关闭"
-              />
+              /><el-aside width="100%">忽略dml的数据变更事件(主要针对用户只订阅ddl/dcl的操作)</el-aside>
             </el-form-item>
             <el-form-item label="TableError">
               <el-switch
@@ -338,7 +341,7 @@
                 :inactive-color="'#ff4949'"
                 active-text="开启"
                 inactive-text="关闭"
-              />
+              /><el-aside width="100%">忽略binlog表结构获取失败的异常</el-aside>
             </el-form-item>
             <el-form-item label="TransactionEntry">
               <el-switch
@@ -347,7 +350,7 @@
                 :inactive-color="'#ff4949'"
                 active-text="开启"
                 inactive-text="关闭"
-              />
+              /><el-aside width="100%">忽略事务头和尾,比如针对写入kakfa的消息时，不需要写入TransactionBegin/Transactionend事件</el-aside>
             </el-form-item>
           </el-tab-pane>
         </el-tabs>
@@ -583,7 +586,7 @@ export default {
       })
     },
     handleClick(tab, event) {
-      console.log(tab, event)
+      // console.log(tab, event)
     },
     handleAddNode(index) {
       this.mqServers.push({ name: null, host: null })
@@ -594,3 +597,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+  .el-form-item .el-aside {
+    margin-bottom: 0;
+  }
+</style>

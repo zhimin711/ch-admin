@@ -187,7 +187,11 @@ export default {
   }
 }
 </script>
-
+<style>
+  .mce-toolbar.mce-stack-layout-item:first-child {
+    border-bottom: 1px solid #d9d9d9;
+  }
+</style>
 <style scoped>
 .tinymce-container {
   position: relative;
