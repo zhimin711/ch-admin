@@ -7,9 +7,9 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            New Visits
+            当天用户访问量
           </div>
-          <count-to :start-val="0" :end-val="102400" :duration="2600" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="newVisits" :duration="2600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -20,9 +20,9 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            Messages
+            当天文章发布量
           </div>
-          <count-to :start-val="0" :end-val="81212" :duration="3000" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="newArticles" :duration="3000" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -33,9 +33,9 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            Purchases
+            当天资源共享量
           </div>
-          <count-to :start-val="0" :end-val="9280" :duration="3200" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="newResources" :duration="3200" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -46,9 +46,9 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            Shoppings
+            当天推荐量
           </div>
-          <count-to :start-val="0" :end-val="13600" :duration="3600" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="newRecommend" :duration="3600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -58,13 +58,45 @@
 <script>
 import CountTo from 'vue-count-to'
 
+import { getNewVisits } from '@/api/report/wiki/user.js'
+import { getNewArticles } from '@/api/report/wiki/article.js'
+import { getNewResources } from '@/api/report/wiki/resource.js'
+
 export default {
   components: {
     CountTo
   },
+  data() {
+    return {
+      newVisits: 0,
+      newArticles: 0,
+      newResources: 0,
+      newRecommend: 0
+    }
+  },
+  created() {
+    this.getReport()
+  },
   methods: {
     handleSetLineChartData(type) {
       this.$emit('handleSetLineChartData', type)
+    },
+    getReport() {
+      getNewVisits().then(resp => {
+        if (resp.success) {
+          this.newVisits = resp.rows[0]
+        }
+      })
+      getNewArticles().then(resp => {
+        if (resp.success) {
+          this.newArticles = resp.rows[0]
+        }
+      })
+      getNewResources().then(resp => {
+        if (resp.success) {
+          this.newResources = resp.rows[0]
+        }
+      })
     }
   }
 }

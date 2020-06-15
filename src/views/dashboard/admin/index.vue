@@ -51,6 +51,8 @@ import TransactionTable from './components/TransactionTable'
 import TodoList from './components/TodoList'
 import BoxCard from './components/BoxCard'
 
+import { getWeekVisits } from '@/api/report/wiki/user.js'
+
 const lineChartData = {
   newVisitis: {
     expectedData: [100, 120, 161, 134, 105, 160, 165],
@@ -88,9 +90,21 @@ export default {
       lineChartData: lineChartData.newVisitis
     }
   },
+  created() {
+    this.initReportUser()
+  },
   methods: {
     handleSetLineChartData(type) {
       this.lineChartData = lineChartData[type]
+    },
+    initReportUser() {
+      getWeekVisits().then(resp => {
+        if (resp.success) {
+          this.lineChartData.legendData = ['总量', '新用户']
+          this.lineChartData.xData = resp.rows[0].dateList
+          this.lineChartData.expectedData = resp.rows[0].countList
+        }
+      })
     }
   }
 }
