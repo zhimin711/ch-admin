@@ -61,6 +61,7 @@ import CountTo from 'vue-count-to'
 import { getNewVisits } from '@/api/report/wiki/user.js'
 import { getNewArticles } from '@/api/report/wiki/article.js'
 import { getNewResources } from '@/api/report/wiki/resource.js'
+// import { getNewRecommends } from '@/api/report/wiki/recommend.js'
 
 export default {
   components: {
@@ -96,7 +97,12 @@ export default {
         if (resp.success) {
           this.newResources = resp.rows[0]
         }
-      })
+      })/*
+      getNewRecommends().then(resp => {
+        if (resp.success) {
+          this.newRecommend = resp.rows[0]
+        }
+      })*/
     }
   }
 }

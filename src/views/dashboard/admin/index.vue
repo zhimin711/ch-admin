@@ -52,21 +52,32 @@ import TodoList from './components/TodoList'
 import BoxCard from './components/BoxCard'
 
 import { getWeekVisits } from '@/api/report/wiki/user.js'
+import { getWeekArticles } from '@/api/report/wiki/article.js'
+import { getWeekResources } from '@/api/report/wiki/resource.js'
+// import { getNewRecommends } from '@/api/report/wiki/recommend.js'
 
 const lineChartData = {
   newVisitis: {
+    title: '',
+    legendData: ['总量', '新用户'],
     expectedData: [100, 120, 161, 134, 105, 160, 165],
     actualData: [120, 82, 91, 154, 162, 140, 145]
   },
   messages: {
+    title: '',
+    legendData: ['文章发布量', '文章审核量'],
     expectedData: [200, 192, 120, 144, 160, 130, 140],
     actualData: [180, 160, 151, 106, 145, 150, 130]
   },
   purchases: {
+    title: '',
+    legendData: ['资源发布量', '资源审核量'],
     expectedData: [80, 100, 121, 104, 105, 90, 100],
     actualData: [120, 90, 100, 138, 142, 130, 130]
   },
   shoppings: {
+    title: '',
+    legendData: ['文章推荐量', '资源推荐量'],
     expectedData: [130, 140, 141, 142, 145, 150, 160],
     actualData: [120, 82, 91, 154, 162, 140, 130]
   }
@@ -91,20 +102,27 @@ export default {
     }
   },
   created() {
-    this.initReportUser()
+    this.weekReport('newVisitis')
   },
   methods: {
     handleSetLineChartData(type) {
-      this.lineChartData = lineChartData[type]
+      this.weekReport(type)
     },
-    initReportUser() {
-      getWeekVisits().then(resp => {
-        if (resp.success) {
-          this.lineChartData.legendData = ['总量', '新用户']
-          this.lineChartData.xData = resp.rows[0].dateList
-          this.lineChartData.expectedData = resp.rows[0].countList
-        }
-      })
+    async weekReport(type) {
+      let resp
+      if (type === 'newVisitis') {
+        resp = await getWeekVisits()
+      } else if (type === 'messages') {
+        resp = await getWeekArticles()
+      } else if (type === 'purchases') {
+        resp = await getWeekResources()
+      }
+      this.lineChartData = lineChartData[type]
+      if (resp && resp.success) {
+        this.lineChartData.xData = resp.rows[0].dateList
+        this.lineChartData.expectedData = resp.rows[0].valueList
+        this.lineChartData.actualData = resp.rows[0].keyList
+      }
     }
   }
 }
