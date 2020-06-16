@@ -59,7 +59,7 @@ import { getWeekResources } from '@/api/report/wiki/resource.js'
 const lineChartData = {
   newVisitis: {
     title: '',
-    legendData: ['总量', '新用户'],
+    legendData: ['总量', '游客'],
     expectedData: [100, 120, 161, 134, 105, 160, 165],
     actualData: [120, 82, 91, 154, 162, 140, 145]
   },
@@ -77,7 +77,7 @@ const lineChartData = {
   },
   shoppings: {
     title: '',
-    legendData: ['文章推荐量', '资源推荐量'],
+    legendData: ['文章点赞量', '资源点赞量'],
     expectedData: [130, 140, 141, 142, 145, 150, 160],
     actualData: [120, 82, 91, 154, 162, 140, 130]
   }

@@ -4,7 +4,7 @@ const baseUrl = '/wiki/admin/report'
 
 export function getNewResources() {
   return request({
-    url: `${baseUrl}/newArticles`,
+    url: `${baseUrl}/newResources`,
     method: 'get'
   })
 }

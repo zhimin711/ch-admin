@@ -46,7 +46,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            当天推荐量
+            当天点赞量
           </div>
           <count-to :start-val="0" :end-val="newRecommend" :duration="3600" class="card-panel-num" />
         </div>
