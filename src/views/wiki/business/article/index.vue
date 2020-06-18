@@ -66,6 +66,7 @@
           </el-tag>
           <el-tag v-else-if="scope.row.status === 1 && scope.row.approveStatus === '4'" type="danger">审核驳回
           </el-tag>
+          <el-tag v-else-if="scope.row.status === 3" type="danger">已删除</el-tag>
           <el-tag v-else>
             草稿
           </el-tag>
@@ -73,11 +74,16 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
-          <router-link v-if="checkPermission2(['WIKI_ARTICLE_EDIT']) && scope.row.status !== 'x'" :to="'/wiki/article/'+scope.row.id">
-            <el-button type="primary" size="small" icon="el-icon-edit">
-              Edit
-            </el-button>
+          <router-link v-if="checkOperation('WIKI_ARTICLE_EDIT',scope.row)" :to="'/wiki/article/'+scope.row.id">
+            <el-button type="text" icon="el-icon-edit">编辑</el-button>
           </router-link>
+          <el-button-group>
+            <el-button v-if="checkOperation('WIKI_ARTICLE_APPROVE',scope.row)" type="text" icon="el-icon-finished" @click="openApprove(scope.$index, scope.row)">
+              审核
+            </el-button>
+            <el-button v-if="checkOperation('WIKI_ARTICLE_RECOMMEND',scope.row)" type="text" icon="el-icon-thumb" @click="openRecommend(scope.$index, scope.row)">推荐
+            </el-button>
+          </el-button-group>
         </template>
       </el-table-column>
     </el-table>
@@ -136,6 +142,44 @@ export default {
         this.list = response.rows
         this.listQuery.total = response.total
       }).finally(() => { this.loading = false })
+    },
+    checkOperation(op, row) {
+      let isEnabled = checkPermission2([op])
+      if (!isEnabled) {
+        return false
+      }
+      if (op === 'WIKI_ARTICLE_EDIT') {
+        isEnabled = row.status !== 3
+      } else if (op === 'WIKI_ARTICLE_APPROVE') {
+        isEnabled = row.status === 1 && (row.approveStatus === '0' || row.approveStatus === '2')
+      } else if (op === 'WIKI_ARTICLE_RECOMMEND') {
+        isEnabled = row.status === 1 && row.approveStatus === '1'
+      }
+      return isEnabled
+    },
+    openApprove(index, row) {
+      // var item = this.tableOptions.rows[index];
+
+      // this.record = JSON.parse(JSON.stringify(row))
+
+      /*  $.get(_that.urls.save + row.id + '/')
+        .done(function(res) {
+          _that.loading = false
+          if (res.success) {
+            _that.record.content = res.rows[0].content
+            if (utils.isEmptyObject(_that.record.content)) {
+              _that.record.content = '<p>无内容-不能通过审核！</p>'
+            } else {
+              _that.approve.enableSuccess = true
+            }
+            _that.approve.title = '审核 - ' + row.title
+            _that.approve.visible = true
+          }
+        })*/
+
+    },
+    openRecommend(index, row) {
+      //
     }
   }
 }

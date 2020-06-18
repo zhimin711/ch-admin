@@ -32,6 +32,7 @@
             </el-button>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item v-if="checkPermission2(['CANAL_CLUSTERS_CONFIG_EDIT'])" @click.native="handleConfig(scope.row)">主配置</el-dropdown-item>
+              <!--<el-dropdown-item v-if="checkPermission2(['CANAL_CLUSTERS_CONFIG_EDIT'])" @click.native="handleConfig2(scope.row)">主配置2</el-dropdown-item>-->
               <el-dropdown-item v-if="checkPermission2(['CANAL_CLUSTERS_EDIT'])" @click.native="handleUpdate(scope.row)">修改集群</el-dropdown-item>
               <el-dropdown-item v-if="checkPermission2(['CANAL_CLUSTERS_DELETE'])" @click.native="handleDelete(scope.row)">删除集群</el-dropdown-item>
               <!--<el-dropdown-item @click.native="handleView(scope.row)">查看Server</el-dropdown-item>-->
@@ -520,9 +521,10 @@ export default {
     handleView(row) {
       this.$router.push('/canalServer/nodeServers?clusterId=' + row.id)
     },
+    handleConfig2(row) {
+      this.$router.push('/canalServer/nodeServer/config?clusterId=' + row.id)
+    },
     handleConfig(row) {
-      // this.$router.push('/canalServer/nodeServer/config?clusterId=' + row.id)
-
       this.dialogStatus = 'config'
       getCanalConfigTemplate(row.id).then(resp => {
         this.canalClusterConfig = resp.data
