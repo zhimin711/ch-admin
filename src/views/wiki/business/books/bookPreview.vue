@@ -54,12 +54,17 @@ export default {
 </script>
 
 <style scoped>
+  .view-container{
+  }
   .demo-image__lazy {
+    display:block;
+    text-align: center;
     height: 800px;
     overflow-y: auto;
   }
   .demo-image__lazy .el-image {
-    display: block;
+    width: 80%;
+    max-width: 960px;
     min-height: 1000px;
     margin-bottom: 10px;
   }

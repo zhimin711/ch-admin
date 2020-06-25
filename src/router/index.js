@@ -109,18 +109,6 @@ export const constantRoutes = [
  * the routes example
  */
 export const exampleRoutes = [
-  {
-    path: '/icon',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/icons/index'),
-        name: 'Icons',
-        meta: { title: 'Icons', icon: 'icon', noCache: true }
-      }
-    ]
-  },
   componentsRouter,
   tableRouter,
 
@@ -158,17 +146,6 @@ export const exampleRoutes = [
         component: () => import('@/views/error-log/index'),
         name: 'ErrorLog',
         meta: { title: 'Error Log', icon: 'bug' }
-      }
-    ]
-  },
-
-  {
-    path: 'external-link',
-    component: Layout,
-    children: [
-      {
-        path: 'https://github.com/PanJiaChen/vue-element-admin',
-        meta: { title: 'External Link', icon: 'link' }
       }
     ]
   },

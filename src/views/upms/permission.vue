@@ -92,7 +92,8 @@
           <el-input v-model="record.name" />
         </el-form-item>
         <el-form-item label="图标" prop="icon">
-          <el-input v-model="record.icon" placeholder="仅支持SVG" />
+          <!--<el-input v-model="record.icon" placeholder="仅支持SVG" />-->
+          <icon-selector v-model="record.icon" />
         </el-form-item>
         <el-form-item label="地址">
           <el-input v-model="record.url" />
@@ -132,6 +133,7 @@
 
 <script>
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+import IconSelector from '@/components/IconSelector'
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { validAlphabetsAndNumber, isEmpty } from '@/utils/validate'
@@ -139,7 +141,7 @@ import { fetchTree, fetchList, add, edit, del } from '@/api/upms/permission'
 
 export default {
   name: 'UpmsPermission',
-  components: { Pagination },
+  components: { Pagination, IconSelector },
   data() {
     return {
       treeData1: [],
