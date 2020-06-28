@@ -31,7 +31,7 @@
               </el-button>
             </router-link>
             <router-link v-if="checkPermission2(['WIKI_ARTICLE_RECOMMEND_EDIT'])" :to="'/wiki/article/recommend'">
-              <el-button type="primary" size="small" icon="el-icon-plus">
+              <el-button type="success" size="small" icon="el-icon-thumb">
                 文章推荐
               </el-button>
             </router-link>
