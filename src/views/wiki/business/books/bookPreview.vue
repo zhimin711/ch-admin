@@ -6,7 +6,7 @@
       </el-button>
     </sticky>
     <div class="demo-image__lazy" :style="{height:previewHeight}">
-      <el-image v-for="url in urls" :key="url" :src="url" lazy />
+      <el-image v-for="url in urls" :key="url" :src="url" lazy :style="{'min-height':imgHeight}" />
     </div>
   </div>
 
@@ -25,15 +25,18 @@ export default {
       id: -1,
       loading: true,
       previewHeight: '900px',
+      imgHeight: '1000px',
       urls: []
     }
   },
   created() {
     this.id = this.$route.params && this.$route.params.id
+    this.imgHeight = (window.innerHeight - 150) + 'px'
     this.getBookPreview()
   },
   mounted() {
     this.previewHeight = (window.innerHeight - 135) + 'px'
+    this.imgHeight = (window.innerHeight - 150) + 'px'
   },
   methods: {
     getBookPreview() {
@@ -63,9 +66,8 @@ export default {
     overflow-y: auto;
   }
   .demo-image__lazy .el-image {
-    width: 80%;
-    max-width: 960px;
-    min-height: 1000px;
+    width: 100%;
+    max-width: 900px;
     margin-bottom: 10px;
   }
 </style>

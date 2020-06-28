@@ -46,10 +46,17 @@ export function delArticle(id) {
   })
 }
 
-export function getBookCatalogs(bookId, params) {
+export function getArticleRecommends() {
   return request({
-    url: `${baseUrl}/${bookId}/chapters`,
-    method: 'get',
-    params: params
+    url: `${baseUrl}/recommend`,
+    method: 'get'
+  })
+}
+
+export function editArticleRecommends(data) {
+  return request({
+    url: `${baseUrl}/recommend`,
+    method: 'post',
+    data
   })
 }

@@ -29,9 +29,9 @@
       <el-table-column prop="name" label="名称" min-width="200" />
       <el-table-column prop="author" label="作者" width="180" />
       <!--<el-table-column prop="description" label="标签" />-->
-      <el-table-column prop="sort" label="排序" width="80" />
+      <!--<el-table-column prop="sort" label="排序" width="80" />-->
 
-      <el-table-column prop="status" label="状态" width="100">
+      <!--<el-table-column prop="status" label="状态" width="100">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.status === '0'" type="primary">待开始</el-tag>
           <el-tag v-if="scope.row.status === '1'" type="success">进行中</el-tag>
@@ -41,12 +41,12 @@
           <el-tag v-if="scope.row.status === '6'" type="success">同步完成</el-tag>
           <el-tag v-if="scope.row.status === 'x'" type="danger">已删除</el-tag>
         </template>
-      </el-table-column>
-      <el-table-column prop="latestChapterAt" label="最新更新时间" width="160">
+      </el-table-column>-->
+      <!--<el-table-column prop="latestChapterAt" label="最新更新时间" width="160">
         <template slot-scope="scope">
           <span>{{ scope.row.latestChapterAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
-      </el-table-column>
+      </el-table-column>-->
       <el-table-column align="center" label="操作" width="180">
         <template slot-scope="scope">
           <router-link v-if="checkPermission2(['WIKI_BOOKS_EDIT']) && scope.row.type === '1' && scope.row.status !== 'x'" :to="'/wiki/books/'+scope.row.id">

@@ -30,6 +30,11 @@
                 创建文章
               </el-button>
             </router-link>
+            <router-link v-if="checkPermission2(['WIKI_ARTICLE_RECOMMEND_EDIT'])" :to="'/wiki/article/recommend'">
+              <el-button type="primary" size="small" icon="el-icon-plus">
+                文章推荐
+              </el-button>
+            </router-link>
             <!--<el-button type="primary" icon="el-icon-download" class="handle-del mr10">导出</el-button>-->
           </el-col>
         </el-row>
