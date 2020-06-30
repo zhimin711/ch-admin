@@ -25,12 +25,12 @@
           <el-col :span="24">
             <el-button type="primary" icon="el-icon-search" @click="getList">搜索</el-button>
             <el-button icon="el-icon-refresh" @click="listQuery.params = {}">重置</el-button>
-            <router-link v-if="checkPermission2(['WIKI_ARTICLE_ADD'])" :to="'/wiki/article/add'">
+            <router-link v-if="checkPermission2(['WIKI_ARTICLE_ADD_PAGE'])" :to="'/wiki/article/add'">
               <el-button type="primary" size="small" icon="el-icon-plus">
                 创建文章
               </el-button>
             </router-link>
-            <router-link v-if="checkPermission2(['WIKI_ARTICLE_RECOMMEND_EDIT'])" :to="'/wiki/article/recommend'">
+            <router-link v-if="checkPermission2(['WIKI_ARTICLE_RECOMMEND_PAGE'])" :to="'/wiki/article/recommend'">
               <el-button type="success" size="small" icon="el-icon-thumb">
                 文章推荐
               </el-button>
@@ -79,7 +79,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
-          <router-link v-if="checkOperation('WIKI_ARTICLE_EDIT',scope.row)" :to="'/wiki/article/'+scope.row.id">
+          <router-link v-if="checkOperation('WIKI_ARTICLE_EDIT_PAGE',scope.row)" :to="'/wiki/article/'+scope.row.id">
             <el-button type="text" icon="el-icon-edit">编辑</el-button>
           </router-link>
           <el-button-group>
