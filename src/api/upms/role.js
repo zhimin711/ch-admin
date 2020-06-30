@@ -2,7 +2,7 @@ import request from '@/utils/request2'
 
 const baseUrl = '/upms/role'
 
-export function list(query) {
+export function pageRole(query) {
   return request({
     url: `${baseUrl}/${query.page}/${query.limit}`,
     method: 'get',
@@ -10,7 +10,7 @@ export function list(query) {
   })
 }
 
-export function get(id) {
+export function getRole(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'get',
@@ -18,7 +18,7 @@ export function get(id) {
   })
 }
 
-export function add(data) {
+export function addRole(data) {
   return request({
     url: `${baseUrl}`,
     method: 'post',
@@ -26,7 +26,7 @@ export function add(data) {
   })
 }
 
-export function edit(id, data) {
+export function editRole(id, data) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'put',
@@ -34,21 +34,22 @@ export function edit(id, data) {
   })
 }
 
-export function del(id) {
+export function delRole(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'delete'
   })
 }
 
-export function getPermissions(id) {
+export function getRolePermissions(id, data) {
   return request({
     url: `${baseUrl}/${id}/permissions`,
-    method: 'get'
+    method: 'get',
+    params: data
   })
 }
 
-export function editPermissions(id, data) {
+export function editRolePermissions(id, data) {
   return request({
     url: `${baseUrl}/${id}/permissions`,
     method: 'post',

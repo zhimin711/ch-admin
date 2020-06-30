@@ -112,7 +112,7 @@ import path from 'path'
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import { list, add, edit, del, getPermissions, editPermissions } from '@/api/upms/role'
+import { pageRole, addRole, editRole, delRole, getRolePermissions, editRolePermissions } from '@/api/upms/role'
 import { fetchTree } from '@/api/upms/permission'
 
 const defaultRole = {
@@ -172,7 +172,7 @@ export default {
     },
     getList() {
       this.listLoading = true
-      list(this.listQuery).then(response => {
+      pageRole(this.listQuery).then(response => {
         this.listLoading = false
         this.listQuery.data = response.rows
         this.listQuery.total = response.total
@@ -253,7 +253,7 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          await del(row.id)
+          await delRole(row.id)
           this.getList()
           this.$message({
             type: 'success',
@@ -282,9 +282,9 @@ export default {
       const isEdit = this.dialogType === 'edit'
       let resp = null
       if (isEdit) {
-        resp = await edit(this.role.id, this.role)
+        resp = await editRole(this.role.id, this.role)
       } else {
-        resp = await add(this.role).catch(() => {})
+        resp = await addRole(this.role).catch(() => {})
         if (resp && resp.success) {
           const role = deepClone(this.role)
           this.rolesList.push(role)
@@ -310,7 +310,7 @@ export default {
     handleAuth(row) {
       this.dialogVisible2 = true
       this.role = deepClone(row)
-      getPermissions(row.id).then(resp => {
+      getRolePermissions(row.id, { types: '3,4' }).then(resp => {
         if (resp.success) {
           const authList = this.generateArr(resp.rows)
           this.expList = authList.length > 0 ? authList : [this.routes[0].value]
@@ -323,7 +323,7 @@ export default {
       const checkedKeys1 = this.$refs.tree.getHalfCheckedKeys()
       checkedKeys = [...checkedKeys, ...checkedKeys1]
       // this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/', checkedKeys)
-      const resp = await editPermissions(this.role.id, checkedKeys)
+      const resp = await editRolePermissions(this.role.id, checkedKeys)
       if (resp && resp.success) {
         this.dialogVisible2 = false
         /* this.$message({
