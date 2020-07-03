@@ -1,14 +1,14 @@
 import request from '@/utils/request2'
 const baseUrl = '/upms/user'
-export function list(query) {
+export function pageUser(query) {
   return request({
-    url: `${baseUrl}/${query.page}/${query.limit}`,
+    url: `${baseUrl}/${query.num}/${query.size}`,
     method: 'get',
     params: query.params
   })
 }
 
-export function get(id) {
+export function getUser(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'get',
@@ -16,7 +16,7 @@ export function get(id) {
   })
 }
 
-export function add(data) {
+export function addUser(data) {
   return request({
     url: `${baseUrl}`,
     method: 'post',
@@ -24,7 +24,7 @@ export function add(data) {
   })
 }
 
-export function edit(id, data) {
+export function editUser(id, data) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'put',
@@ -32,7 +32,7 @@ export function edit(id, data) {
   })
 }
 
-export function del(id) {
+export function delUser(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'delete'

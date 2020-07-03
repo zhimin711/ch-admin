@@ -1,16 +1,16 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.params.userId" placeholder="代码" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
-      <el-input v-model="listQuery.params.username" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
+      <el-input v-model="recordPage.params.userId" placeholder="代码" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
+      <el-input v-model="recordPage.params.username" placeholder="名称" style="width: 200px;" class="filter-item" />
+      <el-select v-model="recordPage.params.status" placeholder="状态" class="filter-item" clearable>
         <el-option label="启用" value="1" />
         <el-option label="禁用" value="0" />
       </el-select>
-      <el-button v-if="checkPermission2(['UPMS_PERMISSION_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-if="checkPermission2(['UPMS_PERMISSION_SEARCH'])" v-loading="recordPage.loading" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
-      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
+      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="recordPage.params = {}">
         重置
       </el-button>
       <el-button v-if="checkPermission2(['UPMS_PERMISSION_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
@@ -19,19 +19,19 @@
       <!--<el-button type="primary" class="filter-item" icon="el-icon-plus" @click="handleAddRole">New Role</el-button>-->
     </div>
 
-    <el-table v-loading="loading" :data="list" style="width: 100%;margin-bottom: 20px;" row-key="id" border :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+    <el-table v-loading="recordPage.loading" :data="recordPage.list" style="width: 100%;margin-bottom: 20px;" row-key="id" border :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
       <el-table-column label="名称" prop="name">
         <template slot-scope="scope">
           {{ scope.row.name }}
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="type" label="类型" width="70">
+      <el-table-column align="center" prop="type" label="类型" width="95">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.type === '1'" type="success">目录</el-tag>
+          <el-tag v-if="scope.row.type === '1'" type="warning">目录</el-tag>
           <el-tag v-else-if="scope.row.type === '2'" type="success">菜单</el-tag>
           <el-tag v-else-if="scope.row.type === '3'" type="primary">按钮</el-tag>
-          <el-tag v-else-if="scope.row.type === '4'" type="info">隐藏</el-tag>
-          <el-tag v-else-if="scope.row.type === '5'" type="warning">用户</el-tag>
+          <el-tag v-else-if="scope.row.type === '4'" type="info">隐藏菜单</el-tag>
+          <el-tag v-else-if="scope.row.type === '5'" type="danger">登录</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="代码" prop="code">
@@ -68,7 +68,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="recordPage.total>0" :total="recordPage.total" :page.sync="recordPage.num" :limit.sync="recordPage.size" @pagination="getList" />
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改权限':'新增权限'">
       <el-form ref="baseForm" :model="record" :rules="rules" label-width="100px">
@@ -76,9 +76,9 @@
           <el-radio-group v-model="record.type" @change="changeType">
             <el-radio-button label="1">目录</el-radio-button>
             <el-radio-button label="2">菜单</el-radio-button>
+            <el-radio-button label="4">隐藏菜单</el-radio-button>
             <el-radio-button label="3">按钮</el-radio-button>
-            <el-radio-button label="4">隐藏</el-radio-button>
-            <el-radio-button label="5">用户</el-radio-button>
+            <el-radio-button label="5">登录</el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="上级">
@@ -132,7 +132,6 @@
 </template>
 
 <script>
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import IconSelector from '@/components/IconSelector'
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
@@ -140,17 +139,17 @@ import { validAlphabetsAndNumber, isEmpty } from '@/utils/validate'
 import { fetchTree, fetchList, add, edit, del } from '@/api/upms/permission'
 
 export default {
-  name: 'UpmsPermission',
-  components: { Pagination, IconSelector },
+  name: 'UPMSPermission',
+  components: { IconSelector },
   data() {
     return {
       treeData1: [],
-      loading: true,
-      list: [],
-      listQuery: {
-        page: 1,
-        limit: 10,
+      recordPage: {
+        loading: true,
+        num: 1,
+        size: 10,
         total: 0,
+        list: [],
         params: {}
       },
       record: {},
@@ -203,11 +202,11 @@ export default {
       // this.getList()
     },
     getList() {
-      this.loading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.rows
-        this.listQuery.total = response.total
-      }).finally(() => { this.loading = false })
+      this.recordPage.loading = true
+      fetchList(this.recordPage).then(response => {
+        this.recordPage.list = response.rows
+        this.recordPage.total = response.total
+      }).finally(() => { this.recordPage.loading = false })
     },
     handleAdd() {
       this.getTree('1')

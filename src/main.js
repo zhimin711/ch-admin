@@ -19,6 +19,9 @@ import './utils/error-log' // error log
 
 import * as filters from './filters' // global filters
 
+import Pagination from './components/Pagination'
+
+import permission from './directive/permission/index.js' // 权限判断指令
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api
@@ -31,7 +34,9 @@ import { mockXHR } from '../mock'
 if (process.env.NODE_ENV === 'production') {
   mockXHR()
 }
-
+// 全局组件挂载
+Vue.component('Pagination', Pagination)
+Vue.use(permission)
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium' // set element-ui default size
 })

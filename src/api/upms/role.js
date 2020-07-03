@@ -4,7 +4,7 @@ const baseUrl = '/upms/role'
 
 export function pageRole(query) {
   return request({
-    url: `${baseUrl}/${query.page}/${query.limit}`,
+    url: `${baseUrl}/${query.num}/${query.size}`,
     method: 'get',
     params: query.params
   })

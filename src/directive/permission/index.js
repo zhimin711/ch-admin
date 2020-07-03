@@ -10,4 +10,5 @@ if (window.Vue) {
 }
 
 permission.install = install
+
 export default permission

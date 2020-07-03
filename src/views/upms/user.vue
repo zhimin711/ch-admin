@@ -1,17 +1,17 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.params.userId" placeholder="用户ID" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
-      <el-input v-model="listQuery.params.username" placeholder="用户名" style="width: 200px;" class="filter-item" />
-      <el-input v-model="listQuery.params.realName" placeholder="用户真实名称" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
+      <el-input v-model="recordPage.params.userId" placeholder="用户ID" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
+      <el-input v-model="recordPage.params.username" placeholder="用户名" style="width: 200px;" class="filter-item" />
+      <el-input v-model="recordPage.params.realName" placeholder="用户真实名称" style="width: 200px;" class="filter-item" />
+      <el-select v-model="recordPage.params.status" placeholder="状态" class="filter-item" clearable>
         <el-option label="启用" value="1">启用</el-option>
         <el-option label="禁用" value="0">禁用</el-option>
       </el-select>
-      <el-button v-if="checkPermission2(['UPMS_USER_SEARCH'])" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-if="checkPermission2(['UPMS_USER_SEARCH'])" v-loading="recordPage.loading" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
-      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
+      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="recordPage.params = {}">
         重置
       </el-button>
       <el-button v-if="checkPermission2(['UPMS_USER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
@@ -21,7 +21,7 @@
         初始化用户密码
       </el-button>-->
     </div>
-    <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
+    <el-table v-loading="recordPage.loading" :data="recordPage.list" border fit highlight-current-row style="width: 100%">
       <el-table-column width="120px" align="center" label="用户ID">
         <template slot-scope="scope">
           <span>{{ scope.row.userId }}</span>
@@ -68,7 +68,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="recordPage.total>0" :total="recordPage.total" :page.sync="recordPage.num" :limit.sync="recordPage.size" @pagination="getList" />
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 用户':'New 用户'">
       <el-form :model="record" label-width="80px" label-position="left">
@@ -114,27 +114,25 @@
 </template>
 
 <script>
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import waves from '@/directive/waves/index.js' // 水波纹指令
 
 import { handleClipboard2 } from '@/utils/clipboard' // use clipboard directly
 
-import { list, add, edit, del, initPwd, getEnableRoles, getRoles, editRoles } from '@/api/upms/user'
+import { pageUser, addUser, editUser, delUser, initPwd, getEnableRoles, getRoles, editRoles } from '@/api/upms/user'
 
 export default {
-  name: 'UserManager',
-  components: { Pagination },
+  name: 'UPMSUser',
   directives: {
     waves
   },
   data() {
     return {
-      listLoading: true,
-      listQuery: {
-        page: 1,
-        limit: 10,
+      recordPage: {
+        loading: true,
+        num: 1,
+        size: 10,
         total: 0,
         list: [],
         params: {}
@@ -159,11 +157,11 @@ export default {
       if (resp && resp.success) this.roles = resp.rows
     },
     getList() {
-      this.listLoading = true
-      list(this.listQuery).then(response => {
-        this.listQuery.list = response.rows
-        this.listQuery.total = response.total
-      }).finally(() => { this.listLoading = false })
+      this.recordPage.loading = true
+      pageUser(this.recordPage).then(response => {
+        this.recordPage.list = response.rows
+        this.recordPage.total = response.total
+      }).finally(() => { this.recordPage.loading = false })
     },
     handleAdd() {
       this.record = {}
@@ -185,7 +183,7 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          await del(row.id)
+          await delUser(row.id)
           _this.getList()
           this.$message({
             type: 'success',
@@ -222,10 +220,10 @@ export default {
       let resp = null
       let opName = '添加'
       if (this.dialogType === 'new') {
-        resp = await add(this.record)
+        resp = await addUser(this.record)
       } else if (this.dialogType === 'edit') {
         opName = '修改'
-        resp = await edit(this.record.id, this.record)
+        resp = await editUser(this.record.id, this.record)
       }
       if (resp.success) {
         this.dialogVisible = false

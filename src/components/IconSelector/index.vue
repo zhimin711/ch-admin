@@ -2,7 +2,7 @@
   <div class="icons-container">
     <el-input v-model="value" class="input-with-select" placeholder="请选择图标" readonly>
       <i v-if="type !== 'svg'" slot="prefix" :class="'el-input__icon el-icon-' + value" />
-      <svg-icon v-if="type === 'svg'" slot="prepend" :icon-class="value" />
+      <svg-icon v-if="type === 'svg'" slot="prepend" :icon-class="value?value:''" />
       <!--<el-button slot="prepend" icon="el-icon-more"></el-button>-->
       <el-button slot="append" v-popover:popover icon="el-icon-search">选择</el-button>
     </el-input>

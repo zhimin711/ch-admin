@@ -1,13 +1,8 @@
 import request from '@/utils/request2'
 
-const baseUrl = '/upms/permission'
-export function fetchTree(type) {
-  return request({
-    url: `${baseUrl}/tree/${type}`,
-    method: 'get'
-  })
-}
-export function fetchList(query) {
+const baseUrl = '/upms/department'
+
+export function pageDepartment(query) {
   return request({
     url: `${baseUrl}/${query.num}/${query.size}`,
     method: 'get',
@@ -15,7 +10,7 @@ export function fetchList(query) {
   })
 }
 
-export function get(id) {
+export function getDepartment(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'get',
@@ -23,7 +18,7 @@ export function get(id) {
   })
 }
 
-export function add(data) {
+export function addDepartment(data) {
   return request({
     url: `${baseUrl}`,
     method: 'post',
@@ -31,7 +26,7 @@ export function add(data) {
   })
 }
 
-export function edit(id, data) {
+export function editDepartment(id, data) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'put',
@@ -39,7 +34,7 @@ export function edit(id, data) {
   })
 }
 
-export function del(id) {
+export function delDepartment(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'delete'

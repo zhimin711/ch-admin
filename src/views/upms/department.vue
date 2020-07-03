@@ -1,264 +1,308 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
-      <el-input v-model="listQuery.params.userId" placeholder="代码" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
-      <el-input v-model="listQuery.params.username" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
-        <el-option label="启用" value="1">启用</el-option>
-        <el-option label="禁用" value="0">禁用</el-option>
-      </el-select>
-      <el-button v-if="checkPermission2(['UPMS_USER_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        查询
-      </el-button>
-      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
-        重置
-      </el-button>
-      <el-button v-if="checkPermission2(['UPMS_USER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加用户
-      </el-button>
-      <el-button v-if="checkPermission2(['UPMS_USER_PASSWORD_INIT'])" class="filter-item" style="margin-left: 10px;" type="warning" icon="el-icon-refresh" @click="handleAdd">
-        初始化账号密码
-      </el-button>
-    </div>
-    <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="120px" align="center" label="用户ID">
-        <template slot-scope="scope">
-          <span>{{ scope.row.userId }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column width="120px" align="center" label="用户名">
-        <template slot-scope="scope">
-          <span>{{ scope.row.username }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="用户姓名">
-        <template slot-scope="scope">
-          <span>{{ scope.row.realName }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="邮箱地址">
-        <template slot-scope="scope">
-          <span>{{ scope.row.email }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column width="180px" align="center" label="创建时间">
-        <template slot-scope="scope">
-          <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-        </template>
-      </el-table-column>
+    <el-form :inline="true">
+      <el-form-item label="部门名称">
+        <el-input
+          v-model="recordPage.params.deptName"
+          placeholder="请输入部门名称"
+          clearable
+          size="small"
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="状态">
+        <el-select v-model="recordPage.params.status" placeholder="部门状态" clearable size="small">
+          <el-option
+            v-for="dict in statusOptions"
+            :key="dict.dictValue"
+            :label="dict.dictLabel"
+            :value="dict.dictValue"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button
+          class="filter-item"
+          type="primary"
+          icon="el-icon-search"
+          size="mini"
+          @click="handleQuery"
+        >搜索</el-button>
+        <el-button
+          v-permission="['UPMS_DEPARTMENT_ADD']"
+          class="filter-item"
+          type="primary"
+          icon="el-icon-plus"
+          size="mini"
+          @click="handleAdd"
+        >新增</el-button>
+      </el-form-item>
+    </el-form>
 
-      <el-table-column class-name="status-col" label="状态" width="110">
-        <template slot-scope="{row}">
-          <el-tag :type="row.status | statusFilter">
-            {{ row.status }}
-          </el-tag>
+    <el-table
+      v-loading="recordPage.loading"
+      :data="recordPage.list"
+      row-key="id"
+      default-expand-all
+      :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+    >
+      <el-table-column prop="deptName" label="部门名称" width="260" />
+      <el-table-column prop="orderNum" label="排序" width="200" />
+      <el-table-column prop="status" label="状态" :formatter="statusFormat" width="100" />
+      <el-table-column label="创建时间" align="center" prop="createTime" width="200">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
       </el-table-column>
-
-      <el-table-column align="center" label="操作" width="200">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <!--<el-button type="primary" size="small" @click="handleEdit(scope.row)">Edit</el-button>-->
-          <!--<el-button type="danger" size="small" @click="handleDel(scope.row)">Delete</el-button>-->
-          <el-link v-if="checkPermission2(['UPMS_USER_ROLE'])" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配角色</el-link>
-          <el-link v-if="checkPermission2(['UPMS_USER_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link v-if="checkPermission2(['UPMS_USER_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <el-button
+            v-permission="['UPMS_DEPARTMENT_EDIT']"
+            size="mini"
+            type="text"
+            icon="el-icon-edit"
+            @click="handleUpdate(scope.row)"
+          >修改</el-button>
+          <el-button
+            v-if="scope.row.pid !== 0"
+            v-permission="['UPMS_DEPARTMENT_DEL']"
+            size="mini"
+            type="text"
+            icon="el-icon-delete"
+            @click="handleDelete(scope.row)"
+          >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 用户':'New 用户'">
-      <el-form :model="record" label-width="80px" label-position="left">
-        <el-form-item label="用户ID">
-          <el-input v-model="record.userId" placeholder="用户ID（系统生成）" :disabled="true" />
-        </el-form-item>
-        <el-form-item label="用户名">
-          <el-input v-model="record.username" placeholder="用户名" :disabled="dialogCodeEdit" />
-        </el-form-item>
-        <el-form-item label="用户姓名">
-          <el-input v-model="record.realName" placeholder="用户姓名" />
-        </el-form-item>
-        <el-form-item label="邮箱">
-          <el-input v-model="record.email" placeholder="电子邮箱" />
-        </el-form-item>
-        <el-form-item label="手机号">
-          <el-input v-model="record.mobilePhone" placeholder="手机号" />
-        </el-form-item>
-        <el-form-item label="Desc">
-          <el-input
-            v-model="record.description"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            type="textarea"
-            placeholder="用户 Description"
-          />
-        </el-form-item>
+    <!-- 添加或修改部门对话框 -->
+    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
+      <el-form ref="form" :model="record" :rules="rules" label-width="80px">
+        <el-row>
+          <el-col v-if="record.parentId !== 0" :span="24">
+            <el-form-item label="上级部门" prop="parentId">
+              <!--<treeselect v-model="record.parentId" :options="deptOptions" :normalizer="normalizer" placeholder="选择上级部门" />-->
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="部门名称" prop="deptName">
+              <el-input v-model="record.deptName" placeholder="请输入部门名称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="显示排序" prop="orderNum">
+              <el-input-number v-model="record.num" controls-position="right" :min="0" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="负责人" prop="leader">
+              <el-input v-model="record.leader" placeholder="请输入负责人" maxlength="20" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="联系电话" prop="phone">
+              <el-input v-model="record.phone" placeholder="请输入联系电话" maxlength="11" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="record.email" placeholder="请输入邮箱" maxlength="50" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="部门状态">
+              <!-- <el-radio-group v-model="record.status">
+                <el-radio
+                  v-for="dict in statusOptions"
+                  :key="dict.dictValue"
+                  :label="dict.dictValue"
+                >{{ dict.dictLabel }}</el-radio>
+              </el-radio-group>-->
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
-      <div style="text-align:right;">
-        <el-button type="danger" @click="dialogVisible=false">Cancel</el-button>
-        <el-button type="primary" @click="handleSubmit">Confirm</el-button>
-      </div>
-    </el-dialog>
-    <el-dialog :visible.sync="dialogVisible2" :title="'分配用户角色'" width="544px">
-      <div style="text-align:left;margin-bottom: 20px">
-        <el-transfer v-model="recordRoles" :data="roles" :titles="['未分配角色', '已分配角色']" :props="{ key: 'id', label: 'name' }" />
-      </div>
-      <div style="text-align:left;padding-left:170px">
-        <el-button type="primary" @click="handleSubmitAuth">保存</el-button>
-        <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import { deepClone } from '@/utils'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del, getEnableRoles, getRoles, editRoles } from '@/api/upms/user'
+import { pageDepartment, getDepartment, delDepartment, addDepartment, editDepartment, listDeptExcludeChild } from '@/api/upms/department'
+// import Treeselect from '@riophae/vue-treeselect'
+// import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+
+const defaultRecord = { num: 1, status: 0 }
 
 export default {
-  name: 'UpmsDepartmentManager',
-  components: { Pagination },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      let s = 'draft'
-      if (status === '1') {
-        s = 'published'
-      } else if (status === '3') {
-        s = 'deleted'
-      }
-      return statusMap[s]
-    }
-  },
+  name: 'UPMSDepartment',
+  // components: { Treeselect },
   data() {
     return {
-      listLoading: true,
-      listQuery: {
-        page: 1,
-        limit: 10,
+      // 查询参数与结果
+      recordPage: {
+        loading: true,
+        num: 1,
+        size: 10,
         total: 0,
         list: [],
         params: {}
       },
+      // 遮罩层
+      loading: true,
+      // 表格树数据
+      deptList: [],
+      // 部门树选项
+      deptOptions: [],
+      // 弹出层标题
+      title: '',
+      // 是否显示弹出层
+      open: false,
+      // 状态数据字典
+      statusOptions: [],
+      // 查询参数
+      queryParams: {
+        deptName: undefined,
+        status: undefined
+      },
+      // 表单参数
       record: {},
-      recordRoles: [],
-      dialogVisible: false,
-      dialogType: false,
-      dialogCodeEdit: false,
-      dialogVisible2: false,
-      roles: []
+      // 表单校验
+      rules: {
+        parentId: [
+          { required: true, message: '上级部门不能为空', trigger: 'blur' }
+        ],
+        deptName: [
+          { required: true, message: '部门名称不能为空', trigger: 'blur' }
+        ],
+        orderNum: [
+          { required: true, message: '菜单顺序不能为空', trigger: 'blur' }
+        ],
+        email: [
+          {
+            type: 'email',
+            message: "'请输入正确的邮箱地址",
+            trigger: ['blur', 'change']
+          }
+        ],
+        phone: [
+          {
+            pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
+            message: '请输入正确的手机号码',
+            trigger: 'blur'
+          }
+        ]
+      }
     }
   },
   created() {
     this.getList()
-    this.getEnableRoles()
+    // this.getDicts('sys_normal_disable').then(response => {
+    //   this.statusOptions = response.data
+    // })
   },
   methods: {
-    checkPermission2,
-    async getEnableRoles() {
-      const resp = await getEnableRoles()
-      if (resp && resp.success) this.roles = resp.rows
-    },
+    /** 查询部门列表 */
     getList() {
-      this.listLoading = true
-      list(this.listQuery).then(response => {
-        this.listQuery.list = response.rows
-        this.listQuery.total = response.total
-        this.listLoading = false
-      }).catch(() => { this.loading = false })
+      this.recordPage.loading = true
+      pageDepartment(this.recordPage).then(response => {
+        this.recordPage.list = response.rows
+        this.recordPage.total = response.total
+      }).finally(() => { this.recordPage.loading = false })
     },
-    handleAdd() {
-      this.record = {}
-      this.dialogType = 'new'
-      this.dialogVisible = true
-      this.dialogCodeEdit = false
+    /** 转换部门数据结构 */
+    normalizer(node) {
+      if (node.children && !node.children.length) {
+        delete node.children
+      }
+      return {
+        id: node.deptId,
+        label: node.deptName,
+        children: node.children
+      }
     },
-    handleEdit(row) {
-      this.record = deepClone(row)
-      this.dialogType = 'edit'
-      this.dialogVisible = true
-      this.dialogCodeEdit = true
+    // 字典状态字典翻译
+    statusFormat(row, column) {
+      return this.selectDictLabel(this.statusOptions, row.status)
     },
-    handleDel(row) {
-      const _this = this
-      this.$confirm('Confirm to remove the user?', 'Warning', {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
-        type: 'warning'
+    // 取消按钮
+    cancel() {
+      this.open = false
+      this.reset()
+    },
+    // 表单重置
+    reset() {
+      this.record = Object.assign({}, defaultRecord)
+      // this.resetForm('form')
+    },
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.getList()
+    },
+    /** 新增按钮操作 */
+    handleAdd(row) {
+      this.reset()
+      if (row !== undefined) {
+        this.record.parentId = row.deptId
+      }
+      this.open = true
+      this.title = '添加部门'
+      pageDepartment(this.recordPage).then(response => {
+        // this.deptOptions = this.handleTree(response.data, 'deptId')
       })
-        .then(async() => {
-          await del(row.id)
-          _this.getList()
-          this.$message({
-            type: 'success',
-            message: 'Delete success!'
-          })
-        })
-        .catch(err => { console.error(err) })
     },
-    async handleSubmit() {
-      const _this = this
-      let resp = null
-      let opName = '添加'
-      if (this.dialogType === 'new') {
-        resp = await add(this.record)
-      } else if (this.dialogType === 'edit') {
-        opName = '修改'
-        resp = await edit(this.record.id, this.record)
-      }
-      if (resp.success) {
-        this.dialogVisible = false
-        this.$message({
-          type: 'success',
-          message: `${opName} ${this.record.username} success!`
-        })
-        _this.getList()
-      }
+    /** 修改按钮操作 */
+    handleUpdate(row) {
+      this.reset()
+      getDepartment(row.deptId).then(response => {
+        this.record = response.data
+        this.open = true
+        this.title = '修改部门'
+      })
+      listDeptExcludeChild(row.deptId).then(response => {
+        this.deptOptions = this.handleTree(response.data, 'deptId')
+      })
     },
-    handleAuth(row) {
-      //
-      this.dialogVisible2 = true
-
-      this.record = deepClone(row)
-      this.recordRoles = []
-      getRoles(row.id).then(resp => {
-        if (resp.success) {
-          resp.rows.forEach(route => {
-            this.recordRoles.push(route.id)
-          })
+    /** 提交按钮 */
+    submitForm: function() {
+      this.$refs['form'].validate(valid => {
+        if (valid) {
+          if (this.record.deptId !== undefined) {
+            editDepartment(this.record).then(response => {
+              if (response.code === 200) {
+                this.msgSuccess('修改成功')
+                this.open = false
+                this.getList()
+              }
+            })
+          } else {
+            addDepartment(this.record).then(response => {
+              if (response.code === 200) {
+                this.msgSuccess('新增成功')
+                this.open = false
+                this.getList()
+              }
+            })
+          }
         }
       })
     },
-    async handleSubmitAuth() {
-      //
-      const resp = await editRoles(this.record.id, this.recordRoles)
-      if (resp && resp.success) {
-        this.dialogVisible2 = false
-      }
-      this.$notify({
-        title: '角色授权',
-        dangerouslyUseHTMLString: true,
-        message: `Auth Roles ` + (resp && resp.success ? 'success!' : 'error...'),
-        type: resp && resp.success ? 'success' : 'error'
-      })
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      this.$confirm('是否确认删除名称为"' + row.deptName + '"的数据项?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return delDepartment(row.deptId)
+      }).then(() => {
+        this.getList()
+        this.msgSuccess('删除成功')
+      }).catch(function() {})
     }
   }
 }
 </script>
-
-<style scoped>
-.edit-input {
-  padding-right: 100px;
-}
-.cancel-btn {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-}
-</style>

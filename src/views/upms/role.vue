@@ -1,22 +1,22 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.params.code" placeholder="代码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
+      <el-input v-model="recordPage.params.code" placeholder="代码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="recordPage.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />
+      <el-select v-model="recordPage.params.status" placeholder="状态" class="filter-item" clearable>
         <el-option label="启用" value="1" />
         <el-option label="禁用" value="0" />
       </el-select>
-      <el-button v-if="checkPermission2(['UPMS_ROLE_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-button v-if="checkPermission2(['UPMS_ROLE_SEARCH'])" v-loading="recordPage.loading" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         查询
       </el-button>
-      <el-button class="filter-item" type="" icon="el-icon-refresh" @click="listQuery.params={}">
+      <el-button class="filter-item" type="" icon="el-icon-refresh" @click="recordPage.params={}">
         重置
       </el-button>
       <el-button v-if="checkPermission2(['UPMS_ROLE_ADD'])" type="primary" class="filter-item" icon="el-icon-plus" @click="handleAdd">添加角色</el-button>
     </div>
 
-    <el-table v-loading="listLoading" :data="listQuery.data" style="width: 100%;margin-top:30px;" border>
+    <el-table v-loading="recordPage.loading" :data="recordPage.list" style="width: 100%;" border>
       <el-table-column label="角色代码" width="220">
         <template slot-scope="scope">
           {{ scope.row.code }}
@@ -46,7 +46,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="recordPage.total>0" :total="recordPage.total" :page.sync="recordPage.num" :limit.sync="recordPage.size" @pagination="getList" />
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 角色':'New 角色'">
       <el-form :model="role" label-width="80px" label-position="left">
@@ -111,7 +111,6 @@
 import path from 'path'
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { pageRole, addRole, editRole, delRole, getRolePermissions, editRolePermissions } from '@/api/upms/role'
 import { fetchTree } from '@/api/upms/permission'
 
@@ -123,9 +122,16 @@ const defaultRole = {
 }
 
 export default {
-  components: { Pagination },
   data() {
     return {
+      recordPage: {
+        loading: true,
+        num: 1,
+        size: 10,
+        total: 0,
+        list: [],
+        params: {}
+      },
       role: Object.assign({}, defaultRole),
       routes: [],
       rolesList: [],
@@ -137,14 +143,6 @@ export default {
         label: 'label'
       },
       expList: [],
-      listLoading: false,
-      listQuery: {
-        page: 1,
-        limit: 10,
-        total: 0,
-        data: [],
-        params: {}
-      },
       dialogVisible2: false,
       recordStatus: true,
       dataForm: {
@@ -171,12 +169,11 @@ export default {
       // this.generateRoutes(res.rows)
     },
     getList() {
-      this.listLoading = true
-      pageRole(this.listQuery).then(response => {
-        this.listLoading = false
-        this.listQuery.data = response.rows
-        this.listQuery.total = response.total
-      }).finally(() => { this.listLoading = false })
+      this.recordPage.loading = true
+      pageRole(this.recordPage).then(response => {
+        this.recordPage.list = response.rows
+        this.recordPage.total = response.total
+      }).finally(() => { this.recordPage.loading = false })
     },
     handleFilter() {
       this.getList()
