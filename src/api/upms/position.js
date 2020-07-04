@@ -1,8 +1,8 @@
 import request from '@/utils/request2'
 
-const baseUrl = '/upms/department'
+const baseUrl = '/upms/position'
 
-export function pageDepartment(query) {
+export function pagePosition(query) {
   return request({
     url: `${baseUrl}/${query.num}/${query.size}`,
     method: 'get',
@@ -10,14 +10,14 @@ export function pageDepartment(query) {
   })
 }
 
-export function getDepartment(id) {
+export function getPosition(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'get'
   })
 }
 
-export function addDepartment(data) {
+export function addPosition(data) {
   return request({
     url: `${baseUrl}`,
     method: 'post',
@@ -25,7 +25,7 @@ export function addDepartment(data) {
   })
 }
 
-export function editDepartment(id, data) {
+export function editPosition(id, data) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'put',
@@ -33,14 +33,14 @@ export function editDepartment(id, data) {
   })
 }
 
-export function delDepartment(id) {
+export function delPosition(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'delete'
   })
 }
 
-export function treeDepartment(pid) {
+export function treePosition(pid) {
   return request({
     url: `${baseUrl}/tree/${pid}`,
     method: 'get'

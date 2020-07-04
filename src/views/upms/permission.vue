@@ -155,7 +155,6 @@ export default {
       record: {},
       recordType: '',
       recordStatus: true,
-      recordShow: true,
       recordParents: [],
       recordParentsProps: {
         checkStrictly: false
@@ -212,7 +211,6 @@ export default {
       this.getTree('1')
       this.record = { 'type': '1', sort: 1 }
       this.recordStatus = true
-      this.recordShow = true
       this.recordParents = []
       this.dialogType = 'new'
       this.dialogVisible = true
@@ -227,7 +225,6 @@ export default {
       this.recordParents = this.record.parentId.split(',')
       if (this.record.parentId === '0') this.record.parentId = undefined
       this.recordStatus = (this.record.status === '1')
-      this.recordShow = (this.record.isShow === '1')
       this.dialogType = 'edit'
       this.dialogVisible = true
       // this.recordForm.codeDisabled = true
@@ -242,7 +239,6 @@ export default {
       this.recordParents = this.record.parentId.split(',')
       if (this.record.parentId === '0') this.record.parentId = undefined
       this.recordStatus = (this.record.status === '1')
-      this.recordShow = (this.record.isShow === '1')
       this.dialogType = 'copy'
       this.dialogVisible = true
       this.changeType(row.type)
@@ -280,10 +276,6 @@ export default {
       if (this.recordParents.length > 0) {
         this.record.parentId = this.recordParents.join(',')
       } else this.record.parentId = null
-      this.record.isShow = '0'
-      if (this.recordShow) {
-        this.record.isShow = '1'
-      }
       this.record.status = '0'
       if (this.recordStatus) {
         this.record.status = '1'
