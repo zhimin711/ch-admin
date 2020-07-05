@@ -122,6 +122,7 @@ const defaultRole = {
 }
 
 export default {
+  name: 'UPMS:ROLE',
   data() {
     return {
       recordPage: {

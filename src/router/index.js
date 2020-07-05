@@ -198,15 +198,15 @@ export function assemblyAsyncRoutes(menus, basePath) {
         meta: { title: menu.name }
       }
       if (menu.children && menu.children.length > 0) {
-        tmp.component = resolve => require(['@/views/' + path2 + '/index'], resolve)
+        tmp.component = loadViewIndex(path2)
         tmp.children = assemblyAsyncRoutes(menu.children, path2)
       } else {
-        tmp.component = resolve => require(['@/views/' + path2], resolve)
+        tmp.component = loadView(path2)
       }
     } else if (menu.type === '4') {
       tmp = {
         path: menu.redirect || path,
-        component: resolve => require(['@/views/' + path2], resolve),
+        component: loadView(path2),
         name: menu.code,
         hidden: true,
         meta: { title: menu.name, noCache: true, activeMenu: '/' + basePath }
@@ -241,6 +241,14 @@ export function assemblyAsyncRoutes(menus, basePath) {
 
   // 404 page must be placed at the end !!!
   return res
+}
+
+export const loadView = (view) => { // 路由懒加载
+  return (resolve) => require([`@/views/${view}`], resolve)
+}
+
+export const loadViewIndex = (view) => { // 路由懒加载
+  return (resolve) => require([`@/views/${view}/index`], resolve)
 }
 
 export default router
