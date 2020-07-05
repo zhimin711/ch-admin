@@ -7,7 +7,7 @@
         <el-option label="启用" value="1" />
         <el-option label="禁用" value="0" />
       </el-select>
-      <el-button v-if="checkPermission2(['UPMS_PERMISSION_SEARCH'])" v-loading="recordPage.loading" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-loading="recordPage.loading" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="recordPage.params = {}">

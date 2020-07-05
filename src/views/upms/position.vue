@@ -231,12 +231,12 @@ export default {
     },
     /** 搜索按钮操作 */
     handleQuery() {
-      this.queryParams.pageNum = 1
+      this.recordPage.num = 1
       this.getList()
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.resetForm('queryForm')
+      if (this.$refs['queryForm']) this.$refs['queryForm'].resetFields()
       this.handleQuery()
     },
     // 多选框选中数据
@@ -263,6 +263,7 @@ export default {
     submitForm: function() {
       this.$refs['form'].validate(valid => {
         if (valid) {
+          this.record.status = this.recordStatus ? '1' : '0'
           if (this.record.id !== undefined) {
             editPosition(this.record.id, this.record).then(resp => {
               if (resp.success) {

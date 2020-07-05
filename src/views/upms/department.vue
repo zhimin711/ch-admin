@@ -69,6 +69,12 @@
             @click="handleAdd(scope.row)"
           >新增下级</el-button>
           <el-button
+            v-permission="['UPMS_DEPARTMENT_POSITIONS']"
+            type="text"
+            icon="el-icon-menu"
+            @click="handlePosition(scope.row)"
+          >分配职位</el-button>
+          <el-button
             v-if="scope.row.pid !== 0"
             v-permission="['UPMS_DEPARTMENT_DEL']"
             type="text"
@@ -132,14 +138,31 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+    <el-dialog :visible.sync="dialogVisible2" :title="'分配组织职位'" width="635px" center>
+      <div style="text-align:left;margin-bottom: 20px">
+        <el-transfer
+          v-model="recordPositions"
+          filterable
+          :filter-method="searchPositions"
+          filter-placeholder="请输入职位名称"
+          :data="options.positions"
+          :titles="['未分配职位', '已分配职位']"
+          :props="{ key: 'value', label: 'label' }"
+        />
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="handleSubmitPositions">保存</el-button>
+        <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { deepClone } from '@/utils'
-import { pageDepartment, delDepartment, addDepartment, editDepartment, treeDepartment } from '@/api/upms/department'
-// import Treeselect from '@riophae/vue-treeselect'
-// import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+import { pageDepartment, delDepartment, addDepartment, editDepartment, treeDepartment, getDepartmentPositions, editDepartmentPositions } from '@/api/upms/department'
+import { searchPosition } from '@/api/upms/position'
+import { isEmpty } from '@/utils/validate'
 
 const defaultRecord = { pid: '0', sort: 1, status: '1' }
 
@@ -167,12 +190,14 @@ export default {
       recordParentsProps: {
         checkStrictly: true
       },
+      recordPositions: [],
       // 表格树数据
-      options: { parents: [] },
+      options: { parents: [], positions: [] },
       // 弹出层标题
       title: '',
       // 是否显示弹出层
       open: false,
+      dialogVisible2: false,
       // 状态数据字典
       statusOptions: [],
       // 表单校验
@@ -270,6 +295,38 @@ export default {
         }
       })
     },
+    async handlePosition(row) {
+      //
+      this.dialogVisible2 = true
+      this.record = deepClone(row)
+      await searchPosition().then(resp => {
+        if (resp.success) {
+          this.options.positions = resp.rows
+        }
+      })
+      await getDepartmentPositions(row.id).then(resp => {
+        if (resp.success) {
+          this.recordPositions = resp.rows.map(item => {
+            return item.id + ''
+          })
+        }
+      })
+    },
+    searchPositions(query, item) {
+      if (isEmpty(query)) return true
+      return item.label.indexOf(query) > -1
+    },
+    async handleSubmitPositions() {
+      const resp = await editDepartmentPositions(this.record.id, this.recordPositions)
+      if (resp && resp.success) {
+        this.dialogVisible2 = false
+      }
+      this.$notify({
+        title: '分配职位' + (resp && resp.success ? '成功!' : '失败'),
+        dangerouslyUseHTMLString: true,
+        type: resp && resp.success ? 'success' : 'error'
+      })
+    },
     /** 修改按钮操作 */
     handleUpdate(row) {
       // this.reset()
@@ -295,6 +352,7 @@ export default {
           } else {
             this.record.pid = this.recordParents.join(',')
           }
+          this.record.status = this.recordStatus ? '1' : '0'
           if (this.record.id > 0) {
             editDepartment(this.record.id, this.record).then(resp => {
               if (resp.success) {

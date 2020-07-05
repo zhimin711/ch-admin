@@ -8,7 +8,7 @@
         <el-option label="启用" value="1">启用</el-option>
         <el-option label="禁用" value="0">禁用</el-option>
       </el-select>
-      <el-button v-if="checkPermission2(['UPMS_USER_SEARCH'])" v-loading="recordPage.loading" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-loading="recordPage.loading" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="recordPage.params = {}">
@@ -101,14 +101,14 @@
         <el-button type="primary" @click="handleSubmit">保存</el-button>
       </div>
     </el-dialog>
-    <el-dialog :visible.sync="dialogVisible2" :title="'分配用户角色'" width="544px">
+    <el-dialog :visible.sync="dialogVisible2" :title="'分配用户角色'" width="635px" center>
       <div style="text-align:left;margin-bottom: 20px">
         <el-transfer v-model="recordRoles" :data="roles" :titles="['未分配角色', '已分配角色']" :props="{ key: 'id', label: 'name' }" />
       </div>
-      <div style="text-align:left;padding-left:170px">
+      <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="handleSubmitAuth">保存</el-button>
         <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
-      </div>
+      </span>
     </el-dialog>
   </div>
 </template>
@@ -229,7 +229,7 @@ export default {
         this.dialogVisible = false
         this.$message({
           type: 'success',
-          message: `${opName} ${this.record.username} success!`
+          message: `${opName} ${this.record.username} 成功!`
         })
         _this.getList()
       }
@@ -242,8 +242,8 @@ export default {
       this.recordRoles = []
       getRoles(row.id).then(resp => {
         if (resp.success) {
-          resp.rows.forEach(route => {
-            this.recordRoles.push(route.id)
+          resp.rows.forEach(e => {
+            this.recordRoles.push(e.id)
           })
         }
       })
@@ -257,7 +257,7 @@ export default {
       this.$notify({
         title: '角色授权',
         dangerouslyUseHTMLString: true,
-        message: `Auth Roles ` + (resp && resp.success ? 'success!' : 'error...'),
+        message: `Auth Roles ` + (resp && resp.success ? '成功!' : '失败...'),
         type: resp && resp.success ? 'success' : 'error'
       })
     }

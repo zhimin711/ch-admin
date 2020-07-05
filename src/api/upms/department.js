@@ -46,3 +46,18 @@ export function treeDepartment(pid) {
     method: 'get'
   })
 }
+
+export function getDepartmentPositions(id) {
+  return request({
+    url: `${baseUrl}/${id}/positions`,
+    method: 'get'
+  })
+}
+
+export function editDepartmentPositions(id, data) {
+  return request({
+    url: `${baseUrl}/${id}/positions`,
+    method: 'post',
+    data
+  })
+}

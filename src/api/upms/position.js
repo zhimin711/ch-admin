@@ -46,3 +46,11 @@ export function treePosition(pid) {
     method: 'get'
   })
 }
+
+export function searchPosition(name) {
+  return request({
+    url: `${baseUrl}/search`,
+    method: 'get',
+    name
+  })
+}
