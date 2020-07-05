@@ -127,7 +127,7 @@ import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { listImage, editImage, batchEditImage } from '@/api/wiki/images'
 
 export default {
-  name: 'WikiResourcesImagesManager',
+  name: 'WikiImages',
   components: { Pagination, EditorImage, CategoryDropdown },
   data() {
     return {

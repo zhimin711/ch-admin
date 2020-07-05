@@ -111,7 +111,7 @@ import waves from '@/directive/waves/index.js' // 水波纹指令
 import { listUser } from '@/api/wiki/user'
 
 export default {
-  name: 'UserManager',
+  name: 'WikiUser',
   components: { Pagination },
   directives: {
     waves

@@ -136,7 +136,7 @@ import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { listResourceInfo, editResourceInfo, batchApproveResource } from '@/api/wiki/files'
 
 export default {
-  name: 'WikiResourcesFilesManager',
+  name: 'WikiResources',
   components: { Pagination, CategoryDropdown },
   data() {
     return {

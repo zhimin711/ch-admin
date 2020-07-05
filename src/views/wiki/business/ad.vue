@@ -181,7 +181,7 @@ import 'cropperjs/dist/cropper.css'
 const defaultRecord = { sort: 1, status: '1', srcType: 0 }
 
 export default {
-  name: 'AdManager',
+  name: 'WikiAd',
   components: { Pagination, UploadImageCrop, ImageSelector },
   data() {
     return {

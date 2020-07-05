@@ -126,7 +126,7 @@ import { listBookmark, addBookmark, editBookmark, delBookmark } from '@/api/wiki
 const defaultRecord = { type: '2', status: '0' }
 
 export default {
-  name: 'WikiBookmarkManager',
+  name: 'WikiBookmark',
   components: { Pagination },
   data() {
     return {
