@@ -5,9 +5,11 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
+import Empty from '@/layout/Empty'
 
 /* Router Modules */
 import upmsRouter from './modules/upms'
+import logsRouter from './modules/logs'
 import sysRouter from './modules/sys'
 import kafkaRouter from './modules/kafka'
 import wikiRouter from './modules/wiki'
@@ -160,6 +162,7 @@ export const exampleRoutes = [
  */
 export const asyncRoutes = [
   upmsRouter,
+  logsRouter,
   sysRouter,
   kafkaRouter,
   wikiRouter
@@ -221,6 +224,8 @@ export function assemblyAsyncRoutes(menus, basePath) {
       }
       if (isStart) {
         tmp.component = Layout
+      } else { // 提供二级路由缓存
+        tmp.component = Empty
       }
       if (menu.children && menu.children.length > 0) {
         tmp.children = assemblyAsyncRoutes(menu.children, path2)

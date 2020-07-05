@@ -1,6 +1,6 @@
 const state = {
   visitedViews: [],
-  cachedViews: []
+  cachedViews: ['Empty'] // 缓存二级路由
 }
 
 const mutations = {
