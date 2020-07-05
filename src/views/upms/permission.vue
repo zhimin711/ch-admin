@@ -139,7 +139,7 @@ import { validAlphabetsAndNumber, isEmpty } from '@/utils/validate'
 import { fetchTree, fetchList, add, edit, del } from '@/api/upms/permission'
 
 export default {
-  name: 'UPMS:PERMISSION',
+  name: 'UPMSPermission',
   components: { IconSelector },
   data() {
     return {

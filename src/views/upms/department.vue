@@ -167,7 +167,7 @@ import { isEmpty } from '@/utils/validate'
 const defaultRecord = { pid: '0', sort: 1, status: '1' }
 
 export default {
-  name: 'UPMS:DEPARTMENT',
+  name: 'UPMSDepartment',
   // components: { Treeselect },
   data() {
     return {

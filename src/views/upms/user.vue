@@ -123,7 +123,7 @@ import { handleClipboard2 } from '@/utils/clipboard' // use clipboard directly
 import { pageUser, addUser, editUser, delUser, initPwd, getEnableRoles, getRoles, editRoles } from '@/api/upms/user'
 
 export default {
-  name: 'UPMS:USER',
+  name: 'UPMSUser',
   directives: {
     waves
   },

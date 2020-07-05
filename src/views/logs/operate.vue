@@ -64,7 +64,7 @@ import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { listOPRecord } from '@/api/logs/op-record'
 
 export default {
-  name: 'LogsOperateManager',
+  name: 'LogsOperate',
   components: { Pagination },
   data() {
     return {

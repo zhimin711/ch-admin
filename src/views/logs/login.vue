@@ -59,7 +59,7 @@ import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { listOPRecord } from '@/api/logs/login-record'
 
 export default {
-  name: 'LogsLoginManager',
+  name: 'LogsLogin',
   components: { Pagination },
   data() {
     return {

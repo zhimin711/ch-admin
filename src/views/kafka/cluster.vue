@@ -74,7 +74,7 @@ import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { list, add, edit, del } from '@/api/kafka/cluster'
 
 export default {
-  name: 'KafkaClusterManager',
+  name: 'KafkaCluster',
   components: { Pagination },
   filters: {
     statusFilter(status) {

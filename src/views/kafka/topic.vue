@@ -157,7 +157,7 @@ import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { list, add, edit, del, getClusters, getTopics, syncAll, refresh2 } from '@/api/kafka/topic'
 
 export default {
-  name: 'KafkaTopicManager',
+  name: 'KafkaTopic',
   components: { Pagination },
   data() {
     return {
