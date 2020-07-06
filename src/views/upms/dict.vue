@@ -11,10 +11,10 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="字典类型" prop="code">
+      <el-form-item label="字典代码" prop="code">
         <el-input
           v-model="recordPage.params.code"
-          placeholder="请输入字典类型"
+          placeholder="请输入字典代码"
           clearable
           size="small"
           style="width: 240px"
@@ -37,7 +37,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="创建时间">
+      <!--<el-form-item label="创建时间">
         <el-date-picker
           v-model="dateRange"
           size="small"
@@ -48,7 +48,7 @@
           start-placeholder="开始日期"
           end-placeholder="结束日期"
         />
-      </el-form-item>
+      </el-form-item>-->
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -108,14 +108,20 @@
     <el-table v-loading="recordPage.loading" :data="recordPage.list" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="字典名称" align="center" prop="name" :show-overflow-tooltip="true" />
-      <el-table-column label="字典类型" align="center" :show-overflow-tooltip="true">
+      <el-table-column label="字典代码" align="center" :show-overflow-tooltip="true">
         <template slot-scope="scope">
-          <router-link :to="'/dict/type/data/' + scope.row.id" class="link-type">
-            <span>{{ scope.row.code }}</span>
-          </router-link>
+          <!--<router-link :to="'/dict/type/data/' + scope.row.id" class="link-type">-->
+          <span>{{ scope.row.code }}</span>
+          <!--</router-link>-->
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="status" />
+      <el-table-column class-name="status-col" label="状态" width="110">
+        <template slot-scope="{row}">
+          <el-tag :type="row.status | statusFilter">
+            {{ row.status | enableStatusNameFilter }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
       <el-table-column label="创建时间" align="center" prop="createAt" width="180">
         <template slot-scope="scope">
@@ -150,7 +156,7 @@
         <el-form-item label="字典名称" prop="name">
           <el-input v-model="record.name" placeholder="请输入字典名称" />
         </el-form-item>
-        <el-form-item label="字典类型" prop="code">
+        <el-form-item label="字典代码" prop="code">
           <el-input v-model="record.code" placeholder="请输入字典代码" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
@@ -184,6 +190,13 @@
             <template slot-scope="{row}">
               <template>
                 <el-input v-model="row.name" class="edit-input" size="small" placeholder="名称" />
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column prop="sort" label="排序" width="80" align="center">
+            <template slot-scope="{row}">
+              <template>
+                <el-input v-model="row.sort" class="edit-input" size="small" placeholder="22" />
               </template>
             </template>
           </el-table-column>
@@ -221,7 +234,7 @@ const defaultRecord = { pid: '0', sort: 1, status: '1' }
 const defaultRecordNode = { sort: 1, status: '1' }
 
 export default {
-  name: 'UPMSDict1', // 用于页面缓存
+  name: 'UPMSDict', // 用于页面缓存
   data() {
     return {
       // 查询参数与结果
@@ -267,7 +280,7 @@ export default {
           { required: true, message: '字典名称不能为空', trigger: 'blur' }
         ],
         code: [
-          { required: true, message: '字典类型不能为空', trigger: 'blur' }
+          { required: true, message: '字典代码不能为空', trigger: 'blur' }
         ]
       }
     }
@@ -279,7 +292,7 @@ export default {
     // })
   },
   methods: {
-    /** 查询字典类型列表 */
+    /** 查询字典代码列表 */
     getList() {
       this.recordPage.loading = true
       pageDict(this.recordPage).then(resp => {
@@ -385,7 +398,7 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const dictIds = row.dictId || this.ids
+      const dictIds = row.id || this.ids
       this.$confirm('是否确认删除字典编号为"' + dictIds + '"的数据项?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -393,14 +406,14 @@ export default {
       }).then(function() {
         return delDict(dictIds)
       }).then(() => {
+        this.$message.success('删除成功')
         this.getList()
-        this.msgSuccess('删除成功')
       }).catch(function() {})
     },
     /** 导出按钮操作 */
     handleExport() {
       // const recordPage = this.recordPage
-      this.$confirm('是否确认导出所有类型数据项?', '警告', {
+      this.$confirm('是否确认导出所有代码数据项?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'

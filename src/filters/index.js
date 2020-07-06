@@ -83,7 +83,7 @@ export function statusFilter(status) {
 }
 
 export function enableStatusNameFilter(status) {
-  return ['禁用', '启用', '删除'][status]
+  return ['禁用', '启用'][status]
 }
 
 export function switchStatusNameFilter(status) {
@@ -91,5 +91,5 @@ export function switchStatusNameFilter(status) {
 }
 
 export function releaseStatusNameFilter(status) {
-  return ['未发布', '已发布', '删除'][status]
+  return ['未发布', '已发布'][status]
 }

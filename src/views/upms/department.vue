@@ -48,7 +48,13 @@
     >
       <el-table-column prop="name" label="组织名称" width="260" />
       <el-table-column prop="sort" label="排序" width="200" />
-      <el-table-column prop="status" label="状态" :formatter="statusFormat" width="100" />
+      <el-table-column label="状态" width="110">
+        <template slot-scope="{row}">
+          <el-tag :type="row.status | statusFilter">
+            {{ row.status | enableStatusNameFilter }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createAt" width="200">
         <template slot-scope="scope">
           <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
@@ -257,11 +263,6 @@ export default {
         label: node.deptName,
         children: node.children
       }
-    },
-    // 字典状态字典翻译
-    statusFormat(row, column) {
-      // return this.selectDictLabel(this.statusOptions, row.status)
-      return row.status
     },
     // 取消按钮
     cancel() {

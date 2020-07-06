@@ -81,7 +81,13 @@
       <el-table-column label="职位编码" align="center" prop="code" />
       <el-table-column label="职位名称" align="center" prop="name" />
       <el-table-column label="职位排序" align="center" prop="sort" />
-      <el-table-column label="状态" align="center" prop="status" />
+      <el-table-column class-name="status-col" label="状态" width="110">
+        <template slot-scope="{row}">
+          <el-tag :type="row.status | statusFilter">
+            {{ row.status | enableStatusNameFilter }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createAt" width="180">
         <template slot-scope="scope">
           <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
@@ -201,9 +207,6 @@ export default {
   },
   created() {
     this.getList()
-    // this.getDicts('sys_normal_disable').then(response => {
-    //   this.statusOptions = response.data
-    // })
   },
   methods: {
     /** 查询职位列表 */
@@ -213,10 +216,6 @@ export default {
         this.recordPage.list = response.rows
         this.recordPage.total = response.total
       }).finally(() => { this.recordPage.loading = false })
-    },
-    // 职位状态字典翻译
-    statusFormat(row, column) {
-      return this.selectDictLabel(this.statusOptions, row.status)
     },
     // 取消按钮
     cancel() {
