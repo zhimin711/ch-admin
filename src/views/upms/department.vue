@@ -160,9 +160,9 @@
 
 <script>
 import { deepClone } from '@/utils'
+import { isEmpty } from '@/utils/validate'
 import { pageDepartment, delDepartment, addDepartment, editDepartment, treeDepartment, getDepartmentPositions, editDepartmentPositions } from '@/api/upms/department'
 import { searchPosition } from '@/api/upms/position'
-import { isEmpty } from '@/utils/validate'
 
 const defaultRecord = { pid: '0', sort: 1, status: '1' }
 

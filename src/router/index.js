@@ -5,6 +5,7 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
+import Layout2 from '@/layout/index2'
 import Empty from '@/layout/Empty'
 
 /* Router Modules */
@@ -218,14 +219,16 @@ export function assemblyAsyncRoutes(menus, basePath) {
       tmp = {
         path: path,
         alwaysShow: true,
-        component: resolve => require(['@/layout/index2'], resolve),
+        // component: resolve => require(['@/layout/index2'], resolve),
         redirect: menu.redirect || path,
         meta: { title: menu.name, icon: menu.icon || 'nested' }
       }
       if (isStart) {
         tmp.component = Layout
       } else { // 提供二级路由缓存
-        tmp.component = Empty
+        // tmp.component = Empty
+        // tmp.noComponent = true
+        tmp.component = Layout2
       }
       if (menu.children && menu.children.length > 0) {
         tmp.children = assemblyAsyncRoutes(menu.children, path2)
@@ -242,6 +245,76 @@ export function assemblyAsyncRoutes(menus, basePath) {
       }
     }
     res.push(tmp)
+  })
+
+  // 404 page must be placed at the end !!!
+  return res
+}
+
+export function assemblyAsyncRoutes2(menus, basePath, menus2) {
+  const res = []
+  // const tree = {  }
+  // const path = basePath || ''
+  const isStart = !basePath
+  menus.forEach(menu => {
+    let tmp = {}
+    let path = menu.url
+    let path2 = menu.url
+    if (isStart) path = '/' + menu.url
+    else path2 = basePath + '/' + menu.url
+    if (menu.type === '2') {
+      tmp = {
+        path: path,
+        // component: () => import('@/views' + path + '/' + menu.url),
+        // component: resolve => require(['@/views/' + path2], resolve),
+        name: menu.code,
+        meta: { title: menu.name }
+      }
+      if (menu.children && menu.children.length > 0) {
+        tmp.component = loadViewIndex(path2)
+        tmp.children = assemblyAsyncRoutes(menu.children, path2)
+      } else {
+        tmp.component = loadView(path2)
+      }
+    } else if (menu.type === '4') {
+      tmp = {
+        path: menu.redirect || path,
+        component: loadView(path2),
+        name: menu.code,
+        hidden: true,
+        noComponent: true,
+        meta: { title: menu.name, noCache: true, activeMenu: '/' + basePath }
+      }
+    } else {
+      tmp = {
+        path: path,
+        alwaysShow: true,
+        // component: resolve => require(['@/layout/index2'], resolve),
+        redirect: menu.redirect || path,
+        meta: { title: menu.name, icon: menu.icon || 'nested' }
+      }
+      if (isStart) {
+        tmp.component = Layout
+      } else { // 提供二级路由缓存
+        tmp.component = Empty
+        // tmp.noComponent = true
+      }
+      if (menu.children && menu.children.length > 0) {
+        tmp.children = assemblyAsyncRoutes(menu.children, path2, isStart ? null : res)
+        let hMenus = []
+        tmp.children.forEach(e => {
+          if (!e.redirect && e.children && e.children.length > 0) {
+            hMenus = hMenus.concat(e.children)
+            e.children = undefined
+          }
+        })
+        if (hMenus.length > 0) {
+          tmp.children = tmp.children.concat(hMenus)
+        }
+      }
+    }
+    if (menus2) menus2.push(tmp)
+    else res.push(tmp)
   })
 
   // 404 page must be placed at the end !!!
