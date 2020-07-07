@@ -22,7 +22,7 @@
           </el-select>
         </el-form-item>
       </el-form>
-      <el-button v-if="checkPermission2(['WIKI_BOOKMARK_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = { status: '0', type: '2' }">

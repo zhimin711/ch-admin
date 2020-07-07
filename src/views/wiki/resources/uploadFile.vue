@@ -14,7 +14,7 @@
         <el-option label="zip" value=".zip">zip</el-option>
         <el-option label="rar" value=".rar">rar</el-option>
       </el-select>
-      <el-button v-if="checkPermission2(['WIKI_UPLOAD_FILE_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">

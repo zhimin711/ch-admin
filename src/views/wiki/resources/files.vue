@@ -9,7 +9,7 @@
         <el-option label="代码" value="2">代码</el-option>
         <el-option label="其他" value="3">其他</el-option>
       </el-select>
-      <el-button v-if="checkPermission2(['WIKI_RESOURCES_FILE_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">

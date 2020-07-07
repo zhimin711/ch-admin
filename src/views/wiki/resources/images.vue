@@ -14,7 +14,7 @@
         <el-option label="AD" value="AD">广告</el-option>
         <el-option label="AD_CROP" value="AD_CROP">广告_裁剪</el-option>
       </el-select>
-      <el-button v-if="checkPermission2(['WIKI_AD_IMAGE_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">

@@ -3,7 +3,7 @@
     <div class="filter-container">
       <el-input v-model="listQuery.params.url" placeholder="名称" style="width: 200px;" class="filter-item" />
       <el-input v-model="listQuery.params.authCode" placeholder="授权代码" style="width: 200px;" class="filter-item" />
-      <el-button v-if="checkPermission2(['LOGS_LOGIN_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">

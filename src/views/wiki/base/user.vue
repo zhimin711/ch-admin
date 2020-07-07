@@ -8,7 +8,7 @@
         <el-option label="启用" value="1">启用</el-option>
         <el-option label="禁用" value="0">禁用</el-option>
       </el-select>
-      <el-button v-if="checkPermission2(['WIKI_USER_SEARCH'])" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
