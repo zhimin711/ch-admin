@@ -229,7 +229,7 @@ export default {
     },
     // 节点单击事件
     handleDepartmentClick(data) {
-      this.recordPage.params.departmentId = data.value
+      this.recordPage.params.department = data.value
       this.getList()
     },
     async getEnableRoles() {
