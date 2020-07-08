@@ -193,9 +193,7 @@ export default {
       // 组织树选项
       recordStatus: true,
       recordParents: [],
-      recordParentsProps: {
-        checkStrictly: true
-      },
+      recordParentsProps: { checkStrictly: true },
       recordPositions: [],
       // 表格树数据
       options: { parents: [], positions: [] },
@@ -240,9 +238,6 @@ export default {
   },
   created() {
     this.getList()
-    // this.getDicts('sys_normal_disable').then(response => {
-    //   this.statusOptions = response.data
-    // })
   },
   methods: {
     /** 查询组织列表 */
@@ -252,17 +247,6 @@ export default {
         this.recordPage.list = response.rows
         this.recordPage.total = response.total
       }).finally(() => { this.recordPage.loading = false })
-    },
-    /** 转换组织数据结构 */
-    normalizer(node) {
-      if (node.children && !node.children.length) {
-        delete node.children
-      }
-      return {
-        id: node.deptId,
-        label: node.deptName,
-        children: node.children
-      }
     },
     // 取消按钮
     cancel() {

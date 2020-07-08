@@ -61,3 +61,10 @@ export function editDepartmentPositions(id, data) {
     data
   })
 }
+
+export function searchDepartmentPositions(id, name) {
+  return request({
+    url: `${baseUrl}/${id}/positions/${name || ''}`,
+    method: 'get'
+  })
+}
