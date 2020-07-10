@@ -2,8 +2,8 @@
   <div class="app-container">
     <div class="filter-container">
       <!-- <el-input v-model="listQuery.name" placeholder="Server 名称" style="width: 200px;" class="filter-item" />
-      <el-input v-model="listQuery.ip" placeholder="Server IP" style="width: 200px;" class="filter-item" />
-      <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="fetchData()">查询</el-button> -->
+      <el-input v-model="listQuery.ip" placeholder="Server IP" style="width: 200px;" class="filter-item" /> -->
+      <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="fetchData()">查询</el-button>
       <el-button v-if="checkPermission2(['CANAL_CLUSTERS_ADD'])" class="filter-item" type="primary" @click="handleCreate()">新建集群</el-button>
     </div>
     <el-table

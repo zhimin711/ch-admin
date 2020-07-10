@@ -218,6 +218,12 @@
               </el-table>
             </el-form-item>
           </el-tab-pane>
+          <el-tab-pane label="健康检查" name="three">
+            <el-form-item label="游标时间戳超时">
+              <el-input-number v-model="canalInstanceConfig.metaTimeout" controls-position="right" :min="0" placeholder="单位（分钟）" />
+              <el-aside width="100%">当前集群Meta配置（游标）使用Redis或Zookeeper存储的生效</el-aside>
+            </el-form-item>
+          </el-tab-pane>
         </el-tabs>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -320,6 +326,7 @@ export default {
       this.canalInstanceConfig = Object.assign({}, defaultRecord)
       this.initConfig()
       this.dialogFormVisible2 = true
+      if (this.$refs['data2Form']) this.$refs['data2Form'].resetFields()
     },
     handleUpdate(row) {
       // this.$router.push('/canalServer/canalInstance/modify?id=' + row.id)
