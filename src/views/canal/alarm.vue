@@ -12,10 +12,10 @@
       <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="fetchData()">查询</el-button>
     </div>
     <el-table v-loading="listLoading" :data="list" border>
-      <el-table-column label="信息">
+      <el-table-column label="信息" width="230">
         <template slot-scope="{row}">
           <div>
-            <span class="message-title">实例: </span>
+            <span class="message-title" style="padding-right: 10px;">实例: </span>
             <el-tag type="danger">
               {{ row.name }}
             </el-tag>
@@ -38,7 +38,7 @@
       </el-table-column>
       <el-table-column label="堆栈">
         <template slot-scope="scope">
-          {{ scope.row.message }}
+          <div slot="content"><pre style="overflow-x: auto">{{ scope.row.message }}</pre></div>
         </template>
       </el-table-column>
     </el-table>
