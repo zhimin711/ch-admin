@@ -3,6 +3,12 @@
     <div class="filter-container">
       <el-input v-model="listQuery.name" placeholder="实例名称" style="width: 200px;" class="filter-item" />
       <!-- <el-input v-model="listQuery.ip" placeholder="Server IP" style="width: 200px;" class="filter-item" /> -->
+      <el-select v-model="listQuery.type" placeholder="类型" class="filter-item">
+        <el-option key="" label="全部" value="" />
+        <el-option key="META_TIMESTAMP" label="游标异常" value="META_TIMESTAMP" />
+        <el-option key="META_TIMEOUT" label="游标超时" value="META_TIMEOUT" />
+        <el-option key="META_FIRSTLY" label="游标超前" value="META_FIRSTLY" />
+      </el-select>
       <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="fetchData()">查询</el-button>
     </div>
     <el-table v-loading="listLoading" :data="list" border>
