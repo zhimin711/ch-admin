@@ -1,13 +1,13 @@
 import request from '@/utils/request2'
 
 const baseUrl = '/upms/permission'
-export function fetchTree(type) {
+export function treePermission(type) {
   return request({
     url: `${baseUrl}/tree/${type}`,
     method: 'get'
   })
 }
-export function fetchList(query) {
+export function pagePermission(query) {
   return request({
     url: `${baseUrl}/${query.num}/${query.size}`,
     method: 'get',
@@ -15,7 +15,7 @@ export function fetchList(query) {
   })
 }
 
-export function get(id) {
+export function getPermission(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'get',
@@ -23,7 +23,7 @@ export function get(id) {
   })
 }
 
-export function add(data) {
+export function addPermission(data) {
   return request({
     url: `${baseUrl}`,
     method: 'post',
@@ -31,7 +31,7 @@ export function add(data) {
   })
 }
 
-export function edit(id, data) {
+export function editPermission(id, data) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'put',
@@ -39,7 +39,7 @@ export function edit(id, data) {
   })
 }
 
-export function del(id) {
+export function delPermission(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'delete'

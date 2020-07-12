@@ -136,7 +136,7 @@ import IconSelector from '@/components/IconSelector'
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { validAlphabetsAndNumber, isEmpty } from '@/utils/validate'
-import { fetchTree, fetchList, add, edit, del } from '@/api/upms/permission'
+import { treePermission, pagePermission, addPermission, editPermission, delPermission } from '@/api/upms/permission'
 
 export default {
   name: 'UPMSPermission',
@@ -172,7 +172,16 @@ export default {
         children: 'children',
         label: 'name'
       },
-      rules: {},
+      rules: {
+        code: [
+          { required: true, message: '权限代码不能为空' },
+          {
+            pattern: /^[A-Za-z0-9]+$/,
+            message: '请输入正确的权限代码',
+            trigger: 'blur'
+          }
+        ]
+      },
       options: {
         parents: []
       }
@@ -186,7 +195,7 @@ export default {
     getTree(type) {
       // this.options.parents = []
       this.dialogLoadingVisible = true
-      fetchTree(type).then(response => {
+      treePermission(type).then(response => {
         this.dialogLoadingVisible = false
         this.options.parents = response.rows
 
@@ -202,7 +211,7 @@ export default {
     },
     getList() {
       this.recordPage.loading = true
-      fetchList(this.recordPage).then(response => {
+      pagePermission(this.recordPage).then(response => {
         this.recordPage.list = response.rows
         this.recordPage.total = response.total
       }).finally(() => { this.recordPage.loading = false })
@@ -251,7 +260,7 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          await del(row.id).then(resp => {
+          await delPermission(row.id).then(resp => {
             if (resp.success) {
               _this.getList()
               this.$message({
@@ -283,11 +292,11 @@ export default {
       let resp = null
       let opName = '添加'
       if (this.dialogType === 'new' || this.dialogType === 'copy') {
-        resp = await add(this.record).catch(() => {})
+        resp = await addPermission(this.record).catch(() => {})
       } else if (this.dialogType === 'edit') {
         opName = '修改'
         this.record.children = []
-        resp = await edit(this.record.id, this.record)
+        resp = await editPermission(this.record.id, this.record)
       }
       if (resp && resp.success) {
         this.dialogVisible = false
