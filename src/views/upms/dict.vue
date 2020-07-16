@@ -105,14 +105,20 @@
       </el-col>
     </el-row>
 
-    <el-table v-loading="recordPage.loading" :data="recordPage.list" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="字典名称" align="center" prop="name" :show-overflow-tooltip="true" />
-      <el-table-column label="字典代码" align="center" :show-overflow-tooltip="true">
+    <el-table
+      v-loading="recordPage.loading"
+      :data="recordPage.list"
+      row-key="id"
+      lazy
+      :load="loadChildren"
+      :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column type="selection" width="55" align="center" :selectable="checkSelectable" />
+      <el-table-column label="名称" prop="name" :show-overflow-tooltip="true" />
+      <el-table-column label="代码" align="center" :show-overflow-tooltip="true">
         <template slot-scope="scope">
-          <!--<router-link :to="'/dict/type/data/' + scope.row.id" class="link-type">-->
           <span>{{ scope.row.code }}</span>
-          <!--</router-link>-->
         </template>
       </el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110">
@@ -131,6 +137,7 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
+            v-if="scope.row.pid === 0"
             v-permission="['UPMS_DICT_EDIT']"
             size="mini"
             type="text"
@@ -138,6 +145,7 @@
             @click="handleUpdate(scope.row)"
           >修改</el-button>
           <el-button
+            v-if="scope.row.pid === 0"
             v-permission="['UPMS_DICT_DEL']"
             size="mini"
             type="text"
@@ -234,7 +242,7 @@ const defaultRecord = { pid: '0', sort: 1, status: '1' }
 const defaultRecordNode = { sort: 1, status: '1' }
 
 export default {
-  name: 'UPMSDict', // 用于页面缓存
+  name: 'UPMSDict1', // 用于页面缓存
   data() {
     return {
       // 查询参数与结果
@@ -295,9 +303,18 @@ export default {
     /** 查询字典代码列表 */
     getList() {
       this.recordPage.loading = true
+      this.recordPage.list = []
+      this.recordPage.total = 0
       pageDict(this.recordPage).then(resp => {
-        this.recordPage.list = resp.rows
-        this.recordPage.total = resp.total
+        if (resp.success) {
+          this.recordPage.list = resp.rows
+          this.recordPage.total = resp.total
+          if (this.recordPage.total > 0) {
+            this.recordPage.list.forEach(row => {
+              row.hasChildren = true
+            })
+          }
+        }
       }).finally(() => {
         this.recordPage.loading = false
       })
@@ -430,6 +447,16 @@ export default {
       //     this.msgSuccess('清理成功')
       //   }
       // })
+    },
+    loadChildren(tree, treeNode, resolve) {
+      getDict(tree.id).then(resp => {
+        if (resp.success) {
+          resolve(resp.rows[0].children)
+        }
+      })
+    },
+    checkSelectable(row) {
+      return row.pid === 0
     }
   }
 }
