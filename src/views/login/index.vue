@@ -45,7 +45,7 @@
         </el-form-item>
       </el-tooltip>
       <el-form-item prop="captchaCode">
-        <span class="svg-container"><i class="el-icon-tickets" /></span>
+        <span class="svg-container"><svg-icon icon-class="validCode" /></span>
         <el-input
           ref="captchaCode"
           v-model="loginForm.captchaCode"

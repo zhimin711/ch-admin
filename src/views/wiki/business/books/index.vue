@@ -26,7 +26,14 @@
     <el-table v-loading="loading" :data="list" border fit highlight-current-row style="width: 100%">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column prop="title" label="类型" width="200" />
-      <el-table-column prop="name" label="名称" min-width="200" />
+      <el-table-column prop="name" label="名称" min-width="200">
+        <template slot-scope="scope">
+          <router-link v-if="checkPermission2(['WIKI_BOOKS_READ']) && scope.row.type === '2' && scope.row.status !== 'x'" :to="'/wiki/books/preview/'+scope.row.id" class="el-link el-link--primary">
+            {{ scope.row.name }}
+          </router-link>
+          <span v-else>{{ scope.row.name }}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="author" label="作者" width="180" />
       <!--<el-table-column prop="description" label="标签" />-->
       <!--<el-table-column prop="sort" label="排序" width="80" />-->
@@ -49,16 +56,12 @@
       </el-table-column>-->
       <el-table-column align="center" label="操作" width="180">
         <template slot-scope="scope">
-          <router-link v-if="checkPermission2(['WIKI_BOOKS_CATEGORY_EDIT']) && scope.row.type === '1' && scope.row.status !== 'x'" :to="'/wiki/books/'+scope.row.id">
+          <router-link v-if="checkPermission2(['WIKI_BOOKS_EDIT']) && scope.row.type === '1' && scope.row.status !== 'x'" :to="'/wiki/books/'+scope.row.id">
             <el-button type="text" icon="el-icon-edit">编辑
             </el-button>
           </router-link>
           <el-button v-if="checkPermission2(['WIKI_BOOKS_EDIT'])" v-show="scope.row.type === '2' && scope.row.status !== 'x'" type="text" icon="el-icon-edit" @click="handleEdit(scope.row)">编辑
           </el-button>
-          <router-link v-if="checkPermission2(['WIKI_BOOKS_READ']) && scope.row.type === '2' && scope.row.status !== 'x'" :to="'/wiki/books/preview/'+scope.row.id">
-            <el-button type="text" icon="el-icon-view">阅读
-            </el-button>
-          </router-link>
         </template>
       </el-table-column>
     </el-table>
