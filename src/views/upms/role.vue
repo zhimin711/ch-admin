@@ -92,6 +92,7 @@
             :check-strictly="checkStrictly"
             :data="routesData"
             :props="defaultProps"
+            :empty-text="treeTip"
             show-checkbox
             node-key="value"
             :default-expanded-keys="expList"
@@ -100,7 +101,7 @@
         </el-form-item>
       </el-form>
       <div style="text-align:center;">
-        <el-button type="primary" @click="confirmAuth">保存</el-button>
+        <el-button v-loading="treeLoading" type="primary" @click="confirmAuth">保存</el-button>
         <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
       </div>
     </el-dialog>
@@ -112,7 +113,7 @@ import path from 'path'
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { pageRole, addRole, editRole, delRole, getRolePermissions, editRolePermissions } from '@/api/upms/role'
-import { fetchTree } from '@/api/upms/permission'
+import { treePermission } from '@/api/upms/permission'
 
 const defaultRole = {
   code: '',
@@ -138,6 +139,8 @@ export default {
       rolesList: [],
       dialogVisible: false,
       dialogType: 'new',
+      treeLoading: false,
+      treeTip: '正在加载数据...',
       checkStrictly: false,
       defaultProps: {
         children: 'children',
@@ -164,9 +167,13 @@ export default {
   methods: {
     checkPermission2,
     async getRoutes() {
-      const res = await fetchTree('9')
+      this.treeLoading = true
+      this.routes = []
+      this.treeTip = '正在加载数据...'
+      const res = await treePermission('9').finally(() => { this.treeLoading = false })
       // this.serviceRoutes = res.rows
       this.routes = res.rows
+      if (this.routes.length === 0) this.treeTip = '未加载到数据！'
       // this.generateRoutes(res.rows)
     },
     getList() {

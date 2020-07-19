@@ -49,6 +49,7 @@
       </el-button>-->
         </div>
         <el-table v-loading="recordPage.loading" :data="recordPage.list" border fit highlight-current-row style="width: 100%">
+          <el-table-column width="180px" label="所属组织" prop="department" />
           <el-table-column width="120px" align="center" label="用户ID">
             <template slot-scope="scope">
               <span>{{ scope.row.userId }}</span>
