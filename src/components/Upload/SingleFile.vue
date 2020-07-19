@@ -8,6 +8,7 @@
       :multiple="false"
       :show-file-list="false"
       :on-success="uploadSuccess"
+      :on-error="uploadError"
       class="image-uploader"
       drag
       :action="url"
@@ -76,6 +77,9 @@ export default {
         this.$refs.uploader.clearFiles()
         this.emitInput(resp.rows[0].url)
       }
+    },
+    uploadError(resp) {
+      console.log(resp)
     }
   }
 }

@@ -161,6 +161,7 @@ const actions = {
       } else {
         const { menuList } = await dispatch('getInfo', role)
 
+        setToken(state.token)
         // generate accessible routes map based on roles
         // const accessRoutes = await dispatch('permission/generateRoutes', roles, { root: true })
         accessRoutes = await dispatch('permission/assemblyRouters', menuList, { root: true })

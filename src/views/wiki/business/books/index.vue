@@ -286,7 +286,6 @@ export default {
       }
     },
     uploadSuccess(resp, file, fileList) {
-      // debugger;
       if (resp.success) {
         this.$message.success('上传成功！')
         if (fileList.length > 1) fileList.shift()
