@@ -67,17 +67,14 @@ const actions = {
   getInfo({ commit, state }, role) {
     return new Promise((resolve, reject) => {
       getInfo(role || 0).then(response => {
-        const { rows } = response
-
-        if (!rows) {
-          reject('Verification failed, please Login again.')
+        if (!response.success) {
+          return reject(response)
         }
-
-        const { username, token, avatar, introduction, roleList, btnList } = rows[0]
+        const { username, token, avatar, introduction, roleList, btnList, menuList } = response.rows[0]
 
         // roles must be a non-empty array
         if (!roleList || roleList.length <= 0) {
-          reject('getInfo: roles must be a non-null array!')
+          return reject('未分配用户角色!')
         }
         const currRoles = roleList.filter(item => { return item.id === role })
         let currRole = roleList[0]
@@ -94,9 +91,9 @@ const actions = {
         commit('SET_NAME', username)
         commit('SET_AVATAR', avatar || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
         commit('SET_INTRODUCTION', introduction)
-        resolve(rows[0])
+        resolve(menuList)
       }).catch(error => {
-        console.log('getInfo' + error)
+        console.log('store/user.js getInfo error: ', error)
         reject(error)
       })
     })

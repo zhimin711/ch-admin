@@ -37,10 +37,8 @@ router.beforeEach(async(to, from, next) => {
       } else {
         try {
           // get user info
-          // note: roles must be a object array! such as: ['admin'] or ,['developer','editor']
-          const { menuList } = await store.dispatch('user/getInfo')
+          const menuList = await store.dispatch('user/getInfo')
 
-          // generate accessible routes map based on roles
           // const accessRoutes = await store.dispatch('permission/generateRoutes', roleList)
           const accessRoutes = await store.dispatch('permission/assemblyRouters', menuList)
           // dynamically add accessible routes
@@ -51,7 +49,7 @@ router.beforeEach(async(to, from, next) => {
           next({ ...to, replace: true })
         } catch (error) {
           NProgress.done()
-          console.log('router ==> ' + JSON.stringify(error))
+          console.log('src/permission.js router.beforeEach error ==> ' + JSON.stringify(error))
           if (error.code === 'ECONNABORTED') {
             MessageBox.alert('连接超时，请刷新重试...', '超时', {
               confirmButtonText: '刷新',
