@@ -70,7 +70,7 @@
 
     <pagination v-show="recordPage.total>0" :total="recordPage.total" :page.sync="recordPage.num" :limit.sync="recordPage.size" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改权限':'新增权限'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改权限':'新增权限'" :close-on-click-modal="false">
       <el-form ref="baseForm" :model="record" :rules="rules" label-width="100px">
         <el-form-item label="类型">
           <el-radio-group v-model="record.type" @change="changeType">

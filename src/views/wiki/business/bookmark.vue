@@ -75,7 +75,7 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑书签':'创建书签'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑书签':'创建书签'" :close-on-click-modal="false">
       <el-form ref="recordForm" :model="record" label-width="100px">
         <el-form-item label="类型">
           <el-radio-group v-model="record.type">

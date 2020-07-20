@@ -2,14 +2,11 @@
   <div class="app-container">
     <div class="filter-container">
       <el-form :inline="true" :model="listQuery" class="search-form-inline">
+        <el-form-item label="分类">
+          <CategoryDropdown v-model="listQuery.categoryValues" type="37" placeholder="书箱分类" />
+        </el-form-item>
         <el-form-item label="名称">
           <el-input v-model="listQuery.params.name" placeholder="名称" />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="listQuery.params.status" clearable placeholder="状态">
-            <el-option key="1" label="启用" value="1" />
-            <el-option key="2" label="禁用" value="0" />
-          </el-select>
         </el-form-item>
       </el-form>
       <div class="handle-box">
@@ -166,7 +163,8 @@ export default {
         page: 1,
         limit: 20,
         total: 0,
-        params: {}
+        params: {},
+        categoryValues: []
       },
       urls: { upload: '' },
       categoryValues: [],
@@ -199,6 +197,10 @@ export default {
     checkPermission2,
     getList() {
       this.loading = true
+      this.listQuery.params.classify = undefined
+      if (this.listQuery.categoryValues.length > 0) {
+        this.listQuery.params.classify = this.listQuery.categoryValues.join(',')
+      }
       fetchBookList(this.listQuery).then(resp => {
         if (resp.success) {
           this.list = resp.rows

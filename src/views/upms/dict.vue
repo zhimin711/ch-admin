@@ -159,7 +159,7 @@
     <pagination v-show="recordPage.total>0" :total="recordPage.total" :page.sync="recordPage.num" :limit.sync="recordPage.size" @pagination="getList" />
 
     <!-- 添加或修改参数配置对话框 -->
-    <el-dialog :title="title" :visible.sync="open" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" append-to-body :close-on-click-modal="false">
       <el-form ref="form" :model="record" :rules="rules" label-width="80px">
         <el-form-item label="字典名称" prop="name">
           <el-input v-model="record.name" placeholder="请输入字典名称" />
