@@ -371,6 +371,7 @@ import { addCanalCluster, getCanalClusters, updateCanalCluster, deleteCanalClust
 import { saveCanalConfigTemplate, getCanalConfigTemplate } from '@/api/canal/clusterConfig'
 
 export default {
+  name: 'CanalCluster',
   filters: {
     statusFilter(status) {
       const statusMap = {

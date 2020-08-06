@@ -247,6 +247,7 @@ const defaultRecord = {
   canalInstanceConnectionCharset: 'UTF-8'
 }
 export default {
+  name: 'CanalInstance',
   components: { Pagination },
   filters: {
     statusFilter(status) {

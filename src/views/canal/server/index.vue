@@ -161,6 +161,7 @@ import Pagination from '@/components/Pagination'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
 export default {
+  name: 'CanalServer',
   components: { Pagination },
   filters: {
     statusFilter(status) {

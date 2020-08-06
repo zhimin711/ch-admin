@@ -51,6 +51,7 @@ import { getCanalAlarms } from '@/api/canal/alarm'
 import Pagination from '@/components/Pagination'
 
 export default {
+  name: 'CanalAlarm',
   components: { Pagination },
   filters: {
     statusFilter(status) {
