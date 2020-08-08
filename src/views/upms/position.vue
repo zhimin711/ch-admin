@@ -285,7 +285,7 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const postIds = row.postId || this.ids
+      const postIds = row.code || this.ids
       this.$confirm('是否确认删除职位编号为"' + postIds + '"的数据项?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',

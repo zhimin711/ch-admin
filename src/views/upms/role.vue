@@ -40,8 +40,8 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="250">
         <template v-if="scope.row.type !== '0'" slot-scope="scope">
-          <el-link v-if="checkPermission2(['UPMS_ROLE_PERMISSION'])" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配权限</el-link>
           <el-link v-if="checkPermission2(['UPMS_ROLE_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
+          <el-link v-if="checkPermission2(['UPMS_ROLE_PERMISSION'])" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配权限</el-link>
           <el-link v-if="checkPermission2(['UPMS_ROLE_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
@@ -252,9 +252,9 @@ export default {
       })
     },
     handleDel(row) {
-      this.$confirm('Confirm to remove the role?', 'Warning', {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
+      this.$confirm('确认删除选择角色，操作不可回退??', '告警', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
         type: 'warning'
       })
         .then(async() => {

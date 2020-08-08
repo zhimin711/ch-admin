@@ -254,9 +254,9 @@ export default {
     },
     handleDel(row) {
       const _this = this
-      this.$confirm('Confirm to remove the user?', 'Warning', {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
+      this.$confirm('确认删除选择权限，操作不可回退?', '警告', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
         type: 'warning'
       })
         .then(async() => {

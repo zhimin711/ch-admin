@@ -100,18 +100,21 @@ service2.interceptors.response.use(
     return Promise.reject(error)
   }
 )
-
+let isOpen = false
 function toLogin() {
-  // to re-login
-  MessageBox.confirm('登录已失效, 取消停留在当前页面， 或重新登录', '登录过期', {
-    confirmButtonText: '重新登录',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    store.dispatch('user/removeToken').then(() => {
-      router.push('/login')
-    })
-  })
+  if (!isOpen) {
+    // to re-login
+    isOpen = true
+    MessageBox.confirm('登录已失效, 取消停留在当前页面， 或重新登录', '登录过期', {
+      confirmButtonText: '重新登录',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }).then(() => {
+      store.dispatch('user/removeToken').then(() => {
+        router.push('/login')
+      })
+    }).finally(() => { isOpen = false })
+  }
 }
 
 export default service2

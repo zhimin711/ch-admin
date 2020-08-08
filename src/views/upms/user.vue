@@ -87,7 +87,7 @@
           <el-table-column align="center" label="操作" width="200">
             <template slot-scope="scope">
               <el-link v-if="checkPermission2(['UPMS_USER_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-              <!--<el-link v-if="checkPermission2(['UPMS_USER_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>-->
+              <el-link v-if="checkPermission2(['UPMS_USER_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
               <el-link v-if="checkPermission2(['UPMS_USER_ROLE'])" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配角色</el-link>
               <el-link v-if="checkPermission2(['UPMS_USER_PASSWORD_INIT'])" type="danger" icon="el-icon-refresh" @click="handleInitPwd(scope.row)">初始化密码</el-link>
             </template>
@@ -97,6 +97,7 @@
         <pagination v-show="recordPage.total>0" :total="recordPage.total" :page.sync="recordPage.num" :limit.sync="recordPage.size" @pagination="getList" />
       </el-col>
     </el-row>
+
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 用户':'添加 用户'">
       <el-form :model="record" label-width="80px" label-position="left">
 
@@ -195,7 +196,8 @@ export default {
       recordDepartments: [],
       recordPositions: undefined,
       options: { departments: [], positions: [] },
-      departmentName: ''
+      departmentName: '',
+      tableHeight: window.innerHeight - 270
     }
   },
   created() {

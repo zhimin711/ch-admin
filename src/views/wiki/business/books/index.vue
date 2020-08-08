@@ -128,8 +128,8 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="resetForm('baseForm')">取 消</el-button>
-        <el-button type="primary" @click="handleSubmit">确 定</el-button>
+        <el-button v-loading="loading" @click="resetForm('baseForm')">取 消</el-button>
+        <el-button v-loading="loading" type="primary" @click="handleSubmit">确 定</el-button>
       </span>
     </el-dialog>
   </div>
