@@ -42,7 +42,7 @@
       <el-table-column class-name="status-col" label="状态" width="110">
         <template slot-scope="{row}">
           <el-tag :type="row.status | statusFilter">
-            {{ row.status | statusNameFilter}}
+            {{ row.status | statusNameFilter }}
           </el-tag>
         </template>
       </el-table-column>
@@ -65,7 +65,7 @@
           <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" clearable />
         </el-form-item>
         <el-form-item label="代码">
-          <el-input v-model="record.code" placeholder="版本代码" :disabled="dialogCodeEdit"/>
+          <el-input v-model="record.code" placeholder="版本代码" :disabled="dialogCodeEdit" />
         </el-form-item>
         <el-form-item label="版本名称">
           <el-input v-model="record.name" placeholder="版本名称" />
