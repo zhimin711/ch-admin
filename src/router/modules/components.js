@@ -95,6 +95,12 @@ const componentsRouter = {
       component: () => import('@/views/components-demo/drag-kanban'),
       name: 'DragKanbanDemo',
       meta: { title: 'Drag Kanban' }
+    },
+    {
+      path: 'image-lazy',
+      component: () => import('@/views/components-demo/image-lazy'),
+      name: 'ImageLazy',
+      meta: { title: 'Image Lazy' }
     }
   ]
 }

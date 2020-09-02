@@ -67,6 +67,16 @@ router.beforeEach(async(to, from, next) => {
                 })
               }
             })
+          } else if (error.response && error.response.data && error.response.data.status === 500) {
+            // MessageBox.alert(error.response.data.message || '服务错误，请联系管理员')
+            MessageBox.alert(error.response.data.message || '服务内部错误，请联系管理员', '服务错误', {
+              confirmButtonText: '重新登录',
+              callback: () => {
+                store.dispatch('user/removeToken').then(() => {
+                  next(`/login?redirect=${to.path}`)
+                })
+              }
+            })
           }
           // remove token and go to login page to re-login
           // await store.dispatch('user/resetToken')

@@ -151,7 +151,7 @@ const actions = {
     return new Promise(async resolve => {
       resetRouter()
       let accessRoutes = []
-      if (role === -1) {
+      if (role === '-1') {
         const currRoles = state.roles.filter(item => { return item.id === role })
         commit('SET_ROLE', currRoles[0])
         accessRoutes = await dispatch('permission/generateRoutes', [], { root: true })
