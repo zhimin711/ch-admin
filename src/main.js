@@ -22,6 +22,16 @@ import * as filters from './filters' // global filters
 import Pagination from './components/Pagination'
 
 import permission from './directive/permission/index.js' // 权限判断指令
+import VueLazyload from 'vue-lazyload'
+
+// or with options
+Vue.use(VueLazyload, {
+  preLoad: 1.3,
+  error: require('@/assets/error.png'),
+  loading: require('@/assets/loading3.gif'),
+  attempt: 1
+})
+
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api
