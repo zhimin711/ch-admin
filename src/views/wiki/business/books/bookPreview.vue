@@ -7,8 +7,8 @@
     </sticky>
     <div class="img-list">
       <ul>
-        <li v-for="img in list" :key="img.idx">
-          <img v-lazy="img.src" :style="{'width':imgWidth}">
+        <li v-for="(img, index) in list" :key="index">
+          <img :key="img.src" v-lazy="img.src" :style="{'width':imgWidth}">
         </li>
       </ul>
     </div>
@@ -65,7 +65,7 @@ export default {
           //
           const len = resp.rows[0].latestChapter
           for (let i = 1; i <= len; i++) {
-            this.list.push({ src: '/api/wiki/admin' + resp.rows[0].latestChapterUrl + '/' + i + '.jpg?token=' + getToken(), idx: i })
+            this.list.push({ src: '/api/wiki/admin' + resp.rows[0].latestChapterUrl + '/' + i + '.jpg?token=' + getToken() })
           }
         }
       }).finally(() => { this.loading = false })
