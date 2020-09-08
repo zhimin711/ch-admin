@@ -57,7 +57,7 @@
             </div>
             <el-button-group v-if="e1.type!=='0'">
               <el-button type="primary" icon="el-icon-arrow-left" :loading="loadingPage" @click="handlePage(item.searchInfo, e1, -1)">上一页</el-button>
-              <el-button type="primary" :loading="loadingPage" @click="handlePage(item.searchInfo, e1, 1)">下一页<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+              <el-button type="primary" :loading="loadingPage" @click="handlePage(item.searchInfo, e1, 1)">下一页<i class="el-icon-arrow-right el-icon--right" /></el-button>
             </el-button-group>
           </el-collapse-item>
         </el-collapse>
@@ -70,7 +70,7 @@
       </div>
       <div style="text-align:center;">
         <el-button type="primary" :loading="loadingPage" icon="el-icon-arrow-left" @click="handleDetailPage(-1)">上一页</el-button>
-        <el-button type="primary" :loading="loadingPage" @click="handleDetailPage(1)">下一页<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+        <el-button type="primary" :loading="loadingPage" @click="handleDetailPage(1)">下一页<i class="el-icon-arrow-right el-icon--right" /></el-button>
         <el-button type="danger" @click="dialogVisible=false">关闭</el-button>
       </div>
     </el-dialog>
