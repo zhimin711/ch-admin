@@ -14,7 +14,7 @@
       trigger="click"
     >
       <el-tabs type="border-card">
-        <el-tab-pane v-if="type === 'svg'" label="SVG">
+        <el-tab-pane v-if="type === 'svg' || type === 'all'" label="SVG">
           <div v-for="item of svgIcons" :key="item" @click="handleClipboard(item,$event)">
             <div class="icon-item">
               <svg-icon :icon-class="item" class-name="disabled" />
@@ -22,7 +22,7 @@
             </div>
           </div>
         </el-tab-pane>
-        <el-tab-pane v-if="type !== 'svg'" label="El-ICON">
+        <el-tab-pane v-if="type === 'el' || type === 'all'" label="El-ICON">
           <div v-for="item of elementIcons" :key="item" @click="handleClipboard(item,$event)">
             <div class="icon-item">
               <i :class="'el-icon-' + item" />

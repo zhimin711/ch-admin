@@ -51,7 +51,7 @@ export const constantRoutes = [
     hidden: true,
     children: [
       {
-        path: '/redirect/:path*',
+        path: '/redirect/:path(.*)',
         component: () => import('@/views/redirect/index')
       }
     ]
@@ -251,74 +251,92 @@ export function assemblyAsyncRoutes(menus, basePath) {
   return res
 }
 
-export function assemblyAsyncRoutes2(menus, basePath, menus2) {
-  const res = []
-  // const tree = {  }
-  // const path = basePath || ''
-  const isStart = !basePath
-  menus.forEach(menu => {
-    let tmp = {}
-    let path = menu.url
-    let path2 = menu.url
-    if (isStart) path = '/' + menu.url
-    else path2 = basePath + '/' + menu.url
-    if (menu.type === '2') {
-      tmp = {
-        path: path,
-        // component: () => import('@/views' + path + '/' + menu.url),
-        // component: resolve => require(['@/views/' + path2], resolve),
-        name: menu.code,
-        meta: { title: menu.name }
-      }
-      if (menu.children && menu.children.length > 0) {
-        tmp.component = loadViewIndex(path2)
-        tmp.children = assemblyAsyncRoutes(menu.children, path2)
-      } else {
-        tmp.component = loadView(path2)
-      }
+// 遍历后台传来的路由字符串，转换为组件对象
+export function assemblyAsyncRoutes3(menus, lastRouter = false, type = false) {
+  return menus.map(menu => {
+    const route = generateBaseRoute(menu)
+    // 处理 vue-router所需要路由 Empty（继承Empty模板的层）的children全部提到上一层
+    if (menu.type === '1' && menu.children) {
+      menu.children = filterChildren(menu.children)
+    }
+    // 拼装路由
+    if (lastRouter && menu.type !== '4' && menu.url.indexOf('http') === -1) {
+      route.path = (lastRouter.path.startsWith('/') ? '' : '/') + lastRouter.path + '/' + menu.url
+    }
+
+    // Layout组件特殊处理
+    if (menu.type === '2' && menu.children && menu.children.length) {
+      route.component = loadViewIndex2(route.path) // route.component是一个字符串 这里是字符串转组件对象
+    } else if (menu.type === '2') {
+      route.component = loadView2(route.path) // route.component是一个字符串 这里是字符串转组件对象
     } else if (menu.type === '4') {
-      tmp = {
-        path: menu.redirect || path,
-        component: loadView(path2),
-        name: menu.code,
-        hidden: true,
-        noComponent: true,
-        meta: { title: menu.name, noCache: true, activeMenu: '/' + basePath }
+      if (lastRouter) {
+        route.meta.activeMenu = (lastRouter.path.startsWith('/') ? '' : '/') + lastRouter.path
+        console.log(route.meta.activeMenu + '/' + menu.url)
+        route.component = loadView2(route.meta.activeMenu + '/' + menu.url)
+      } else {
+        route.component = loadView2(route.path)
       }
+    } else if (lastRouter && menu.type === '1') {
+      route.component = Empty
     } else {
-      tmp = {
-        path: path,
-        alwaysShow: true,
-        // component: resolve => require(['@/layout/index2'], resolve),
-        redirect: menu.redirect || path,
-        meta: { title: menu.name, icon: menu.icon || 'nested' }
-      }
-      if (isStart) {
-        tmp.component = Layout
-      } else { // 提供二级路由缓存
-        tmp.component = Empty
-        // tmp.noComponent = true
-      }
-      if (menu.children && menu.children.length > 0) {
-        tmp.children = assemblyAsyncRoutes(menu.children, path2, isStart ? null : res)
-        let hMenus = []
-        tmp.children.forEach(e => {
-          if (!e.redirect && e.children && e.children.length > 0) {
-            hMenus = hMenus.concat(e.children)
-            e.children = undefined
+      route.component = Layout
+    }
+    if (menu.children != null && menu.children && menu.children.length) {
+      route.children = assemblyAsyncRoutes3(menu.children, route, type)
+    }
+    return route
+  })
+}
+
+function generateBaseRoute(menu) {
+  if (menu.type === '1') { // 目录
+    return {
+      path: menu.url,
+      alwaysShow: true,
+      redirect: menu.redirect || menu.url,
+      meta: { title: menu.name, icon: menu.icon || 'nested' }
+    }
+  } else if (menu.type === '4') { // 隐藏菜单
+    return {
+      path: menu.redirect || menu.url,
+      name: menu.code,
+      hidden: true,
+      noComponent: true,
+      meta: { title: menu.name, noCache: true }
+    }
+  }
+  return {
+    path: menu.url,
+    name: menu.code,
+    meta: { title: menu.name }
+  }
+}
+
+//
+function filterChildren(children2, lastRouter = false) {
+  let children = []
+  JSON.parse(JSON.stringify(children2)).forEach((el, index) => {
+    if (el.children && el.children.length) {
+      if (el.type === '1') {
+        el.children.forEach(c => {
+          c.path = el.path + '/' + c.path
+          if (c.type === '1' && c.children && c.children.length) {
+            children = children.concat(filterChildren(c.children, c))
+            return
           }
+          children.push(c)
         })
-        if (hMenus.length > 0) {
-          tmp.children = tmp.children.concat(hMenus)
-        }
+        children2.splice(index, 1)
+        return
       }
     }
-    if (menus2) menus2.push(tmp)
-    else res.push(tmp)
+    if (lastRouter) {
+      el.path = lastRouter.path + '/' + el.path
+    }
+    children = children.concat(el)
   })
-
-  // 404 page must be placed at the end !!!
-  return res
+  return children
 }
 
 export const loadView = (view) => { // 路由懒加载
@@ -327,6 +345,14 @@ export const loadView = (view) => { // 路由懒加载
 
 export const loadViewIndex = (view) => { // 路由懒加载
   return (resolve) => require([`@/views/${view}/index`], resolve)
+}
+
+export const loadView2 = (view) => { // 路由懒加载
+  return (resolve) => require([`@/views${view}`], resolve)
+}
+
+export const loadViewIndex2 = (view) => { // 路由懒加载
+  return (resolve) => require([`@/views${view}/index`], resolve)
 }
 
 export default router

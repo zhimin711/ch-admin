@@ -6,6 +6,8 @@ import 'normalize.css/normalize.css' // a modern alternative to CSS resets
 
 import Element from 'element-ui'
 import './styles/element-variables.scss'
+// 如果使用中文语言包请默认支持，无需额外引入，请删除该依赖
+// import enLang from 'element-ui/lib/locale/lang/en'
 
 import '@/styles/index.scss' // global css
 
@@ -38,17 +40,19 @@ Vue.use(VueLazyload, {
  * you can execute: mockXHR()
  *
  * Currently MockJs will be used in the production environment,
- * please remove it before going online! ! !
+ * please remove it before going online ! ! !
  */
-import { mockXHR } from '../mock'
 if (process.env.NODE_ENV === 'production') {
+  const { mockXHR } = require('../mock')
   mockXHR()
 }
 // 全局组件挂载
 Vue.component('Pagination', Pagination)
 Vue.use(permission)
 Vue.use(Element, {
-  size: Cookies.get('size') || 'medium' // set element-ui default size
+  size: Cookies.get('size') || 'medium' //, // set element-ui default size
+  // 如果使用中文，无需设置，请删除
+  // locale: enLang
 })
 
 // register global utility filters

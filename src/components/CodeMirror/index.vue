@@ -7,10 +7,10 @@
       @change="changeMode"
     >
       <el-option
-        v-for="mode in modes"
-        :key="mode.value"
-        :label="mode.label"
-        :value="mode.value"
+        v-for="item in modes"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
       />
     </el-select>
   </div>

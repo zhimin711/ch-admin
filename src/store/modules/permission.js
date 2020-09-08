@@ -56,6 +56,14 @@ const actions = {
   },
   assemblyRouters({ commit }, menus) {
     return new Promise(resolve => {
+      try {
+        // const accessedRoutes3 = assemblyAsyncRoutes3(menus)
+        // commit('SET_ROUTES', accessedRoutes3)
+        // resolve(accessedRoutes3)
+        // return
+      } catch (e) {
+        console.log(e)
+      }
       const accessedRoutes = assemblyAsyncRoutes(menus)
       commit('SET_ROUTES', accessedRoutes)
       resolve(accessedRoutes)

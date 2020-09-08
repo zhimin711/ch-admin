@@ -134,7 +134,7 @@ export default {
 <style lang="scss" scoped>
 .editor-slide-upload {
   margin-bottom: 20px;
-  /deep/ .el-upload-list__item-thumbnail {
+  ::v-deep .el-upload-list__item-thumbnail {
     width: auto;
   }
 }

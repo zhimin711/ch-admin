@@ -147,21 +147,22 @@ const actions = {
   },
 
   // dynamically modify permissions
-  changeRoles({ commit, dispatch }, role) {
-    return new Promise(async resolve => {
-      resetRouter()
-      let accessRoutes = []
-      if (role === '-1') {
-        const currRoles = state.roles.filter(item => { return item.id === role })
-        commit('SET_ROLE', currRoles[0])
-        accessRoutes = await dispatch('permission/generateRoutes', [], { root: true })
-      } else {
-        const menuList = await dispatch('getInfo', role)
+  async changeRoles({ commit, dispatch }, role) {
+    let accessRoutes = []
+    if (role === '-1') {
+      const currRoles = state.roles.filter(item => { return item.id === role })
+      commit('SET_ROLE', currRoles[0])
+      accessRoutes = await dispatch('permission/generateRoutes', [], { root: true })
+    } else {
+      const menuList = await dispatch('getInfo', role)
 
-        setToken(state.token)
-        // const accessRoutes = await dispatch('permission/generateRoutes', roles, { root: true })
-        accessRoutes = await dispatch('permission/assemblyRouters', menuList, { root: true })
-      }
+      setToken(state.token)
+      // const accessRoutes = await dispatch('permission/generateRoutes', roles, { root: true })
+      accessRoutes = await dispatch('permission/assemblyRouters', menuList, { root: true })
+    }
+
+    return new Promise(resolve => {
+      resetRouter()
       // dynamically add accessible routes
       router.addRoutes(accessRoutes)
 
