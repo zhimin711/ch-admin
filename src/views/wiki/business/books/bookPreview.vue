@@ -4,6 +4,9 @@
       <el-button v-loading="loading" type="warning" @click="getBookPreview">
         刷新
       </el-button>
+      <el-button type="danger" @click="closeView">
+        关闭
+      </el-button>
     </sticky>
     <div class="img-list">
       <ul>
@@ -43,10 +46,12 @@ export default {
         'border-radius': '4px',
         'line-height': '45px', // 请保持与高度一致以垂直居中 Please keep consistent with height to center vertically
         background: '#e7eaf1'// 按钮的背景颜色 The background color of the button
-      }
+      },
+      tempRoute: {}
     }
   },
   created() {
+    this.tempRoute = Object.assign({}, this.$route)
     this.id = this.$route.params && this.$route.params.id
     const w = window.innerWidth
     if (w > 1200) {
@@ -77,6 +82,11 @@ export default {
         h = 0
       }
       return h
+    },
+    closeView() {
+      this.$store.dispatch('tagsView/delView', this.tempRoute).then(() => {
+        this.$router.go(-1)
+      })
     }
   }
 }

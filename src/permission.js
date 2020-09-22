@@ -32,6 +32,7 @@ router.beforeEach(async(to, from, next) => {
         if (to.matched.length === 0) {
           next('/404') // 判断此跳转路由的来源路由是否存在，存在的情况跳转到来源路由，否则跳转到404页面
         } else {
+          convertRoute(to)
           next()
         }
       } else {
@@ -46,6 +47,7 @@ router.beforeEach(async(to, from, next) => {
 
           // hack method to ensure that addRoutes is complete
           // set the replace: true, so the navigation will not leave a history record
+          convertRoute(to)
           next({ ...to, replace: true })
         } catch (error) {
           NProgress.done()
@@ -98,6 +100,17 @@ router.beforeEach(async(to, from, next) => {
     }
   }
 })
+
+function convertRoute(to) {
+  if (to.matched && to.matched.length > 2) {
+    for (let i = 0; i < to.matched.length; i++) {
+      const element = to.matched[i]
+      if (element.components.default.name === 'Blank') {
+        to.matched.splice(i, 1)
+      }
+    }
+  }
+}
 
 router.afterEach(() => {
   // finish progress bar
