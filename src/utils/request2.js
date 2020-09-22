@@ -88,7 +88,7 @@ service2.interceptors.response.use(
         type: 'error',
         duration: 5 * 1000
       })
-    } else if (error.code === '307' || (error.data && error.data.code === '307')) {
+    } else if (error.code === '307' || error.code === '304' || (error.data && (error.data.code === '307' || error.data.code === '304'))) {
       toLogin()
     } else if (error.message) {
       Message({
