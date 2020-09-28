@@ -44,7 +44,6 @@
 </template>
 
 <script>
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { getClusterNodes } from '@/api/nacos/cluster'
 
 export default {
@@ -72,7 +71,6 @@ export default {
     this.fetchData()
   },
   methods: {
-    checkPermission2,
     fetchData() {
       this.listLoading = true
       getClusterNodes(this.listQuery).then(res => {
@@ -84,7 +82,7 @@ export default {
     toggleExpand(row) {
       const $table = this.$refs.table
       this.list.map((item) => {
-        if (row.id !== item.id) {
+        if (row.address !== item.address) {
           $table.toggleRowExpansion(item, false)
         }
       })
