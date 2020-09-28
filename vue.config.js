@@ -38,15 +38,14 @@ module.exports = {
       errors: true
     },
     proxy: {
-      // change xxx-api/login => mock/login
-      // detail: https://cli.vuejs.org/config/#devserver-proxy
-      // [process.env.VUE_APP_BASE_API]: {
-      //   target: `http://127.0.0.1:${port}`,
-      //   changeOrigin: true,
-      //   pathRewrite: {
-      //     ['^' + process.env.VUE_APP_BASE_API]: process.env.VUE_APP_BASE_API
-      //   }
-      // },
+      [process.env.VUE_APP_API + '/nacos']: {
+        // target: `http://127.0.0.1:7001`,
+        target: 'http://10.206.38.38:1080',
+        changeOrigin: true,
+        pathRewrite: {
+          ['^' + process.env.VUE_APP_API]: ''
+        }
+      },
       [process.env.VUE_APP_API]: {
         // target: `http://127.0.0.1:7001`,
         target: `http://192.168.199.194:7001`,
