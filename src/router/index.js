@@ -166,8 +166,8 @@ export const asyncRoutes = [
   upmsRouter,
   logsRouter,
   sysRouter,
-  kafkaRouter,
   wikiRouter,
+  kafkaRouter,
   nacosRouter
 ]
 

@@ -16,6 +16,70 @@ const router = {
   },
   children: [
     {
+      path: 'namespace',
+      component: () => import('@/views/nacos/namespace/index'),
+      name: 'Nacos Namespace Manager',
+      meta: {
+        title: '命名空间'
+      }
+    },
+    {
+      path: 'configs',
+      redirect: '/nacos/configs/index',
+      component: Blank,
+      name: 'Configs Manager',
+      alwaysShow: true,
+      meta: {
+        title: '配置管理',
+        icon: 'lock'
+      },
+      children: [
+        {
+          path: 'index',
+          component: () => import('@/views/nacos/configs/index'),
+          name: 'Nacos Config List',
+          meta: { title: '配置列表' }
+        },
+        {
+          path: 'history',
+          component: () => import('@/views/nacos/configs/history'),
+          name: 'Nacos Config History',
+          meta: { title: '历史版本' }
+        },
+        {
+          path: 'watch',
+          component: () => import('@/views/nacos/configs/watch'),
+          name: 'Nacos Config Watch',
+          meta: { title: '监听查询' }
+        }
+      ]
+    },
+    {
+      path: 'services',
+      redirect: '/nacos/services/publish',
+      component: Blank,
+      name: 'Services Manager',
+      alwaysShow: true,
+      meta: {
+        title: '服务管理',
+        icon: 'lock'
+      },
+      children: [
+        {
+          path: 'publish',
+          component: () => import('@/views/nacos/services/publish'),
+          name: 'Nacos Publish List',
+          meta: { title: '服务列表' }
+        },
+        {
+          path: 'subscribe',
+          component: () => import('@/views/nacos/services/subscribe'),
+          name: 'Nacos Subscribe List',
+          meta: { title: '订阅者列表' }
+        }
+      ]
+    },
+    {
       path: 'cluster',
       redirect: '/nacos/cluster/nodes',
       component: Blank,
@@ -33,14 +97,6 @@ const router = {
           meta: { title: '节点列表' }
         }
       ]
-    },
-    {
-      path: 'namespace',
-      component: () => import('@/views/nacos/namespace/index'),
-      name: 'Namespace Manager',
-      meta: {
-        title: '命名空间'
-      }
     }
   ]
 }
