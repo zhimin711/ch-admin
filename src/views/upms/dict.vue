@@ -242,7 +242,7 @@ const defaultRecord = { pid: '0', sort: 1, status: '1' }
 const defaultRecordNode = { sort: 1, status: '1' }
 
 export default {
-  name: 'UPMSDict1', // 用于页面缓存
+  name: 'UPMSDict', // 用于页面缓存
   data() {
     return {
       // 查询参数与结果
