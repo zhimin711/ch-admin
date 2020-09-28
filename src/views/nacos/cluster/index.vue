@@ -24,7 +24,7 @@
       </el-table-column>
       <el-table-column label="节点元数据" width="150">
         <template slot-scope="scope">
-          <el-button type="text" icon="el-icon-arrow-right" @click="toggleExpand(scope.row)">节点元数据</el-button>
+          <el-button type="text" icon="el-icon-view" @click="toggleExpand(scope.row)">查看详情</el-button>
         </template>
       </el-table-column>
       <el-table-column type="expand" width="1">

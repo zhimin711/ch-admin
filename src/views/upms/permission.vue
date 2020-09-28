@@ -138,6 +138,12 @@ import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { validAlphabetsAndNumber, isEmpty } from '@/utils/validate'
 import { treePermission, pagePermission, addPermission, editPermission, delPermission } from '@/api/upms/permission'
 
+const defaultRecord = {
+  type: '1',
+  code: '',
+  sort: 1,
+  name: ''
+}
 export default {
   name: 'UPMSPermission',
   components: { IconSelector },
@@ -218,7 +224,7 @@ export default {
     },
     handleAdd() {
       this.getTree('1')
-      this.record = { 'type': '1', sort: 1 }
+      this.record = Object.assign({}, defaultRecord)
       this.recordStatus = true
       this.recordParents = []
       this.dialogType = 'new'
@@ -227,6 +233,10 @@ export default {
       this.recordForm.urlDisabled = false
       this.recordForm.descDisabled = true
       this.recordForm.redirectShow = true
+
+      this.$nextTick(() => {
+        this.$refs['baseForm'].clearValidate()
+      })
     },
     handleEdit(row, index) {
       this.record = deepClone(row)
