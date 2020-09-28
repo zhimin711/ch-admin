@@ -1,7 +1,7 @@
-import request from '@/utils/request'
+import request from '@/utils/request3'
 
-// const namespace = '/auth'
-const namespace = '/vue-element-admin'
+// const namespace = '/vue-element-admin'
+const namespace = '/auth'
 
 export function login(data) {
   return request({
