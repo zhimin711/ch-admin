@@ -6,7 +6,11 @@ const role = require('./role')
 const article = require('./article')
 const search = require('./remote-search')
 
+
+const customLogin = require('./custom/login')
+
 const mocks = [
+  ...customLogin,
   ...user,
   ...role,
   ...article,

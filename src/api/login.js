@@ -1,8 +1,11 @@
-import request from '@/utils/request3'
+import request from '@/utils/request'
+
+// const namespace = '/auth'
+const namespace = '/vue-element-admin'
 
 export function login(data) {
   return request({
-    url: '/auth/login/token/access',
+    url: `${namespace}/login/token/access`,
     method: 'post',
     data
   })
@@ -10,7 +13,7 @@ export function login(data) {
 
 export function getInfo(role) {
   return request({
-    url: '/auth/login/token/user',
+    url: `${namespace}/login/token/user`,
     method: 'get',
     params: { role }
   })
@@ -18,7 +21,7 @@ export function getInfo(role) {
 
 export function logout(refreshToken) {
   return request({
-    url: '/auth/logout/token',
+    url: `${namespace}/logout/token`,
     method: 'post',
     params: { refreshToken }
   })
