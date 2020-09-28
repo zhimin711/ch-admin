@@ -14,6 +14,7 @@ import logsRouter from './modules/logs'
 import sysRouter from './modules/sys'
 import kafkaRouter from './modules/kafka'
 import wikiRouter from './modules/wiki'
+import nacosRouter from './modules/nacos'
 
 import componentsRouter from './modules/components'
 import tableRouter from './modules/table'
@@ -166,7 +167,8 @@ export const asyncRoutes = [
   logsRouter,
   sysRouter,
   kafkaRouter,
-  wikiRouter
+  wikiRouter,
+  nacosRouter
 ]
 
 const createRouter = () => new Router({
@@ -184,6 +186,7 @@ export function resetRouter() {
 }
 
 export function assemblyAsyncRoutes(menus, basePath) {
+  if (menus.length === 0) return asyncRoutes
   const res = []
   // const path = basePath || ''
   const isStart = !basePath
