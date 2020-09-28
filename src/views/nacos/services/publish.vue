@@ -23,36 +23,12 @@
       fit
       highlight-current-row
     >
-      <el-table-column label="服务名称" min-width="200" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.name }}
-        </template>
-      </el-table-column>
-      <el-table-column label="分组名称" min-width="200" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.ip }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="集群数目" min-width="100" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.adminPort }}
-        </template>
-      </el-table-column>
-      <el-table-column label="实例数" min-width="100" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.tcpPort }}
-        </template>
-      </el-table-column>
-      <el-table-column label="健康实例数" min-width="100" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.metricPort }}
-        </template>
-      </el-table-column>
-      <el-table-column class-name="status-col" label="触发保护阈值" min-width="150" align="center">
-        <template slot-scope="scope">
-          <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status | statusLabel }}</el-tag>
-        </template>
-      </el-table-column>
+      <el-table-column label="服务名称" min-width="200" prop="name" />
+      <el-table-column label="分组名称" min-width="200" prop="groupName" />
+      <el-table-column label="集群数目" min-width="100" align="center" prop="clusterCount" />
+      <el-table-column label="实例数" min-width="100" align="center" prop="ipCount" />
+      <el-table-column label="健康实例数" min-width="100" align="center" prop="healthyInstanceCount" />
+      <el-table-column class-name="status-col" label="触发保护阈值" min-width="150" align="center" prop="triggerFlag" />
       <el-table-column align="center" prop="created_at" label="操作" min-width="150">
         <template slot-scope="scope">
           <el-dropdown trigger="click">
@@ -75,11 +51,7 @@
         <el-form-item label="所属集群" prop="clusterId">
           <el-select v-if="dialogStatus === 'create'" v-model="nodeModel.clusterId" placeholder="选择所属集群">
             <el-option key="" label="单机" value="" />
-            <el-option v-for="item in canalClusters" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-          <el-select v-else v-model="nodeModel.clusterId" placeholder="选择所属集群" disabled="disabled">
-            <el-option key="" label="单机" value="" />
-            <el-option v-for="item in canalClusters" :key="item.id" :label="item.name" :value="item.id" />
+            <!--<el-option v-for="item in canalClusters" :key="item.id" :label="item.name" :value="item.id" />-->
           </el-select>
         </el-form-item>
         <el-form-item label="Server 名称" prop="name">
@@ -222,8 +194,8 @@ export default {
     fetchData() {
       this.listLoading = true
       pageNacosServices(this.listQuery).then(res => {
-        this.list = res.data.items
-        this.count = res.data.count
+        this.list = res.serviceList
+        this.count = res.count
       }).finally(() => {
         this.listLoading = false
       })
