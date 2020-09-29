@@ -17,7 +17,6 @@ import wikiRouter from './modules/wiki'
 import nacosRouter from './modules/nacos'
 
 import componentsRouter from './modules/components'
-import tableRouter from './modules/table'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -114,8 +113,6 @@ export const constantRoutes = [
  */
 export const exampleRoutes = [
   componentsRouter,
-  tableRouter,
-
   {
     path: '/error',
     component: Layout,
