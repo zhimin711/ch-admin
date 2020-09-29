@@ -102,6 +102,9 @@ router.beforeEach(async(to, from, next) => {
 })
 
 function convertRoute(to) {
+  if (to.meta && to.meta.noCache) {
+    return
+  }
   if (to.matched && to.matched.length > 2) {
     for (let i = 0; i < to.matched.length; i++) {
       const element = to.matched[i]
