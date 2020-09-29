@@ -1,37 +1,42 @@
 <template>
-  <div class="app-container">
-    <div class="filter-container">
-
-      <el-form ref="queryForm" :model="listQuery" :inline="true" :rules="rules">
-        <el-form-item label="Data ID" prop="dataId">
-          <el-input v-model="listQuery.dataId" placeholder="请输入Data ID" style="width: 200px;" />
-        </el-form-item>
-        <el-form-item label="分组" prop="group">
-          <el-input v-model="listQuery.group" placeholder="分组名称" style="width: 200px;" />
-        </el-form-item>
-      </el-form>
-      <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
+  <el-card class="box-card">
+    <div slot="header" class="clearfix">
+      <span>历史版本(保留30天)</span>
     </div>
-    <el-table
-      v-loading="listLoading"
-      :data="list"
-      element-loading-text="Loading"
-      border
-      fit
-      highlight-current-row
-    >
-      <el-table-column label="Data ID" min-width="200" prop="dataId" />
-      <el-table-column label="Group" min-width="200" prop="group" />
-      <el-table-column label="最后更新时间" min-width="100" prop="lastModifiedTime" :formatter="dateFormat" />
-      <el-table-column align="center" label="操作" width="180">
-        <template slot-scope="{row}">
-          <el-button type="text" icon="el-icon-view" @click.native="handleDetail(row)">详情</el-button>
-          <el-button type="text" icon="el-icon-refresh-left" @click.native="handleRollback(row)">回滚</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
-  </div>
+    <div class="">
+      <div class="filter-container">
+        <el-form ref="queryForm" :model="listQuery" :inline="true" :rules="rules">
+          <el-form-item label="Data ID" prop="dataId">
+            <el-input v-model="listQuery.dataId" placeholder="请输入Data ID" style="width: 200px;" />
+          </el-form-item>
+          <el-form-item label="分组" prop="group">
+            <el-input v-model="listQuery.group" placeholder="分组名称" style="width: 200px;" />
+          </el-form-item>
+        </el-form>
+        <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
+      </div>
+      <el-table
+        v-loading="listLoading"
+        :data="list"
+        element-loading-text="Loading"
+        border
+        fit
+        highlight-current-row
+      >
+        <el-table-column label="Data ID" min-width="200" prop="dataId" />
+        <el-table-column label="Group" min-width="200" prop="group" />
+        <el-table-column label="最后更新时间" min-width="100" prop="lastModifiedTime" :formatter="dateFormat" />
+        <el-table-column align="center" label="操作" width="180">
+          <template slot-scope="{row}">
+            <el-button type="text" icon="el-icon-view" @click.native="handleDetail(row)">详情</el-button>
+            <el-button type="text" icon="el-icon-refresh-left" @click.native="handleRollback(row)">回滚</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination v-show="count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
+    </div>
+  </el-card>
+
 </template>
 
 <script>

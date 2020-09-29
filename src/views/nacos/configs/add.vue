@@ -1,5 +1,5 @@
 <template>
-  <config-detail mode="Add" />
+  <config-detail mode="ADD" />
 </template>
 
 <script>

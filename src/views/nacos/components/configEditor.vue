@@ -1,37 +1,35 @@
 <template>
-  <div>
+  <el-card>
     <el-form ref="form" :model="record" label-width="120px" :rules="rules">
-      <div style="padding-left: 10px;padding-top: 20px;">
-        <el-form-item>
-          {{ record.name }}&nbsp;&nbsp;&nbsp;&nbsp;
-          <el-button type="primary" @click="onSubmit">保存</el-button>
-          <el-button type="warning" @click="onCancel">重置</el-button>
-          <el-button type="info" @click="onBack">返回</el-button>
-        </el-form-item>
+      <div style="padding: 0px 10px 20px 10px">
         <el-form-item label="Data ID" prop="dataId">
-          <el-input v-model="record.dataId" placeholder="请输入Data ID" />
+          <el-input v-model="record.dataId" placeholder="请输入Data ID" :disabled="isEdit" />
         </el-form-item>
         <el-form-item label="分组" prop="group">
-          <el-input v-model="record.group" placeholder="分组名称" />
+          <el-input v-model="record.group" placeholder="分组名称" :disabled="isEdit" />
+        </el-form-item>
+        <el-form-item label="标签">
+          <el-input v-model="record.configTags" placeholder="标签" />
         </el-form-item>
         <el-form-item label="归属应用" prop="appName">
           <el-input v-model="record.appName" placeholder="归属应用" />
         </el-form-item>
-        <el-form-item v-if="isHistory" label="操作类型" prop="opType">
-          <el-input v-model="record.opType" placeholder="操作类型" />
+        <el-form-item label="描述">
+          <el-input v-model="record.desc" type="textarea" placeholder="请输入内容" />
         </el-form-item>
-        <el-form-item v-if="isHistory" label="MD5" prop="md5">
-          <el-input v-model="record.md5" placeholder="MD5" />
-        </el-form-item>
-        <CodeMirror v-model="record.content" />
+        <CodeMirror v-model="record.content" :mode="record.type" @change-mode="changeCodeMode" />
       </div>
+      <el-form-item>
+        <el-button type="primary" @click="onSubmit">发布</el-button>
+        <el-button type="info" @click="onBack">返回</el-button>
+      </el-form-item>
     </el-form>
-  </div>
+  </el-card>
 </template>
 
 <script>
 import CodeMirror from '@/components/CodeMirror/ConfigFile'
-import { getNacosConfigsHistory } from '@/api/nacos/history'
+import { getNacosConfig, releaseNacosConfig } from '@/api/nacos/configs'
 
 const defaultRecord = {
   dataId: null,
@@ -44,14 +42,14 @@ export default {
   props: {
     mode: {
       type: String,
-      default: 'add'
+      default: 'ADD'
     }
   },
   data() {
     return {
       tempRoute: {},
       record: {},
-      isHistory: false,
+      isEdit: false,
       rules: {
         dataId: [{ required: true, message: 'Data ID 不能为空', trigger: 'change' }],
         group: [{ required: true, message: 'Group 不能为空', trigger: 'change' }]
@@ -59,30 +57,50 @@ export default {
     }
   },
   created() {
-    this.isHistory = this.mode === 'HistoryDetail' || this.mode === 'HistoryRollback'
-    if (this.mode === 'Add') {
+    this.isEdit = this.mode === 'EDIT'
+    if (this.mode === 'ADD') {
       this.record = Object.assign({}, defaultRecord)
     } else {
-      this.loadConfig(this.$route.params)
+      this.loadConfig(this.$route.query)
     }
     this.tempRoute = Object.assign({}, this.$route)
   },
   methods: {
     editorInit() {
     },
+    changeCodeMode(val) {
+      this.record.type = val
+    },
     loadConfig(params) {
-      if (this.isHistory) {
-        getNacosConfigsHistory(params)
-      }
+      params.show = 'all'
+      getNacosConfig(params).then(data => {
+        if (data) {
+          this.record = Object.assign({}, data)
+        }
+      })
     },
     onSubmit() {
-      if (this.form.content === null || this.form.content === '') {
+      if (this.record.content === null || this.record.content === '') {
         this.$message({
           message: '配置内容不能为空',
           type: 'error'
         })
         return
       }
+
+      const formData = new FormData()
+      if (!this.isEdit) {
+        formData.append('namespaceId', this.record.tenant || '')
+        formData.append('appName', this.record.appName)
+        formData.append('dataId', this.record.dataId)
+        formData.append('group', this.record.group)
+        formData.append('content', this.record.content)
+        formData.append('tenant', this.record.tenant)
+        formData.append('type', this.record.type)
+        formData.append('config_tags', this.record.configTags)
+      }
+    },
+    handleSubmit() {
       this.$confirm(
         '修改主配置可能会导致Server重启，是否继续？',
         '确定修改',
@@ -92,27 +110,25 @@ export default {
           type: 'warning'
         }
       ).then(() => {
-        /* updateCanalConfig(this.record).then(response => {
+        releaseNacosConfig(this.record).then(response => {
           if (response.data === 'success') {
             this.$message({
               message: '保存成功',
               type: 'success'
             })
-            this.loadCanalConfig()
           } else {
             this.$message({
               message: '保存失败',
               type: 'error'
             })
           }
-        })*/
+        })
       })
     },
-    onCancel() {
-      this.loadCanalConfig()
-    },
     onBack() {
-      history.go(-1)
+      this.$store.dispatch('tagsView/delView', this.tempRoute).then(() => {
+        this.$router.go(-1)
+      })
     }
   }
 }

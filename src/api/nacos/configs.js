@@ -1,4 +1,4 @@
-import request from '@/utils/request2'
+import request from '@/utils/request3'
 
 const namespace = '/nacos/v1/cs/configs'
 
@@ -10,15 +10,18 @@ export function pageNacosConfigs(params) {
   })
 }
 
-export function addNacosConfigs(data) {
+export function releaseNacosConfig(data) {
   return request({
     url: `${namespace}`,
     method: 'post',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
     data
   })
 }
 
-export function getNacosConfigs(params) {
+export function getNacosConfig(params) {
   return request({
     url: `${namespace}`,
     method: 'get',
@@ -34,14 +37,14 @@ export function updateNacosConfigs(data) {
   })
 }
 
-export function deleteNacosConfigs(id) {
+export function deleteNacosConfigs(params) {
   return request({
-    url: `${namespace}/` + id,
+    url: `${namespace}?dataId=${params.dataId}&group=${params.group}`,
     method: 'delete'
   })
 }
 
-export function rollbackNacosConfigs(data) {
+export function rollbackNacosConfig(data) {
   return request({
     url: `${namespace}`,
     method: 'post',
@@ -50,5 +53,16 @@ export function rollbackNacosConfigs(data) {
     },
     data
   })
+}
+
+export function exportNacosConfigs(params) {
+  window.open(
+    [
+      namespace,
+      Object.keys(params)
+        .map(key => `${key}=${params[key]}`)
+        .join('&')
+    ].join('?')
+  )
 }
 

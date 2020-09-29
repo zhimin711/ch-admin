@@ -11,6 +11,11 @@
       </el-form>
       <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
       <el-button class="filter-item" type="primary" @click="handleCreate()">创建配置</el-button>
+      <el-button class="filter-item" type="danger" @click="handleCreate()">删除</el-button>
+      <!--<el-button class="filter-item" type="primary" @click="handleCreate()">导出查询结果</el-button>-->
+      <el-button class="filter-item" type="success" plain @click="handleExports()">导出配置</el-button>
+      <el-button class="filter-item" type="primary" @click="handleCreate()">导入配置</el-button>
+      <el-button class="filter-item" type="primary" plain @click="handleCreate()">克隆配置</el-button>
     </div>
     <el-table
       v-loading="listLoading"
@@ -19,6 +24,7 @@
       border
       fit
       highlight-current-row
+      @selection-change="handleSelectionChange"
     >
       <el-table-column
         type="selection"
@@ -31,6 +37,8 @@
       <el-table-column align="center" prop="created_at" label="操作" min-width="150">
         <template slot-scope="{row}">
           <el-button type="text" @click.native="handleDetail(row)">详情</el-button>
+          <el-button type="text" @click.native="handleUpdate(row)">编辑</el-button>
+          <el-button type="text" @click.native="onDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -39,7 +47,7 @@
 </template>
 
 <script>
-import { pageNacosConfigs, addNacosConfigs, updateNacosConfigs, deleteNacosConfigs } from '@/api/nacos/configs'
+import { pageNacosConfigs, addNacosConfigs, updateNacosConfigs, deleteNacosConfigs, exportNacosConfigs } from '@/api/nacos/configs'
 import Pagination from '@/components/Pagination'
 
 export default {
@@ -48,11 +56,8 @@ export default {
   data() {
     return {
       list: null,
-      instanceList: null,
       listLoading: true,
-      listLoading2: true,
-      serverIdTmp: null,
-      canalClusters: [],
+      multipleSelection: [],
       count: 0,
       listQuery: {
         search: 'accurate',
@@ -64,17 +69,10 @@ export default {
       },
       dialogFormVisible: false,
       dialogInstances: false,
-      textMap: {
-        create: '新建Server信息',
-        update: '修改Server信息'
-      },
-      nodeModel: {
-      },
       rules: {
         dataId: [{ required: true, message: 'Data ID 不能为空', trigger: 'change' }],
         group: [{ required: true, message: 'Group 不能为空', trigger: 'change' }]
-      },
-      dialogStatus: 'create'
+      }
     }
   },
   // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
@@ -82,6 +80,9 @@ export default {
     this.fetchData()
   },
   methods: {
+    handleSelectionChange(val) {
+      this.multipleSelection = val
+    },
     fetchData() {
       this.listLoading = true
       pageNacosConfigs(this.listQuery).then(res => {
@@ -98,17 +99,6 @@ export default {
           this.fetchData()
         }
       })
-    },
-    resetModel() {
-      this.nodeModel = {
-        id: undefined,
-        clusterId: null,
-        name: null,
-        ip: null,
-        adminPort: null,
-        tcpPort: null,
-        metricPort: null
-      }
     },
     handleCreate() {
       this.$router.push('/nacos/configs/add?namespaceId=')
@@ -148,38 +138,76 @@ export default {
       this.$router.push(`/nacos/configs/detail?namespaceId=${row.namespaceId || ''}&dataId=${row.dataId}&group=${row.group}`)
     },
     handleUpdate(row) {
-      this.resetModel()
-      this.nodeModel = Object.assign({}, row)
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+      this.$router.push(`/nacos/configs/edit?namespaceId=${row.namespaceId || ''}&dataId=${row.dataId}&group=${row.group}`)
+    },
+    onDelete(row) {
+      const h = this.$createElement
+      this.$msgbox({
+        title: '删除配置',
+        message: h('div', { style: 'margin-left: 20px' }, [
+          h('p', null, '确定要删除以下配置吗？ '),
+          h('span', null, `Data Id: `),
+          h('i', { style: 'color: teal' }, row.dataId),
+          h('br', null, null),
+          h('span', null, `Group: `),
+          h('i', { style: 'color: teal' }, row.group)
+        ]),
+        showCancelButton: true,
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      }).then(action => {
+        this.handleDelete(row)
       })
     },
     handleDelete(row) {
-      this.$confirm('删除Server信息会导致节点服务停止', '确定删除Server信息', {
+      deleteNacosConfigs(row).then((res) => {
+        if (res) {
+          this.fetchData()
+          this.$message({
+            message: '删除配置成功',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            message: '删除配置失败',
+            type: 'error'
+          })
+        }
+      })
+    },
+    handleExports() {
+      const isSelected = this.multipleSelection.length > 0
+      const msg = isSelected ? '将导出选择配置' : '将导出当前查询到或当前租户的配置'
+      this.$confirm(msg, '导出配置', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        deleteNacosConfigs(row.id).then((res) => {
-          if (res.data === 'success') {
-            this.fetchData()
-            this.$message({
-              message: '删除Server信息成功',
-              type: 'success'
-            })
-          } else {
-            this.$message({
-              message: '删除Server信息失败',
-              type: 'error'
-            })
-          }
-        })
+        this.exportData(isSelected)
       })
     },
-    handleLog(row) {
-      this.$router.push('nodeServer/log?id=' + row.id)
+    exportData(isSelected) {
+      let params = null
+      if (isSelected) {
+        const ids = this.multipleSelection.map(item => item.id)
+        params = {
+          export: 'true',
+          tenant: '',
+          group: '',
+          appName: '',
+          ids: ids.join(',')
+        }
+      } else {
+        params = {
+          export: 'true',
+          tenant: '', // getParams('namespace')
+          group: this.listQuery.group,
+          appName: this.listQuery.appName,
+          dataId: this.listQuery.dataId,
+          ids: ''
+        }
+      }
+      exportNacosConfigs(params)
     }
   }
 }

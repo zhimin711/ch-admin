@@ -5,10 +5,12 @@
         v-model="options.mode"
         @change="changeMode"
       >
-        <el-radio-button v-for="mode in modes" :key="mode.value" :label="mode.value">{{ mode.label }}</el-radio-button>
+        <el-radio-button v-for="item in modes2" :key="item.value" :label="item.value">{{ item.label }}</el-radio-button>
       </el-radio-group>
     </label>
-    <textarea ref="coder" />
+    <label class="mode">
+      <textarea ref="coder" />
+    </label>
   </div>
 </template>
 
@@ -37,8 +39,12 @@ export default {
   name: 'ConfigFileEditor',
   /* eslint-disable vue/require-prop-types */
   props: {
-    // 外部传入的内容，用于实现双向绑定
     value: {
+      type: String,
+      default: ''
+    },
+    // 外部传入的内容，用于实现双向绑定
+    mode: {
       type: String,
       default: ''
     },
@@ -82,7 +88,15 @@ export default {
       }, {
         value: 'text/x-properties',
         label: 'Properties'
-      }]
+      }],
+      modes2: [
+        { value: 'text', label: 'TEXT' },
+        { value: 'json', label: 'JSON' },
+        { value: 'xml', label: 'XML' },
+        { value: 'yaml', label: 'YAML' },
+        { value: 'html', label: 'HTML' },
+        { value: 'properties', label: 'Properties' }
+      ]
     }
   },
   watch: {
@@ -94,10 +108,15 @@ export default {
     }
   },
   mounted() {
+    if (this.mode) this.options.mode = this.mode
+
     this.editor = CodeMirror.fromTextArea(this.$refs.coder, this.options)
 
     if (this.value) {
       this.editor.setValue(this.value)
+    }
+    if (this.mode) {
+      this.editor.setOption('mode', this.mode)
     }
     this.editor.on('change', cm => {
       this.$emit('changed', cm.getValue())
@@ -129,14 +148,17 @@ export default {
       if (MIME) {
         this.editor.setOption('mode', MIME.mode)
         // CodeMirror.autoLoadMode(this.editor, MIME)
+      } else {
+        this.editor.setOption('mode', val)
       }
 
       // 获取修改后的语法
-      const label = this._getLanguage(val).label.toLowerCase()
-
-      console.log(label)
+      // const label = this._getLanguage(val).label.toLowerCase()
+      // console.log('changeMode: ' + label)
       // 允许父容器通过以下函数监听当前的语法值
       // this.$emit('language-change', label)
+
+      this.$emit('change-mode', val)
     }
   }
 }

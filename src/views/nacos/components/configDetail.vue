@@ -43,7 +43,7 @@
 
 <script>
 import { getNacosConfigsHistory } from '@/api/nacos/history'
-import { getNacosConfigs, rollbackNacosConfigs } from '@/api/nacos/configs'
+import { getNacosConfig, rollbackNacosConfig } from '@/api/nacos/configs'
 
 export default {
   props: {
@@ -80,7 +80,7 @@ export default {
         })
       } else {
         params.show = 'all'
-        getNacosConfigs(params).then(data => {
+        getNacosConfig(params).then(data => {
           if (data) {
             this.record = Object.assign({}, data)
           }
@@ -114,7 +114,7 @@ export default {
       formData.append('group', this.record.group)
       formData.append('content', this.record.content)
       formData.append('tenant', this.record.tenant)
-      rollbackNacosConfigs(formData).then(resp => {
+      rollbackNacosConfig(formData).then(resp => {
         this.$message({
           message: '配置回滚' + (resp ? '成功' : '失败'),
           type: resp ? 'success' : 'error'

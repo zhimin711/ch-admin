@@ -1,5 +1,5 @@
 <template>
-  <config-detail mode="Edit" />
+  <config-detail mode="EDIT" />
 </template>
 
 <script>
