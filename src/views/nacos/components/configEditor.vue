@@ -33,7 +33,8 @@ import { getNacosConfig, releaseNacosConfig } from '@/api/nacos/configs'
 
 const defaultRecord = {
   dataId: null,
-  group: '',
+  group: 'DEFAULT_GROUP',
+  type: 'text',
   content: '',
   appName: null
 }
@@ -95,34 +96,41 @@ export default {
         formData.append('dataId', this.record.dataId)
         formData.append('group', this.record.group)
         formData.append('content', this.record.content)
-        formData.append('tenant', this.record.tenant)
+        formData.append('tenant', this.record.tenant || '')
         formData.append('type', this.record.type)
-        formData.append('config_tags', this.record.configTags)
+        formData.append('config_tags', this.record.configTags || '')
+        this.handleSubmit(formData)
+      } else {
+        formData.append('dataId', this.record.dataId)
+        formData.append('group', this.record.group)
+        formData.append('content', this.record.content)
+
+        this.$confirm(
+          '修改主配置可能会导致Server重启，是否继续？',
+          '确定修改',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        ).then(() => {
+
+        })
       }
     },
-    handleSubmit() {
-      this.$confirm(
-        '修改主配置可能会导致Server重启，是否继续？',
-        '确定修改',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
+    handleSubmit(data) {
+      releaseNacosConfig(data).then(resp => {
+        if (resp) {
+          this.$message({
+            message: '保存成功',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            message: '保存失败',
+            type: 'error'
+          })
         }
-      ).then(() => {
-        releaseNacosConfig(this.record).then(response => {
-          if (response.data === 'success') {
-            this.$message({
-              message: '保存成功',
-              type: 'success'
-            })
-          } else {
-            this.$message({
-              message: '保存失败',
-              type: 'error'
-            })
-          }
-        })
       })
     },
     onBack() {
