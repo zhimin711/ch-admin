@@ -186,7 +186,7 @@ export function resetRouter() {
 }
 
 export function assemblyAsyncRoutes(menus, basePath) {
-  if (menus.length === 0) return asyncRoutes
+  // if (menus.length === 0) return asyncRoutes
   const res = []
   // const path = basePath || ''
   const isStart = !basePath

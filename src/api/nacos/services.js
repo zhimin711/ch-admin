@@ -1,6 +1,7 @@
 import request from '@/utils/request3'
 
 const namespace = '/nacos/v1/ns/catalog/services'
+const namespace2 = '/nacos/v1/ns/service/subscribers'
 
 export function pageNacosServices(params) {
   return request({
@@ -45,5 +46,13 @@ export function deleteNacosNamespaces(id) {
     url: `${namespace}`,
     method: 'delete',
     params: { namespaceId: id }
+  })
+}
+
+export function getNacosSubscribers(params) {
+  return request({
+    url: `${namespace2}`,
+    method: 'get',
+    params: params
   })
 }

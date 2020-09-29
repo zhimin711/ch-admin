@@ -47,9 +47,9 @@ const router = {
           meta: { title: '历史版本' }
         },
         {
-          path: 'watch',
-          component: () => import('@/views/nacos/configs/watch'),
-          name: 'Nacos Config Watch',
+          path: 'listener',
+          component: () => import('@/views/nacos/configs/listener'),
+          name: 'NacosConfigsListener',
           meta: { title: '监听查询' }
         }
       ]

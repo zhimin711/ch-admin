@@ -7,13 +7,27 @@
       <el-tab-pane label="定时任务补偿" name="fourth"></el-tab-pane>
     </el-tabs>-->
     <div class="filter-container">
-      <!--<el-input v-model="listQuery.name" placeholder="Server 名称" style="width: 200px;" class="filter-item" />-->
-      <el-select v-model="listQuery.namespaceId" placeholder="所属集群" class="filter-item">
+      <!--      <el-select v-model="listQuery.namespaceId" placeholder="所属集群" class="filter-item">
         <el-option v-for="item in namespaces" :key="item.namespace" :label="item.namespaceShowName" :value="item.namespace" />
-      </el-select>
-      <el-input v-model="listQuery.ip" placeholder="Server IP" style="width: 200px;" class="filter-item" />
-      <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
-      <el-button class="filter-item" type="primary" @click="handleCreate()">新建Server</el-button>
+      </el-select>-->
+      <el-form :model="listQuery" :inline="true">
+        <el-form-item label="服务名称">
+          <el-input v-model="listQuery.serviceNameParam" placeholder="服务名称" style="width: 200px;" />
+        </el-form-item>
+
+        <el-form-item label="分组名称">
+          <el-input v-model="listQuery.groupNameParam" placeholder="分组名称" style="width: 200px;" />
+        </el-form-item>
+        <el-form-item label="是否隐藏空服务">
+          <el-switch
+            v-model="listQuery.hasIpCount"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+          />
+        </el-form-item>
+      </el-form>
+      <el-button class="filter-item" type="info" icon="el-icon-search" plain @click="queryData()">查询</el-button>
+      <el-button class="filter-item" type="primary" icon="el-icon-plus" @click="handleCreate()">创建服务</el-button>
     </div>
     <el-table
       v-loading="listLoading"
@@ -122,7 +136,7 @@ import Pagination from '@/components/Pagination'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
 export default {
-  name: 'NacosServicesPublish',
+  name: 'NacosServices',
   components: { Pagination },
   filters: {
     statusFilter(status) {
