@@ -27,7 +27,7 @@ const router = {
       path: 'configs',
       redirect: '/nacos/configs/index',
       component: Blank,
-      name: 'Configs Manager',
+      name: 'Nacos Configs Manager',
       alwaysShow: true,
       meta: {
         title: '配置管理',
@@ -37,14 +37,49 @@ const router = {
         {
           path: 'index',
           component: () => import('@/views/nacos/configs/index'),
-          name: 'Nacos Config List',
+          name: 'NacosConfigs',
           meta: { title: '配置列表' }
         },
         {
           path: 'history',
           component: () => import('@/views/nacos/configs/history'),
-          name: 'Nacos Config History',
+          name: 'NacosConfigsHistory',
           meta: { title: '历史版本' }
+        },
+        {
+          path: 'add',
+          component: () => import('@/views/nacos/configs/add'),
+          name: 'NacosConfigAdd',
+          hidden: true,
+          meta: { title: '添加配置', noCache: true }
+        },
+        {
+          path: 'detail',
+          component: () => import('@/views/nacos/configs/detail'),
+          name: 'NacosConfigDetail',
+          hidden: true,
+          meta: { title: '配置详情', noCache: true }
+        },
+        {
+          path: 'edit',
+          component: () => import('@/views/nacos/configs/edit'),
+          name: 'NacosConfigEdit',
+          hidden: true,
+          meta: { title: '修改配置', noCache: true }
+        },
+        {
+          path: 'historyDetail',
+          component: () => import('@/views/nacos/configs/historyDetail'),
+          name: 'NacosConfigsHistoryDetail',
+          hidden: true,
+          meta: { title: '历史详情', noCache: true }
+        },
+        {
+          path: 'rollback',
+          component: () => import('@/views/nacos/configs/historyRollback'),
+          name: 'NacosConfigsRollback',
+          hidden: true,
+          meta: { title: '配置回滚', noCache: true }
         },
         {
           path: 'listener',

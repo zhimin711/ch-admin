@@ -51,6 +51,7 @@ export default {
       queryType: '1',
       count: 0,
       listQuery: {
+        group: 'DEFAULT_GROUP'
       },
       rules: {
         dataId: [{ required: true, message: 'Server 名称不能为空', trigger: 'change' }],
@@ -59,7 +60,6 @@ export default {
       }
     }
   },
-  // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
   created() {
   },
   methods: {

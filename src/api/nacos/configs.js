@@ -1,48 +1,54 @@
 import request from '@/utils/request2'
 
-const baseUrl = '/nacos/v1/cluster'
+const namespace = '/nacos/v1/cs/configs'
 
-export function getCanalClusters(params) {
+export function pageNacosConfigs(params) {
   return request({
-    url: `${baseUrl}s`,
+    url: `${namespace}`,
     method: 'get',
     params: params
   })
 }
 
-export function addCanalCluster(data) {
+export function addNacosConfigs(data) {
   return request({
-    url: `${baseUrl}`,
+    url: `${namespace}`,
     method: 'post',
     data
   })
 }
 
-export function canalClusterDetail(id) {
+export function getNacosConfigs(params) {
   return request({
-    url: `${baseUrl}/${id}`,
-    method: 'get'
+    url: `${namespace}`,
+    method: 'get',
+    params: params
   })
 }
 
-export function updateCanalCluster(data) {
+export function updateNacosConfigs(data) {
   return request({
-    url: `${baseUrl}`,
+    url: `${namespace}`,
     method: 'put',
     data
   })
 }
 
-export function deleteCanalCluster(id) {
+export function deleteNacosConfigs(id) {
   return request({
-    url: `${baseUrl}/` + id,
+    url: `${namespace}/` + id,
     method: 'delete'
   })
 }
 
-export function getClustersAndServers() {
+export function rollbackNacosConfigs(data) {
   return request({
-    url: `${baseUrl}sAndServers`,
-    method: 'get'
+    url: `${namespace}`,
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    data
   })
 }
+
