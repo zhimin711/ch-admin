@@ -40,6 +40,7 @@
       <el-table-column align="center" prop="created_at" label="操作" min-width="150">
         <template slot-scope="{row}">
           <el-button type="text" @click.native="handleDetail(row)">详情</el-button>
+          <el-button type="text" @click.native="handleCode(row)">示例代码</el-button>
           <el-button type="text" @click.native="handleUpdate(row)">编辑</el-button>
           <el-button type="text" @click.native="onDelete(row)">删除</el-button>
         </template>
@@ -163,6 +164,13 @@
         <el-button type="primary" :loading="dialogLoading" @click="onClone">开始克隆</el-button>
       </span>
     </el-dialog>
+
+    <el-dialog title="示例代码" :visible.sync="dialogVisible2Code" width="80%">
+      <code-viewer />
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2Code = false">关闭</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -172,6 +180,7 @@ import SingleFile from '@/components/Upload/SingleFile2'
 import Pagination from '@/components/Pagination'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/tenant' // 粘性header组件
+import CodeViewer from '../components/showCodeConfig' // 粘性header组件
 import { deepClone } from '@/utils'
 
 const opName = {
@@ -180,7 +189,7 @@ const opName = {
 }
 export default {
   name: 'NacosConfigs1',
-  components: { Pagination, Sticky, Tenant, SingleFile },
+  components: { Pagination, Sticky, Tenant, SingleFile, CodeViewer },
   data() {
     return {
       list: null,
@@ -200,6 +209,7 @@ export default {
       dialogVisible2Import: false,
       dialogVisible2ImportResult: false,
       dialogVisible2Clone: false,
+      dialogVisible2Code: false,
       importMessage: '',
       record: {},
       toNamespace: '',
@@ -283,6 +293,9 @@ export default {
     },
     handleDetail(row) {
       this.$router.push(`/nacos/configs/detail?namespaceId=${row.namespaceId || ''}&dataId=${row.dataId}&group=${row.group}`)
+    },
+    handleCode(row) {
+      this.dialogVisible2Code = true
     },
     handleUpdate(row) {
       this.$router.push(`/nacos/configs/edit?namespaceId=${row.namespaceId || ''}&dataId=${row.dataId}&group=${row.group}`)
