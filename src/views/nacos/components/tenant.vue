@@ -26,7 +26,7 @@ export default {
   computed: {
     tenant: {
       get() {
-        return this.value
+        return this.$store.getters.tenant || this.value
       },
       set(val) {
         this.$emit('input', val)

@@ -1,9 +1,9 @@
 <template>
   <div class="app-container">
     <sticky :z-index="10" :class-name="'sub-navbar2 '">
-      <tenant v-model="namespace" @change="changeNacosTenant" />
+      <tenant v-model="namespace" @change="fetchData" />
     </sticky>
-    <div class="filter-container">
+    <div class="query-container">
       <el-form ref="queryForm" :model="listQuery" :inline="true">
         <el-form-item label="Data ID">
           <el-input v-model="listQuery.dataId" placeholder="请输入Data ID" style="width: 200px;" />
@@ -86,9 +86,6 @@ export default {
     this.fetchData()
   },
   methods: {
-    changeNacosTenant(val) {
-      this.fetchData()
-    },
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
@@ -222,8 +219,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-  .filter-container {
-    padding-top: 10px;
-  }
-</style>

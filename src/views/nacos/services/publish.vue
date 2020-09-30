@@ -1,14 +1,9 @@
 <template>
   <div class="app-container">
-    <el-row style="margin-bottom: 10px">
-      <el-col :span="1" align="right"><el-tag>租户</el-tag></el-col>
-      <el-col :span="22">
-        <el-menu :default-active="tenant" class="el-menu-namespace" mode="horizontal" @select="selectNamespace">
-          <el-menu-item v-for="item in namespaces" :key="item.namespace" :index="item.namespace">{{ item.namespaceShowName }}</el-menu-item>
-        </el-menu>
-      </el-col>
-    </el-row>
-    <div class="filter-container">
+    <sticky :z-index="10" :class-name="'sub-navbar2 '">
+      <tenant @change="queryData" />
+    </sticky>
+    <div class="query-container">
       <el-form :model="listQuery" :inline="true">
         <el-form-item label="服务名称">
           <el-input v-model="listQuery.serviceNameParam" placeholder="服务名称" style="width: 200px;" />
@@ -132,10 +127,12 @@ import { pageNacosServices, updateNodeServer, deleteNodeServer } from '@/api/nac
 import { pageNacosNamespaces } from '@/api/nacos/namespace'
 import Pagination from '@/components/Pagination'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
+import Sticky from '@/components/Sticky' // 粘性header组件
+import Tenant from '../components/tenant' // 粘性header组件
 
 export default {
   name: 'NacosServices1',
-  components: { Pagination },
+  components: { Pagination, Sticky, Tenant },
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -161,8 +158,6 @@ export default {
       instanceList: null,
       listLoading: true,
       listLoading2: true,
-      tenant: '',
-      namespaces: [],
       count: 0,
       listQuery: {
         hasIpCount: true,
@@ -203,22 +198,15 @@ export default {
   },
   methods: {
     checkPermission2,
-    selectNamespace(val) {
-      this.listQuery.namespaceId = val
-      this.fetchData()
-    },
     fetchData() {
       this.listLoading = true
+      this.listQuery.namespaceId = this.$store.getters.tenant
       pageNacosServices(this.listQuery).then(res => {
         this.list = res.serviceList
         this.count = res.count
       }).finally(() => {
         this.listLoading = false
       })
-    },
-    handleNameSpaceClick() {
-      this.listQuery.page = 1
-      this.fetchData()
     },
     queryData() {
       this.listQuery.page = 1

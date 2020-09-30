@@ -1,10 +1,13 @@
 <template>
   <el-card class="box-card">
+    <sticky :z-index="10" :class-name="'sub-navbar2 '">
+      <tenant v-model="namespace" @change="queryData" />
+    </sticky>
     <div slot="header" class="clearfix">
       <span>历史版本(保留30天)</span>
     </div>
     <div class="">
-      <div class="filter-container">
+      <div class="query-container">
         <el-form ref="queryForm" :model="listQuery" :inline="true" :rules="rules">
           <el-form-item label="Data ID" prop="dataId">
             <el-input v-model="listQuery.dataId" placeholder="请输入Data ID" style="width: 200px;" />
@@ -43,12 +46,15 @@
 import { getNacosConfigsHistory } from '@/api/nacos/history'
 import { parseTime } from '@/utils/index'
 import Pagination from '@/components/Pagination'
+import Sticky from '@/components/Sticky' // 粘性header组件
+import Tenant from '../components/tenant' // 粘性header组件
 
 export default {
   name: 'NacosConfigsHistory',
-  components: { Pagination },
+  components: { Pagination, Sticky, Tenant },
   data() {
     return {
+      namespace: '',
       list: null,
       listLoading: false,
       count: 0,
@@ -72,6 +78,7 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
+      this.listQuery.tenant = this.$store.getters.tenant
       getNacosConfigsHistory(this.listQuery).then(res => {
         this.list = res.pageItems
         this.count = res.totalCount

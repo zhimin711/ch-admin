@@ -1,6 +1,9 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
+    <sticky :z-index="10" :class-name="'sub-navbar2 '">
+      <tenant v-model="namespace" @change="fetchData" />
+    </sticky>
+    <div class="query-container">
       <el-form ref="queryForm" :model="listQuery" :inline="true" :rules="rules">
         <el-form-item label="服务名称" prop="serviceName">
           <el-input v-model="listQuery.serviceName" placeholder="服务名称" style="width: 200px;" />
@@ -30,16 +33,19 @@
 <script>
 import { getNacosSubscribers } from '@/api/nacos/services'
 import Pagination from '@/components/Pagination'
+import Sticky from '@/components/Sticky' // 粘性header组件
+import Tenant from '../components/tenant' // 粘性header组件
 
 export default {
   name: 'NacosServiceSubscribe',
-  components: { Pagination },
+  components: { Pagination, Sticky, Tenant },
   data() {
     return {
       list: null,
       listLoading: false,
       count: 0,
       listQuery: {
+        groupName: 'DEFAULT_GROUP',
         pageNo: 1,
         pageSize: 20
       },
@@ -55,6 +61,7 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
+      this.listQuery.namespaceId = this.$store.getters.tenant
       getNacosSubscribers(this.listQuery).then(res => {
         this.list = res.subscribers
         this.count = res.count

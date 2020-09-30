@@ -1,6 +1,9 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
+    <sticky :z-index="10" :class-name="'sub-navbar2 '">
+      <tenant v-model="namespace" @change="fetchData" />
+    </sticky>
+    <div class="query-container">
       <el-form ref="queryForm" :model="listQuery" :inline="true" :rules="rules">
         <el-form-item label="查询方式">
           <el-select v-model="queryType" @change="queryTypeChange">
@@ -40,10 +43,12 @@
 <script>
 import { getNacosConfigsListener, getNacosListener } from '@/api/nacos/listener'
 // import Pagination from '@/components/Pagination'
+import Sticky from '@/components/Sticky' // 粘性header组件
+import Tenant from '../components/tenant' // 粘性header组件
 
 export default {
-  name: 'NacosConfigsListener1',
-  // components: { Pagination },
+  name: 'NacosConfigsListener',
+  components: { Sticky, Tenant },
   data() {
     return {
       list: null,
@@ -65,7 +70,7 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-
+      this.listQuery.tenant = this.$store.getters.tenant
       if (this.queryType === '1') {
         getNacosConfigsListener(this.listQuery).then(res => {
           this.list = []
