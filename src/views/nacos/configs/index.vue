@@ -14,7 +14,7 @@
       </el-form>
       <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
       <el-button class="filter-item" type="primary" @click="handleCreate()">创建配置</el-button>
-      <el-button class="filter-item" type="danger" @click="handleCreate()">删除</el-button>
+      <el-button class="filter-item" type="danger" @click="onDelete2()">删除</el-button>
       <!--<el-button class="filter-item" type="primary" @click="handleCreate()">导出查询结果</el-button>-->
       <el-button class="filter-item" type="success" plain @click="handleExports()">导出配置</el-button>
       <el-button class="filter-item" type="primary" @click="handleCreate()">导入配置</el-button>
@@ -46,11 +46,28 @@
       </el-table-column>
     </el-table>
     <pagination v-show="count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
+    <el-dialog title="删除配置" :visible.sync="dialogDelVisible" width="380px">
+      <el-alert
+        title="确定要删除以下配置吗？"
+        type="error"
+        center
+        :closable="false"
+        show-icon
+      />
+      <el-table :data="multipleSelection">
+        <el-table-column property="dataId" label="Data Id" />
+        <el-table-column property="group" label="Group" />
+      </el-table>
+      <span slot="footer" class="dialog-footer">
+        <el-button :loading="dialogLoading" @click="dialogDelVisible = false">关闭</el-button>
+        <el-button type="primary" :loading="dialogLoading" @click="handleDelete()">确定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { pageNacosConfigs, addNacosConfigs, updateNacosConfigs, deleteNacosConfigs, exportNacosConfigs } from '@/api/nacos/configs'
+import { pageNacosConfigs, deleteNacosConfigs, deleteNacosConfig, exportNacosConfigs } from '@/api/nacos/configs'
 import Pagination from '@/components/Pagination'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/tenant' // 粘性header组件
@@ -72,8 +89,9 @@ export default {
         pageNo: 1,
         pageSize: 10
       },
+      dialogLoading: false,
       dialogFormVisible: false,
-      dialogInstances: false,
+      dialogDelVisible: false,
       rules: {
         dataId: [{ required: true, message: 'Data ID 不能为空', trigger: 'change' }],
         group: [{ required: true, message: 'Group 不能为空', trigger: 'change' }]
@@ -107,38 +125,7 @@ export default {
       })
     },
     handleCreate() {
-      this.$router.push('/nacos/configs/add?namespaceId=')
-    },
-    dataOperation() {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          if (this.dialogStatus === 'create') {
-            addNacosConfigs(this.nodeModel).then(res => {
-              this.operationRes(res)
-            })
-          }
-          if (this.dialogStatus === 'update') {
-            updateNacosConfigs(this.nodeModel).then(res => {
-              this.operationRes(res)
-            })
-          }
-        }
-      })
-    },
-    operationRes(res) {
-      if (res.data === 'success') {
-        this.fetchData()
-        this.dialogFormVisible = false
-        this.$message({
-          message: this.textMap[this.dialogStatus] + '成功',
-          type: 'success'
-        })
-      } else {
-        this.$message({
-          message: this.textMap[this.dialogStatus] + '失败',
-          type: 'error'
-        })
-      }
+      this.$router.push('/nacos/configs/add')
     },
     handleDetail(row) {
       this.$router.push(`/nacos/configs/detail?namespaceId=${row.namespaceId || ''}&dataId=${row.dataId}&group=${row.group}`)
@@ -165,21 +152,34 @@ export default {
         this.handleDelete(row)
       })
     },
-    handleDelete(row) {
-      deleteNacosConfigs(row).then((res) => {
-        if (res) {
-          this.fetchData()
-          this.$message({
-            message: '删除配置成功',
-            type: 'success'
-          })
-        } else {
-          this.$message({
-            message: '删除配置失败',
-            type: 'error'
-          })
-        }
-      })
+    onDelete2() {
+      if (this.multipleSelection.length === 0) {
+        this.$message.warning('请选择要删除的配置！')
+        return
+      }
+      this.dialogDelVisible = true
+    },
+    async handleDelete(row) {
+      let res
+      if (row) {
+        res = await deleteNacosConfig(row)
+      } else {
+        const ids = this.multipleSelection.map(item => item.id)
+        res = await deleteNacosConfigs(ids)
+        this.dialogDelVisible = false
+      }
+      if (res) {
+        this.fetchData()
+        this.$message({
+          message: '删除配置成功',
+          type: 'success'
+        })
+      } else {
+        this.$message({
+          message: '删除配置失败',
+          type: 'error'
+        })
+      }
     },
     handleExports() {
       const isSelected = this.multipleSelection.length > 0
@@ -206,10 +206,10 @@ export default {
       } else {
         params = {
           export: 'true',
-          tenant: '', // getParams('namespace')
-          group: this.listQuery.group,
-          appName: this.listQuery.appName,
-          dataId: this.listQuery.dataId,
+          tenant: this.listQuery.tenant,
+          group: this.listQuery.group || '',
+          appName: this.listQuery.appName || '',
+          dataId: this.listQuery.dataId || '',
           ids: ''
         }
       }

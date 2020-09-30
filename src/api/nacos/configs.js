@@ -2,6 +2,8 @@ import request from '@/utils/request3'
 
 const namespace = '/nacos/v1/cs/configs'
 
+const FULL_NAMESPACE = '/api/nacos/v1/cs/configs'
+
 export function pageNacosConfigs(params) {
   return request({
     url: `${namespace}`,
@@ -37,9 +39,16 @@ export function updateNacosConfigs(data) {
   })
 }
 
-export function deleteNacosConfigs(params) {
+export function deleteNacosConfig(params) {
   return request({
     url: `${namespace}?dataId=${params.dataId}&group=${params.group}`,
+    method: 'delete'
+  })
+}
+
+export function deleteNacosConfigs(idStr) {
+  return request({
+    url: `${namespace}?delType=ids&ids=${idStr}`,
     method: 'delete'
   })
 }
@@ -58,7 +67,7 @@ export function rollbackNacosConfig(data) {
 export function exportNacosConfigs(params) {
   window.open(
     [
-      namespace,
+      FULL_NAMESPACE,
       Object.keys(params)
         .map(key => `${key}=${params[key]}`)
         .join('&')
