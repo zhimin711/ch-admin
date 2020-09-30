@@ -166,7 +166,7 @@
     </el-dialog>
 
     <el-dialog title="示例代码" :visible.sync="dialogVisible2Code" width="80%">
-      <code-viewer />
+      <code-viewer v-model="record" />
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible2Code = false">关闭</el-button>
       </span>
@@ -188,7 +188,7 @@ const opName = {
   'CLONE': '克隆'
 }
 export default {
-  name: 'NacosConfigs1',
+  name: 'NacosConfigs',
   components: { Pagination, Sticky, Tenant, SingleFile, CodeViewer },
   data() {
     return {
@@ -295,6 +295,8 @@ export default {
       this.$router.push(`/nacos/configs/detail?namespaceId=${row.namespaceId || ''}&dataId=${row.dataId}&group=${row.group}`)
     },
     handleCode(row) {
+      this.record = Object.assign({}, row)
+      this.record.content = undefined
       this.dialogVisible2Code = true
     },
     handleUpdate(row) {

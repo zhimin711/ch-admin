@@ -5,9 +5,9 @@
       <el-tab-pane label="Spring Boot" name="2" />
       <el-tab-pane label="Spring Cloud" name="3" />
       <el-tab-pane label="Node.js" name="4" />
-      <el-tab-pane label="C++" name="6" />
-      <el-tab-pane label="Shell" name="7" />
-      <el-tab-pane label="Python" name="8" />
+      <el-tab-pane label="C++" name="5" />
+      <el-tab-pane label="Shell" name="6" />
+      <el-tab-pane label="Python" name="7" />
     </el-tabs>
     <textarea ref="textarea" />
   </div>
@@ -27,10 +27,10 @@ import 'codemirror/addon/lint/json-lint'
 import 'codemirror/addon/hint/show-hint'
 
 // const defaultCode = ''
-// const nodejsCode = 'TODO'
-// const cppCode = 'TODO'
-// const shellCode = 'TODO'
-// const pythonCode = 'TODO'
+const nodejsCode = 'TODO'
+const cppCode = 'TODO'
+const shellCode = 'TODO'
+const pythonCode = 'TODO'
 
 const SPRIG_BOOT_CODE = `// Refer to document: https://github.com/nacos-group/nacos-examples/tree/master/nacos-spring-boot-example/nacos-spring-boot-config-example
 package com.alibaba.nacos.example.spring.boot.controller;
@@ -83,24 +83,17 @@ public class ConfigController {
 export default {
   name: 'CodeView',
   /* eslint-disable vue/require-prop-types */
-  props: {
-    config: {
-      type: Object
-    }
-  },
+  props: ['value'],
   data() {
     return {
       editor: false,
       activeName: '1'
     }
   },
-  computed: {
-    visible: {
-      get() {
-        return false
-      },
-      set(val) {
-        this.$emit('update:show', val)
+  watch: {
+    value(value) {
+      if (value) {
+        this.editor.setValue(this.getJavaCode(value))
       }
     }
   },
@@ -110,32 +103,47 @@ export default {
       matchBrackets: true,
       gutters: ['CodeMirror-lint-markers'],
       // theme: 'xq-light',
+
       tabMode: 'indent',
       autoMatchParens: true,
       textWrapping: true,
       lint: true,
-      mode: 'text/x-java'
+      mode: 'text/x-java',
+      readOnly: true// 只读 不可修改
     })
 
     this.editor.setOption('mode', 'text/x-java')
-    if (this.config) {
-      this.editor.setValue(this.getJavaCode(this.config))
+    if (this.value) {
+      this.editor.setValue(this.getJavaCode(this.value))
     }
 
     this.editor.on('change', cm => {
       this.$emit('changed', cm.getValue())
-      this.$emit('input', cm.getValue())
+      // this.$emit('input', cm.getValue())
     })
   },
   methods: {
     getValue() {
       return this.editor.getValue()
     },
-    handleClick(val) {
-      if (val === '2') {
+    handleClick() {
+      this.editor.setValue('')
+      if (this.activeName === '1') {
+        if (this.value) {
+          this.editor.setValue(this.getJavaCode(this.value))
+        }
+      } else if (this.activeName === '2') {
         this.editor.setValue(SPRIG_BOOT_CODE)
-      } else if (val === '3') {
+      } else if (this.activeName === '3') {
         this.editor.setValue(SPRIG_CLOUD_CODE)
+      } else if (this.activeName === '4') {
+        this.editor.setValue(nodejsCode)
+      } else if (this.activeName === '5') {
+        this.editor.setValue(cppCode)
+      } else if (this.activeName === '6') {
+        this.editor.setValue(shellCode)
+      } else if (this.activeName === '7') {
+        this.editor.setValue(pythonCode)
       }
     },
     getJavaCode(data) {

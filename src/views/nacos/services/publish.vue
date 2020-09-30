@@ -36,45 +36,38 @@
       <el-table-column label="实例数" min-width="100" align="center" prop="ipCount" />
       <el-table-column label="健康实例数" min-width="100" align="center" prop="healthyInstanceCount" />
       <el-table-column class-name="status-col" label="触发保护阈值" min-width="150" align="center" prop="triggerFlag" />
-      <el-table-column align="center" prop="created_at" label="操作" min-width="150">
-        <template slot-scope="scope">
-          <el-dropdown trigger="click">
-            <el-button type="primary" size="mini">
-              操作<i class="el-icon-arrow-down el-icon--right" />
-            </el-button>
-            <el-dropdown-menu slot="dropdown">
-              <!--<el-dropdown-item v-if="checkPermission2(['CANAL_SERVER_INSTANCES'])" @click.native="handleConfig(scope.row)">配置</el-dropdown-item>-->
-              <el-dropdown-item v-if="checkPermission2(['CANAL_SERVERS_EDIT'])" @click.native="handleUpdate(scope.row)">修改</el-dropdown-item>
-              <el-dropdown-item v-if="checkPermission2(['CANAL_SERVERS_DELETE'])" @click.native="handleDelete(scope.row)">删除</el-dropdown-item>
-              <el-dropdown-item @click.native="handleLog(scope.row)">日志</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
+      <el-table-column align="center" label="操作" min-width="150">
+        <template slot-scope="{row}">
+          <!--<el-button type="text" @click.native="handleDetail(row)">详情</el-button>-->
+          <el-button type="text" @click.native="handleCode(row)">示例代码</el-button>
+          <!--<el-button type="text" @click.native="handleUpdate(row)">编辑</el-button>-->
+          <!--<el-button type="text" @click.native="onDelete(row)">删除</el-button>-->
         </template>
       </el-table-column>
     </el-table>
     <pagination v-show="count>0" :total="count" :page.sync="listQuery.page" :limit.sync="listQuery.size" @pagination="fetchData()" />
     <el-dialog :visible.sync="dialogFormVisible" :title="textMap[dialogStatus]" width="600px">
-      <el-form ref="dataForm" :rules="rules" :model="nodeModel" label-position="left" label-width="120px" style="width: 400px; margin-left:30px;">
+      <el-form ref="dataForm" :rules="rules" :model="record" label-position="left" label-width="120px" style="width: 400px; margin-left:30px;">
         <el-form-item label="所属集群" prop="clusterId">
-          <el-select v-if="dialogStatus === 'create'" v-model="nodeModel.clusterId" placeholder="选择所属集群">
+          <el-select v-if="dialogStatus === 'create'" v-model="record.clusterId" placeholder="选择所属集群">
             <el-option key="" label="单机" value="" />
             <!--<el-option v-for="item in canalClusters" :key="item.id" :label="item.name" :value="item.id" />-->
           </el-select>
         </el-form-item>
         <el-form-item label="Server 名称" prop="name">
-          <el-input v-model="nodeModel.name" />
+          <el-input v-model="record.name" />
         </el-form-item>
         <el-form-item label="Server IP" prop="ip">
-          <el-input v-model="nodeModel.ip" />
+          <el-input v-model="record.ip" />
         </el-form-item>
         <el-form-item label="admin 端口" prop="adminPort">
-          <el-input v-model="nodeModel.adminPort" placeholder="11110" type="number" />
+          <el-input v-model="record.adminPort" placeholder="11110" type="number" />
         </el-form-item>
         <el-form-item label="tcp 端口" prop="tcpPort">
-          <el-input v-model="nodeModel.tcpPort" placeholder="11111" type="number" />
+          <el-input v-model="record.tcpPort" placeholder="11111" type="number" />
         </el-form-item>
         <el-form-item label="metric 端口" prop="metricPort">
-          <el-input v-model="nodeModel.metricPort" placeholder="11112" type="number" />
+          <el-input v-model="record.metricPort" placeholder="11112" type="number" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -82,75 +75,26 @@
         <el-button type="primary" @click="dataOperation()">确定</el-button>
       </div>
     </el-dialog>
-    <el-dialog :visible.sync="dialogInstances" title="instance 列表" width="800px">
-      <div class="filter-container">
-        <el-button class="filter-item" type="info" @click="activeInstances()">刷新列表</el-button>
-      </div>
-      <el-table
-        v-loading="listLoading2"
-        :data="instanceList"
-        element-loading-text="Loading"
-        border
-        fit
-        highlight-current-row
-      >
-        <el-table-column label="Instance 名称" min-width="200" align="center">
-          <template slot-scope="scope">
-            {{ scope.row.name }}
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" min-width="200" align="center">
-          <template slot-scope="scope">
-            <el-tag :type="scope.row.runningStatus | statusFilter">{{ scope.row.runningStatus | statusLabel }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" min-width="200" align="center">
-          <template slot-scope="scope">
-            <el-dropdown trigger="click">
-              <el-button type="primary" size="mini">
-                操作<i class="el-icon-arrow-down el-icon--right" />
-              </el-button>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item @click.native="handleStartInstance(scope.row)">启动</el-dropdown-item>
-                <el-dropdown-item @click.native="handleStopInstance(scope.row)">停止</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-          </template>
-        </el-table-column>
-      </el-table>
+
+    <el-dialog title="示例代码" :visible.sync="dialogVisible2Code" width="80%">
+      <code-viewer v-model="record" />
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2Code = false">关闭</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
 import { pageNacosServices, updateNodeServer, deleteNodeServer } from '@/api/nacos/services'
-import { pageNacosNamespaces } from '@/api/nacos/namespace'
 import Pagination from '@/components/Pagination'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/tenant' // 粘性header组件
+import CodeViewer from '../components/showCodeService' // 粘性header组件
 
 export default {
   name: 'NacosServices1',
-  components: { Pagination, Sticky, Tenant },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        '1': 'success',
-        '0': 'gray',
-        '-1': 'danger'
-      }
-      return statusMap[status]
-    },
-    statusLabel(status) {
-      const statusMap = {
-        '1': '启动',
-        '0': '停止',
-        '-1': '断开'
-      }
-      return statusMap[status]
-    }
-  },
+  components: { Pagination, Sticky, Tenant, CodeViewer },
   data() {
     return {
       list: [],
@@ -166,20 +110,12 @@ export default {
         pageSize: 20
       },
       dialogFormVisible: false,
-      dialogInstances: false,
+      dialogVisible2Code: false,
       textMap: {
         create: '新建Server信息',
         update: '修改Server信息'
       },
-      nodeModel: {
-        id: undefined,
-        clusterId: null,
-        name: null,
-        ip: null,
-        adminPort: 11110,
-        tcpPort: 11111,
-        metricPort: 11112
-      },
+      record: {},
       rules: {
         name: [{ required: true, message: 'Server 名称不能为空', trigger: 'change' }],
         ip: [{ required: true, message: 'Server IP不能为空', trigger: 'change' }],
@@ -188,16 +124,10 @@ export default {
       dialogStatus: 'create'
     }
   },
-  // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
   created() {
-    pageNacosNamespaces().then((res) => {
-      this.namespaces = res.data
-      this.listQuery.namespaceId = this.namespaces[0].namespaceId
-      this.fetchData()
-    })
+    this.fetchData()
   },
   methods: {
-    checkPermission2,
     fetchData() {
       this.listLoading = true
       this.listQuery.namespaceId = this.$store.getters.tenant
@@ -213,7 +143,7 @@ export default {
       this.fetchData()
     },
     resetModel() {
-      this.nodeModel = {
+      this.record = {
         id: undefined,
         clusterId: null,
         name: null,
@@ -231,20 +161,21 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
-    handleInstances(row) {
-      this.serverIdTmp = row.id
-      this.activeInstances()
+    handleCode(row) {
+      this.record = Object.assign({}, row)
+      this.record.content = undefined
+      this.dialogVisible2Code = true
     },
     dataOperation() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           if (this.dialogStatus === 'create') {
-            // addNodeServer(this.nodeModel).then(res => {
+            // addNodeServer(this.record).then(res => {
             //   this.operationRes(res)
             // })
           }
           if (this.dialogStatus === 'update') {
-            updateNodeServer(this.nodeModel).then(res => {
+            updateNodeServer(this.record).then(res => {
               this.operationRes(res)
             })
           }
@@ -275,7 +206,7 @@ export default {
     },
     handleUpdate(row) {
       this.resetModel()
-      this.nodeModel = Object.assign({}, row)
+      this.record = Object.assign({}, row)
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
