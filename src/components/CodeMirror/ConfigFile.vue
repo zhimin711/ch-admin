@@ -1,15 +1,14 @@
 <template>
   <div class="code-editor">
-    <label class="mode">格式：
+    <label class="mode"><i style="padding: 10px 20px;font-size: 14px;height: 37px;">格式</i>
       <el-radio-group
-        v-model="options.mode"
-        @change="changeMode"
+        v-model="mode3"
       >
         <el-radio-button v-for="item in modes2" :key="item.value" :label="item.value">{{ item.label }}</el-radio-button>
       </el-radio-group>
     </label>
     <label class="mode">
-      <textarea ref="coder" />
+      <textarea ref="coder" placeholder="请输入内容" />
     </label>
   </div>
 </template>
@@ -24,6 +23,8 @@ import 'codemirror/addon/lint/lint.css'
 require('script-loader!jsonlint')
 
 import 'codemirror/mode/meta.js'
+
+import 'codemirror/addon/display/placeholder'
 
 import 'codemirror/addon/lint/lint'
 import 'codemirror/addon/lint/json-lint'
@@ -99,6 +100,16 @@ export default {
       ]
     }
   },
+  computed: {
+    mode3: {
+      get() {
+        return this.mode
+      },
+      set(val) {
+        this.changeMode(val)
+      }
+    }
+  },
   watch: {
     value(value) {
       const editorValue = this.editor.getValue()
@@ -164,11 +175,17 @@ export default {
 }
 </script>
 
-<style scoped>
-.code-editor{
+<style scoped type="scss">
+.code-editor {
   height: 100%;
   position: relative;
+
 }
+
+.CodeMirror-empty {
+  outline: 1px solid #c22;
+}
+
 .code-editor .el-radio-group {
   margin-bottom: 10px;
 }
@@ -182,4 +199,13 @@ export default {
 .code-editor >>> .cm-s-rubyblue span.cm-string {
   color: #F08047;
 }
+
+.code-editor >>> .CodeMirror-empty.CodeMirror-focused {
+  outline: none;
+}
+
+.code-editor >>> .CodeMirror pre.CodeMirror-placeholder {
+  color: #999;
+}
+
 </style>
