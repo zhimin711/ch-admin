@@ -121,7 +121,7 @@ import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 
 /**
- * @author nkorange
+ * @author Nacos
  */
 public class NamingExample {
 
@@ -284,7 +284,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author xiaojing
+ * @author Nacos
  */
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -327,7 +327,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * @author xiaojing
+ * @author Nacos
  */
 @SpringBootApplication
 @EnableDiscoveryClient

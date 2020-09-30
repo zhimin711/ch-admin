@@ -2,6 +2,7 @@ import request from '@/utils/request3'
 
 const namespace = '/nacos/v1/ns/catalog/services'
 const namespace2 = '/nacos/v1/ns/service/subscribers'
+const namespace3 = '/nacos/v1/ns/service'
 
 export function pageNacosServices(params) {
   return request({
@@ -11,12 +12,12 @@ export function pageNacosServices(params) {
   })
 }
 
-export function addNacosServices(data) {
+export function addNacosService(data) {
   return request({
-    url: `${namespace}`,
+    url: `${namespace3}`,
     method: 'post',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
     },
     data
   })
@@ -30,7 +31,7 @@ export function getNacosServices(params) {
   })
 }
 
-export function updateNacosServices(data) {
+export function updateNacosService(data) {
   return request({
     url: `${namespace}`,
     method: 'put',
@@ -41,11 +42,11 @@ export function updateNacosServices(data) {
   })
 }
 
-export function deleteNacosServices(id) {
+export function deleteNacosService(params) {
   return request({
-    url: `${namespace}`,
+    url: `${namespace3}?serviceName=${params.name}&groupName=${params.groupName}`,
     method: 'delete',
-    params: { namespaceId: id }
+    params: { namespaceId: params.namespaceId }
   })
 }
 
