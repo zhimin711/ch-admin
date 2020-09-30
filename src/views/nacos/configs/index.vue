@@ -1,5 +1,8 @@
 <template>
   <div class="app-container">
+    <sticky :z-index="10" :class-name="'sub-navbar2 '">
+      <tenant v-model="namespace" @change="changeNacosTenant" />
+    </sticky>
     <div class="filter-container">
       <el-form ref="queryForm" :model="listQuery" :inline="true">
         <el-form-item label="Data ID">
@@ -49,12 +52,15 @@
 <script>
 import { pageNacosConfigs, addNacosConfigs, updateNacosConfigs, deleteNacosConfigs, exportNacosConfigs } from '@/api/nacos/configs'
 import Pagination from '@/components/Pagination'
+import Sticky from '@/components/Sticky' // 粘性header组件
+import Tenant from '../components/tenant' // 粘性header组件
 
 export default {
   name: 'NacosConfigs1',
-  components: { Pagination },
+  components: { Pagination, Sticky, Tenant },
   data() {
     return {
+      namespace: '',
       list: null,
       listLoading: true,
       multipleSelection: [],
@@ -80,11 +86,15 @@ export default {
     this.fetchData()
   },
   methods: {
+    changeNacosTenant(val) {
+      this.fetchData()
+    },
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
     fetchData() {
       this.listLoading = true
+      this.listQuery.tenant = this.$store.getters.tenant
       pageNacosConfigs(this.listQuery).then(res => {
         this.list = res.pageItems
         this.count = res.totalCount
@@ -212,3 +222,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+  .filter-container {
+    padding-top: 10px;
+  }
+</style>

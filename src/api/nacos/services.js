@@ -11,7 +11,7 @@ export function pageNacosServices(params) {
   })
 }
 
-export function addNacosNamespaces(data) {
+export function addNacosServices(data) {
   return request({
     url: `${namespace}`,
     method: 'post',
@@ -22,7 +22,7 @@ export function addNacosNamespaces(data) {
   })
 }
 
-export function getNacosNamespaces(params) {
+export function getNacosServices(params) {
   return request({
     url: `${namespace}`,
     method: 'get',
@@ -30,7 +30,7 @@ export function getNacosNamespaces(params) {
   })
 }
 
-export function updateNacosNamespaces(data) {
+export function updateNacosServices(data) {
   return request({
     url: `${namespace}`,
     method: 'put',
@@ -41,7 +41,7 @@ export function updateNacosNamespaces(data) {
   })
 }
 
-export function deleteNacosNamespaces(id) {
+export function deleteNacosServices(id) {
   return request({
     url: `${namespace}`,
     method: 'delete',

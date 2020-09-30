@@ -1,20 +1,18 @@
 <template>
   <div class="app-container">
-    <!--    <el-tabs v-model="activeName" @tab-click="handleNameSpaceClick" type="border-card">
-      <el-tab-pane label="用户管理" name="first"></el-tab-pane>
-      <el-tab-pane label="配置管理" name="second"></el-tab-pane>
-      <el-tab-pane label="角色管理" name="third"></el-tab-pane>
-      <el-tab-pane label="定时任务补偿" name="fourth"></el-tab-pane>
-    </el-tabs>-->
+    <el-row style="margin-bottom: 10px">
+      <el-col :span="1" align="right"><el-tag>租户</el-tag></el-col>
+      <el-col :span="22">
+        <el-menu :default-active="tenant" class="el-menu-namespace" mode="horizontal" @select="selectNamespace">
+          <el-menu-item v-for="item in namespaces" :key="item.namespace" :index="item.namespace">{{ item.namespaceShowName }}</el-menu-item>
+        </el-menu>
+      </el-col>
+    </el-row>
     <div class="filter-container">
-      <!--      <el-select v-model="listQuery.namespaceId" placeholder="所属集群" class="filter-item">
-        <el-option v-for="item in namespaces" :key="item.namespace" :label="item.namespaceShowName" :value="item.namespace" />
-      </el-select>-->
       <el-form :model="listQuery" :inline="true">
         <el-form-item label="服务名称">
           <el-input v-model="listQuery.serviceNameParam" placeholder="服务名称" style="width: 200px;" />
         </el-form-item>
-
         <el-form-item label="分组名称">
           <el-input v-model="listQuery.groupNameParam" placeholder="分组名称" style="width: 200px;" />
         </el-form-item>
@@ -136,7 +134,7 @@ import Pagination from '@/components/Pagination'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
 export default {
-  name: 'NacosServices',
+  name: 'NacosServices1',
   components: { Pagination },
   filters: {
     statusFilter(status) {
@@ -163,7 +161,7 @@ export default {
       instanceList: null,
       listLoading: true,
       listLoading2: true,
-      serverIdTmp: null,
+      tenant: '',
       namespaces: [],
       count: 0,
       listQuery: {
@@ -205,6 +203,10 @@ export default {
   },
   methods: {
     checkPermission2,
+    selectNamespace(val) {
+      this.listQuery.namespaceId = val
+      this.fetchData()
+    },
     fetchData() {
       this.listLoading = true
       pageNacosServices(this.listQuery).then(res => {
@@ -320,3 +322,10 @@ export default {
   }
 }
 </script>
+<style lang="scss" scoped>
+  .el-menu-namespace .el-menu-item {
+    padding: 0 10px;
+    height: 30px;
+    line-height: 30px;
+  }
+</style>

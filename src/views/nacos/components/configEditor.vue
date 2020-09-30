@@ -90,13 +90,13 @@ export default {
       }
 
       const formData = new FormData()
+      formData.append('namespaceId', this.record.tenant || this.$store.getters.tenant)
+      formData.append('tenant', this.record.tenant || this.$store.getters.tenant)
       if (!this.isEdit) {
-        formData.append('namespaceId', this.record.tenant || '')
         formData.append('appName', this.record.appName)
         formData.append('dataId', this.record.dataId)
         formData.append('group', this.record.group)
         formData.append('content', this.record.content)
-        formData.append('tenant', this.record.tenant || '')
         formData.append('type', this.record.type)
         formData.append('config_tags', this.record.configTags || '')
         this.handleSubmit(formData)

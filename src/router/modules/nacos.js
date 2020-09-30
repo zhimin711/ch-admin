@@ -17,7 +17,7 @@ const router = {
   children: [
     {
       path: 'namespace',
-      component: () => import('@/views/nacos/namespace/index'),
+      component: () => import('@/views/nacos/tenant/namespace'),
       name: 'Nacos Namespace Manager',
       meta: {
         title: '命名空间'

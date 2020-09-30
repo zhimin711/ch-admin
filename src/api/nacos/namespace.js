@@ -21,6 +21,14 @@ export function addNacosNamespaces(data) {
   })
 }
 
+export function getNacosNamespace(params) {
+  return request({
+    url: `${namespace}`,
+    method: 'get',
+    params: params
+  })
+}
+
 export function getNacosNamespaces(params) {
   return request({
     url: `${namespace}`,

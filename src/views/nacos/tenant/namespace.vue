@@ -94,7 +94,7 @@
 </template>
 
 <script>
-import { pageNacosNamespaces, addNacosNamespaces, getNacosNamespaces, updateNacosNamespaces, deleteNacosNamespaces } from '@/api/nacos/namespace'
+import { pageNacosNamespaces, addNacosNamespaces, getNacosNamespace, updateNacosNamespaces, deleteNacosNamespaces } from '@/api/nacos/namespace'
 import Pagination from '@/components/Pagination'
 
 export default {
@@ -194,7 +194,7 @@ export default {
     },
     handleDetail(row) {
       const params = { show: 'all', namespaceId: row.namespace }
-      getNacosNamespaces(params).then(resp => {
+      getNacosNamespace(params).then(resp => {
         if (resp) {
           this.dialogDetailVisible = true
           this.record = resp
@@ -204,7 +204,7 @@ export default {
     handleUpdate(row) {
       this.resetModel()
       const params = { show: 'all', namespaceId: row.namespace }
-      getNacosNamespaces(params).then(resp => {
+      getNacosNamespace(params).then(resp => {
         if (resp) {
           this.record = Object.assign({}, resp)
           this.dialogStatus = 'update'

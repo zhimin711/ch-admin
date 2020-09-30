@@ -10,7 +10,9 @@ const state = {
   introduction: '',
   role: {},
   roles: [],
-  permissions: []
+  permissions: [],
+  tenant: '',
+  tenants: []
 }
 
 const mutations = {
@@ -37,6 +39,12 @@ const mutations = {
   },
   SET_PERMISSIONS: (state, permissions) => {
     state.permissions = permissions
+  },
+  SET_TENANT: (state, tenant) => {
+    state.tenant = tenant
+  },
+  SET_TENANTS: (state, tenants) => {
+    state.tenants = tenants
   }
 }
 
@@ -169,6 +177,22 @@ const actions = {
       // reset visited views and cached views
       dispatch('tagsView/delAllViews', null, { root: true })
 
+      resolve()
+    })
+  },
+
+  // set user tenant
+  setTenant({ commit }, tenant) {
+    return new Promise(resolve => {
+      commit('SET_TENANT', tenant)
+      resolve()
+    })
+  },
+
+  // set user tenants
+  setTenants({ commit }, tenants) {
+    return new Promise(resolve => {
+      commit('SET_TENANTS', tenants)
       resolve()
     })
   }
