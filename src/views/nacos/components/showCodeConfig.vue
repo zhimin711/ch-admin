@@ -84,6 +84,9 @@ export default {
   name: 'CodeView',
   /* eslint-disable vue/require-prop-types */
   props: {
+    config: {
+      type: Object
+    }
   },
   data() {
     return {
@@ -115,8 +118,9 @@ export default {
     })
 
     this.editor.setOption('mode', 'text/x-java')
-    this.editor.setValue(SPRIG_CLOUD_CODE)
-    this.editor.setValue(SPRIG_BOOT_CODE)
+    if (this.config) {
+      this.editor.setValue(this.getJavaCode(this.config))
+    }
 
     this.editor.on('change', cm => {
       this.$emit('changed', cm.getValue())
@@ -127,8 +131,12 @@ export default {
     getValue() {
       return this.editor.getValue()
     },
-    handleClick() {
-      return this.editor.getValue()
+    handleClick(val) {
+      if (val === '2') {
+        this.editor.setValue(SPRIG_BOOT_CODE)
+      } else if (val === '3') {
+        this.editor.setValue(SPRIG_CLOUD_CODE)
+      }
     },
     getJavaCode(data) {
       return `/*
