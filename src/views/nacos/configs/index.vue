@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <sticky :z-index="10" :class-name="'sub-navbar2 '">
-      <tenant v-model="namespace" @change="fetchData" />
+      <tenant @change="queryData" />
     </sticky>
     <div class="query-container">
       <el-form ref="queryForm" :model="listQuery" :inline="true">
@@ -60,7 +60,6 @@ export default {
   components: { Pagination, Sticky, Tenant },
   data() {
     return {
-      namespace: '',
       list: null,
       listLoading: true,
       multipleSelection: [],
