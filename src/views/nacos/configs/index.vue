@@ -18,7 +18,7 @@
       <!--<el-button class="filter-item" type="primary" @click="handleCreate()">导出查询结果</el-button>-->
       <el-button class="filter-item" type="success" plain @click="handleExports()">导出配置</el-button>
       <el-button class="filter-item" type="primary" @click="handleImports()">导入配置</el-button>
-      <el-button class="filter-item" type="primary" plain @click="handleCreate()">克隆配置</el-button>
+      <el-button class="filter-item" type="primary" plain @click="handleClone()">克隆配置</el-button>
     </div>
     <el-table
       v-loading="listLoading"
@@ -64,7 +64,7 @@
       </span>
     </el-dialog>
     <el-dialog title="导入配置" :visible.sync="dialogVisible2Import" width="400px">
-      <el-form label-width="100">
+      <el-form label-width="100px">
         <el-form-item label="目标空间">
           <el-tag>{{ namespaceName }}</el-tag>
         </el-form-item>
@@ -119,16 +119,65 @@
         <el-button :loading="dialogLoading" @click="dialogVisible2ImportResult = false">关闭</el-button>
       </span>
     </el-dialog>
+    <el-dialog title="克隆配置" :visible.sync="dialogVisible2Clone">
+      <el-form ref="cloneForm" :model="record" label-width="120px">
+        <el-form-item label="源空间">
+          <el-tag>{{ namespaceName }}</el-tag>
+        </el-form-item>
+        <el-form-item label="目标空间" prop="toNamespace">
+          <el-select v-model="toNamespace" placeholder="请选择目标空间">
+            <el-option v-for="item in namespaces" :key="item.namespace" :label="item.namespaceShowName" :value="item.namespace" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="相同配置">
+          <el-select v-model="policy" placeholder="请选择">
+            <el-option
+              v-for="item in options.policies"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <el-alert
+        title="修改 Data Id 和 Group (可选操作)"
+        type="success"
+        :closable="false"
+        show-icon
+      />
+      <el-table :data="tables.clone">
+        <el-table-column property="dataId" label="Data Id">
+          <template slot-scope="{row}">
+            <el-input v-model="row.dataId" class="edit-input" size="small" />
+          </template>
+        </el-table-column>
+        <el-table-column property="group" label="Group">
+          <template slot-scope="{row}">
+            <el-input v-model="row.group" class="edit-input" size="small" />
+          </template>
+        </el-table-column>
+      </el-table>
+      <span slot="footer" class="dialog-footer">
+        <el-button :loading="dialogLoading" @click="dialogVisible2Clone = false">关闭</el-button>
+        <el-button type="primary" :loading="dialogLoading" @click="onClone">开始克隆</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { pageNacosConfigs, deleteNacosConfigs, deleteNacosConfig, exportNacosConfigs } from '@/api/nacos/configs'
+import { pageNacosConfigs, deleteNacosConfigs, deleteNacosConfig, exportNacosConfigs, cloneNacosConfigs } from '@/api/nacos/configs'
 import SingleFile from '@/components/Upload/SingleFile2'
 import Pagination from '@/components/Pagination'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/tenant' // 粘性header组件
+import { deepClone } from '@/utils'
 
+const opName = {
+  'IMPORT': '导入',
+  'CLONE': '克隆'
+}
 export default {
   name: 'NacosConfigs1',
   components: { Pagination, Sticky, Tenant, SingleFile },
@@ -150,7 +199,10 @@ export default {
       dialogVisible2Del: false,
       dialogVisible2Import: false,
       dialogVisible2ImportResult: false,
+      dialogVisible2Clone: false,
       importMessage: '',
+      record: {},
+      toNamespace: '',
       titles: {
         importResult: '',
         fail: '',
@@ -159,7 +211,8 @@ export default {
       tables: {
         importSuccess: [],
         importFail: [],
-        importSkip: []
+        importSkip: [],
+        clone: []
       },
       policy: 'ABORT',
       options: {
@@ -176,7 +229,8 @@ export default {
       },
       rules: {
         dataId: [{ required: true, message: 'Data ID 不能为空', trigger: 'change' }],
-        group: [{ required: true, message: 'Group 不能为空', trigger: 'change' }]
+        group: [{ required: true, message: 'Group 不能为空', trigger: 'change' }],
+        toNamespace: [{ required: true, message: '目标空间不能为空', trigger: 'change' }]
       }
     }
   },
@@ -186,10 +240,16 @@ export default {
       const tenant = this.$store.getters.tenants.find(tenant => {
         return tenant.namespace === tmp
       })
-      return tenant.namespaceShowName
+      if (tenant) {
+        return tenant.namespaceShowName
+      }
+      return ''
     },
     importUrl() {
       return '/api/nacos/v1/cs/configs?import=true&namespace=' + this.$store.getters.tenant
+    },
+    namespaces() {
+      return this.$store.getters.tenants
     }
   },
   // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
@@ -314,13 +374,43 @@ export default {
     },
     importSuccess(resp) {
       this.dialogVisible2Import = false
+      this.handleResult(resp, 'IMPORT')
+    },
+    handleClone() {
+      if (this.multipleSelection.length === 0) {
+        this.$message.warning('请选择要克隆的配置！')
+        return
+      }
+      this.dialogVisible2Clone = true
+      this.tables.clone = deepClone(this.multipleSelection)
+    },
+    onClone() {
+      const params = {}
+      const tenant = this.$store.getters.tenants.find(tenant => {
+        return tenant.namespace === this.toNamespace
+      })
+      params.tenant = tenant.namespace || tenant.namespaceShowName
+      params.policy = this.policy
+      params.namespaceId = ''
+      const data = this.tables.clone.map(item => {
+        return { cfgId: item.id, dataId: item.dataId, group: item.group }
+      })
+      this.dialogLoading = true
+      cloneNacosConfigs(params, data).then(resp => {
+        this.dialogVisible2Clone = false
+        this.handleResult(resp, 'CLONE')
+      }).finally(() => {
+        this.dialogLoading = false
+      })
+    },
+    handleResult(resp, op) {
       this.dialogVisible2ImportResult = true
       const { data, message } = resp
       this.titles.importResult = message
       this.tables.importFail = []
       this.tables.importSkip = []
       if (data.failData) {
-        this.titles.importResult = '导入终止'
+        this.titles.importResult = `${opName[op]}终止`
         this.titles.fail = '失败的条目: ' + data.failData.length
         this.tables.importFail = data.failData
         this.importMessage = '检测到冲突的配置项：' + data.failData[0].group + '/' + data.failData[0].dataId
@@ -331,7 +421,7 @@ export default {
         this.tables.importSkip = data.skipData
       }
       if (data.succCount > 0) {
-        this.importMessage = `导入成功,导入了 ${data.succCount} 项配置`
+        this.importMessage = `${opName[op]}成功,${opName[op]}了 ${data.succCount} 项配置`
         this.fetchData()
       }
     }
