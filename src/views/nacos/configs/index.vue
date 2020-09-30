@@ -17,7 +17,7 @@
       <el-button class="filter-item" type="danger" @click="onDelete2()">删除</el-button>
       <!--<el-button class="filter-item" type="primary" @click="handleCreate()">导出查询结果</el-button>-->
       <el-button class="filter-item" type="success" plain @click="handleExports()">导出配置</el-button>
-      <el-button class="filter-item" type="primary" @click="handleCreate()">导入配置</el-button>
+      <el-button class="filter-item" type="primary" @click="handleImports()">导入配置</el-button>
       <el-button class="filter-item" type="primary" plain @click="handleCreate()">克隆配置</el-button>
     </div>
     <el-table
@@ -46,7 +46,7 @@
       </el-table-column>
     </el-table>
     <pagination v-show="count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
-    <el-dialog title="删除配置" :visible.sync="dialogDelVisible" width="380px">
+    <el-dialog title="删除配置" :visible.sync="dialogVisible2Del" width="380px">
       <el-alert
         title="确定要删除以下配置吗？"
         type="error"
@@ -59,8 +59,64 @@
         <el-table-column property="group" label="Group" />
       </el-table>
       <span slot="footer" class="dialog-footer">
-        <el-button :loading="dialogLoading" @click="dialogDelVisible = false">关闭</el-button>
+        <el-button :loading="dialogLoading" @click="dialogVisible2Del = false">关闭</el-button>
         <el-button type="primary" :loading="dialogLoading" @click="handleDelete()">确定</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog title="导入配置" :visible.sync="dialogVisible2Import" width="400px">
+      <el-form label-width="100">
+        <el-form-item label="目标空间">
+          <el-tag>{{ namespaceName }}</el-tag>
+        </el-form-item>
+        <el-form-item label="相同配置">
+          <el-select v-model="policy" placeholder="请选择">
+            <el-option
+              v-for="item in options.policies"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <el-alert
+        title="文件上传后将直接导入配置，请务必谨慎操作！"
+        type="info"
+        center
+        :closable="false"
+        show-icon
+      />
+      <single-file :url="importUrl" :data="{'policy': policy}" @success="importSuccess" />
+      <span slot="footer" class="dialog-footer">
+        <el-button :loading="dialogLoading" @click="dialogVisible2Import = false">关闭</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog :title="titles.importResult" :visible.sync="dialogVisible2ImportResult">
+      <el-tag type="info" style="margin-bottom: 10px">{{ importMessage }}</el-tag>
+      <el-alert
+        v-if="tables.importFail.length>0"
+        :title="titles.fail"
+        type="error"
+        :closable="false"
+        show-icon
+      />
+      <el-table v-if="tables.importFail.length>0" :data="tables.importFail">
+        <el-table-column property="dataId" label="Data Id" />
+        <el-table-column property="group" label="Group" />
+      </el-table>
+      <el-alert
+        v-if="tables.importSkip.length>0"
+        :title="titles.skip"
+        type="warning"
+        :closable="false"
+        show-icon
+      />
+      <el-table v-if="tables.importSkip.length>0" :data="tables.importSkip">
+        <el-table-column property="dataId" label="Data Id" />
+        <el-table-column property="group" label="Group" />
+      </el-table>
+      <span slot="footer" class="dialog-footer">
+        <el-button :loading="dialogLoading" @click="dialogVisible2ImportResult = false">关闭</el-button>
       </span>
     </el-dialog>
   </div>
@@ -68,13 +124,14 @@
 
 <script>
 import { pageNacosConfigs, deleteNacosConfigs, deleteNacosConfig, exportNacosConfigs } from '@/api/nacos/configs'
+import SingleFile from '@/components/Upload/SingleFile2'
 import Pagination from '@/components/Pagination'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/tenant' // 粘性header组件
 
 export default {
   name: 'NacosConfigs1',
-  components: { Pagination, Sticky, Tenant },
+  components: { Pagination, Sticky, Tenant, SingleFile },
   data() {
     return {
       list: null,
@@ -90,12 +147,49 @@ export default {
         pageSize: 10
       },
       dialogLoading: false,
-      dialogFormVisible: false,
-      dialogDelVisible: false,
+      dialogVisible2Del: false,
+      dialogVisible2Import: false,
+      dialogVisible2ImportResult: false,
+      importMessage: '',
+      titles: {
+        importResult: '',
+        fail: '',
+        skip: ''
+      },
+      tables: {
+        importSuccess: [],
+        importFail: [],
+        importSkip: []
+      },
+      policy: 'ABORT',
+      options: {
+        policies: [{
+          value: 'ABORT',
+          label: '终止导入'
+        }, {
+          value: 'SKIP',
+          label: '跳过'
+        }, {
+          value: 'OVERWRITE',
+          label: '覆盖'
+        }]
+      },
       rules: {
         dataId: [{ required: true, message: 'Data ID 不能为空', trigger: 'change' }],
         group: [{ required: true, message: 'Group 不能为空', trigger: 'change' }]
       }
+    }
+  },
+  computed: {
+    namespaceName() {
+      const tmp = this.$store.getters.tenant
+      const tenant = this.$store.getters.tenants.find(tenant => {
+        return tenant.namespace === tmp
+      })
+      return tenant.namespaceShowName
+    },
+    importUrl() {
+      return '/api/nacos/v1/cs/configs?import=true&namespace=' + this.$store.getters.tenant
     }
   },
   // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
@@ -157,7 +251,7 @@ export default {
         this.$message.warning('请选择要删除的配置！')
         return
       }
-      this.dialogDelVisible = true
+      this.dialogVisible2Del = true
     },
     async handleDelete(row) {
       let res
@@ -166,7 +260,7 @@ export default {
       } else {
         const ids = this.multipleSelection.map(item => item.id)
         res = await deleteNacosConfigs(ids)
-        this.dialogDelVisible = false
+        this.dialogVisible2Del = false
       }
       if (res) {
         this.fetchData()
@@ -214,6 +308,32 @@ export default {
         }
       }
       exportNacosConfigs(params)
+    },
+    handleImports() {
+      this.dialogVisible2Import = true
+    },
+    importSuccess(resp) {
+      this.dialogVisible2Import = false
+      this.dialogVisible2ImportResult = true
+      const { data, message } = resp
+      this.titles.importResult = message
+      this.tables.importFail = []
+      this.tables.importSkip = []
+      if (data.failData) {
+        this.titles.importResult = '导入终止'
+        this.titles.fail = '失败的条目: ' + data.failData.length
+        this.tables.importFail = data.failData
+        this.importMessage = '检测到冲突的配置项：' + data.failData[0].group + '/' + data.failData[0].dataId
+      }
+      if (data.skipData) {
+        this.titles.skip = '跳过的条目: ' + data.skipData.length
+        if (data.failData) this.titles.skip = '未处理的条目: ' + data.skipData.length
+        this.tables.importSkip = data.skipData
+      }
+      if (data.succCount > 0) {
+        this.importMessage = `导入成功,导入了 ${data.succCount} 项配置`
+        this.fetchData()
+      }
     }
   }
 }
