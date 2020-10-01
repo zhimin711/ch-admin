@@ -26,15 +26,19 @@ export default {
   watch: {
     value(value) {
       const editorValue = this.jsonEditor.getValue()
-      if (value !== editorValue) {
-        if (value) this.jsonEditor.setValue(JSON.stringify(this.value, null, 2))
-        else this.jsonEditor.setValue('')
+      const json = typeof this.value === 'object' ? JSON.stringify(this.value, null, 2) : (this.value || '')
+      // console.log('value:  ', json)
+      // console.log('editor: ', editorValue)
+      // console.log('eq: ', value === editorValue)
+      if (json !== editorValue) {
+        this.jsonEditor.setValue(json)
       }
     }
   },
   mounted() {
     this.jsonEditor = CodeMirror.fromTextArea(this.$refs.textarea, {
       lineNumbers: true,
+      tabSize: 2,
       mode: 'application/json',
       gutters: ['CodeMirror-lint-markers'],
       theme: 'rubyblue',

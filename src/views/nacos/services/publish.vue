@@ -38,7 +38,7 @@
       <el-table-column class-name="status-col" label="触发保护阈值" min-width="150" align="center" prop="triggerFlag" />
       <el-table-column align="center" label="操作" min-width="150">
         <template slot-scope="{row}">
-          <!--<el-button type="text" @click.native="handleDetail(row)">详情</el-button>-->
+          <el-button type="text" @click.native="handleDetail(row)">详情</el-button>
           <el-button type="text" @click.native="handleCode(row)">示例代码</el-button>
           <!--<el-button type="text" @click.native="handleUpdate(row)">编辑</el-button>-->
           <el-button type="text" @click.native="onDelete(row)">删除</el-button>
@@ -204,7 +204,7 @@ export default {
       }
     },
     convertData(data) {
-      const formData = new FormData()
+      const formData = new URLSearchParams()
       for (const i in data) {
         formData.append(i, data[i])
       }
@@ -222,12 +222,8 @@ export default {
         type: (res === 'ok' ? 'success' : 'error')
       })
     },
-    handleUpdate(row) {
-      if (row.canalCluster !== null) {
-        this.$message({ message: '集群模式Server不允许单独变更配置，请在集群配置变更', type: 'error' })
-        return
-      }
-      this.$router.push('/canalServer/nodeServer/config?serverId=' + row.id)
+    handleDetail(row) {
+      this.$router.push(`/nacos/services/detail?name=${row.name}&groupName=${row.groupName}`)
     }
   }
 }

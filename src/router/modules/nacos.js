@@ -107,6 +107,13 @@ const router = {
           meta: { title: '服务列表' }
         },
         {
+          path: 'detail',
+          component: () => import('@/views/nacos/services/serviceDetail'),
+          name: 'NacosDerviceDetail',
+          hidden: true,
+          meta: { title: '服务详情', noCache: true }
+        },
+        {
           path: 'subscribe',
           component: () => import('@/views/nacos/services/subscribe'),
           name: 'Nacos Subscribe List',

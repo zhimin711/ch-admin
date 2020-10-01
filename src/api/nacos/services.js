@@ -1,12 +1,15 @@
 import request from '@/utils/request3'
 
-const namespace = '/nacos/v1/ns/catalog/services'
+const namespace = '/nacos/v1/ns/catalog/service'
 const namespace2 = '/nacos/v1/ns/service/subscribers'
 const namespace3 = '/nacos/v1/ns/service'
+const namespace4 = '/nacos/v1/ns/catalog/instances'
+const namespace5 = '/nacos/v1/ns/instance'
+const namespace6 = '/nacos/v1/ns/cluster'
 
 export function pageNacosServices(params) {
   return request({
-    url: `${namespace}`,
+    url: `${namespace}s`,
     method: 'get',
     params: params
   })
@@ -23,9 +26,9 @@ export function addNacosService(data) {
   })
 }
 
-export function getNacosServices(params) {
+export function getNacosService(params) {
   return request({
-    url: `${namespace}`,
+    url: `${namespace}?serviceName=${params.name}&groupName=${params.groupName}`,
     method: 'get',
     params: params
   })
@@ -33,10 +36,10 @@ export function getNacosServices(params) {
 
 export function updateNacosService(data) {
   return request({
-    url: `${namespace}`,
+    url: `${namespace3}`,
     method: 'put',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
     },
     data
   })
@@ -55,5 +58,35 @@ export function getNacosSubscribers(params) {
     url: `${namespace2}`,
     method: 'get',
     params: params
+  })
+}
+
+export function pageNacosServiceInstances(params) {
+  return request({
+    url: `${namespace4}`,
+    method: 'get',
+    params: params
+  })
+}
+
+export function updateNacosServiceInstance(data) {
+  return request({
+    url: `${namespace5}`,
+    method: 'put',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    },
+    data
+  })
+}
+
+export function updateNacosServiceCluster(data) {
+  return request({
+    url: `${namespace6}`,
+    method: 'put',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    },
+    data
   })
 }
