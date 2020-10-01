@@ -100,7 +100,7 @@ const defaultRecord = {
   metadata: ''
 }
 export default {
-  name: 'NacosServices111',
+  name: 'NacosServices',
   components: { Pagination, Sticky, Tenant, CodeViewer, JsonEditor },
   data() {
     return {
