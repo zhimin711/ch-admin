@@ -31,7 +31,7 @@
             <el-dropdown-item>Dashboard</el-dropdown-item>
           </router-link>-->
           <el-dropdown-item divided>
-            <span style="display:block;" @click.native="logout">登 出</span>
+            <span style="display:block;" @click="logout">登 出</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
