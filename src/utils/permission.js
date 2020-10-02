@@ -25,6 +25,9 @@ export default function checkPermission(value) {
 }
 
 export function checkPermission2(value) {
+  if (typeof value === 'string') {
+    value = [value]
+  }
   if (value && value instanceof Array && value.length > 0) {
     const permissions = store.getters && store.getters.permissions
     const permissionCodes = value

@@ -4,9 +4,13 @@ function checkPermission(el, binding) {
   const { value } = binding
   const permissions = store.getters && store.getters.permissions
 
-  if (value && value instanceof Array && value.length > 0) {
-    const permissionRoles = value
-
+  let permissionRoles = []
+  if (typeof value === 'string') {
+    permissionRoles.push(value)
+  } else if (value && value instanceof Array) {
+    permissionRoles = value
+  }
+  if (permissionRoles.length > 0) {
     const hasPermission = permissions.some(permission => {
       return permissionRoles.includes(permission.code)
     })
