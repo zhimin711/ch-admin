@@ -10,17 +10,6 @@ export function pageNacosNamespaces(params) {
   })
 }
 
-export function addNacosNamespaces(data) {
-  return request({
-    url: `${namespace}`,
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    data
-  })
-}
-
 export function getNacosNamespace(params) {
   return request({
     url: `${namespace}`,
@@ -34,6 +23,17 @@ export function getNacosNamespaces(params) {
     url: `${namespace}`,
     method: 'get',
     params: params
+  })
+}
+
+export function addNacosNamespaces(data) {
+  return request({
+    url: `${namespace}`,
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    data
   })
 }
 

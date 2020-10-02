@@ -9,11 +9,3 @@ export function getNacosConfigsHistory(params) {
     params: params
   })
 }
-
-export function getNacosListener(params) {
-  return request({
-    url: `${namespace}`,
-    method: 'get',
-    params: params
-  })
-}
