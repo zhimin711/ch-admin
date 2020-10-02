@@ -12,13 +12,13 @@
           <el-input v-model="listQuery.group" placeholder="请输入Group" style="width: 200px;" />
         </el-form-item>
       </el-form>
-      <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
-      <el-button class="filter-item" type="primary" @click="handleCreate()">创建配置</el-button>
-      <el-button class="filter-item" type="danger" @click="onDelete2()">删除</el-button>
-      <!--<el-button class="filter-item" type="primary" @click="handleCreate()">导出查询结果</el-button>-->
-      <el-button class="filter-item" type="success" plain @click="handleExports()">导出配置</el-button>
-      <el-button class="filter-item" type="primary" @click="handleImports()">导入配置</el-button>
-      <el-button class="filter-item" type="primary" plain @click="handleClone()">克隆配置</el-button>
+      <el-button type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
+      <el-button type="primary" @click="handleCreate()">创建配置</el-button>
+      <el-button v-permission="'NacosConfigsIndexDelete'" type="danger" @click="onDelete2()">删除</el-button>
+      <!--<el-button type="primary" @click="handleCreate()">导出查询结果</el-button>-->
+      <el-button v-permission="'NacosConfigsIndexExport'" type="success" plain @click="handleExports()">导出配置</el-button>
+      <el-button v-permission="'NacosConfigsIndexImport'" type="primary" @click="handleImports()">导入配置</el-button>
+      <el-button v-permission="'NacosConfigsIndexClone'" type="primary" plain @click="handleClone()">克隆配置</el-button>
     </div>
     <el-table
       v-loading="listLoading"
@@ -39,10 +39,10 @@
       <el-table-column label="归属应用" min-width="100" prop="appName" />
       <el-table-column align="center" prop="created_at" label="操作" min-width="150">
         <template slot-scope="{row}">
-          <el-button type="text" @click.native="handleDetail(row)">详情</el-button>
+          <el-button v-permission="'NacosConfigsIndexSearch'" type="text" @click.native="handleDetail(row)">详情</el-button>
           <el-button type="text" @click.native="handleCode(row)">示例代码</el-button>
-          <el-button type="text" @click.native="handleUpdate(row)">编辑</el-button>
-          <el-button type="text" @click.native="onDelete(row)">删除</el-button>
+          <el-button v-permission="'NacosConfigsIndexEdit'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
+          <el-button v-permission="'NacosConfigsIndexDelete'" type="text" @click.native="onDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>

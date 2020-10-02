@@ -72,6 +72,8 @@ export default {
     editorInit() {
     },
     loadConfig(params) {
+      params.namespaceId = this.$store.getters.tenant
+      params.tenant = this.$store.getters.tenant
       if (this.isHistory) {
         getNacosConfigsHistory(params).then(data => {
           if (data) {
@@ -107,7 +109,7 @@ export default {
       })
     },
     handleSubmit() {
-      const formData = new FormData()
+      const formData = new URLSearchParams()
       formData.append('namespaceId', this.record.tenant || '')
       formData.append('appName', this.record.appName)
       formData.append('dataId', this.record.dataId)

@@ -3,7 +3,7 @@
     <div slot="header" class="clearfix">
       <span>服务详情</span>
       <el-button style="float: right; padding: 3px 25px 3px 10px" type="text" icon="el-icon-back" @click="onBack">返回</el-button>
-      <el-button style="float: right; padding: 3px 10px" type="text" icon="el-icon-edit" @click="onEdit">编辑服务</el-button>
+      <el-button v-permission="'NacosServiceDetailEdit'" style="float: right; padding: 3px 10px" type="text" icon="el-icon-edit" @click="onEdit">编辑服务</el-button>
     </div>
     <el-row>
       <el-col :span="20" :offset="2">
@@ -39,7 +39,7 @@
           <div slot="header" class="clearfix">
             <span>集群: </span>
             <el-tag>{{ cluster.name }}</el-tag>
-            <el-button style="float: right; padding: 3px 0" type="text" icon="el-icon-edit" @click="handleEditCluster">集群配置</el-button>
+            <el-button v-permission="'NacosServiceClusterEdit'" style="float: right; padding: 3px 0" type="text" icon="el-icon-edit" @click="handleEditCluster">集群配置</el-button>
           </div>
           <div class="text item">
             <el-table v-loading="tables.instanceLoading" :data="tables.instances" border>
@@ -63,8 +63,8 @@
               </el-table-column>
               <el-table-column align="center" prop="created_at" label="操作" width="180">
                 <template slot-scope="{row}">
-                  <el-button @click.native="handleEditInstance(row)">编辑</el-button>
-                  <el-button @click.native="handleSwitchInstance(row)">{{ row.enabled?'下线':'上线' }}</el-button>
+                  <el-button v-permission="'NacosServiceInstanceEdit'" @click.native="handleEditInstance(row)">编辑</el-button>
+                  <el-button v-permission="'NacosServiceInstanceEdit'" @click.native="handleSwitchInstance(row)">{{ row.enabled?'下线':'上线' }}</el-button>
                 </template>
               </el-table-column>
             </el-table>

@@ -31,8 +31,8 @@
         <el-table-column label="最后更新时间" min-width="100" prop="lastModifiedTime" :formatter="dateFormat" />
         <el-table-column align="center" label="操作" width="180">
           <template slot-scope="{row}">
-            <el-button type="text" icon="el-icon-view" @click.native="handleDetail(row)">详情</el-button>
-            <el-button type="text" icon="el-icon-refresh-left" @click.native="handleRollback(row)">回滚</el-button>
+            <el-button v-permission="'NacosConfigsHistoryDetail'" type="text" icon="el-icon-view" @click.native="handleDetail(row)">详情</el-button>
+            <el-button v-permission="'NacosConfigsHistoryRollback'" type="text" icon="el-icon-refresh-left" @click.native="handleRollback(row)">回滚</el-button>
           </template>
         </el-table-column>
       </el-table>

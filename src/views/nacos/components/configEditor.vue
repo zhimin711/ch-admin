@@ -27,6 +27,7 @@
     <el-dialog
       title="配置内容比较"
       :visible.sync="dialogCompareVisible"
+      :width="'80%'"
     >
       <div>
         <el-form :inline="true" label-width="120px" label-position="left">
@@ -123,6 +124,8 @@ export default {
     },
     loadConfig(params) {
       params.show = 'all'
+      params.namespaceId = this.$store.getters.tenant
+      params.tenant = this.$store.getters.tenant
       getNacosConfig(params).then(data => {
         if (data) {
           this.record = Object.assign({}, data)
@@ -131,7 +134,7 @@ export default {
       })
     },
     convertData() {
-      const formData = new FormData()
+      const formData = new URLSearchParams()
       if (!this.isEdit) {
         formData.append('namespaceId', this.$store.getters.tenant)
         formData.append('tenant', this.$store.getters.tenant)
@@ -142,6 +145,7 @@ export default {
         formData.append('type', this.record.type)
         formData.append('configTags', this.record.configTags || '')
       } else {
+        this.record.tenant = this.$store.getters.tenant
         for (const p in this.record) {
           formData.append(p, this.record[p])
         }

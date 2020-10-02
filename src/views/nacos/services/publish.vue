@@ -19,8 +19,8 @@
           />
         </el-form-item>
       </el-form>
-      <el-button class="filter-item" type="info" icon="el-icon-search" plain @click="queryData()">查询</el-button>
-      <el-button class="filter-item" type="primary" icon="el-icon-plus" @click="handleCreate()">创建服务</el-button>
+      <el-button type="info" icon="el-icon-search" plain @click="queryData()">查询</el-button>
+      <el-button v-permission="'NacosServicesIndexAdd'" type="primary" icon="el-icon-plus" @click="handleCreate()">创建服务</el-button>
     </div>
     <el-table
       v-loading="listLoading"
@@ -38,10 +38,10 @@
       <el-table-column class-name="status-col" label="触发保护阈值" min-width="150" align="center" prop="triggerFlag" />
       <el-table-column align="center" label="操作" min-width="150">
         <template slot-scope="{row}">
-          <el-button type="text" @click.native="handleDetail(row)">详情</el-button>
+          <el-button v-permission="'NacosServicesIndexDetail'" type="text" @click.native="handleDetail(row)">详情</el-button>
           <el-button type="text" @click.native="handleCode(row)">示例代码</el-button>
           <!--<el-button type="text" @click.native="handleUpdate(row)">编辑</el-button>-->
-          <el-button type="text" @click.native="onDelete(row)">删除</el-button>
+          <el-button v-permission="'NacosServicesIndexDelete'" type="text" @click.native="onDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -100,7 +100,7 @@ const defaultRecord = {
   metadata: ''
 }
 export default {
-  name: 'NacosServices',
+  name: 'NacosServicesIndex',
   components: { Pagination, Sticky, Tenant, CodeViewer, JsonEditor },
   data() {
     return {

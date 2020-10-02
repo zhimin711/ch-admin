@@ -3,7 +3,7 @@
     <div class="filter-container">
       <!--<el-input v-model="listQuery.namespaceShowName" placeholder="命名空间名称" style="width: 200px;" class="filter-item" />-->
       <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
-      <el-button class="filter-item" type="primary" icon="el-icon-plus" @click="handleCreate()">创建</el-button>
+      <el-button v-permission="'NacosTenantNamespaceAdd'" class="filter-item" type="primary" icon="el-icon-plus" @click="handleCreate()">创建</el-button>
     </div>
     <el-table
       v-loading="listLoading"
@@ -24,6 +24,7 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="220">
         <template slot-scope="{row}">
           <el-button
+            v-permission="'NacosTenantNamespaceDetail'"
             size="mini"
             type="text"
             icon="el-icon-view"
@@ -31,6 +32,7 @@
           >详情</el-button>
           <el-button
             v-if="row.namespace"
+            v-permission="'NacosTenantNamespaceEdit'"
             size="mini"
             type="text"
             icon="el-icon-edit"
@@ -38,6 +40,7 @@
           >修改</el-button>
           <el-button
             v-if="row.namespace"
+            v-permission="'NacosTenantNamespaceDelete'"
             size="mini"
             type="text"
             icon="el-icon-delete"
