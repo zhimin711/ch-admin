@@ -57,6 +57,7 @@ const actions = {
   assemblyRouters({ commit }, menus) {
     return new Promise(resolve => {
       const accessedRoutes = assemblyAsyncRoutes(menus)
+      accessedRoutes.push({ path: '*', redirect: '/404', hidden: true })
       commit('SET_ROUTES', accessedRoutes)
       resolve(accessedRoutes)
     })

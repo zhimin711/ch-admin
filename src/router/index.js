@@ -13,9 +13,9 @@ import wikiRouter, { getWikiRouter } from './modules/wiki'
 import sysRouter from './modules/sys'
 import kafkaRouter, { getKafkaRouter } from './modules/kafka'
 import nacosRouter, { getNacosRouter } from './modules/nacos'
+import { getCanalRouter } from './modules/canal'
 
 import componentsRouter from './modules/components'
-import { getCanalRouter } from './modules/canal'
 /**
  * Note: sub-menu only appear when route children.length >= 1
  * Detail see: https://panjiachen.github.io/vue-element-admin-site/guide/essentials/router-and-nav.html
@@ -100,9 +100,9 @@ export const constantRoutes = [
         meta: { title: '个人资料', icon: 'user', noCache: true }
       }
     ]
-  },
+  }
   // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  // { path: '*', redirect: '/404', hidden: true }
 ]
 
 /**
