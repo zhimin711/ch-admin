@@ -455,7 +455,7 @@ export default {
     handleAdd(op) {
       if (op === 2) {
         //
-        this.$router.push({ path: '/wiki/books/chapter/add' })
+        this.$router.push({ path: '/wiki/business/book/chapter/add' })
         return
       }
       this.dialogVisible = true
@@ -469,9 +469,8 @@ export default {
     handleEditCatalog(row) {
       if (row.leaf) {
         //
-        this.$router.push({ path: '/wiki/books/chapter/' + row.id })
+        this.$router.push({ path: '/wiki/business/book/chapter/edit/' + row.id })
         return
-        // this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
       }
       this.dialogVisible = true
       this.dialogType = 'edit'

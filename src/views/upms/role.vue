@@ -109,7 +109,6 @@
 </template>
 
 <script>
-import path from 'path'
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { pageRole, addRole, editRole, delRole, getRolePermissions, editRolePermissions } from '@/api/upms/role'
@@ -123,7 +122,7 @@ const defaultRole = {
 }
 
 export default {
-  name: 'UPMSRole',
+  name: 'UpmsRole',
   data() {
     return {
       recordPage: {
@@ -160,9 +159,9 @@ export default {
     }
   },
   created() {
+    this.getList()
     // Mock: get all routes and roles list from server
     this.getRoutes()
-    this.getList()
   },
   methods: {
     checkPermission2,
@@ -174,7 +173,6 @@ export default {
       // this.serviceRoutes = res.rows
       this.routes = res.rows
       if (this.routes.length === 0) this.treeTip = '未加载到数据！'
-      // this.generateRoutes(res.rows)
     },
     getList() {
       this.recordPage.loading = true
@@ -185,47 +183,6 @@ export default {
     },
     handleFilter() {
       this.getList()
-    },
-    // Reshape the routes structure so that it looks the same as the sidebar
-    generateRoutes(routes, basePath = '/') {
-      const res = []
-
-      for (let route of routes) {
-        // skip some route
-        if (route.hidden) { continue }
-
-        const onlyOneShowingChild = this.onlyOneShowingChild(route.children, route)
-
-        if (route.children && onlyOneShowingChild && !route.alwaysShow) {
-          route = onlyOneShowingChild
-        }
-
-        const data = {
-          path: path.resolve(basePath, route.path),
-          title: route.meta && route.meta.title,
-          label: route.label
-        }
-
-        // recursive child routes
-        if (route.children) {
-          data.children = this.generateRoutes(route.children, data.path)
-        }
-        res.push(data)
-      }
-      return res
-    },
-    generateArr(routes) {
-      let data = []
-      routes.forEach(route => {
-        data.push(route.id)
-        if (route.children) {
-          const temp = this.generateArr(route.children)
-          if (temp.length > 0) {
-            data = [...data, ...temp]
-          }
-        }
-      })
-      return data
     },
     handleAdd() {
       this.role = Object.assign({}, defaultRole)
@@ -245,8 +202,6 @@ export default {
       this.role = deepClone(row)
       this.recordStatus = (this.role.status === '1')
       this.$nextTick(() => {
-        // const routes = this.generateRoutes(this.role.routes)
-        // this.$refs.tree.setCheckedNodes(this.generateArr(routes))
         // set checked state of a node not affects its father and child nodes
         this.checkStrictly = false
       })
@@ -266,22 +221,42 @@ export default {
           })
         }).catch(err => { console.error(err) })
     },
-    generateTree(routes, basePath = '/', checkedKeys) {
+    generateMap(routes) {
+      const map = {}
+      routes.forEach(route => {
+        if (map[route.parentId]) {
+          map[route.parentId].push(route)
+        } else {
+          map[route.parentId] = [route]
+        }
+      })
+      return map
+    },
+    generateTree(map) {
       const res = []
-
-      for (const route of routes) {
-        const routePath = path.resolve(basePath, route.path)
-
-        // recursive child routes
-        if (route.children) {
-          route.children = this.generateTree(route.children, routePath, checkedKeys)
-        }
-
-        if (checkedKeys.includes(routePath) || (route.children && route.children.length >= 1)) {
-          res.push(route)
-        }
+      for (const key in map) {
+        map[key].forEach(route => {
+          if (route.type === '2') {
+            route.children = map[route.parentId + ',' + route.id]
+            res.push(route)
+          }
+        })
       }
       return res
+    },
+    generateArr(routes) {
+      let data = []
+      routes.forEach(route => {
+        if (route.children) {
+          const temp = this.generateArr(route.children)
+          if (temp.length > 0) {
+            data = [...data, ...temp]
+          }
+        } else {
+          data.push(route.id)
+        }
+      })
+      return data
     },
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
@@ -315,9 +290,11 @@ export default {
     handleAuth(row) {
       this.dialogVisible2 = true
       this.role = deepClone(row)
-      getRolePermissions(row.id, { types: '3,4' }).then(resp => {
+      getRolePermissions(row.id, { types: '2,3,4' }).then(resp => {
         if (resp.success) {
-          const authList = this.generateArr(resp.rows)
+          const authMap = this.generateMap(resp.rows)
+          const authTree = this.generateTree(authMap)
+          const authList = this.generateArr(authTree)
           this.expList = authList.length > 0 ? authList : [this.routes[0].value]
           this.$refs.tree.setCheckedKeys(authList)
         }
@@ -342,26 +319,6 @@ export default {
         message: `Auth permission ` + (resp && resp.success ? 'success!' : 'error...'),
         type: resp && resp.success ? 'success' : 'error'
       })
-    },
-    // reference: src/view/layout/components/Sidebar/SidebarItem.vue
-    onlyOneShowingChild(children = [], parent) {
-      let onlyOneChild = null
-      const showingChildren = children.filter(item => !item.hidden)
-
-      // When there is only one child route, the child route is displayed by default
-      if (showingChildren.length === 1) {
-        onlyOneChild = showingChildren[0]
-        onlyOneChild.path = path.resolve(parent.path, onlyOneChild.path)
-        return onlyOneChild
-      }
-
-      // Show parent if there are no child route to display
-      if (showingChildren.length === 0) {
-        onlyOneChild = { ... parent, path: '', noShowingChildren: true }
-        return onlyOneChild
-      }
-
-      return false
     }
   }
 }

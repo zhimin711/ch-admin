@@ -7,7 +7,7 @@
       <el-button class="filter-item" type="primary" icon="el-icon-plus" @click="handleAdd">
         添加
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleSubmit">
+      <el-button v-permission="'WikiArticleRecommendEdit'" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleSubmit">
         保存
       </el-button>
     </div>

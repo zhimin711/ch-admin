@@ -173,7 +173,7 @@ import { searchPosition } from '@/api/upms/position'
 const defaultRecord = { pid: '0', sort: 1, status: '1' }
 
 export default {
-  name: 'UPMSDepartment',
+  name: 'UpmsDepartment',
   // components: { Treeselect },
   data() {
     return {

@@ -26,12 +26,12 @@
         </template>
       </el-table-column>
       <el-table-column align="center" prop="type" label="类型" width="95">
-        <template slot-scope="scope">
-          <el-tag v-if="scope.row.type === '1'" type="warning">目录</el-tag>
-          <el-tag v-else-if="scope.row.type === '2'" type="success">菜单</el-tag>
-          <el-tag v-else-if="scope.row.type === '3'" type="primary">按钮</el-tag>
-          <el-tag v-else-if="scope.row.type === '4'" type="info">隐藏菜单</el-tag>
-          <el-tag v-else-if="scope.row.type === '5'" type="danger">登录</el-tag>
+        <template slot-scope="{row}">
+          <el-tag v-if="row.type === '1'" type="warning">目录</el-tag>
+          <el-tag v-else-if="row.type === '2'" type="success">{{ row.hidden? '[隐藏]':'' }}菜单</el-tag>
+          <el-tag v-else-if="row.type === '3'" type="primary">按钮</el-tag>
+          <el-tag v-else-if="row.type === '4'" type="info">隐藏菜单</el-tag>
+          <el-tag v-else-if="row.type === '5'" type="danger">{{ row.hidden? '[私有]':'[开放]' }}接口</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="代码" prop="code">
@@ -76,9 +76,9 @@
           <el-radio-group v-model="record.type" @change="changeType">
             <el-radio-button label="1">目录</el-radio-button>
             <el-radio-button label="2">菜单</el-radio-button>
-            <el-radio-button label="4">隐藏菜单</el-radio-button>
+            <!--<el-radio-button label="4">隐藏菜单</el-radio-button>-->
             <el-radio-button label="3">按钮</el-radio-button>
-            <el-radio-button label="5">登录</el-radio-button>
+            <el-radio-button label="5">接口</el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="上级">
@@ -86,7 +86,7 @@
           <el-icon v-show="dialogLoadingVisible" class="el-icon-loading" />
         </el-form-item>
         <el-form-item label="代码" prop="code">
-          <el-input v-model="record.code" :disabled="recordForm.codeDisabled" />
+          <el-input v-model="record.code" :disabled="recordForm.codeDisabled" placeholder="目录或菜单代码需与前端路由一致" />
         </el-form-item>
         <el-form-item label="名称" prop="name">
           <el-input v-model="record.name" />
@@ -96,19 +96,23 @@
           <icon-selector v-model="record.icon" />
         </el-form-item>
         <el-form-item label="地址">
-          <el-input v-model="record.url" />
+          <el-input v-model="record.url" placeholder="按钮或接口必填" />
         </el-form-item>
-        <el-form-item v-show="recordForm.redirectShow" label="重定向地址">
+        <!--<el-form-item v-show="recordForm.redirectShow" label="重定向地址">
           <el-input v-model="record.redirect" placeholder="目录与隐藏地址" />
-        </el-form-item>
-        <el-form-item label="请求方法">
-          <el-radio-group v-model="record.method" :disabled="recordForm.descDisabled">
+        </el-form-item>-->
+        <el-form-item v-if="record.type === '3' || record.type === '5'" label="请求方法">
+          <el-radio-group v-model="record.method">
             <el-radio-button label="">ALL</el-radio-button>
             <el-radio-button label="GET" />
             <el-radio-button label="POST" />
             <el-radio-button label="PUT" />
             <el-radio-button label="DELETE" />
           </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="record.type === '2' || record.type === '5'" :label="record.type === '2'?'是否隐藏':'是否开放'">
+          <el-radio v-model="record.hidden" :label="false">否</el-radio>
+          <el-radio v-model="record.hidden" :label="true">是</el-radio>
         </el-form-item>
         <el-form-item label="排序">
           <el-input-number v-model="record.sort" />
@@ -145,7 +149,7 @@ const defaultRecord = {
   name: ''
 }
 export default {
-  name: 'UPMSPermission',
+  name: 'UpmsPermission',
   components: { IconSelector },
   data() {
     return {
@@ -179,6 +183,9 @@ export default {
         label: 'name'
       },
       rules: {
+        name: [
+          { required: true, message: '名称不能为空', trigger: 'blur' }
+        ],
         code: [
           { required: true, message: '权限代码不能为空' },
           {
@@ -312,7 +319,7 @@ export default {
         this.dialogVisible = false
         this.$message({
           type: 'success',
-          message: `${opName} ${this.record.name} success!`
+          message: `${opName} ${this.record.name} 成功!`
         })
         _this.getList()
       }

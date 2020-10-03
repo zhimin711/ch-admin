@@ -6,7 +6,7 @@
 import ConfigDetail from '../components/configDetail'
 
 export default {
-  name: 'NacosConfigHistoryRollback',
+  name: 'NacosConfigRollback',
   components: { ConfigDetail }
 }
 </script>

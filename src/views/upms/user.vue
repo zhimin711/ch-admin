@@ -172,7 +172,7 @@ import { pageUser, addUser, getUser, editUser, delUser, initPwd, getEnableRoles,
 import { treeDepartment, searchDepartmentPositions } from '@/api/upms/department'
 
 export default {
-  name: 'UPMSUser1',
+  name: 'UpmsUser',
   directives: {
     waves
   },
@@ -201,9 +201,9 @@ export default {
     }
   },
   created() {
-    this.getList()
     this.getEnableRoles()
     this.getTreeDepartments()
+    this.getList()
   },
   methods: {
     checkPermission2,

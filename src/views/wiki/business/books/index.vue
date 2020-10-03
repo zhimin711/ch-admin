@@ -25,7 +25,12 @@
       <el-table-column prop="title" label="类型" width="200" />
       <el-table-column prop="name" label="名称" min-width="200">
         <template slot-scope="scope">
-          <router-link v-if="checkPermission2(['WIKI_BOOKS_READ']) && scope.row.type === '2' && scope.row.status !== 'x'" :to="'/wiki/books/preview/'+scope.row.id" class="el-link el-link--primary">
+          <router-link
+            v-if="scope.row.type === '2' && scope.row.status !== 'x'"
+            v-permission="'WikiBookRead'"
+            :to="'/wiki/business/book/preview/'+scope.row.id"
+            class="el-link el-link--primary"
+          >
             {{ scope.row.name }}
           </router-link>
           <span v-else>{{ scope.row.name }}</span>
@@ -53,7 +58,7 @@
       </el-table-column>-->
       <el-table-column align="center" label="操作" width="180">
         <template slot-scope="scope">
-          <router-link v-if="checkPermission2(['WIKI_BOOKS_EDIT']) && scope.row.type === '1' && scope.row.status !== 'x'" :to="'/wiki/books/'+scope.row.id">
+          <router-link v-if="checkPermission2(['WIKI_BOOKS_EDIT']) && scope.row.type === '1' && scope.row.status !== 'x'" :to="'/wiki/business/book/edit/'+scope.row.id">
             <el-button type="text" icon="el-icon-edit">编辑
             </el-button>
           </router-link>

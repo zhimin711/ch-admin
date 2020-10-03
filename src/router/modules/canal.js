@@ -53,10 +53,10 @@ const umpsRouter = {
 }
 
 const routerMap = {
-  Upms: {
-    path: '/upms',
+  Canal: {
+    path: '/canal',
     component: Layout,
-    redirect: '/upms/user',
+    redirect: '/canal/cluster',
     alwaysShow: true, // will always show the root menu
     name: 'User Permission Manager',
     meta: {
@@ -64,57 +64,41 @@ const routerMap = {
       icon: 'lock'
     }
   },
-  UpmsUser: {
-    path: 'user',
-    component: () => import('@/views/upms/user'),
-    name: 'UpmsUser',
+  CanalCluster: {
+    path: 'cluster',
+    component: () => import('@/views/canal/cluster/index'),
+    name: 'CanalCluster',
     meta: {
       title: '用户管理'
     }
   },
-  UpmsRole: {
-    path: 'role',
-    component: () => import('@/views/upms/role'),
-    name: 'UpmsRole',
+  CanalServer: {
+    path: 'server',
+    component: () => import('@/views/canal/server/index'),
+    name: 'CanalServer',
     meta: {
       title: '角色管理'
     }
   },
-  UpmsPermission: {
-    path: 'permission',
-    component: () => import('@/views/upms/permission'),
-    name: 'UpmsPermission',
+  CanalInstance: {
+    path: 'instance',
+    component: () => import('@/views/canal/instance/index'),
+    name: 'CanalInstance',
     meta: {
       title: '权限管理'
     }
   },
-  UpmsDepartment: {
-    path: 'department',
-    component: () => import('@/views/upms/department'),
-    name: 'UpmsDepartment',
-    meta: {
-      title: '权限管理'
-    }
-  },
-  UpmsPosition: {
-    path: 'position',
-    component: () => import('@/views/upms/position'),
-    name: 'UpmsPosition',
-    meta: {
-      title: '权限管理'
-    }
-  },
-  UpmsDict: {
-    path: 'dict',
-    component: () => import('@/views/upms/dict'),
-    name: 'UpmsDict',
+  CanalAlarm: {
+    path: 'alarm',
+    component: () => import('@/views/canal/alarm'),
+    name: 'CanalAlarm',
     meta: {
       title: '权限管理'
     }
   }
 }
 
-export function getUpmsRouter(code) {
+export function getCanalRouter(code) {
   return routerMap[code]
 }
 

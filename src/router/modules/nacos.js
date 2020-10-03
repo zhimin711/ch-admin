@@ -142,4 +142,151 @@ const router = {
     }
   ]
 }
+
+const routerMap = {
+  Nacos: {
+    path: '/nacos',
+    component: Layout,
+    redirect: '/nacos/cluster/nodes',
+    alwaysShow: true, // will always show the root menu
+    name: 'Nacos',
+    meta: {
+      title: 'Nacos管理',
+      icon: 'lock'
+    }
+  },
+  NacosTetant: {
+    path: 'tenant',
+    component: Blank,
+    alwaysShow: true,
+    name: 'NacosTenant',
+    meta: {
+      icon: 'lock',
+      title: '租户管理'
+    }
+  },
+  NacosTenantNamespace: {
+    path: 'namespace',
+    component: () => import('@/views/nacos/tenant/namespace'),
+    name: 'NacosTenantNamespace',
+    meta: {
+      title: '命名空间'
+    }
+  },
+  NacosConfigs: {
+    path: 'configs',
+    redirect: '/nacos/configs/index',
+    component: Blank,
+    name: 'NacosConfigs',
+    alwaysShow: true,
+    meta: {
+      title: '配置管理',
+      icon: 'lock'
+    }
+  },
+  NacosConfigsIndex: {
+    path: 'index',
+    component: () => import('@/views/nacos/configs/index'),
+    name: 'NacosConfigsIndex',
+    meta: { title: '配置列表' }
+  },
+  NacosConfigsHistory: {
+    path: 'history',
+    component: () => import('@/views/nacos/configs/history'),
+    name: 'NacosConfigsHistory',
+    meta: { title: '历史版本' }
+  },
+  NacosConfigAdd: {
+    path: 'add',
+    component: () => import('@/views/nacos/configs/add'),
+    name: 'NacosConfigAdd',
+    hidden: true,
+    meta: { title: '添加配置', noCache: true }
+  },
+  NacosConfigDetail: {
+    path: 'detail',
+    component: () => import('@/views/nacos/configs/detail'),
+    name: 'NacosConfigDetail',
+    hidden: true,
+    meta: { title: '配置详情', noCache: true }
+  },
+  NacosConfigEdit: {
+    path: 'edit',
+    component: () => import('@/views/nacos/configs/edit'),
+    name: 'NacosConfigEdit',
+    hidden: true,
+    meta: { title: '修改配置', noCache: true }
+  },
+  NacosConfigHistory: {
+    path: 'historyDetail',
+    component: () => import('@/views/nacos/configs/historyDetail'),
+    name: 'NacosConfigHistory',
+    hidden: true,
+    meta: { title: '历史详情', noCache: true }
+  },
+  NacosConfigRollback: {
+    path: 'rollback',
+    component: () => import('@/views/nacos/configs/historyRollback'),
+    name: 'NacosConfigRollback',
+    hidden: true,
+    meta: { title: '配置回滚', noCache: true }
+  },
+  NacosConfigsListener: {
+    path: 'listener',
+    component: () => import('@/views/nacos/configs/listener'),
+    name: 'NacosConfigsListener',
+    meta: { title: '监听查询' }
+  },
+  NacosCluster: {
+    path: 'cluster',
+    redirect: '/nacos/cluster/nodes',
+    component: Blank,
+    name: 'NacosCluster',
+    alwaysShow: true,
+    meta: {
+      title: '集群管理',
+      icon: 'lock'
+    }
+  },
+  NacosClusterNodes: {
+    path: 'nodes',
+    component: () => import('@/views/nacos/cluster/index'),
+    name: 'NacosClusterNodes',
+    meta: { title: '节点列表' }
+  },
+  NacosServices: {
+    path: 'services',
+    redirect: '/nacos/services/publish',
+    component: Blank,
+    name: 'NacosServices',
+    alwaysShow: true,
+    meta: {
+      title: '服务管理',
+      icon: 'lock'
+    }
+  },
+  NacosServicesIndex: {
+    path: 'publish',
+    component: () => import('@/views/nacos/services/publish'),
+    name: 'NacosServicesIndex',
+    meta: { title: '服务列表' }
+  },
+  NacosServiceDetail: {
+    path: 'detail',
+    component: () => import('@/views/nacos/services/serviceDetail'),
+    name: 'NacosServiceDetail',
+    hidden: true,
+    meta: { title: '服务详情', noCache: true }
+  },
+  NacosServiceSubscribes: {
+    path: 'subscribe',
+    component: () => import('@/views/nacos/services/subscribe'),
+    name: 'NacosServiceSubscribes',
+    meta: { title: '订阅者列表' }
+  }
+}
+export function getNacosRouter(code) {
+  return routerMap[code]
+}
+
 export default router

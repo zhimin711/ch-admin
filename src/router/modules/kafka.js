@@ -39,4 +39,46 @@ const kafkaRouter = {
     }
   ]
 }
+
+const routerMap = {
+  Kafka: {
+    path: '/kafka',
+    component: Layout,
+    redirect: '/kafka/cluster',
+    alwaysShow: true, // will always show the root menu
+    name: 'Kafka Manager',
+    meta: {
+      title: '系统管理',
+      icon: 'lock'
+    }
+  },
+  KafkaCluster: {
+    path: 'cluster',
+    component: () => import('@/views/kafka/cluster'),
+    name: 'CanalCluster',
+    meta: {
+      title: '用户管理'
+    }
+  },
+  KafkaContent: {
+    path: 'content',
+    component: () => import('@/views/kafka/content'),
+    name: 'KafkaContent',
+    meta: {
+      title: '角色管理'
+    }
+  },
+  KafkaTopic: {
+    path: 'topic',
+    component: () => import('@/views/kafka/topic'),
+    name: 'KafkaTopic',
+    meta: {
+      title: '权限管理'
+    }
+  }
+}
+
+export function getKafkaRouter(code) {
+  return routerMap[code]
+}
 export default kafkaRouter

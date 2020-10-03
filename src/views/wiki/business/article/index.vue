@@ -25,12 +25,12 @@
           <el-col :span="24">
             <el-button type="primary" icon="el-icon-search" @click="getList">搜索</el-button>
             <el-button icon="el-icon-refresh" @click="listQuery.params = {}">重置</el-button>
-            <router-link v-if="checkPermission2(['WIKI_ARTICLE_ADD'])" class="query-link-btn" :to="'/wiki/article/add'">
+            <router-link v-if="checkPermission2(['WIKI_ARTICLE_ADD'])" class="query-link-btn" :to="'/wiki/business/article/add'">
               <el-button type="primary" icon="el-icon-plus">
                 创建文章
               </el-button>
             </router-link>
-            <router-link v-if="checkPermission2(['WIKI_ARTICLE_RECOMMEND_EDIT'])" class="query-link-btn" :to="'/wiki/article/recommend'">
+            <router-link v-if="checkPermission2(['WikiArticleRecommendEdit'])" class="query-link-btn" :to="'/wiki/business/article/recommend'">
               <el-button type="success" icon="el-icon-thumb">
                 文章推荐
               </el-button>
