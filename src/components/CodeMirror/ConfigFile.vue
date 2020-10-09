@@ -68,6 +68,8 @@ export default {
         lineNumbers: true,
         lint: true,
         line: true,
+        autoMatchParens: true,
+        textWrapping: true,
         gutters: ['CodeMirror-lint-markers'],
         mode: 'properties'
       },

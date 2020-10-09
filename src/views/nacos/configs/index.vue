@@ -13,7 +13,7 @@
         </el-form-item>
       </el-form>
       <el-button type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
-      <el-button type="primary" @click="handleCreate()">创建配置</el-button>
+      <el-button v-permission="'NacosConfigsIndexAdd'" type="primary" @click="handleCreate()">创建配置</el-button>
       <el-button v-permission="'NacosConfigsIndexDelete'" type="danger" @click="onDelete2()">删除</el-button>
       <!--<el-button type="primary" @click="handleCreate()">导出查询结果</el-button>-->
       <el-button v-permission="'NacosConfigsIndexExport'" type="success" plain @click="handleExports()">导出配置</el-button>
