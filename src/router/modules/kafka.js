@@ -36,6 +36,22 @@ const kafkaRouter = {
       meta: {
         title: '消息搜索'
       }
+    },
+    {
+      path: 'mock',
+      component: () => import('@/views/kafka/mocker'),
+      name: 'Mocker',
+      meta: {
+        title: 'Mock数据'
+      }
+    },
+    {
+      path: 'dubbo',
+      component: () => import('@/views/kafka/content'),
+      name: 'DubboCall',
+      meta: {
+        title: 'Dubbo接口测试'
+      }
     }
   ]
 }

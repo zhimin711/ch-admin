@@ -11,16 +11,16 @@
         />
       </el-select>
       <el-input v-model="listQuery.params.topicName" placeholder="主题名称" style="width: 200px;" class="filter-item" />
-      <el-button v-if="checkPermission2(['KAFKA_TOPIC_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-permission="'KAFKA_TOPIC_SEARCH'" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
         重置
       </el-button>
-      <el-button v-if="checkPermission2(['KAFKA_TOPIC_SYNC'])" class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-refresh" @click="handleSync">
+      <el-button v-permission="'KAFKA_TOPIC_SYNC'" class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-refresh" @click="handleSync">
         同步集群主题
       </el-button>
-      <el-button v-if="checkPermission2(['KAFKA_TOPIC_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+      <el-button v-permission="'KAFKA_TOPIC_ADD'" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
         创建主题
       </el-button>
     </div>
@@ -52,9 +52,9 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="180">
         <template slot-scope="scope">
-          <el-link v-if="checkPermission2(['KAFKA_TOPIC_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link v-if="checkPermission2(['KAFKA_TOPIC_REFRESH'])" type="warning" icon="el-icon-refresh" @click="handleRefresh(scope.row)">重建</el-link>
-          <el-link v-if="checkPermission2(['KAFKA_TOPIC_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <el-link v-permission="'KAFKA_TOPIC_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
+          <el-link v-permission="'KAFKA_TOPIC_REFRESH'" type="warning" icon="el-icon-refresh" @click="handleRefresh(scope.row)">重建</el-link>
+          <el-link v-permission="'KAFKA_TOPIC_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
     </el-table>
