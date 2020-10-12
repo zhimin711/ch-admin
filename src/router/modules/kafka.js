@@ -91,10 +91,27 @@ const routerMap = {
     meta: {
       title: '权限管理'
     }
+  },
+  KafkaMocker: {
+    path: 'mock',
+    component: () => import('@/views/kafka/mocker'),
+    name: 'Mocker',
+    meta: {
+      title: 'Mock数据'
+    }
+  },
+  DubboCall: {
+    path: 'dubbo',
+    component: () => import('@/views/kafka/content'),
+    name: 'DubboCall',
+    meta: {
+      title: 'Dubbo接口测试'
+    }
   }
 }
 
 export function getKafkaRouter(code) {
   return routerMap[code]
 }
+
 export default kafkaRouter

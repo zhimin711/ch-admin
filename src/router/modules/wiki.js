@@ -21,7 +21,7 @@ const routerMap = {
   Wiki: {
     path: '/wiki',
     component: Layout,
-    redirect: '/wiki/category',
+    redirect: '/wiki/base/user',
     alwaysShow: true, // will always show the root menu
     name: 'Wiki',
     meta: {
