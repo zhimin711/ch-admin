@@ -9,7 +9,7 @@ const sysRouter = {
   alwaysShow: true, // will always show the root menu
   name: 'Platform Manager',
   meta: {
-    title: '系统管理',
+    title: '项目管理',
     icon: 'lock'
   },
   children: [
