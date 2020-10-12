@@ -47,7 +47,7 @@ const kafkaRouter = {
     },
     {
       path: 'dubbo',
-      component: () => import('@/views/kafka/content'),
+      component: () => import('@/views/kafka/dubboCall'),
       name: 'DubboCall',
       meta: {
         title: 'Dubbo接口测试'
