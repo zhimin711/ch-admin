@@ -38,7 +38,7 @@
             <el-table-column prop="host" label="参数内容">
               <template slot-scope="{row}">
                 <template>
-                  <el-input v-model="row.params" type="textarea" size="small" placeholder="数据: 1/'a'/{}" />
+                  <el-input v-model="row.params" type="textarea" size="small" placeholder="数据: 1、'a'、{}" />
                 </template>
               </template>
             </el-table-column>
@@ -55,6 +55,8 @@
 
         <el-form-item>
           <el-button type="primary" @click="handleSearch">立即调用</el-button>
+          <el-button type="success" :disabled="disableSave" @click="handleSearch">保存参数</el-button>
+          <el-button type="warning" @click="handleSearch">加载参数</el-button>
         </el-form-item>
       </el-form>
 
@@ -92,6 +94,7 @@ export default {
       records: [],
       resultJson: '',
       loading: false,
+      disableSave: true,
       rules: {
         address: [
           { required: true, message: 'zookeeper不能为空', trigger: 'blur' }
@@ -137,11 +140,11 @@ export default {
         params.paramClassName = clazzArr.join(',')
         this.loadingIns = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
 
-        // this.listLoading = true
+        this.disableSave = false
         call(params).then(resp => {
           this.resultJson = resp
           if (resp.success) {
-            //
+            this.disableSave = true
           }
         }).catch(() => {
           this.loadingIns.close()
