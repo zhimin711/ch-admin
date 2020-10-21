@@ -2,154 +2,175 @@
   <div class="app-container">
     <div class="filter-container">
 
-      <el-form :model="listQuery.params" :inline="true" label-width="100px" label-position="left">
-        <el-form-item label="集群名称">
-          <el-select v-model="listQuery.params.cluster" placeholder="请选择" class="filter-item" @change="handleClusterChange">
-            <el-option
-              v-for="item in options.clusters"
-              :key="item.clusterName"
-              :label="item.clusterName"
-              :value="item.clusterName"
-            />
-          </el-select>
+      <el-form :model="params" label-width="180px" label-position="left">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="集群名称">
+              <el-select v-model="params.clusterName" placeholder="请选择" class="filter-item" @change="handleClusterChange">
+                <el-option
+                  v-for="item in options.clusters"
+                  :key="item.clusterName"
+                  :label="item.clusterName"
+                  :value="item.clusterName"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="主题名称">
+              <el-select
+                v-model="params.topicName"
+                filterable
+                remote
+                reserve-keyword
+                placeholder="请输入关键词"
+                :remote-method="remoteMethod"
+                :loading="loading"
+                @change="handleTopicChange"
+              >
+                <el-option
+                  v-for="item in options.topics"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="Mock线程数">
+              <el-input-number v-model="params.threadSize" :min="1" :max="100" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="单线程Mock数据量">
+              <el-input-number v-model="params.batchSize" :min="1" :max="1000" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="6">
+            <el-form-item label="开启调整">
+              <el-switch v-model="params.edit" />
+            </el-form-item>
+          </el-col>
+          <el-col v-if="params.edit" :span="12">
+            <el-form-item label="调整延迟（秒）">
+              <el-input-number v-model="params.batchSize" :min="1" :max="1000" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="6">
+            <el-form-item label="开启删除">
+              <el-switch v-model="params.del" />
+            </el-form-item>
+          </el-col>
+          <el-col v-if="params.del" :span="12">
+            <el-form-item label="删除延迟（秒）">
+              <el-input-number v-model="params.batchSize" :min="1" :max="1000" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="Mock属性" style="margin-bottom: 0">
+          <el-button type="text" size="small" icon="el-icon-plus" @click="handleAddNode">添加属性</el-button>
         </el-form-item>
-        <el-form-item label="主题名称">
-          <el-select
-            v-model="listQuery.params.topic"
-            filterable
-            remote
-            reserve-keyword
-            placeholder="请输入关键词"
-            :remote-method="remoteMethod"
-            :loading="loading"
-          >
-            <el-option
-              v-for="item in options.topics"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="搜索类型">
-          <el-radio-group v-model="listQuery.params.type" @change="handleTypeChange">
-            <el-radio-button label="0">全量</el-radio-button>
-            <el-radio-button label="1">最新</el-radio-button>
-            <el-radio-button label="2">最早</el-radio-button>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="搜索量">
-          <el-input-number v-model="listQuery.params.limit" :min="12" :max="1000" :step="4" :disabled="limitDisabled" />
-        </el-form-item>
-        <el-form-item label="搜索内容">
-          <el-input v-model="listQuery.params.content" placeholder="搜索内容(关键信息)" />
-        </el-form-item>
-        <el-badge v-permission="'KAFKA_CONTENT_SEARCH'" :value="listQuery.total" :max="99" class="item">
-          <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-            查询
-          </el-button>
-        </el-badge>
-        <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {type: '0', limit: 12}">
-          重置
+        <el-table
+          :data="subParams"
+          style="width: 100%; margin-bottom: 10px;"
+        >
+          <el-table-column prop="code" label="属性代码">
+            <template slot-scope="{row}">
+              <template>
+                <el-input v-model="row.code" type="textarea" size="small" placeholder="属性代码" />
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column prop="type" label="属性类型" width="120">
+            <template slot-scope="{row}">
+              <template>
+                <!--<el-input v-model="row.type" size="small" placeholder="属性类型" />-->
+                <el-select v-model="row.type" placeholder="请选择" size="small">
+                  <el-option v-for="item in options.propTypes" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column prop="valRegex" label="Mock规则">
+            <template slot-scope="{row}">
+              <template>
+                <el-input v-model="row.valRegex" type="textarea" size="small" placeholder="[1-100]值或正则（多个&quot;,&quot;拼接，空为自动）" />
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column prop="valEdit" label="调整值" width="100">
+            <template slot-scope="{row}">
+              <template>
+                <el-input v-model="row.valEdit" size="small" placeholder="调整值" />
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column prop="valDel" label="删除值" width="100">
+            <template slot-scope="{row}">
+              <template>
+                <el-input v-model="row.valDel" size="small" placeholder="删除值" />
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column prop="sort" label="序号" width="80">
+            <template slot-scope="{row}">
+              <template>
+                <el-input v-model="row.sort" size="small" placeholder="序号" />
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column prop="name" label="属性名称">
+            <template slot-scope="{row}">
+              <template>
+                <el-input v-model="row.name" size="small" placeholder="属性名称" />
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" label="操作" width="80">
+            <template slot-scope="scope">
+              <el-link v-if="scope.$index>0" type="danger" @click="handleDelNode(scope.$index)">
+                删除
+              </el-link>
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+          查询
         </el-button>
-        <el-button v-permission="['KAFKA_CONTENT_SEND']" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handlePush">
-          推送消息
+        <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="params = {}">
+          重置
         </el-button>
       </el-form>
     </div>
-    <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="70px" align="center" label="分区ID">
-        <template slot-scope="scope">
-          <span>{{ scope.row.partitionId }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column width="77px" align="center" label="索引">
-        <template slot-scope="scope">
-          <span>{{ scope.row.messageOffset }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="内容">
-        <template slot-scope="scope">
-          <span>{{ scope.row.content }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="操作" width="120">
-        <template slot-scope="scope">
-          <el-link v-if="contentType!=='STRING'" type="primary" icon="el-icon-view" @click="handleView(scope.row)">JSON视图</el-link>
-          <el-link v-permission="['KAFKA_CONTENT_RESEND']" type="primary" icon="el-icon-position" @click="handleResend(scope.row)">重发</el-link>
-        </template>
-      </el-table-column>
-    </el-table>
 
-    <!--<pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />-->
-
-    <el-dialog :visible.sync="dialogVisible" :title="'消息JSON'" width="80%">
-      <!--<span v-html="content"></span>-->
-      <pre>{{ content }}</pre>
-
-      <div style="text-align:center;">
-        <el-button type="danger" @click="dialogVisible=false">关闭</el-button>
-      </div>
-    </el-dialog>
-    <el-dialog :visible.sync="dialogVisible2" :title="'推送主题消息'">
-      <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="集群名称">
-          <el-select v-model="record.cluster" placeholder="请选择">
-            <el-option
-              v-for="item in options.clusters"
-              :key="item.clusterName"
-              :label="item.clusterName"
-              :value="item.clusterName"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="主题名称">
-          <el-select
-            v-model="record.topic"
-            filterable
-            remote
-            reserve-keyword
-            placeholder="请输入关键词"
-            :remote-method="remoteMethodSend"
-            :loading="loading"
-            style="width:100%"
-          >
-            <el-option
-              v-for="item in options.topics"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="发送消息">
-          <el-input
-            v-model="record.content"
-            :autosize="{ minRows: 5, maxRows: 15}"
-            type="textarea"
-            placeholder="发送Kafka 消息"
-          />
-        </el-form-item>
-        <div style="text-align:right;">
-          <el-button type="primary" @click="handleSubmit">发送</el-button>
-          <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
-        </div>
-      </el-form>
-    </el-dialog>
   </div>
 </template>
 
 <script>
 import { Loading } from 'element-ui'
-import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { search, getStatus, list, send, resend, getClusters, getTopics } from '@/api/kafka/content'
+import { getClusters, getTopics } from '@/api/kafka/content'
+import { search } from '@/api/kafka/mocker'
 
 export default {
   name: 'KafkaContent',
   data() {
     return {
       listLoading: false,
+      params: {
+        clusterName: '',
+        topicName: '',
+        threadSize: 4,
+        batchSize: 10
+      },
+      subParams: [{}],
       listQuery: {
         page: 1,
         limit: 10,
@@ -162,20 +183,28 @@ export default {
       limitDisabled: false,
       record: {},
       content: '',
-      dialogVisible: false,
-      dialogVisible2: false,
       contentType: '',
       loading: false,
       options: {
         clusters: [],
-        topics: []
+        topics: [],
+        propTypes: [
+          { value: '', label: '自动' },
+          { value: 'String', label: 'String' },
+          { value: 'Integer', label: 'Integer' },
+          { value: 'Float', label: 'Float' },
+          { value: 'Date', label: 'Date' },
+          { value: 'Boolean', label: 'Boolean' },
+          { value: 'Double', label: 'Double' },
+          { value: 'Long', label: 'Long' },
+          { value: 'Short', label: 'Short' }
+        ]
       },
       timer: '',
       loadingIns: null
     }
   },
   created() {
-    // this.getList()
     this.getClusters()
   },
   methods: {
@@ -185,14 +214,14 @@ export default {
       if (resp && resp.success) this.options.clusters = resp.rows
     },
     getList() {
-      if (!this.listQuery.params.cluster || this.listQuery.params.cluster === '') {
+      if (!this.params.clusterName || this.params.clusterName === '') {
         this.$message({
           type: 'warn',
           message: '请先选择集群...'
         })
         return
       }
-      if (!this.listQuery.params.topic || this.listQuery.params.topic === '') {
+      if (!this.params.topicName || this.params.topicName === '') {
         this.$message({
           type: 'warn',
           message: '请先选择主题...'
@@ -202,19 +231,12 @@ export default {
       this.loadingIns = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
 
       // this.listLoading = true
-      search(this.listQuery).then(response => {
-        this.contentType = 'STRING'
-        if (response.extra) this.contentType = response.extra.contentType
-        if (response.extra && response.extra.searchAsync) {
-          this.sid = response.response.extra.searchId
-          this.timer = setInterval(this.getStatus, 2000)
-        } else {
-          this.loadingIns.close()
-          this.listQuery.list = response.rows
-          this.listQuery.total = response.rows.length
+      search(this.params).then(resp => {
+        if (resp.success) {
+          this.params = Object.assign(this.params, resp.rows[0])
+          this.subParams = resp.rows[0].props
         }
-        // this.listLoading = false
-      }).catch(() => {
+      }).finally(() => {
         this.loadingIns.close()
       })
     },
@@ -222,44 +244,29 @@ export default {
       this.content = JSON.parse(row.content)
       this.dialogVisible = true
     },
-    handlePush() {
-      this.record = {}
-      this.dialogVisible2 = true
+    handleAddNode() {
+      this.subParams.push({ clazz: '', params: '' })
     },
-    handleResend(row) {
-      this.record = deepClone(row)
-      this.$confirm('请确认重新发送消息到原主题?', 'Warning', {
-        confirmButtonText: '发送',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(async() => {
-          await resend(row.sid, row.content)
-          this.$message({
-            type: 'success',
-            message: '发送 success!'
-          })
-        })
-        .catch(err => { console.error(err) })
+    handleDelNode(index) {
+      this.subParams.splice(index, 1)
     },
     async handleSubmit() {
-      let resp = null
-      resp = await send(this.record).catch(() => {})
-      if (resp && resp.success) {
-        this.dialogVisible2 = false
-        this.$notify({
-          title: `推送消息 Success!`,
-          dangerouslyUseHTMLString: true,
-          message: `
-            <div>集群名称: ${this.record.cluster}</div>
-          `,
-          type: 'success'
-        })
-        // _this.getList()
-      }
+      // const resp = null
+      // resp = await send(this.record).catch(() => {})
+      // if (resp && resp.success) {
+      //   this.dialogVisible2 = false
+      //   this.$notify({
+      //     title: `推送消息 Success!`,
+      //     dangerouslyUseHTMLString: true,
+      //     message: `
+      //       <div>集群名称: ${this.record.cluster}</div>
+      //     `,
+      //     type: 'success'
+      //   })
+      // }
     },
     async remoteMethod(query) {
-      if (!this.listQuery.params.cluster || this.listQuery.params.cluster === '') {
+      if (!this.params.clusterName || this.params.clusterName === '') {
         this.$message({
           type: 'warn',
           message: '请先选择集群...'
@@ -268,7 +275,7 @@ export default {
       }
       if (query !== '') {
         this.loading = true
-        getTopics(this.listQuery.params.cluster, query).then(response => {
+        getTopics(this.params.clusterName, query).then(response => {
           this.loading = false
           if (response.success) {
             this.options.topics = response.rows.map(item => {
@@ -280,49 +287,11 @@ export default {
         this.options.topics = []
       }
     },
-    async remoteMethodSend(query) {
-      if (!this.record.cluster || this.record.cluster === '') {
-        this.$message({
-          type: 'warn',
-          message: '请先选择集群...'
-        })
-        return
-      }
-      if (query !== '') {
-        this.loading = true
-        getTopics(this.record.cluster, query).then(response => {
-          this.loading = false
-          if (response.success) {
-            this.options.topics = response.rows.map(item => {
-              return { value: item.topicName, label: item.topicName }
-            })
-          }
-        })
-      } else {
-        this.options.topics = []
-      }
+    handleTopicChange(val) {
+      console.log('handleTopicChange: ', val)
+      this.getList()
     },
-    handleTypeChange(val) {
-      this.limitDisabled = val === '0'
-    },
-    getStatus() {
-      getStatus(this.sid).then(resp => {
-        if (resp.success && resp.rows[0] !== '1') {
-          clearTimeout(this.timer)
-          this.loadingIns.close()
-          this.getAsyncList(this.sid)
-        }
-      })
-    },
-    handleClusterChange(val) { this.options.topics = [] },
-    getAsyncList(sid) {
-      this.listLoading = true
-      list(sid).then(response => {
-        this.listQuery.list = response.rows
-        this.listQuery.total = response.rows.length
-        this.listLoading = false
-      })
-    }
+    handleClusterChange(val) { this.options.topics = [] }
   }
 }
 </script>
