@@ -131,8 +131,8 @@
           />
         </el-form-item>
         <div style="text-align:right;">
-          <el-button type="primary" @click="handleSubmit">发送</el-button>
-          <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
+          <el-button type="primary" :loading="dialogLoading" @click="handleSend">发送</el-button>
+          <el-button type="danger" :loading="dialogLoading" @click="dialogVisible2=false">取消</el-button>
         </div>
       </el-form>
     </el-dialog>
@@ -162,6 +162,7 @@ export default {
       limitDisabled: false,
       record: {},
       content: '',
+      dialogLoading: false,
       dialogVisible: false,
       dialogVisible2: false,
       contentType: '',
@@ -223,8 +224,9 @@ export default {
       this.dialogVisible = true
     },
     handlePush() {
-      this.record = {}
+      // this.record = {}
       this.dialogVisible2 = true
+      // this.record.content = undefined
     },
     handleResend(row) {
       this.record = deepClone(row)
@@ -234,7 +236,10 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          await resend(row.sid, row.content)
+          this.loadingIns = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
+          await resend(row.sid, row.content).finally(() => {
+            this.loadingIns.close()
+          })
           this.$message({
             type: 'success',
             message: '发送 success!'
@@ -242,9 +247,12 @@ export default {
         })
         .catch(err => { console.error(err) })
     },
-    async handleSubmit() {
+    async handleSend() {
       let resp = null
-      resp = await send(this.record).catch(() => {})
+      this.dialogLoading = true
+      resp = await send(this.record).catch(() => {}).finally(() => {
+        this.dialogLoading = false
+      })
       if (resp && resp.success) {
         this.dialogVisible2 = false
         this.$notify({
