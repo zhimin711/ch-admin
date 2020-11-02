@@ -3,9 +3,9 @@
 import Layout from '@/layout'
 
 const sysRouter = {
-  path: '/sys',
+  path: '/project',
   component: Layout,
-  redirect: '/sys/project/code',
+  redirect: '/project/project/code',
   alwaysShow: true, // will always show the root menu
   name: 'Platform Manager',
   meta: {
@@ -16,7 +16,7 @@ const sysRouter = {
     {
       path: 'code',
       component: () => import('@/views/sys/project/code'),
-      name: 'User',
+      name: 'project code',
       meta: {
         title: '项目代码'
       }
@@ -40,7 +40,7 @@ const sysRouter = {
     {
       path: 'logs',
       component: () => import('@/views/sys/app/logs'),
-      name: 'Logs',
+      name: 'App Logs',
       meta: {
         title: '应用日志'
       }

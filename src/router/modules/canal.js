@@ -2,10 +2,10 @@
 
 import Layout from '@/layout'
 
-const umpsRouter = {
-  path: '/upms',
+const canalRouter = {
+  path: '/canal',
   component: Layout,
-  redirect: '/upms/user',
+  redirect: '/canal/user',
   alwaysShow: true, // will always show the root menu
   name: 'User Permission Manager',
   meta: {
@@ -102,4 +102,4 @@ export function getCanalRouter(code) {
   return routerMap[code]
 }
 
-export default umpsRouter
+export default canalRouter

@@ -14,6 +14,48 @@ const wikiRouter = {
     icon: 'lock'
   },
   children: [
+    {
+      path: 'base',
+      redirect: '/wiki/base/user',
+      component: Blank,
+      alwaysShow: true,
+      name: 'WikiBase',
+      meta: {
+        title: '基础管理',
+        icon: 'lock'
+      },
+      children: [
+        {
+          path: 'user',
+          component: () => import('@/views/wiki/base/user'),
+          name: 'WikiUser',
+          meta: {
+            title: '用户管理'
+          }
+        }
+      ]
+    },
+    {
+      path: 'business',
+      redirect: '/wiki/business/ad',
+      component: Blank,
+      alwaysShow: true,
+      name: 'WikiBusiness',
+      meta: {
+        title: '运营管理',
+        icon: 'lock'
+      },
+      children: [
+        {
+          path: 'books',
+          component: () => import('@/views/wiki/business/books/index'),
+          name: 'WikiBooks',
+          meta: {
+            title: '书籍管理'
+          }
+        }
+      ]
+    }
   ]
 }
 
@@ -36,7 +78,7 @@ const routerMap = {
     alwaysShow: true,
     name: 'WikiBase',
     meta: {
-      title: '集群管理',
+      title: '基础管理',
       icon: 'lock'
     }
   },
@@ -228,4 +270,5 @@ const routerMap = {
 export function getWikiRouter(code) {
   return routerMap[code]
 }
+
 export default wikiRouter
