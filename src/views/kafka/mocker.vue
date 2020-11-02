@@ -75,12 +75,17 @@
           </el-col>
         </el-row>
         <el-form-item label="Mock属性" style="margin-bottom: 0">
-          <el-button type="text" size="small" icon="el-icon-plus" @click="handleAddNode">添加属性</el-button>
+          <el-button type="text" size="small" icon="el-icon-plus" @click="handleAddNode()">添加属性</el-button>
         </el-form-item>
+        <!--default-expand-all-->
         <el-table
           :data="subParams"
+          row-key="uid"
+          default-expand-all
+          :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
           style="width: 100%; margin-bottom: 10px;"
         >
+          <el-table-column width="80" label="展开" />
           <el-table-column prop="code" label="属性代码">
             <template slot-scope="{row}">
               <template>
@@ -135,17 +140,23 @@
           </el-table-column>
           <el-table-column align="center" label="操作" width="80">
             <template slot-scope="scope">
-              <el-link v-if="scope.$index>0" type="danger" @click="handleDelNode(scope.$index)">
+              <el-link type="danger" @click="handleDelNode(scope.$index, scope.row)">
                 删除
+              </el-link>
+              <el-link v-if="scope.row.type==='{}'" type="primary" @click="handleAddNode(scope.row)">
+                添加属性
               </el-link>
             </template>
           </el-table-column>
         </el-table>
-        <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-          查询
+        <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="getList">
+          刷新
         </el-button>
-        <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="params = {}">
-          重置
+        <el-button class="filter-item" type="primary" icon="el-icon-edit" @click="handleSubmit">
+          保存
+        </el-button>
+        <el-button class="filter-item" type="success" icon="el-icon-share" @click="handleMock">
+          MOCK
         </el-button>
       </el-form>
     </div>
@@ -155,12 +166,11 @@
 
 <script>
 import { Loading } from 'element-ui'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { getClusters, getTopics } from '@/api/kafka/content'
-import { search } from '@/api/kafka/mocker'
+import { searchMock, saveMock, doMock } from '@/api/kafka/mocker'
 
 export default {
-  name: 'KafkaContent',
+  name: 'KafkaContent1',
   data() {
     return {
       listLoading: false,
@@ -170,7 +180,7 @@ export default {
         threadSize: 4,
         batchSize: 10
       },
-      subParams: [{}],
+      subParams: [],
       listQuery: {
         page: 1,
         limit: 10,
@@ -189,15 +199,16 @@ export default {
         clusters: [],
         topics: [],
         propTypes: [
-          { value: '', label: '自动' },
-          { value: 'String', label: 'String' },
-          { value: 'Integer', label: 'Integer' },
-          { value: 'Float', label: 'Float' },
-          { value: 'Date', label: 'Date' },
-          { value: 'Boolean', label: 'Boolean' },
-          { value: 'Double', label: 'Double' },
-          { value: 'Long', label: 'Long' },
-          { value: 'Short', label: 'Short' }
+          // { value: '', label: '自动' },
+          { value: 'java.lang.String', label: 'String' },
+          { value: 'java.lang.Integer', label: 'Integer' },
+          { value: 'java.lang.Float', label: 'Float' },
+          { value: 'java.util.Date', label: 'Date' },
+          { value: 'java.lang.Boolean', label: 'Boolean' },
+          { value: 'java.lang.Double', label: 'Double' },
+          { value: 'java.lang.Long', label: 'Long' },
+          { value: 'java.lang.Short', label: 'Short' },
+          { value: '{}', label: 'Object' }
         ]
       },
       timer: '',
@@ -206,9 +217,9 @@ export default {
   },
   created() {
     this.getClusters()
+    this.handleAddNode()
   },
   methods: {
-    checkPermission2,
     async getClusters() {
       const resp = await getClusters()
       if (resp && resp.success) this.options.clusters = resp.rows
@@ -231,39 +242,100 @@ export default {
       this.loadingIns = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
 
       // this.listLoading = true
-      search(this.params).then(resp => {
+      this.params.props = undefined
+      this.params.createAt = undefined
+      this.params.updateAt = undefined
+      this.subParams = []
+      searchMock(this.params).then(resp => {
         if (resp.success) {
           this.params = Object.assign(this.params, resp.rows[0])
-          this.subParams = resp.rows[0].props
+          this.subParams = resp.rows[0].props || []
         }
       }).finally(() => {
         this.loadingIns.close()
       })
     },
-    handleView(row) {
-      this.content = JSON.parse(row.content)
-      this.dialogVisible = true
+    handleAddNode(row) {
+      this.addPropRow(this.subParams, { clazz: '', params: '', uid: this.guid() }, row)
     },
-    handleAddNode() {
-      this.subParams.push({ clazz: '', params: '' })
+    guid() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0
+        const v = c === 'x' ? r : (r & 0x3 | 0x8)
+        return v.toString(16)
+      })
     },
-    handleDelNode(index) {
-      this.subParams.splice(index, 1)
+    handleDelNode(index, row) {
+      // this.subParams.splice(index, 1)
+      this.removeRow(this.subParams, row)
+    },
+    addPropRow(data, subRow, row) {
+      if (!row) {
+        data.push(subRow)
+        return
+      }
+
+      for (let i = 0; i < data.length; i++) {
+        const item = data[i]
+        if (row.uid === item.uid) {
+          if (item.children) {
+            item.children.push(subRow)
+          } else {
+            item.children = [subRow]
+          }
+          break
+        } else if (item.children && item.children.length > 0) {
+          this.addPropRow(item.children, subRow, row)
+        }
+      }
+    },
+    removeRow(data, row) {
+      for (let i = 0; i < data.length; i++) {
+        const item = data[i]
+        if (row.uid === item.uid) {
+          data.splice(i, 1)
+          break
+        } else if (item.children && item.children.length > 0) {
+          this.removeRow(item.children, row)
+        }
+      }
+      /* data.forEach((item, index) => {
+        if (row.uid === item.uid) {
+          data.splice(index, 1)
+        } else if (item.children && item.children.length > 0) {
+          this.removeRow(item.children, row)
+        }
+      })*/
     },
     async handleSubmit() {
-      // const resp = null
-      // resp = await send(this.record).catch(() => {})
-      // if (resp && resp.success) {
-      //   this.dialogVisible2 = false
-      //   this.$notify({
-      //     title: `推送消息 Success!`,
-      //     dangerouslyUseHTMLString: true,
-      //     message: `
-      //       <div>集群名称: ${this.record.cluster}</div>
-      //     `,
-      //     type: 'success'
-      //   })
-      // }
+      const resp = await saveMock(this.params).catch(() => {})
+      if (resp && resp.success) {
+        this.$notify({
+          title: `保存配置成功!`,
+          dangerouslyUseHTMLString: true,
+          message: `
+            <div>集群名称: </div>
+            <div>${this.params.clusterName}</div>
+            <div>主题名称: </div>
+            <div>${this.params.topicName}</div>
+          `,
+          type: 'success'
+        })
+      }
+    },
+    async handleMock() {
+      const resp = await doMock(this.params).catch(() => {})
+      if (resp && resp.success) {
+        this.dialogVisible2 = false
+        this.$notify({
+          title: `推送消息 Success!`,
+          dangerouslyUseHTMLString: true,
+          message: `
+            <div>集群名称: ${this.record.cluster}</div>
+          `,
+          type: 'success'
+        })
+      }
     },
     async remoteMethod(query) {
       if (!this.params.clusterName || this.params.clusterName === '') {
