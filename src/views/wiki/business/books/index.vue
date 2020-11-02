@@ -14,7 +14,7 @@
           <el-col :span="24">
             <el-button type="primary" icon="el-icon-search" @click="getList">搜索</el-button>
             <el-button icon="el-icon-refresh" @click="listQuery.params = {}">重置</el-button>
-            <el-button v-if="checkPermission2(['WIKI_BOOKS_ADD'])" type="primary" icon="el-icon-plus" class="handle-del mr10" @click="handleAdd">新增</el-button>
+            <el-button v-permission="['WIKI_BOOKS_ADD']" type="primary" icon="el-icon-plus" class="handle-del mr10" @click="handleAdd">新增</el-button>
             <!--<el-button type="primary" icon="el-icon-download" class="handle-del mr10">导出</el-button>-->
           </el-col>
         </el-row>
@@ -58,11 +58,31 @@
       </el-table-column>-->
       <el-table-column align="center" label="操作" width="180">
         <template slot-scope="scope">
-          <router-link v-if="checkPermission2(['WIKI_BOOKS_EDIT']) && scope.row.type === '1' && scope.row.status !== 'x'" :to="'/wiki/business/book/edit/'+scope.row.id">
+          <router-link
+            v-if="scope.row.type === '1' && scope.row.status !== 'x'"
+            v-permission="'WIKI_BOOKS_EDIT'"
+            :to="'/wiki/business/book/edit/'+scope.row.id"
+          >
             <el-button type="text" icon="el-icon-edit">编辑
             </el-button>
           </router-link>
-          <el-button v-if="checkPermission2(['WIKI_BOOKS_EDIT'])" v-show="scope.row.type === '2' && scope.row.status !== 'x'" type="text" icon="el-icon-edit" @click="handleEdit(scope.row)">编辑
+          <el-button
+            v-if="scope.row.srcType === '1'"
+            v-permission="'WIKI_BOOKS_SYNC'"
+            type="text"
+            icon="el-icon-refresh"
+            @click="bookSync(scope.row)"
+          >
+            同步
+          </el-button>
+          <el-button
+            v-if="scope.row.type === '2' && scope.row.status !== 'x'"
+            v-permission="'WIKI_BOOKS_EDIT'"
+            type="text"
+            icon="el-icon-edit"
+            @click="handleEdit(scope.row)"
+          >
+            编辑
           </el-button>
         </template>
       </el-table-column>
@@ -73,10 +93,10 @@
     <!-- 编辑弹出框 -->
     <el-dialog :title="baseForm.title" :visible.sync="baseForm.visible">
       <el-form ref="baseForm" :model="record" label-width="100px" :disabled="baseForm.disabled">
-        <el-form-item label="类型">
+        <el-form-item label="阅读类型">
           <el-radio-group v-model="record.type" :disabled="baseForm.codeDisabled">
-            <el-radio-button label="1">目录</el-radio-button>
-            <el-radio-button label="2">图片</el-radio-button>
+            <el-radio-button label="1">章节目录</el-radio-button>
+            <el-radio-button label="2">图片滚动</el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="分类">
@@ -105,25 +125,13 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item v-show="baseForm.uploadShow" label="上传文件">
-          <!--<el-upload
-            ref="uploader"
-            class="upload-book"
-            drag
-            :headers="authHeader"
-            :data="uploadParams"
-            name="files[]"
-            :limit="1"
-            :show-file-list="false"
-            :on-success="uploadSuccess"
-            :action="urls.upload"
-          >
-            <i class="el-icon-upload" />
-            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-            <div slot="tip" class="el-upload__tip">只能上传txt文件，且不超过100MB</div>
-          </el-upload>-->
           <UploadSingleFile v-model="record.srcUrl" :data="{'type':'2'}" />
         </el-form-item>
-        <el-form-item v-show="record.srcUrl && record.srcUrl.length>1" label="来源地址" prop="srcUrl">
+        <el-form-item
+          v-if="record.srcType === '1' || (record.srcUrl && record.srcUrl.length>1)"
+          :label="record.srcType === '1'?'来源地址':'上传文件'"
+          prop="srcUrl"
+        >
           <el-input v-model="record.srcUrl" :disabled="baseForm.srcUrlDisabled">
             <template v-if="baseForm.uploadDel">
               <el-button slot="append" icon="el-icon-delete" @click.prevent="removeUpload()">删除
@@ -148,7 +156,7 @@ import { CategoryDropdown } from '../../components/Dropdown'
 // import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
-import { fetchBookList, addBook, editBook } from '@/api/wiki/books'
+import { fetchBookList, addBook, editBook, syncBook } from '@/api/wiki/books'
 
 const defaultRecord = {
   type: '1',
@@ -158,7 +166,7 @@ const defaultRecord = {
 }
 
 export default {
-  name: 'WikiBooks',
+  name: 'WikiBooks1',
   components: { Pagination, CategoryDropdown, UploadSingleFile },
   data() {
     return {
@@ -260,6 +268,18 @@ export default {
           duration: 2000
         })
       }
+    },
+    bookSync(row) {
+      syncBook(row.id).then(resp => {
+        if (resp.success) {
+          this.$notify({
+            title: '成功',
+            message: `同步书籍《${row.name}》成功`,
+            type: 'success',
+            duration: 2000
+          })
+        }
+      })
     },
     resetForm() {
       //

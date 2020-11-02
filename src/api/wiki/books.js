@@ -60,3 +60,10 @@ export function fixBook(bookId) {
     method: 'post'
   })
 }
+
+export function syncBook(bookId) {
+  return request({
+    url: `${baseUrl}/${bookId}/sync`,
+    method: 'post'
+  })
+}
