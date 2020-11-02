@@ -166,7 +166,7 @@ const defaultRecord = {
 }
 
 export default {
-  name: 'WikiBooks1',
+  name: 'WikiBooks',
   components: { Pagination, CategoryDropdown, UploadSingleFile },
   data() {
     return {

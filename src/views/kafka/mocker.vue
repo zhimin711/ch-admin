@@ -81,7 +81,6 @@
         <el-table
           :data="subParams"
           row-key="uid"
-          default-expand-all
           :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
           style="width: 100%; margin-bottom: 10px;"
         >
@@ -89,7 +88,7 @@
           <el-table-column prop="code" label="属性代码">
             <template slot-scope="{row}">
               <template>
-                <el-input v-model="row.code" type="textarea" size="small" placeholder="属性代码" />
+                <el-input v-model="row.code" type="textarea" size="small" placeholder="属性代码，空为单参数，[]为Array，<>为Collection" />
               </template>
             </template>
           </el-table-column>
@@ -208,7 +207,8 @@ export default {
           { value: 'java.lang.Double', label: 'Double' },
           { value: 'java.lang.Long', label: 'Long' },
           { value: 'java.lang.Short', label: 'Short' },
-          { value: '{}', label: 'Object' }
+          { value: '{}', label: 'Object' },
+          { value: '-', label: '放空' }
         ]
       },
       timer: '',
@@ -324,6 +324,9 @@ export default {
       }
     },
     async handleMock() {
+      if (!this.params.props) {
+        this.params.props = this.subParams
+      }
       const resp = await doMock(this.params).catch(() => {})
       if (resp && resp.success) {
         this.dialogVisible2 = false
