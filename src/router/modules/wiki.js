@@ -55,6 +55,35 @@ const wikiRouter = {
           }
         }
       ]
+    },
+    {
+      path: 'resources',
+      redirect: '/wiki/resources/uploadFile',
+      component: Blank,
+      alwaysShow: true,
+      name: 'WikiResources',
+      meta: {
+        title: '资源管理',
+        icon: 'lock'
+      },
+      children: [
+        {
+          path: 'uploadFile',
+          component: () => import('@/views/wiki/resources/uploadFile'),
+          name: 'WikiUploadFile',
+          meta: {
+            title: '上传记录'
+          }
+        },
+        {
+          path: 'images',
+          component: () => import('@/views/wiki/resources/images'),
+          name: 'WikiImages',
+          meta: {
+            title: '图片管理'
+          }
+        }
+      ]
     }
   ]
 }
