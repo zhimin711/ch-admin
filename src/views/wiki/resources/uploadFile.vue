@@ -20,7 +20,7 @@
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
         重置
       </el-button>
-      <el-button v-if="checkPermission2(['WIKI_UPLOAD_FILE'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-upload" @click="handleAdd">
+      <el-button v-permission="'WIKI_UPLOAD_FILE'" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-upload" @click="handleAdd">
         上传文件
       </el-button>
     </div>
