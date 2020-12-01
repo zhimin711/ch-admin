@@ -106,7 +106,6 @@
 import { mapGetters } from 'vuex'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 // import { deepClone } from '@/utils'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { list } from '@/api/wiki/upload-record'
 
 export default {
@@ -147,7 +146,6 @@ export default {
     this.getList()
   },
   methods: {
-    checkPermission2,
     getList() {
       this.listLoading = true
       list(this.listQuery).then(response => {
