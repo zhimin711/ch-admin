@@ -118,6 +118,7 @@ import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { list, add, edit, del, getProjects } from '@/api/sys/project/sql'
 
+// 数 据 定 义(DDL)、数 据 操 纵(DML),数 据 控 制(DCL)和 数 据 查 询（DQL）
 export default {
   name: 'SysProjectSQLManager',
   components: { Pagination },

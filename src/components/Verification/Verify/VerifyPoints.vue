@@ -173,7 +173,7 @@ export default {
             'token': this.backToken
           }
           reqCheck(data).then(res => {
-            if (res.repCode === '0000') {
+            if (res.success) {
               this.barAreaColor = '#4cae4c'
               this.barAreaBorderColor = '#5cb85c'
               this.text = '验证成功'
@@ -232,14 +232,15 @@ export default {
         captchaType: this.captchaType
       }
       reqGet(data).then(res => {
-        if (res.repCode === '0000') {
-          this.pointBackImgBase = res.repData.originalImageBase64
-          this.backToken = res.repData.token
-          this.secretKey = res.repData.secretKey
-          this.poinTextList = res.repData.wordList
+        if (res.success) {
+          const data = res.rows[0]
+          this.pointBackImgBase = data.originalImageBase64
+          this.backToken = data.token
+          this.secretKey = data.secretKey
+          this.poinTextList = data.wordList
           this.text = '请依次点击【' + this.poinTextList.join(',') + '】'
         } else {
-          this.text = res.repMsg
+          this.text = res.message
         }
       })
     },

@@ -44,22 +44,14 @@
           </span>
         </el-form-item>
       </el-tooltip>
-      <el-form-item prop="captchaCode">
-        <span class="svg-container"><svg-icon icon-class="validCode" /></span>
-        <el-input
-          ref="captchaCode"
-          v-model="loginForm.captchaCode"
-          placeholder="验证码"
-          name="captchaCode"
-          type="text"
-          tabindex="3"
-          autocomplete="off"
-          autocapitalize="off"
-          spellcheck="false"
-          maxlength="4"
-        />
-        <span class="captcha-code"><img ref="code" src="" height="48" alt="验证码" @click="changeCode"></span>
-      </el-form-item>
+
+      <Verify
+        ref="verify"
+        :mode="'pop'"
+        :captcha-type="'blockPuzzle'"
+        :img-size="{ width: '330px', height: '155px' }"
+        @success="success"
+      />
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
 
       <div style="position:relative;display: none">
@@ -92,10 +84,11 @@
 import { validUsername } from '@/utils/validate'
 import SocialSign from './components/SocialSignin'
 import defaultSettings from '@/settings'
+import Verify from '@/components/Verification/Verify'
 
 export default {
   name: 'Login',
-  components: { SocialSign },
+  components: { SocialSign, Verify },
   data() {
     const validateUsername = (rule, value, callback) => {
       if (!validUsername(value)) {
@@ -165,13 +158,32 @@ export default {
       this.$refs.password.focus()
     }
     // 得到验证码图片
-    this.changeCode()
+    // this.changeCode()
   },
   destroyed() {
     // window.removeEventListener('storage', this.afterQRScan)
     window.removeEventListener('keyup', this.enterKey)
   },
   methods: {
+    login() {
+      this.loading = true
+      this.$store.dispatch('user/login', this.loginForm)
+        .then(() => {
+          this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
+        })
+        .catch(error => {
+          this.$message.error(`${error.message}!`)
+          this.loading = false
+          // if (error.code === '306') {}
+          // this.loginForm.captchaCode = ''
+          // this.changeCode()
+        })
+    },
+    success(params) {
+      // params 返回的二次验证参数
+      console.log(params)
+      this.login(params)
+    },
     enterKey(event) {
       const code = event.keyCode || event.which || event.charCode
       if (code === 13) {
@@ -195,18 +207,7 @@ export default {
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm)
-            .then(() => {
-              this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
-            })
-            .catch(error => {
-              this.$message.error(`${error.message}!`)
-              this.loading = false
-              // if (error.code === '306') {}
-              this.loginForm.captchaCode = ''
-              this.changeCode()
-            })
+          this.$refs.verify.show()
         } else {
           console.log('error submit!!')
           return false

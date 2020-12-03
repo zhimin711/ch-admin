@@ -280,7 +280,7 @@ export default {
           'token': this.backToken
         }
         reqCheck(data).then(res => {
-          if (res.repCode === '0000') {
+          if (res.success) {
             this.moveBlockBackgroundColor = '#5cb85c'
             this.leftBarBorderColor = '#5cb85c'
             this.iconColor = '#fff'
@@ -351,13 +351,14 @@ export default {
         captchaType: this.captchaType
       }
       reqGet(data).then(res => {
-        if (res.repCode === '0000') {
-          this.backImgBase = res.repData.originalImageBase64
-          this.blockBackImgBase = res.repData.jigsawImageBase64
-          this.backToken = res.repData.token
-          this.secretKey = res.repData.secretKey
+        if (res.success) {
+          const data = res.rows[0]
+          this.backImgBase = data.originalImageBase64
+          this.blockBackImgBase = data.jigsawImageBase64
+          this.backToken = data.token
+          this.secretKey = data.secretKey
         } else {
-          this.tipWords = res.repMsg
+          this.tipWords = res.message
         }
       })
     }
