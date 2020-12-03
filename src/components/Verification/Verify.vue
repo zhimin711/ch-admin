@@ -176,7 +176,7 @@ export default {
     .verifybox{
         position: relative;
         box-sizing: border-box;
-        border-radius: 2px;
+        border-radius: 8px;
         border: 1px solid #e4e7eb;
         background-color: #fff;
         box-shadow: 0 0 10px rgba(0,0,0,.3);
