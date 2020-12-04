@@ -150,7 +150,7 @@ export default {
       this.fontPos.splice(0, this.fontPos.length)
       this.checkPosArr.splice(0, this.checkPosArr.length)
       this.num = 1
-      this.getPictrue()
+      this.getPicture()
       this.$nextTick(() => {
         this.setSize = this.resetSize(this)	// 重新设置宽度高度
         this.$parent.$emit('ready', this)
@@ -161,7 +161,7 @@ export default {
       if (this.num === this.checkNum) {
         this.num = this.createPoint(this.getMousePos(this.$refs.canvas, e))
         // 按比例转换坐标值
-        this.checkPosArr = this.pointTransfrom(this.checkPosArr, this.setSize)
+        this.checkPosArr = this.pointTransform(this.checkPosArr, this.setSize)
         // 等创建坐标执行完
         setTimeout(() => {
           // let flag = this.comparePos(this.fontPos, this.checkPosArr);
@@ -179,8 +179,8 @@ export default {
               this.text = '验证成功'
               this.bindingClick = false
               if (this.mode === 'pop') {
+                this.$parent.clickShow = false
                 setTimeout(() => {
-                  this.$parent.clickShow = false
                   this.refresh()
                 }, 1500)
               }
@@ -221,13 +221,13 @@ export default {
       this.fontPos.splice(0, this.fontPos.length)
       this.checkPosArr.splice(0, this.checkPosArr.length)
       this.num = 1
-      this.getPictrue()
+      this.getPicture()
       this.text = '验证失败'
       this.showRefresh = true
     },
 
     // 请求背景图片和验证图片
-    getPictrue() {
+    getPicture() {
       const data = {
         captchaType: this.captchaType
       }
@@ -245,7 +245,7 @@ export default {
       })
     },
     // 坐标转换函数
-    pointTransfrom(pointArr, imgSize) {
+    pointTransform(pointArr, imgSize) {
       const newPointArr = pointArr.map(p => {
         const x = Math.round(310 * p.x / parseInt(imgSize.imgWidth))
         const y = Math.round(155 * p.y / parseInt(imgSize.imgHeight))

@@ -45,6 +45,7 @@
         </el-form-item>
       </el-tooltip>
 
+      <!--clickWord blockPuzzle-->
       <Verify
         ref="verify"
         :mode="'pop'"
@@ -165,8 +166,10 @@ export default {
     window.removeEventListener('keyup', this.enterKey)
   },
   methods: {
-    login() {
+    login({ captchaVerification }) {
       this.loading = true
+      this.loginForm.captchaCode = captchaVerification
+      // this.loginForm.captchaVerification = captchaVerification
       this.$store.dispatch('user/login', this.loginForm)
         .then(() => {
           this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
@@ -174,14 +177,15 @@ export default {
         .catch(error => {
           this.$message.error(`${error.message}!`)
           this.loading = false
-          // if (error.code === '306') {}
-          // this.loginForm.captchaCode = ''
-          // this.changeCode()
+          if (this.$refs.verify.mode === 'fixed') {
+            setTimeout(() => {
+              this.$refs.verify.refresh()
+            }, 1000)
+          }
         })
     },
     success(params) {
       // params 返回的二次验证参数
-      console.log(params)
       this.login(params)
     },
     enterKey(event) {

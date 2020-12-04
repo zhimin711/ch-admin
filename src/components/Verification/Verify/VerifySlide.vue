@@ -180,7 +180,7 @@ export default {
   methods: {
     init() {
       this.text = this.explain
-      this.getPictrue()
+      this.getPicture()
       this.$nextTick(() => {
         const setSize = this.resetSize(this)	// 重新设置宽度高度
         for (const key in setSize) {
@@ -287,20 +287,19 @@ export default {
             this.iconClass = 'icon-check'
             this.showRefresh = false
             this.isEnd = true
-            if (this.mode === 'pop') {
-              setTimeout(() => {
-                this.$parent.clickShow = false
-                this.refresh()
-              }, 1500)
-            }
             this.passFlag = true
             this.tipWords = `${((this.endMovetime - this.startMoveTime) / 1000).toFixed(2)}s验证成功`
             const captchaVerification = this.secretKey ? aesEncrypt(this.backToken + '---' + JSON.stringify({ x: moveLeftDistance, y: 5.0 }), this.secretKey) : this.backToken + '---' + JSON.stringify({ x: moveLeftDistance, y: 5.0 })
-            setTimeout(() => {
-              this.tipWords = ''
-              if (this.mode === 'pop') this.$parent.closeBox()
-              this.$parent.$emit('success', { captchaVerification })
-            }, 1000)
+
+            if (this.mode === 'pop') {
+              this.$parent.clickShow = false
+              this.$parent.closeBox()
+              setTimeout(() => {
+                this.refresh()
+              }, 1500)
+            }
+            this.tipWords = ''
+            this.$parent.$emit('success', { captchaVerification })
           } else {
             this.moveBlockBackgroundColor = '#d9534f'
             this.leftBarBorderColor = '#d9534f'
@@ -337,7 +336,7 @@ export default {
       this.iconClass = 'icon-right'
       this.isEnd = false
 
-      this.getPictrue()
+      this.getPicture()
       setTimeout(() => {
         this.transitionWidth = ''
         this.transitionLeft = ''
@@ -346,7 +345,7 @@ export default {
     },
 
     // 请求背景图片和验证图片
-    getPictrue() {
+    getPicture() {
       const data = {
         captchaType: this.captchaType
       }
