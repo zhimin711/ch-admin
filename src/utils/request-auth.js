@@ -1,15 +1,14 @@
-import axios3 from 'axios'
+import axios from 'axios'
 
-axios3.defaults.baseURL = process.env.VUE_APP_AUTH_API
-
-const service = axios3.create({
+const serviceAuth = axios.create({
+  baseURL: process.env.VUE_APP_AUTH_API,
   timeout: 40000,
   headers: {
     'X-Requested-With': 'XMLHttpRequest',
     'Content-Type': 'application/json; charset=UTF-8'
   }
 })
-service.interceptors.request.use(
+serviceAuth.interceptors.request.use(
   config => {
     return config
   },
@@ -19,7 +18,7 @@ service.interceptors.request.use(
 )
 
 // response interceptor
-service.interceptors.response.use(
+serviceAuth.interceptors.response.use(
   response => {
     const res = response.data
     return res
@@ -28,4 +27,4 @@ service.interceptors.response.use(
     console.log(error)
   }
 )
-export default service
+export default serviceAuth

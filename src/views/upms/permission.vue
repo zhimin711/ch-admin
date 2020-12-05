@@ -25,7 +25,7 @@
           {{ scope.row.name }}
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="type" label="类型" width="95">
+      <el-table-column align="center" prop="type" label="类型" width="100">
         <template slot-scope="{row}">
           <el-tag v-if="row.type === '1'" type="warning">目录</el-tag>
           <el-tag v-else-if="row.type === '2'" type="success">{{ row.hidden? '[隐藏]':'' }}菜单</el-tag>
@@ -111,8 +111,8 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="record.type === '2' || record.type === '5'" :label="record.type === '2'?'是否隐藏':'是否开放'">
-          <el-radio v-model="record.hidden" :label="false">否</el-radio>
-          <el-radio v-model="record.hidden" :label="true">是</el-radio>
+          <el-radio v-model="record.hidden" :label="false">{{ record.type === '2'?'否':'是' }}</el-radio>
+          <el-radio v-model="record.hidden" :label="true">{{ record.type === '2'?'是':'否' }}</el-radio>
         </el-form-item>
         <el-form-item label="排序">
           <el-input-number v-model="record.sort" />
