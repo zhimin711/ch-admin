@@ -46,6 +46,14 @@ const kafkaRouter = {
       }
     },
     {
+      path: 'mockGPS',
+      component: () => import('@/views/kafka/mockGPS'),
+      name: 'MockerGPS',
+      meta: {
+        title: 'Mock GPS'
+      }
+    },
+    {
       path: 'dubbo',
       component: () => import('@/views/kafka/dubboCall'),
       name: 'DubboCall',

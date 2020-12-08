@@ -26,6 +26,14 @@ import Pagination from './components/Pagination'
 import permission from './directive/permission/index.js' // 权限判断指令
 import VueLazyload from 'vue-lazyload'
 
+import AMap from 'vue-amap'
+
+Vue.use(AMap)
+AMap.initAMapApiLoader({
+  key: '40125e541facc667f3c33a229a9b5493', // 刚刚开发者申请哪里的key
+  plugin: ['AMap.Scale', 'AMap.OverView', 'AMap.ToolBar', 'AMap.MapType']
+})
+
 // or with options
 Vue.use(VueLazyload, {
   preLoad: 1.3,

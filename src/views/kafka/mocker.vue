@@ -331,10 +331,10 @@ export default {
       if (resp && resp.success) {
         this.dialogVisible2 = false
         this.$notify({
-          title: `推送消息 Success!`,
+          title: `集群名称: ${this.params.clusterName}`,
           dangerouslyUseHTMLString: true,
           message: `
-            <div>集群名称: ${this.record.cluster}</div>
+            <div>推送 ${resp.rows.length} 条消息 Success! </div>
           `,
           type: 'success'
         })
