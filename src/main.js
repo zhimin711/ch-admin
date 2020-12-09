@@ -26,12 +26,17 @@ import Pagination from './components/Pagination'
 import permission from './directive/permission/index.js' // 权限判断指令
 import VueLazyload from 'vue-lazyload'
 
-import AMap from 'vue-amap'
+import VueAMap from 'vue-amap'
 
-Vue.use(AMap)
-AMap.initAMapApiLoader({
-  key: '40125e541facc667f3c33a229a9b5493', // 刚刚开发者申请哪里的key
-  plugin: ['AMap.Scale', 'AMap.OverView', 'AMap.ToolBar', 'AMap.MapType']
+Vue.use(VueAMap)
+// 初始化vue-amap
+VueAMap.initAMapApiLoader({
+  // 高德的key
+  key: 'd74c8b56c5ce1c305a29b294c9e59ef4', // 刚刚开发者申请哪里的key
+  // 插件集合
+  plugin: ['Autocomplete', 'PlaceSearch', 'Scale', 'OverView', 'ToolBar', 'MapType', 'PolyEditor', 'AMap.CircleEditor', 'AMap.Geocoder'],
+  // 高德 sdk 版本，默认为 1.4.4
+  v: '1.4.4'
 })
 
 // or with options

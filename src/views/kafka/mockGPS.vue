@@ -45,8 +45,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="单线程Mock数据量">
-              <el-input-number v-model="params.batchSize" :min="1" :max="1000" />
+            <el-form-item label="上传间隔（分钟）">
+              <el-input-number v-model="params.batchSize" :min="1" :max="100" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -54,7 +54,7 @@
           <el-col :span="6">
             <el-form-item label="GPS轨迹时间">
               <el-date-picker
-                v-model="params.value1"
+                v-model="gpsDates"
                 value-format="timestamp"
                 type="datetimerange"
                 range-separator="至"
@@ -64,6 +64,26 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-form-item label="GPS轨迹点" style="margin-bottom: 0">
+          <el-button type="text" size="small" icon="el-icon-place" @click="openMap">添加轨迹点</el-button>
+          <span style="padding-left: 15px">至少两个轨迹点（始发 -> 目的）</span>
+        </el-form-item>
+        <el-table
+          :data="gpsPositions"
+          style="width: 100%; margin-bottom: 10px;"
+        >
+          <el-table-column width="80" type="index" label="序号" />
+          <el-table-column prop="lng" label="经度" width="150" />
+          <el-table-column prop="lat" label="纬度" width="150" />
+          <el-table-column prop="addr" label="地址" />
+          <el-table-column align="center" label="操作" width="80">
+            <template slot-scope="scope">
+              <el-link type="danger" @click="handleDelNode(scope.$index, scope.row)">
+                删除
+              </el-link>
+            </template>
+          </el-table-column>
+        </el-table>
         <el-form-item label="Mock属性" style="margin-bottom: 0">
           <el-button type="text" size="small" icon="el-icon-plus" @click="handleAddNode()">添加属性</el-button>
         </el-form-item>
@@ -134,27 +154,40 @@
         <el-button class="filter-item" type="success" icon="el-icon-share" @click="handleMock">
           MOCK
         </el-button>
-        <div id="amap-main" />
+        <!--<el-button class="filter-item" type="success" icon="el-icon-place" @click="openMap">
+          地图
+        </el-button>-->
       </el-form>
     </div>
-
+    <el-dialog
+      title="提示"
+      :visible.sync="dialogVisible"
+      width="80%"
+    >
+      <div class="amap-page-container">
+        <el-amap-search-box class="search-box" :search-option="searchOption" :on-search-result="onSearchResult" />
+        <el-amap vid="amap" class="amap-demo" :zoom="12" :center="mapCenter" :events="events">
+          <el-amap-marker v-for="marker in markers" :position="marker" />
+        </el-amap>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addGPSPoint">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { Loading } from 'element-ui'
+import { lazyAMapApiLoaderInstance } from 'vue-amap'
+
 import { getClusters, getTopics } from '@/api/kafka/content'
 import { searchMock, saveMock, doMockGPS } from '@/api/kafka/mocker'
-import AMap2, { lazyAMapApiLoaderInstance } from 'vue-amap'
-
-AMap2.initAMapApiLoader({
-  key: '40125e541facc667f3c33a229a9b5493', // 刚刚开发者申请哪里的key
-  plugin: ['AMap.Scale', 'AMap.OverView', 'AMap.ToolBar', 'AMap.MapType']
-})
 
 const objs = [{
   clazz: '',
-  type: '{}',
+  type: 'java.lang.String',
   params: '',
   name: '经纬度',
   status: '1',
@@ -164,32 +197,33 @@ const objs = [{
   valNonEdit: true,
   nonDelete: true,
   children: [
-    {
-      code: '',
-      type: 'java.lang.String',
-      params: '',
-      name: ' 经度',
-      status: '1',
-      // codeNonEdit: true,
-      typeNonEdit: true,
-      nameNonEdit: true,
-      valNonEdit: true,
-      nonDelete: true
-    },
-    {
-      code: '',
-      type: 'java.lang.String',
-      params: '',
-      name: '纬度',
-      status: '1',
-      // codeNonEdit: true,
-      typeNonEdit: true,
-      valNonEdit: true,
-      nameNonEdit: true,
-      nonDelete: true
-    }
   ]
 },
+
+  {
+    code: '',
+    type: 'java.lang.String',
+    params: '',
+    name: ' 经度',
+    status: '1',
+    // codeNonEdit: true,
+    typeNonEdit: true,
+    nameNonEdit: true,
+    valNonEdit: true,
+    nonDelete: true
+  },
+  {
+    code: '',
+    type: 'java.lang.String',
+    params: '',
+    name: '纬度',
+    status: '1',
+    // codeNonEdit: true,
+    typeNonEdit: true,
+    valNonEdit: true,
+    nameNonEdit: true,
+    nonDelete: true
+  },
 {
   clazz: '',
   type: 'java.util.Date',
@@ -204,16 +238,45 @@ const objs = [{
 }
 ]
 export default {
-  name: 'KafkaGPSMock',
+  name: 'KafkaGPSMock1',
   data() {
     return {
       listLoading: false,
+      dialogVisible: false,
       params: {
         clusterName: '',
         topicName: '',
         threadSize: 4,
         batchSize: 10
       },
+      map: null,
+      geoCoder: null,
+      markers: [
+      ],
+      searchOption: {
+        city: '深圳',
+        citylimit: true
+      },
+      mapCenter: [113.929208, 22.50641],
+      events: {
+        init: (o) => {
+          console.log(o.getCenter())
+          // console.log(this.$refs.map.$$getInstance())
+          o.getCity(result => {
+            console.log(result)
+          })
+        },
+        'moveend': () => {
+        },
+        'zoomchange': () => {
+        },
+        'click': (e) => {
+          this.addPos(e.lnglat.getLng(), e.lnglat.getLat())
+        }
+      },
+      gpsDates: [],
+      gpsPositions: [],
+      point: {},
       subParams: [],
       listQuery: {
         page: 1,
@@ -253,13 +316,68 @@ export default {
   created() {
     this.getClusters()
     this.initGPSData()
+    this.initMap()
   },
   mounted() {
-    lazyAMapApiLoaderInstance.load().then(() => {
-      this.map = new AMap.Map('amap-main', { center: new AMap.LngLat(113.929208, 22.50641) })
-    })
   },
   methods: {
+    onSearchResult(pois) {
+      let latSum = 0
+      let lngSum = 0
+      if (pois.length > 0) {
+        this.addPos(pois[0].lng, pois[0].lat)
+        pois.forEach(poi => {
+          const { lng, lat } = poi
+          lngSum += lng
+          latSum += lat
+          // this.markers.push([poi.lng, poi.lat]);
+        })
+        const center = {
+          lng: lngSum / pois.length,
+          lat: latSum / pois.length
+        }
+        this.mapCenter = [center.lng, center.lat]
+      }
+    },
+    openMap() {
+      this.dialogVisible = true
+      this.markers = []
+      this.point = null
+    },
+    initMap() {
+      const _this = this
+      lazyAMapApiLoaderInstance.load().then(() => {
+        _this.geoCoder = new AMap.Geocoder({
+          // city: "010", //城市设为北京，默认：“全国”
+          radius: 1000 // 范围，默认：500
+        })
+      })
+    },
+    addPos(lng, lat) {
+      this.markers = [[lng, lat]]
+      this.point = {}
+      this.point.lng = lng
+      this.point.lat = lat
+      const _this = this
+      this.geoCoder.getAddress(this.markers[0], function(status, result) {
+        if (status === 'complete' && result.regeocode) {
+          const address = result.regeocode.formattedAddress
+          _this.point.addr = address
+        } else {
+          console.error('根据经纬度查询地址失败')
+        }
+      })
+    },
+    addGPSPoint() {
+      if (this.point) {
+        this.gpsPositions.push({
+          lng: this.point.lng,
+          lat: this.point.lat,
+          addr: this.point.addr
+        })
+      }
+      this.dialogVisible = false
+    },
     initGPSData() {
       const records = Object.assign([], objs)
       records.forEach(item => {
@@ -267,7 +385,6 @@ export default {
         if (item.children) {
           item.children.forEach(e => { e.uid = this.guid() })
         }
-        console.log(item)
         this.subParams.push(item)
       })
     },
@@ -375,6 +492,19 @@ export default {
       }
     },
     async handleMock() {
+      if (this.gpsDates.length < 2) {
+        this.$message.warning('请选择轨迹时间')
+        return
+      }
+      this.params.createAt = this.gpsDates[0]
+      this.params.updateAt = this.gpsDates[1]
+      if (this.gpsPositions.length < 2) {
+        this.$message.warning('请添加轨迹点，至少2个轨迹点...')
+        return
+      }
+      this.params.points = this.gpsPositions.map(e => {
+        return e.lng + ',' + e.lat
+      })
       if (!this.params.props) {
         this.params.props = this.subParams
       }
@@ -436,7 +566,20 @@ export default {
   .el-select .el-input__inner {
     width: 360px;
   }
+
+  .amap-page-container {
+    position: relative;
+  }
   #amap-main {
     height: 600px
+  }
+  .amap-demo {
+    height: 600px;
+  }
+
+  .search-box {
+    position: absolute;
+    top: 25px;
+    left: 20px;
   }
 </style>
