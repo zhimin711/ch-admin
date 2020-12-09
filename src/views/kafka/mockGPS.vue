@@ -187,6 +187,7 @@ import { searchMock, saveMock, doMockGPS } from '@/api/kafka/mocker'
 
 const objs = [{
   clazz: '',
+  code: 'position',
   type: 'java.lang.String',
   params: '',
   name: '经纬度',
@@ -199,37 +200,36 @@ const objs = [{
   children: [
   ]
 },
-
-  {
-    code: '',
-    type: 'java.lang.String',
-    params: '',
-    name: ' 经度',
-    status: '1',
-    // codeNonEdit: true,
-    typeNonEdit: true,
-    nameNonEdit: true,
-    valNonEdit: true,
-    nonDelete: true
-  },
-  {
-    code: '',
-    type: 'java.lang.String',
-    params: '',
-    name: '纬度',
-    status: '1',
-    // codeNonEdit: true,
-    typeNonEdit: true,
-    valNonEdit: true,
-    nameNonEdit: true,
-    nonDelete: true
-  },
 {
-  clazz: '',
+  code: 'longitude',
+  type: 'java.lang.String',
+  params: '',
+  name: ' 经度',
+  status: '1',
+  // codeNonEdit: true,
+  typeNonEdit: true,
+  nameNonEdit: true,
+  valNonEdit: true,
+  nonDelete: true
+},
+{
+  code: 'latitude',
+  type: 'java.lang.String',
+  params: '',
+  name: '纬度',
+  status: '1',
+  // codeNonEdit: true,
+  typeNonEdit: true,
+  valNonEdit: true,
+  nameNonEdit: true,
+  nonDelete: true
+},
+{
+  code: 'ts',
   type: 'java.util.Date',
   params: '',
   name: '上传时间',
-  status: '1',
+  status: '9',
   clazzNonEdit: true,
   typeNonEdit: true,
   nameNonEdit: true,
@@ -414,10 +414,25 @@ export default {
       this.params.createAt = undefined
       this.params.updateAt = undefined
       this.subParams = []
-      searchMock(this.params).then(resp => {
+      const param = Object.assign({}, this.params)
+      param.points = null
+      searchMock(param).then(resp => {
         if (resp.success) {
           this.params = Object.assign(this.params, resp.rows[0])
-          this.subParams = resp.rows[0].props || []
+          if (this.params.props && this.params.props.length > 0) {
+            for (let i = 0; i < this.params.props.length; i++) {
+              const e = this.params.props[i]
+              if (i < 4) {
+                e.typeNonEdit = true
+                e.nameNonEdit = true
+                e.valNonEdit = true
+                e.nonDelete = true
+              }
+            }
+            this.subParams = resp.rows[0].props
+          } else {
+            this.initGPSData()
+          }
         }
       }).finally(() => {
         this.loadingIns.close()
@@ -476,6 +491,9 @@ export default {
       })*/
     },
     async handleSubmit() {
+      if (!this.params.props) {
+        this.params.props = this.subParams
+      }
       const resp = await saveMock(this.params).catch(() => {})
       if (resp && resp.success) {
         this.$notify({
