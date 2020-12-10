@@ -1,7 +1,7 @@
 import request from '@/utils/request2'
 
 const namespace = '/kafka/topic/ext'
-const namespace2 = '/kafka/topic/gps'
+const namespace2 = '/kafka/gps'
 
 export function searchMock(params) {
   return request({
