@@ -78,7 +78,7 @@
           <el-table-column prop="addr" label="地址" />
           <el-table-column align="center" label="操作" width="80">
             <template slot-scope="scope">
-              <el-link type="danger" @click="handleDelNode(scope.$index, scope.row)">
+              <el-link type="danger" @click="handleDelGPSNode(scope.$index, scope.row)">
                 删除
               </el-link>
             </template>
@@ -416,6 +416,9 @@ export default {
         })
       }
       this.dialogVisible = false
+    },
+    handleDelGPSNode(index, row) {
+      this.removeRow(this.gpsPositions, row)
     },
     initGPSData() {
       const records = Object.assign([], objs)
