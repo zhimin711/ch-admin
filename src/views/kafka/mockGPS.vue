@@ -107,8 +107,17 @@
             <template slot-scope="{row}">
               <template>
                 <!--<el-input v-model="row.type" size="small" placeholder="属性类型" />-->
-                <el-select v-model="row.type" :disabled="row.typeNonEdit" placeholder="请选择" size="small">
+                <el-select v-model="row.type" :disabled="row.typeNonEdit" placeholder="请选择" size="small" @change="changeRules(row)">
                   <el-option v-for="item in options.propTypes" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column prop="type" label="规则" width="130">
+            <template slot-scope="{row}">
+              <template>
+                <el-select v-model="row.rule" :disabled="row.typeNonEdit" placeholder="请选择" size="small">
+                  <el-option v-for="item in (row.rules2 || changeRules(row))" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </template>
             </template>
@@ -127,7 +136,7 @@
               </template>
             </template>
           </el-table-column>-->
-          <el-table-column prop="name" label="属性名称">
+          <el-table-column prop="name" label="属性名称" width="120">
             <template slot-scope="{row}">
               <template>
                 <el-input v-model="row.name" size="small" :disabled="row.nameNonEdit" placeholder="属性名称" />
@@ -185,7 +194,20 @@ import { lazyAMapApiLoaderInstance } from 'vue-amap'
 import { getClusters, getTopics } from '@/api/kafka/content'
 import { searchMock, saveMock, doMockGPS } from '@/api/kafka/mocker'
 
-const objs = [{
+const objs = [
+  {
+    code: 'ts',
+    type: 'java.util.Date',
+    params: '',
+    name: '轨迹时间',
+    status: '9',
+    clazzNonEdit: true,
+    typeNonEdit: true,
+    nameNonEdit: true,
+    valNonEdit: true,
+    nonDelete: true
+  },
+  {
   clazz: '',
   code: 'position',
   type: 'java.lang.String',
@@ -223,19 +245,19 @@ const objs = [{
   valNonEdit: true,
   nameNonEdit: true,
   nonDelete: true
-},
-{
-  code: 'ts',
-  type: 'java.util.Date',
-  params: '',
-  name: '上传时间',
-  status: '9',
-  clazzNonEdit: true,
-  typeNonEdit: true,
-  nameNonEdit: true,
-  valNonEdit: true,
-  nonDelete: true
 }
+]
+const rules2 = [
+  { value: 'RANDOM', label: '随机', types: [], filterTypes: [] },
+  { value: 'FIXED', label: '固定值', types: [], filterTypes: ['{}'] },
+  { value: 'EMPTY', label: '放空', types: [], filterTypes: [] },
+  { value: 'RANDOM_LENGTH', label: '随机+长度', types: [], filterTypes: ['{}', 'java.lang.Boolean', 'java.util.Date'] },
+  { value: 'RANDOM_RANGE', label: '随机+范围', types: [], filterTypes: ['{}', 'java.lang.Boolean'] },
+  { value: 'AUTO_INCR', label: '递增', types: [], filterTypes: ['{}', 'java.lang.String', 'java.lang.Boolean'] },
+  { value: 'AUTO_INCR_RANGE', label: '递增+范围', types: [], filterTypes: ['{}', 'java.lang.String', 'java.lang.Boolean'] },
+  { value: 'AUTO_DECR', label: '递减', types: [], filterTypes: ['{}', 'java.lang.String', 'java.lang.Boolean'] },
+  { value: 'AUTO_DECR_RANGE', label: '递减+范围', types: [], filterTypes: ['{}', 'java.lang.String', 'java.lang.Boolean'] },
+  { value: 'OBJECT', label: '对象', types: ['{}'], filterTypes: [] }
 ]
 export default {
   name: 'KafkaGPSMock1',
@@ -299,14 +321,13 @@ export default {
           // { value: '', label: '自动' },
           { value: 'java.lang.String', label: 'String' },
           { value: 'java.lang.Integer', label: 'Integer' },
-          { value: 'java.lang.Float', label: 'Float' },
+          { value: 'java.lang.Double', label: 'Double' },
           { value: 'java.util.Date', label: 'Date' },
           { value: 'java.lang.Boolean', label: 'Boolean' },
-          { value: 'java.lang.Double', label: 'Double' },
-          { value: 'java.lang.Long', label: 'Long' },
-          { value: 'java.lang.Short', label: 'Short' },
           { value: '{}', label: 'Object' },
-          { value: '-', label: '放空' }
+          { value: 'java.lang.Long', label: 'Long' },
+          { value: 'java.lang.Float', label: 'Float' },
+          { value: 'java.lang.Short', label: 'Short' }
         ]
       },
       timer: '',
@@ -317,10 +338,28 @@ export default {
     this.getClusters()
     this.initGPSData()
     this.initMap()
+    const start = new Date()
+    const end = new Date()
+    end.setTime(start.getTime() + 3600 * 1000)
+    this.gpsDates = [start, end]
   },
   mounted() {
   },
   methods: {
+    changeRules(row) {
+      // row.rule = undefined
+      row.rules2 = []
+      rules2.forEach(item => {
+        if (item.types.length === 0 && item.filterTypes.length === 0) {
+          row.rules2.push(item)
+        } else if (item.types.includes(row.type)) {
+          row.rules2.push(item)
+        } else if (!item.filterTypes.includes(row.type) && item.types.length === 0) {
+          row.rules2.push(item)
+        }
+      })
+      return row.rules2
+    },
     onSearchResult(pois) {
       let latSum = 0
       let lngSum = 0
@@ -418,7 +457,10 @@ export default {
       param.points = null
       searchMock(param).then(resp => {
         if (resp.success) {
-          this.params = Object.assign(this.params, resp.rows[0])
+          let row = resp.rows[0];
+          row.createAt = undefined
+          row.updateAt = undefined
+          this.params = Object.assign(this.params, row)
           if (this.params.props && this.params.props.length > 0) {
             for (let i = 0; i < this.params.props.length; i++) {
               const e = this.params.props[i]
@@ -494,6 +536,7 @@ export default {
       if (!this.params.props) {
         this.params.props = this.subParams
       }
+      this.params.description = 'GPS'
       const resp = await saveMock(this.params).catch(() => {})
       if (resp && resp.success) {
         this.$notify({
