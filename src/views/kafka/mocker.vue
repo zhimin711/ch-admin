@@ -19,10 +19,9 @@
           <el-col :span="12">
             <el-form-item label="主题名称">
               <el-select
-                v-model="params.topicName"
+                v-model="topicName"
                 filterable
                 remote
-                reserve-keyword
                 placeholder="请输入关键词"
                 :remote-method="remoteMethod"
                 :loading="loading"
@@ -53,10 +52,10 @@
         <el-row>
           <el-col :span="6">
             <el-form-item label="开启调整">
-              <el-switch v-model="params.edit" />
+              <el-switch v-model="params.enableEdit" />
             </el-form-item>
           </el-col>
-          <el-col v-if="params.edit" :span="12">
+          <el-col v-if="params.enableEdit" :span="12">
             <el-form-item label="调整延迟（秒）">
               <el-input-number v-model="params.batchSize" :min="1" :max="1000" />
             </el-form-item>
@@ -65,12 +64,20 @@
         <el-row>
           <el-col :span="6">
             <el-form-item label="开启删除">
-              <el-switch v-model="params.del" />
+              <el-switch v-model="params.enableDel" />
             </el-form-item>
           </el-col>
-          <el-col v-if="params.del" :span="12">
+          <el-col v-if="params.enableDel" :span="12">
             <el-form-item label="删除延迟（秒）">
               <el-input-number v-model="params.batchSize" :min="1" :max="1000" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="6">
+            <el-form-item label="开启属性排序">
+              <el-switch v-model="params.enableSort" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -96,8 +103,17 @@
             <template slot-scope="{row}">
               <template>
                 <!--<el-input v-model="row.type" size="small" placeholder="属性类型" />-->
-                <el-select v-model="row.type" placeholder="请选择" size="small">
+                <el-select v-model="row.type" placeholder="请选择" size="small" @change="changeRules(row)">
                   <el-option v-for="item in options.propTypes" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column prop="type" label="规则" width="130">
+            <template slot-scope="{row}">
+              <template>
+                <el-select v-model="row.rule" :disabled="row.typeNonEdit" placeholder="请选择" size="small">
+                  <el-option v-for="item in (row.rules2 || changeRules(row))" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </template>
             </template>
@@ -109,21 +125,21 @@
               </template>
             </template>
           </el-table-column>
-          <el-table-column prop="valEdit" label="调整值" width="100">
+          <el-table-column v-if="params.enableEdit" prop="valEdit" label="调整值" width="100">
             <template slot-scope="{row}">
               <template>
                 <el-input v-model="row.valEdit" size="small" placeholder="调整值" />
               </template>
             </template>
           </el-table-column>
-          <el-table-column prop="valDel" label="删除值" width="100">
+          <el-table-column v-if="params.enableDel" prop="valDel" label="删除值" width="100">
             <template slot-scope="{row}">
               <template>
                 <el-input v-model="row.valDel" size="small" placeholder="删除值" />
               </template>
             </template>
           </el-table-column>
-          <el-table-column prop="sort" label="序号" width="80">
+          <el-table-column v-if="params.enableSort" prop="sort" label="序号" width="80">
             <template slot-scope="{row}">
               <template>
                 <el-input v-model="row.sort" size="small" placeholder="序号" />
@@ -168,14 +184,26 @@ import { Loading } from 'element-ui'
 import { getClusters, getTopics } from '@/api/kafka/content'
 import { searchMock, saveMock, doMock } from '@/api/kafka/mocker'
 
+const rules2 = [
+  { value: 'RANDOM', label: '随机', types: [], filterTypes: [] },
+  { value: 'FIXED', label: '固定值', types: [], filterTypes: ['{}'] },
+  { value: 'EMPTY', label: '放空', types: [], filterTypes: [] },
+  { value: 'RANDOM_LENGTH', label: '随机+长度', types: [], filterTypes: ['{}', 'java.lang.Boolean', 'java.util.Date'] },
+  { value: 'RANDOM_RANGE', label: '随机+范围', types: [], filterTypes: ['{}', 'java.lang.Boolean'] },
+  { value: 'AUTO_INCR', label: '递增', types: [], filterTypes: ['{}', 'java.lang.String', 'java.lang.Boolean'] },
+  { value: 'AUTO_INCR_RANGE', label: '递增+范围', types: [], filterTypes: ['{}', 'java.lang.String', 'java.lang.Boolean'] },
+  { value: 'AUTO_DECR', label: '递减', types: [], filterTypes: ['{}', 'java.lang.String', 'java.lang.Boolean'] },
+  { value: 'AUTO_DECR_RANGE', label: '递减+范围', types: [], filterTypes: ['{}', 'java.lang.String', 'java.lang.Boolean'] },
+  { value: 'OBJECT', label: '对象', types: ['{}'], filterTypes: [] }
+]
 export default {
-  name: 'KafkaContent1',
+  name: 'KafkaMock1',
   data() {
     return {
       listLoading: false,
+      topicName: '',
       params: {
         clusterName: '',
-        topicName: '',
         threadSize: 4,
         batchSize: 10
       },
@@ -186,7 +214,9 @@ export default {
         total: 0,
         list: [],
         params: {
-          type: '1', limit: 12
+          type: '1',
+          del: false,
+          limit: 12
         }
       },
       limitDisabled: false,
@@ -220,6 +250,20 @@ export default {
     this.handleAddNode()
   },
   methods: {
+    changeRules(row) {
+      // row.rule = undefined
+      row.rules2 = []
+      rules2.forEach(item => {
+        if (item.types.length === 0 && item.filterTypes.length === 0) {
+          row.rules2.push(item)
+        } else if (item.types.includes(row.type)) {
+          row.rules2.push(item)
+        } else if (!item.filterTypes.includes(row.type) && item.types.length === 0) {
+          row.rules2.push(item)
+        }
+      })
+      return row.rules2
+    },
     async getClusters() {
       const resp = await getClusters()
       if (resp && resp.success) this.options.clusters = resp.rows
@@ -232,7 +276,7 @@ export default {
         })
         return
       }
-      if (!this.params.topicName || this.params.topicName === '') {
+      if (!this.topicName || this.topicName === '') {
         this.$message({
           type: 'warn',
           message: '请先选择主题...'
@@ -242,14 +286,34 @@ export default {
       this.loadingIns = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
 
       // this.listLoading = true
+      this.params.topicName = this.topicName
       this.params.props = undefined
       this.params.createAt = undefined
       this.params.updateAt = undefined
       this.subParams = []
+
       searchMock(this.params).then(resp => {
         if (resp.success) {
-          this.params = Object.assign(this.params, resp.rows[0])
-          this.subParams = resp.rows[0].props || []
+          const row = resp.rows[0]
+          this.params = Object.assign({}, row)
+          if (row.description === 'GPS') {
+            /* this.$confirm('该主题为GPS轨迹配置，继续将清除原配置，是否继续?', '提示', {
+                confirmButtonText: '继续',
+                cancelButtonText: '取消',
+                type: 'warning'
+              })
+                .then(() => {
+                })
+                .catch(() => {
+                  this.topicName = undefined
+                })*/
+            this.$notify({
+              title: '该主题为GPS轨迹配置,将清除原配置信息！',
+              type: 'warning'
+            })
+          } else {
+            this.subParams = row.props || []
+          }
         }
       }).finally(() => {
         this.loadingIns.close()
@@ -364,7 +428,10 @@ export default {
     },
     handleTopicChange(val) {
       console.log('handleTopicChange: ', val)
-      this.getList()
+
+      this.$nextTick(() => {
+        this.getList()
+      })
     },
     handleClusterChange(val) { this.options.topics = [] }
   }

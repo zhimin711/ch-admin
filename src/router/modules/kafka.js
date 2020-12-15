@@ -40,7 +40,7 @@ const kafkaRouter = {
     {
       path: 'mock',
       component: () => import('@/views/kafka/mocker'),
-      name: 'Mocker',
+      name: 'KafkaMock',
       meta: {
         title: 'Mock数据'
       }
@@ -48,7 +48,7 @@ const kafkaRouter = {
     {
       path: 'mockGPS',
       component: () => import('@/views/kafka/mockGPS'),
-      name: 'MockerGPS',
+      name: 'KafkaGPSMock',
       meta: {
         title: 'Mock GPS'
       }

@@ -208,44 +208,44 @@ const objs = [
     nonDelete: true
   },
   {
-  clazz: '',
-  code: 'position',
-  type: 'java.lang.String',
-  params: '',
-  name: '经纬度',
-  status: '1',
-  clazzNonEdit: true,
-  typeNonEdit: true,
-  nameNonEdit: true,
-  valNonEdit: true,
-  nonDelete: true,
-  children: [
-  ]
-},
-{
-  code: 'longitude',
-  type: 'java.lang.String',
-  params: '',
-  name: ' 经度',
-  status: '1',
-  // codeNonEdit: true,
-  typeNonEdit: true,
-  nameNonEdit: true,
-  valNonEdit: true,
-  nonDelete: true
-},
-{
-  code: 'latitude',
-  type: 'java.lang.String',
-  params: '',
-  name: '纬度',
-  status: '1',
-  // codeNonEdit: true,
-  typeNonEdit: true,
-  valNonEdit: true,
-  nameNonEdit: true,
-  nonDelete: true
-}
+    clazz: '',
+    code: 'position',
+    type: 'java.lang.String',
+    params: '',
+    name: '经纬度',
+    status: '1',
+    clazzNonEdit: true,
+    typeNonEdit: true,
+    nameNonEdit: true,
+    valNonEdit: true,
+    nonDelete: true,
+    children: [
+    ]
+  },
+  {
+    code: 'longitude',
+    type: 'java.lang.String',
+    params: '',
+    name: ' 经度',
+    status: '1',
+    // codeNonEdit: true,
+    typeNonEdit: true,
+    nameNonEdit: true,
+    valNonEdit: true,
+    nonDelete: true
+  },
+  {
+    code: 'latitude',
+    type: 'java.lang.String',
+    params: '',
+    name: '纬度',
+    status: '1',
+    // codeNonEdit: true,
+    typeNonEdit: true,
+    valNonEdit: true,
+    nameNonEdit: true,
+    nonDelete: true
+  }
 ]
 const rules2 = [
   { value: 'RANDOM', label: '随机', types: [], filterTypes: [] },
@@ -260,7 +260,7 @@ const rules2 = [
   { value: 'OBJECT', label: '对象', types: ['{}'], filterTypes: [] }
 ]
 export default {
-  name: 'KafkaGPSMock1',
+  name: 'KafkaGPSMock',
   data() {
     return {
       listLoading: false,
@@ -460,7 +460,7 @@ export default {
       param.points = null
       searchMock(param).then(resp => {
         if (resp.success) {
-          let row = resp.rows[0];
+          const row = resp.rows[0]
           row.createAt = undefined
           row.updateAt = undefined
           this.params = Object.assign(this.params, row)
