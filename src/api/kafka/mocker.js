@@ -1,7 +1,7 @@
 import request from '@/utils/request2'
 
 const namespace = '/kafka/topic/ext'
-const namespace2 = '/kafka/gps'
+const namespace2 = '/kafka/mock'
 
 export function searchMock(params) {
   return request({
@@ -21,7 +21,7 @@ export function saveMock(data) {
 
 export function doMock(data) {
   return request({
-    url: `${namespace}/mock`,
+    url: `${namespace2}`,
     method: 'post',
     data
   })
@@ -29,7 +29,7 @@ export function doMock(data) {
 
 export function doMockGPS(data) {
   return request({
-    url: `${namespace2}/mock`,
+    url: `${namespace2}/gps`,
     method: 'post',
     data
   })
