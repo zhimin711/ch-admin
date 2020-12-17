@@ -36,6 +36,11 @@
               </el-select>
             </el-form-item>
           </el-col>
+          <el-col :span="24">
+            <el-menu :default-active="activeConf" class="el-menu-conf" mode="horizontal" @select="selectConf">
+              <el-menu-item v-for="item in confs" :key="item.id" :index="item.id + ''">{{ item.description || '配置 ' + item.id }}</el-menu-item>
+            </el-menu>
+          </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
@@ -223,6 +228,8 @@ export default {
       record: {},
       content: '',
       contentType: '',
+      activeConf: '',
+      confs: [],
       loading: false,
       options: {
         clusters: [],
@@ -250,6 +257,9 @@ export default {
     this.handleAddNode()
   },
   methods: {
+    selectConf(val) {
+
+    },
     changeRules(row) {
       // row.rule = undefined
       row.rules2 = []
@@ -294,30 +304,35 @@ export default {
 
       searchMock(this.params).then(resp => {
         if (resp.success) {
+          this.confs = resp.rows
           const row = resp.rows[0]
-          this.params = Object.assign({}, row)
-          if (row.description === 'GPS') {
-            /* this.$confirm('该主题为GPS轨迹配置，继续将清除原配置，是否继续?', '提示', {
-                confirmButtonText: '继续',
-                cancelButtonText: '取消',
-                type: 'warning'
-              })
-                .then(() => {
-                })
-                .catch(() => {
-                  this.topicName = undefined
-                })*/
-            this.$notify({
-              title: '该主题为GPS轨迹配置,将清除原配置信息！',
-              type: 'warning'
-            })
-          } else {
-            this.subParams = row.props || []
-          }
+          this.activeConf = row.id + ''
+          this.loadConf(row)
         }
       }).finally(() => {
         this.loadingIns.close()
       })
+    },
+    loadConf(row) {
+      // this.params = Object.assign({}, row)
+      if (row.contentType === 'GPS') {
+        /* this.$confirm('该主题为GPS轨迹配置，继续将清除原配置，是否继续?', '提示', {
+            confirmButtonText: '继续',
+            cancelButtonText: '取消',
+            type: 'warning'
+          })
+            .then(() => {
+            })
+            .catch(() => {
+              this.topicName = undefined
+            })*/
+        this.$notify({
+          title: '该主题为GPS轨迹配置,将清除原配置信息！',
+          type: 'warning'
+        })
+      } else {
+        this.subParams = row.props || []
+      }
     },
     handleAddNode(row) {
       this.addPropRow(this.subParams, { clazz: '', params: '', uid: this.guid() }, row)
@@ -451,5 +466,9 @@ export default {
 
   .el-select .el-input__inner {
     width: 360px;
+  }
+  .el-menu-conf {
+    margin-top: -20px;
+    margin-bottom: 15px;
   }
 </style>

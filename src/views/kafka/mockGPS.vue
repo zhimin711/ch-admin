@@ -702,7 +702,7 @@ export default {
       if (!this.params.props) {
         this.params.props = this.subParams
       }
-      this.params.description = 'GPS'
+      this.params.contentType = 'GPS'
       const resp = await saveMock(this.params).catch(() => {})
       if (resp && resp.success) {
         this.$notify({
