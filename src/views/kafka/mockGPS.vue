@@ -39,19 +39,12 @@
           </el-col>
         </el-row>
         <el-row>
-          <el-col :span="12">
-            <el-form-item label="Mock线程数">
-              <el-input-number v-model="params.threadSize" :min="1" :max="100" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
+          <!--<el-col :span="12">
             <el-form-item label="上传间隔（分钟）">
               <el-input-number v-model="params.batchSize" :min="1" :max="100" />
             </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="6">
+          </el-col>-->
+          <el-col :span="12">
             <el-form-item label="GPS轨迹时间">
               <el-date-picker
                 v-model="gpsDates"
@@ -65,24 +58,17 @@
           </el-col>
         </el-row>
         <el-form-item label="GPS轨迹点" style="margin-bottom: 0">
-          <el-button type="text" size="small" icon="el-icon-place" @click="openMap">添加轨迹点</el-button>
+          <el-button type="text" size="small" icon="el-icon-place" @click="openMap">添加或修改轨迹</el-button>
           <span style="padding-left: 15px">至少两个轨迹点（始发 -> 目的）</span>
         </el-form-item>
         <el-table
-          :data="gpsPositions"
+          :data="mapPoints"
           style="width: 100%; margin-bottom: 10px;"
         >
           <el-table-column width="80" type="index" label="序号" />
           <el-table-column prop="lng" label="经度" width="150" />
           <el-table-column prop="lat" label="纬度" width="150" />
           <el-table-column prop="addr" label="地址" />
-          <el-table-column align="center" label="操作" width="80">
-            <template slot-scope="scope">
-              <el-link type="danger" @click="handleDelGPSNode(scope.$index, scope.row)">
-                删除
-              </el-link>
-            </template>
-          </el-table-column>
         </el-table>
         <el-form-item label="Mock属性" style="margin-bottom: 0">
           <el-button type="text" size="small" icon="el-icon-plus" @click="handleAddNode()">添加属性</el-button>
@@ -178,20 +164,24 @@
         <el-button type="success" @click="getMapLine">获取规划路径</el-button>
         <el-button @click="dialogVisible = false">关 闭</el-button>
       </div>-->
-      <div class="amap-page-container">
+      <div ref="mapContainer" class="amap-page-container">
         <el-amap-search-box class="search-box" :search-option="searchOption" :on-search-result="onSearchResult" />
         <el-amap vid="amap" class="amap-demo" :zoom="12" :center="mapCenter" :events="events">
           <el-amap-marker v-if="point" :position="point.pos" />
           <el-amap-marker v-for="marker in markers" :position="marker.pos" :icon="marker.icon" />
         </el-amap>
       </div>
-      <div />
+      <div>
+        <img v-if="dataURL" style="width: 100%;height: 300px;" class="real_pic" :src="dataURL">
+      </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="cleanGPSPoints">清空轨迹点</el-button>
         <el-button type="primary" @click="addGPSPoint(0)">设置为始发地</el-button>
         <el-button type="primary" @click="addGPSPoint(-1)">设置为目的地</el-button>
         <el-button type="primary" @click="addGPSPoint(1)">设置为经过点</el-button>
-        <el-button type="success" @click="getMapLine">获取规划路径</el-button>
+        <!--<el-button type="success" @click="getMapLine">获取规划路径</el-button>-->
+        <!--<el-button type="success" @click="cutPic">截 图</el-button>-->
+        <el-button type="success" @click="addGPSPoint2">确 认</el-button>
         <el-button @click="dialogVisible = false">关 闭</el-button>
         <el-table
           :data="markers"
@@ -203,7 +193,7 @@
           <el-table-column prop="addr" label="地址" />
           <el-table-column align="center" label="操作" width="80">
             <template slot-scope="scope">
-              <el-link type="danger" @click="handleDelGPSNode(scope.$index, scope.row)">
+              <el-link type="danger" @click="handleDelGPSMark(scope.$index, scope.row)">
                 删除
               </el-link>
             </template>
@@ -217,6 +207,7 @@
 <script>
 import { Loading } from 'element-ui'
 import { lazyAMapApiLoaderInstance } from 'vue-amap'
+import html2canvas from 'html2canvas'
 
 import { getClusters, getTopics } from '@/api/kafka/content'
 import { searchMock, saveMock, doMockGPS } from '@/api/kafka/mocker'
@@ -287,7 +278,7 @@ const rules2 = [
   { value: 'OBJECT', label: '对象', types: ['{}'], filterTypes: [] }
 ]
 export default {
-  name: 'KafkaGPSMock1',
+  name: 'KafkaGPSMock',
   data() {
     return {
       listLoading: false,
@@ -295,12 +286,13 @@ export default {
       params: {
         clusterName: '',
         topicName: '',
-        threadSize: 4,
-        batchSize: 10
+        threadSize: 1,
+        batchSize: 1
       },
       map: { a: 'a' },
       mapDriving: null,
       mapRouteLine: null,
+      mapPoints: [],
       geoCoder: null,
       markers: [
       ],
@@ -326,7 +318,7 @@ export default {
         }
       },
       gpsDates: [],
-      gpsPositions: [],
+      gpsPoints: [],
       point: {},
       subParams: [],
       listQuery: {
@@ -360,6 +352,7 @@ export default {
         ]
       },
       timer: '',
+      dataURL: '',
       loadingIns: null
     }
   },
@@ -369,12 +362,21 @@ export default {
     this.initMap()
     const start = new Date()
     const end = new Date()
-    end.setTime(start.getTime() + 3600 * 1000)
+    start.setTime(start.getTime() - 3600 * 1000)
     this.gpsDates = [start, end]
   },
   mounted() {
   },
   methods: {
+    cutPic() {
+      const self = this
+      const ref = this.$refs.mapContainer // 截图区域
+
+      html2canvas(this.$refs.mapContainer).then(canvas => {
+        const dataURL = canvas.toDataURL('image/png')
+        self.dataURL = dataURL
+      })
+    },
     changeRules(row) {
       // row.rule = undefined
       row.rules2 = []
@@ -409,9 +411,9 @@ export default {
     },
     openMap() {
       this.dialogVisible = true
-      this.markers = []
+      // this.markers = []
       this.point = null
-      this.mapRouteLine.setPath([])
+      // this.mapRouteLine.setPath([])
     },
     initMap() {
       const _this = this
@@ -464,12 +466,13 @@ export default {
         this.$message.warning('请先设置始发点......')
         return
       }
+
       const mark = Object.assign({}, this.point)
       mark.type = op
       if (op === 0) {
         mark.icon = 'https://webapi.amap.com/theme/v1.3/markers/n/start.png'
         if (this.markers.length > 0) {
-          if(this.markers[0].type === 0) {
+          if (this.markers[0].type === 0) {
             this.markers[0].icon = 'https://webapi.amap.com/theme/v1.3/markers/n/mid.png'
             this.markers[0].type = 1
           }
@@ -489,29 +492,39 @@ export default {
       } else {
         mark.icon = 'https://webapi.amap.com/theme/v1.3/markers/n/mid.png'
         const em = this.markers.pop()
-        if(em.type !== -1) {
+        if (em.type !== -1) {
           this.markers.push(em)
         }
         this.markers.push(mark)
         if (em.type === -1) this.markers.push(em)
       }
       this.point = null
+      if (this.markers.length > 1) this.getMapLine()
     },
-    cleanGPSPoints(){
+    cleanGPSPoints() {
       this.markers = []
+      this.mapRouteLine.setPath([])
     },
     addGPSPoint2() {
-      if (this.point) {
-        this.gpsPositions.push({
-          lng: this.point.lng,
-          lat: this.point.lat,
-          addr: this.point.addr
-        })
-      }
       this.dialogVisible = false
+      this.mapPoints = Object.assign([], this.markers)
     },
-    handleDelGPSNode(index, row) {
-      this.removeRow(this.gpsPositions, row)
+    handleDelGPSMark(index, row) {
+      this.markers.splice(index, 1)
+      if (index === 0 && this.markers[0].type !== -1) {
+        this.markers[0].icon = 'https://webapi.amap.com/theme/v1.3/markers/n/start.png'
+        this.markers[0].type = 1
+        console.log('reset start')
+      } else if (this.markers[this.markers.length - 1].type !== -1 && this.markers[this.markers.length - 1].type !== 0) {
+        this.markers[this.markers.length - 1].icon = 'https://webapi.amap.com/theme/v1.3/markers/n/end.png'
+        this.markers[this.markers.length - 1].type = -1
+        console.log('reset end')
+      }
+      if (this.markers.length > 1) {
+        this.getMapLine()
+      } else {
+        this.mapRouteLine.setPath([])
+      }
     },
     initGPSData() {
       const records = Object.assign([], objs)
@@ -554,6 +567,7 @@ export default {
     },
     drawRoute(route) {
       const path = this.parseRouteToPath(route)
+      this.gpsPoints = path
       console.log(path)
       /* let routeLine = new AMap.Polyline({
         path: path,
@@ -711,11 +725,11 @@ export default {
       }
       this.params.createAt = this.gpsDates[0]
       this.params.updateAt = this.gpsDates[1]
-      if (this.gpsPositions.length < 2) {
-        this.$message.warning('请添加轨迹点，至少2个轨迹点...')
+      if (this.gpsPoints.length < 2) {
+        this.$message.warning('至少2个轨迹点,请添重新选择添加轨迹点...')
         return
       }
-      this.params.points = this.gpsPositions.map(e => {
+      this.params.points = this.gpsPoints.map(e => {
         return e.lng + ',' + e.lat
       })
       if (!this.params.props) {

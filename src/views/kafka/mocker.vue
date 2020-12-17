@@ -197,7 +197,7 @@ const rules2 = [
   { value: 'OBJECT', label: '对象', types: ['{}'], filterTypes: [] }
 ]
 export default {
-  name: 'KafkaMock1',
+  name: 'KafkaMock',
   data() {
     return {
       listLoading: false,
