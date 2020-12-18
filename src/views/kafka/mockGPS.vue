@@ -37,6 +37,18 @@
               </el-select>
             </el-form-item>
           </el-col>
+
+          <el-col :span="24">
+            <el-tabs v-if="params.topicName" v-model="activeConf" type="card" editable @tab-click="selectConf" @tab-add="handleAddMock" @tab-remove="handleDelMock">
+              <el-tab-pane v-for="(item, index) in confs" :key="item.id" :label="'配置 ' + (index+1) + (item.description ? ' [' + item.description + ']' : '')" :name="item.id + ''">
+                <el-col :span="12">
+                  <el-form-item label="配置名称">
+                    <el-input v-model="params.description" />
+                  </el-form-item>
+                </el-col>
+              </el-tab-pane>
+            </el-tabs>
+          </el-col>
         </el-row>
         <el-row>
           <!--<el-col :span="12">
@@ -140,8 +152,8 @@
             </template>
           </el-table-column>
         </el-table>
-        <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="getList">
-          刷新
+        <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="loadConf()">
+          重置
         </el-button>
         <el-button class="filter-item" type="primary" icon="el-icon-edit" @click="handleSubmit">
           保存
@@ -170,9 +182,6 @@
           <el-amap-marker v-if="point" :position="point.pos" />
           <el-amap-marker v-for="marker in markers" :position="marker.pos" :icon="marker.icon" />
         </el-amap>
-      </div>
-      <div>
-        <img v-if="dataURL" style="width: 100%;height: 300px;" class="real_pic" :src="dataURL">
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="cleanGPSPoints">清空轨迹点</el-button>
@@ -207,10 +216,9 @@
 <script>
 import { Loading } from 'element-ui'
 import { lazyAMapApiLoaderInstance } from 'vue-amap'
-import html2canvas from 'html2canvas'
 
 import { getClusters, getTopics } from '@/api/kafka/content'
-import { searchMock, saveMock, doMockGPS } from '@/api/kafka/mocker'
+import { searchMock, saveMock, doMockGPS, loadMock, deleteMock } from '@/api/kafka/mocker'
 
 const objs = [
   {
@@ -283,6 +291,8 @@ export default {
     return {
       listLoading: false,
       dialogVisible: false,
+      confs: [],
+      activeConf: '',
       params: {
         clusterName: '',
         topicName: '',
@@ -368,13 +378,100 @@ export default {
   mounted() {
   },
   methods: {
-    cutPic() {
-      const self = this
-      const ref = this.$refs.mapContainer // 截图区域
+    selectConf(tab, event) {
+      const row = { id: tab.name, clusterName: this.params.clusterName, topicName: this.params.topicName }
+      this.loadConf(row)
+    },
+    loadConf(row) {
+      const params2 = row || { id: this.activeConf, clusterName: this.params.clusterName, topicName: this.params.topicName }
+      loadMock(params2).then(resp => {
+        if (resp.success) {
+          // this.params = Object.assign({}, row)
+          const row = resp.rows[0]
+          row.createAt = undefined
+          row.updateAt = undefined
+          this.params = Object.assign({}, row)
+          if(this.params.id) this.params.id = 0
+          if (this.params.props && this.params.props.length > 0) {
+            for (let i = 0; i < this.params.props.length; i++) {
+              const e = this.params.props[i]
+              if (i < 4) {
+                e.typeNonEdit = true
+                e.nameNonEdit = true
+                e.valNonEdit = true
+                e.nonDelete = true
+              }
+            }
+            this.subParams = resp.rows[0].props
+          } else {
+            this.subParams = []
+            this.initGPSData()
+          }
+        }
+      })
+    },handleAddMock() {
+      const tabs = this.confs
+      let newTab = false
+      tabs.forEach((tab, index) => {
+        if (tab.id === 0) {
+          newTab = true
+        }
+      })
+      if (newTab) {
+        this.$confirm('已存在新增配置未保存，请先保存后再新增，是否切换到新配置?', '提示', {
+          confirmButtonText: '切换',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          if (this.activeConf !== '0') {
+            this.activeConf = '0'
+            const row = { id: 0, clusterName: this.params.clusterName, topicName: this.params.topicName }
+            this.loadConf(row)
+          }
+        }).catch(() => {
+        })
+      } else {
+        this.activeConf = '0'
+        this.confs.push({ id: 0 })
+        const row = { id: 0, clusterName: this.params.clusterName, topicName: this.params.topicName }
+        this.loadConf(row)
+      }
+    },
+    handleDelMock(targetName) {
+      const tabs = this.confs
+      if (tabs.length === 1) {
+        this.$message.warning('至少保留一个配置，不允许删除当前配置！')
+        return
+      }
+      let activeName = this.activeConf
+      this.$confirm('删除配置，操作不可恢复，是否继续?', '提示', {
+        confirmButtonText: '继续',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        if (activeName === targetName) {
+          tabs.forEach((tab, index) => {
+            const name = tab.id + ''
+            if (name === targetName) {
+              const nextTab = tabs[index + 1] || tabs[index - 1]
+              if (nextTab) {
+                activeName = nextTab.id + ''
+              }
+            }
+          })
+        }
 
-      html2canvas(this.$refs.mapContainer).then(canvas => {
-        const dataURL = canvas.toDataURL('image/png')
-        self.dataURL = dataURL
+        if (this.activeConf !== '0') {
+          deleteMock({ id: this.activeConf }).then(reps => {
+          })
+        }
+
+        this.activeConf = activeName
+        this.confs = tabs.filter(tab => (tab.id + '') !== targetName)
+
+        const row = { id: activeName, clusterName: this.params.clusterName, topicName: this.params.topicName }
+        this.loadConf(row)
+      }).catch(() => {
       })
     },
     changeRules(row) {
@@ -568,7 +665,6 @@ export default {
     drawRoute(route) {
       const path = this.parseRouteToPath(route)
       this.gpsPoints = path
-      console.log(path)
       /* let routeLine = new AMap.Polyline({
         path: path,
         isOutline: true,
@@ -621,25 +717,21 @@ export default {
       this.subParams = []
       const param = Object.assign({}, this.params)
       param.points = null
+
       searchMock(param).then(resp => {
         if (resp.success) {
+          this.confs = resp.rows
+          if (this.confs.length === 0) {
+            this.confs.push({ id: 0 })
+          }
           const row = resp.rows[0]
-          row.createAt = undefined
-          row.updateAt = undefined
-          this.params = Object.assign(this.params, row)
-          if (this.params.props && this.params.props.length > 0) {
-            for (let i = 0; i < this.params.props.length; i++) {
-              const e = this.params.props[i]
-              if (i < 4) {
-                e.typeNonEdit = true
-                e.nameNonEdit = true
-                e.valNonEdit = true
-                e.nonDelete = true
-              }
-            }
-            this.subParams = resp.rows[0].props
+          if (row && row.id) {
+            this.activeConf = row.id + ''
+            this.loadConf(row)
           } else {
-            this.initGPSData()
+            this.activeConf = '0'
+            this.params.id = 0
+            this.loadConf(this.params)
           }
         }
       }).finally(() => {
@@ -774,7 +866,10 @@ export default {
       console.log('handleTopicChange: ', val)
       this.getList()
     },
-    handleClusterChange(val) { this.options.topics = [] }
+    handleClusterChange(val) {
+      this.params.topicName = ''
+      this.options.topics = []
+    }
   }
 }
 </script>

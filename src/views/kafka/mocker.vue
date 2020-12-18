@@ -222,7 +222,7 @@ const rules2 = [
   { value: 'OBJECT', label: '对象', types: ['{}'], filterTypes: [] }
 ]
 export default {
-  name: 'KafkaMock1',
+  name: 'KafkaMock',
   data() {
     return {
       listLoading: false,
@@ -346,11 +346,12 @@ export default {
       })
     },
     loadConf(row) {
-      const params2 = row || { id: this.params.id, clusterName: this.params.clusterName, topicName: this.params.topicName }
+      const params2 = row || { id: this.activeConf, clusterName: this.params.clusterName, topicName: this.params.topicName }
       loadMock(params2).then(resp => {
         if (resp.success) {
           const row = resp.rows[0]
           this.params = Object.assign({}, row)
+          if(this.params.id) this.params.id = 0
           if (row.contentType === 'GPS') {
             /* this.$confirm('该主题为GPS轨迹配置，继续将清除原配置，是否继续?', '提示', {
                 confirmButtonText: '继续',
