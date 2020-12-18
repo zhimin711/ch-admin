@@ -11,6 +11,14 @@ export function searchMock(params) {
   })
 }
 
+export function loadMock(params) {
+  return request({
+    url: `${namespace}/${params.id}`,
+    method: 'get',
+    params: params
+  })
+}
+
 export function saveMock(data) {
   return request({
     url: `${namespace}`,
@@ -35,3 +43,9 @@ export function doMockGPS(data) {
   })
 }
 
+export function deleteMock(params) {
+  return request({
+    url: `${namespace}/${params.id}`,
+    method: 'delete'
+  })
+}

@@ -37,55 +37,75 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-menu :default-active="activeConf" class="el-menu-conf" mode="horizontal" @select="selectConf">
-              <el-menu-item v-for="item in confs" :key="item.id" :index="item.id + ''">{{ item.description || '配置 ' + item.id }}</el-menu-item>
-            </el-menu>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="Mock线程数">
-              <el-input-number v-model="params.threadSize" :min="1" :max="100" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="单线程Mock数据量">
-              <el-input-number v-model="params.batchSize" :min="1" :max="1000" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="6">
-            <el-form-item label="开启调整">
-              <el-switch v-model="params.enableEdit" />
-            </el-form-item>
-          </el-col>
-          <el-col v-if="params.enableEdit" :span="12">
-            <el-form-item label="调整延迟（秒）">
-              <el-input-number v-model="params.batchSize" :min="1" :max="1000" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="6">
-            <el-form-item label="开启删除">
-              <el-switch v-model="params.enableDel" />
-            </el-form-item>
-          </el-col>
-          <el-col v-if="params.enableDel" :span="12">
-            <el-form-item label="删除延迟（秒）">
-              <el-input-number v-model="params.batchSize" :min="1" :max="1000" />
-            </el-form-item>
-          </el-col>
-        </el-row>
+            <!--<el-menu :default-active="activeConf" class="el-menu-conf" mode="horizontal" @select="selectConf">
+              <el-menu-item v-for="(item,index) in confs" :key="item.id" :index="item.id + ''">
+                 {{ item.description || '配置 ' + (index+1) }}
+              </el-menu-item>
+              <el-menu-item index="plus"><i class="el-icon-plus"></i></el-menu-item>
+            </el-menu>-->
 
-        <el-row>
-          <el-col :span="6">
-            <el-form-item label="开启属性排序">
-              <el-switch v-model="params.enableSort" />
-            </el-form-item>
+            <el-tabs v-if="params.topicName" v-model="activeConf" type="card" editable @tab-click="selectConf" @tab-add="handleAddMock" @tab-remove="handleDelMock">
+              <el-tab-pane v-for="(item, index) in confs" :key="item.id" :label="'配置 ' + (index+1) + (item.description ? ' [' + item.description + ']' : '')" :name="item.id + ''">
+                <!--{{ item.description || '配置 ' + (index+1) }}-->
+                <el-col :span="12">
+                  <el-form-item label="配置名称">
+                    <el-input v-model="params.description" />
+                    <!--<span v-else>{{ item.description || '-' }}</span>-->
+                  </el-form-item>
+                </el-col>
+                <!--<el-col :span="12">
+                  <el-button type="text" size="small" icon="el-icon-edit" @click="nameEdit = !nameEdit">修改名称</el-button>
+                </el-col>-->
+              </el-tab-pane>
+            </el-tabs>
           </el-col>
         </el-row>
+        <div v-if="params.topicName">
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="Mock线程数">
+                <el-input-number v-model="params.threadSize" :min="1" :max="100" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="单线程Mock数据量">
+                <el-input-number v-model="params.batchSize" :min="1" :max="1000" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="6">
+              <el-form-item label="开启调整">
+                <el-switch v-model="params.enableEdit" />
+              </el-form-item>
+            </el-col>
+            <el-col v-if="params.enableEdit" :span="12">
+              <el-form-item label="调整延迟（秒）">
+                <el-input-number v-model="params.batchSize" :min="1" :max="1000" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="6">
+              <el-form-item label="开启删除">
+                <el-switch v-model="params.enableDel" />
+              </el-form-item>
+            </el-col>
+            <el-col v-if="params.enableDel" :span="12">
+              <el-form-item label="删除延迟（秒）">
+                <el-input-number v-model="params.batchSize" :min="1" :max="1000" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="6">
+              <el-form-item label="开启属性排序">
+                <el-switch v-model="params.enableSort" />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
+
         <el-form-item label="Mock属性" style="margin-bottom: 0">
           <el-button type="text" size="small" icon="el-icon-plus" @click="handleAddNode()">添加属性</el-button>
         </el-form-item>
@@ -100,7 +120,7 @@
           <el-table-column prop="code" label="属性代码">
             <template slot-scope="{row}">
               <template>
-                <el-input v-model="row.code" type="textarea" size="small" placeholder="属性代码，空为单参数，[]为Array，<>为Collection" />
+                <el-input v-model="row.code" type="textarea" size="small" placeholder="属性代码，-为单参数，[]为Array，<>为Collection" />
               </template>
             </template>
           </el-table-column>
@@ -169,10 +189,10 @@
             </template>
           </el-table-column>
         </el-table>
-        <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="getList">
-          刷新
+        <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="loadConf()">
+          重置
         </el-button>
-        <el-button class="filter-item" type="primary" icon="el-icon-edit" @click="handleSubmit">
+        <el-button v-if="params.topicName" class="filter-item" type="primary" icon="el-icon-edit" @click="handleSubmit">
           保存
         </el-button>
         <el-button class="filter-item" type="success" icon="el-icon-share" @click="handleMock">
@@ -187,7 +207,7 @@
 <script>
 import { Loading } from 'element-ui'
 import { getClusters, getTopics } from '@/api/kafka/content'
-import { searchMock, saveMock, doMock } from '@/api/kafka/mocker'
+import { searchMock, saveMock, doMock, loadMock, deleteMock } from '@/api/kafka/mocker'
 
 const rules2 = [
   { value: 'RANDOM', label: '随机', types: [], filterTypes: [] },
@@ -202,10 +222,11 @@ const rules2 = [
   { value: 'OBJECT', label: '对象', types: ['{}'], filterTypes: [] }
 ]
 export default {
-  name: 'KafkaMock',
+  name: 'KafkaMock1',
   data() {
     return {
       listLoading: false,
+      nameEdit: false,
       topicName: '',
       params: {
         clusterName: '',
@@ -257,8 +278,10 @@ export default {
     this.handleAddNode()
   },
   methods: {
-    selectConf(val) {
-
+    selectConf(tab, event) {
+      // console.log(tab, event)
+      const row = { id: tab.name, clusterName: this.params.clusterName, topicName: this.params.topicName }
+      this.loadConf(row)
     },
     changeRules(row) {
       // row.rule = undefined
@@ -305,34 +328,49 @@ export default {
       searchMock(this.params).then(resp => {
         if (resp.success) {
           this.confs = resp.rows
+          if (this.confs.length === 0) {
+            this.confs.push({ id: 0 })
+          }
           const row = resp.rows[0]
-          this.activeConf = row.id + ''
-          this.loadConf(row)
+          if (row && row.id) {
+            this.activeConf = row.id + ''
+            this.loadConf(row)
+          } else {
+            this.activeConf = '0'
+            this.params.id = 0
+            this.loadConf(this.params)
+          }
         }
       }).finally(() => {
         this.loadingIns.close()
       })
     },
     loadConf(row) {
-      // this.params = Object.assign({}, row)
-      if (row.contentType === 'GPS') {
-        /* this.$confirm('该主题为GPS轨迹配置，继续将清除原配置，是否继续?', '提示', {
-            confirmButtonText: '继续',
-            cancelButtonText: '取消',
-            type: 'warning'
-          })
-            .then(() => {
+      const params2 = row || { id: this.params.id, clusterName: this.params.clusterName, topicName: this.params.topicName }
+      loadMock(params2).then(resp => {
+        if (resp.success) {
+          const row = resp.rows[0]
+          this.params = Object.assign({}, row)
+          if (row.contentType === 'GPS') {
+            /* this.$confirm('该主题为GPS轨迹配置，继续将清除原配置，是否继续?', '提示', {
+                confirmButtonText: '继续',
+                cancelButtonText: '取消',
+                type: 'warning'
+              })
+                .then(() => {
+                })
+                .catch(() => {
+                  this.topicName = undefined
+                })*/
+            this.$notify({
+              title: '该主题为GPS轨迹配置,将清除原配置信息！',
+              type: 'warning'
             })
-            .catch(() => {
-              this.topicName = undefined
-            })*/
-        this.$notify({
-          title: '该主题为GPS轨迹配置,将清除原配置信息！',
-          type: 'warning'
-        })
-      } else {
-        this.subParams = row.props || []
-      }
+          } else {
+            this.subParams = row.props || []
+          }
+        }
+      })
     },
     handleAddNode(row) {
       this.addPropRow(this.subParams, { clazz: '', params: '', uid: this.guid() }, row)
@@ -387,6 +425,9 @@ export default {
       })*/
     },
     async handleSubmit() {
+      if (!this.params.props) {
+        this.params.props = this.subParams
+      }
       const resp = await saveMock(this.params).catch(() => {})
       if (resp && resp.success) {
         this.$notify({
@@ -400,6 +441,11 @@ export default {
           `,
           type: 'success'
         })
+        if (this.activeConf === '0') {
+          this.confs[this.confs.length - 1].id = resp.rows[0]
+          this.confs[this.confs.length - 1].description = this.params.description
+          this.activeConf = resp.rows[0] + ''
+        }
       }
     },
     async handleMock() {
@@ -418,6 +464,71 @@ export default {
           type: 'success'
         })
       }
+    },
+    handleAddMock() {
+      const tabs = this.confs
+      let newTab = false
+      tabs.forEach((tab, index) => {
+        if (tab.id === 0) {
+          newTab = true
+        }
+      })
+      if (newTab) {
+        this.$confirm('已存在新增配置未保存，请先保存后再新增，是否切换到新配置?', '提示', {
+          confirmButtonText: '切换',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          if (this.activeConf !== '0') {
+            this.activeConf = '0'
+            const row = { id: 0, clusterName: this.params.clusterName, topicName: this.params.topicName }
+            this.loadConf(row)
+          }
+        }).catch(() => {
+        })
+      } else {
+        this.activeConf = '0'
+        this.confs.push({ id: 0 })
+        const row = { id: 0, clusterName: this.params.clusterName, topicName: this.params.topicName }
+        this.loadConf(row)
+      }
+    },
+    handleDelMock(targetName) {
+      const tabs = this.confs
+      if (tabs.length === 1) {
+        this.$message.warning('至少保留一个配置，不允许删除当前配置！')
+        return
+      }
+      let activeName = this.activeConf
+      this.$confirm('删除配置，操作不可恢复，是否继续?', '提示', {
+        confirmButtonText: '继续',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        if (activeName === targetName) {
+          tabs.forEach((tab, index) => {
+            const name = tab.id + ''
+            if (name === targetName) {
+              const nextTab = tabs[index + 1] || tabs[index - 1]
+              if (nextTab) {
+                activeName = nextTab.id + ''
+              }
+            }
+          })
+        }
+
+        if (this.activeConf !== '0') {
+          deleteMock({ id: this.activeConf }).then(reps => {
+          })
+        }
+
+        this.activeConf = activeName
+        this.confs = tabs.filter(tab => (tab.id + '') !== targetName)
+
+        const row = { id: activeName, clusterName: this.params.clusterName, topicName: this.params.topicName }
+        this.loadConf(row)
+      }).catch(() => {
+      })
     },
     async remoteMethod(query) {
       if (!this.params.clusterName || this.params.clusterName === '') {
