@@ -391,7 +391,7 @@ export default {
           row.createAt = undefined
           row.updateAt = undefined
           this.params = Object.assign({}, row)
-          if(this.params.id) this.params.id = 0
+          if (this.params.id) this.params.id = 0
           if (this.params.props && this.params.props.length > 0) {
             for (let i = 0; i < this.params.props.length; i++) {
               const e = this.params.props[i]
@@ -409,7 +409,7 @@ export default {
           }
         }
       })
-    },handleAddMock() {
+    }, handleAddMock() {
       const tabs = this.confs
       let newTab = false
       tabs.forEach((tab, index) => {

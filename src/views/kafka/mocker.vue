@@ -351,7 +351,7 @@ export default {
         if (resp.success) {
           const row = resp.rows[0]
           this.params = Object.assign({}, row)
-          if(this.params.id) this.params.id = 0
+          if (this.params.id) this.params.id = 0
           if (row.contentType === 'GPS') {
             /* this.$confirm('该主题为GPS轨迹配置，继续将清除原配置，是否继续?', '提示', {
                 confirmButtonText: '继续',
