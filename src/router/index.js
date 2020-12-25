@@ -13,6 +13,7 @@ import wikiRouter, { getWikiRouter } from './modules/wiki'
 import sysRouter from './modules/sys'
 import kafkaRouter, { getKafkaRouter } from './modules/kafka'
 import nacosRouter, { getNacosRouter } from './modules/nacos'
+import rocketMQRouter, { getRocketMQRouter } from './modules/rocket-mq'
 import { getCanalRouter } from './modules/canal'
 
 import componentsRouter from './modules/components'
@@ -163,7 +164,8 @@ export const asyncRoutes = [
   sysRouter,
   wikiRouter,
   kafkaRouter,
-  nacosRouter
+  nacosRouter,
+  rocketMQRouter
 ]
 
 const createRouter = () => new Router({
@@ -199,6 +201,9 @@ export function assemblyAsyncRoutes(menus) {
     }
     if (!route) {
       route = getKafkaRouter(menu.code)
+    }
+    if (!route) {
+      route = getRocketMQRouter(menu.code)
     }
     if (route) {
       route.name = menu.code

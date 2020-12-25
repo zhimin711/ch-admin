@@ -16,7 +16,7 @@ const kafkaRouter = {
     {
       path: 'cluster',
       component: () => import('@/views/kafka/cluster'),
-      name: 'Cluster',
+      name: 'KafkaCluster',
       meta: {
         title: '集群管理'
       }
@@ -24,7 +24,7 @@ const kafkaRouter = {
     {
       path: 'topic',
       component: () => import('@/views/kafka/topic'),
-      name: 'Topic',
+      name: 'KafkaTopic',
       meta: {
         title: '主题管理'
       }
@@ -32,7 +32,7 @@ const kafkaRouter = {
     {
       path: 'content',
       component: () => import('@/views/kafka/content'),
-      name: 'Content',
+      name: 'KafkaContent',
       meta: {
         title: '消息搜索'
       }
