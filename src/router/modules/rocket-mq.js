@@ -73,19 +73,19 @@ const rocketMQRouter = {
 }
 
 const routerMap = {
-  rocketMQ: {
+  RocketMQ: {
     path: '/rocketMQ',
     component: Layout,
-    redirect: '/logs/login',
-    alwaysShow: true, // will always show the root menu
+    redirect: '/rocketMQ/dashboard',
+    alwaysShow: true // will always show the root menu
   },
-  LogsLogin: {
-    path: 'login',
-    component: () => import('@/views/logs/login')
+  RocketMQDashboard: {
+    path: 'dashboard',
+    component: () => import('@/views/rocketMQ/dashboard')
   },
-  LogsOperate: {
-    path: 'operate',
-    component: () => import('@/views/logs/operate')
+  RocketMQCluster: {
+    path: 'cluster',
+    component: () => import('@/views/rocketMQ/cluster')
   }
 }
 

@@ -9,11 +9,11 @@ export function listRocketMQ() {
   })
 }
 
-export function getRocketMQ(id) {
+export function getRocketMQ(params) {
   return request({
-    url: `${namespace}/${id}`,
+    url: `${namespace}/brokerConfig`,
     method: 'get',
-    params: { id }
+    params: params
   })
 }
 

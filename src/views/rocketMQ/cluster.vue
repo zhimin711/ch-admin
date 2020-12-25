@@ -59,8 +59,8 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
-          <el-link v-permission="'KAFKA_CLUSTER_EDIT'" type="success" icon="el-icon-view" @click="handleStatus(scope.row)">状态</el-link>
-          <el-link v-permission="'KAFKA_CLUSTER_DELETE'" type="primary" icon="el-icon-setting" @click="handleConfig(scope.row)">配置</el-link>
+          <el-link v-permission="'ROCKETMQ_CLUSTER_STATUS'" type="success" icon="el-icon-view" @click="handleStatus(scope.row)">状态</el-link>
+          <el-link v-permission="'ROCKETMQ_CLUSTER_CONFIG'" type="primary" icon="el-icon-setting" @click="handleConfig(scope.row)">配置</el-link>
         </template>
       </el-table-column>
     </el-table>
@@ -70,38 +70,18 @@
         <el-table-column label="名称" prop="name" />
         <el-table-column label="配置" prop="value" />
       </el-table>
-      <div style="text-align:right;">
-        <el-button @click="dialogVisible=false">取消</el-button>
+      <div slot="footer" style="text-align:right;">
+        <el-button @click="dialogVisible=false">关 闭</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import { deepClone } from '@/utils'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { listRocketMQ, getRocketMQ } from '@/api/rocketmq/cluster'
 
 export default {
-  name: 'RocketMQCluster1',
-  components: { Pagination },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      let s = 'draft'
-      if (status === '1') {
-        s = 'published'
-      } else if (status === '3') {
-        s = 'deleted'
-      }
-      return statusMap[s]
-    }
-  },
+  name: 'RocketMQCluster',
   data() {
     return {
       listLoading: true,
@@ -155,7 +135,18 @@ export default {
         this.tableB.push({ name: k, value: this.record[k] })
       }
     },
-    handleConfig() {
+    handleConfig(row) {
+      this.dialogTitle = `[${row.brokerName}][${row.index}]`
+      getRocketMQ({ brokerAddr: row.address }).then(resp => {
+        if (resp.success) {
+          const record = resp.rows[0]
+          this.tableB = []
+          for (const k in record) {
+            this.tableB.push({ name: k, value: record[k] })
+          }
+          this.dialogVisible = true
+        }
+      })
     },
     generateBrokerMap(brokerDetail, clusterMap, brokerMap) {
       const map = {}
