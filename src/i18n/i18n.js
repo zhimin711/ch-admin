@@ -39,7 +39,7 @@ export function translatedTitle(code, title) {
       return translatedTitle
     }
   }
-  return code || title
+  return title || code
 }
 
 // translate router.meta.title, be used in breadcrumb sidebar tagsview

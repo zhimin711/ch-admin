@@ -7,8 +7,9 @@ const kafkaRouter = {
   component: Layout,
   redirect: '/kafka/cluster',
   alwaysShow: true, // will always show the root menu
-  name: 'Kafka Manager',
+  name: 'Kafka Management',
   meta: {
+    code: 'kafkaManagement',
     title: 'Kafka管理',
     icon: 'lock'
   },
@@ -18,6 +19,7 @@ const kafkaRouter = {
       component: () => import('@/views/kafka/cluster'),
       name: 'KafkaCluster',
       meta: {
+        code: 'clusterManagement',
         title: '集群管理'
       }
     },
@@ -26,6 +28,7 @@ const kafkaRouter = {
       component: () => import('@/views/kafka/topic'),
       name: 'KafkaTopic',
       meta: {
+        code: 'topicManagement',
         title: '主题管理'
       }
     },
@@ -34,7 +37,7 @@ const kafkaRouter = {
       component: () => import('@/views/kafka/content'),
       name: 'KafkaContent',
       meta: {
-        title: '消息搜索'
+        code: 'messageSearch'
       }
     },
     {
@@ -42,7 +45,7 @@ const kafkaRouter = {
       component: () => import('@/views/kafka/mocker'),
       name: 'KafkaMock',
       meta: {
-        title: 'Mock数据'
+        code: 'mockData'
       }
     },
     {
@@ -58,7 +61,7 @@ const kafkaRouter = {
       component: () => import('@/views/kafka/dubboCall'),
       name: 'DubboCall',
       meta: {
-        title: 'Dubbo接口测试'
+        code: 'dubboCall'
       }
     }
   ]
@@ -70,18 +73,18 @@ const routerMap = {
     component: Layout,
     redirect: '/kafka/cluster',
     alwaysShow: true, // will always show the root menu
-    name: 'Kafka Manager',
+    name: 'KafkaManagement',
     meta: {
-      title: '系统管理',
+      code: 'kafkaManagement',
       icon: 'lock'
     }
   },
   KafkaCluster: {
     path: 'cluster',
     component: () => import('@/views/kafka/cluster'),
-    name: 'CanalCluster',
+    name: 'KafkaCluster',
     meta: {
-      title: '用户管理'
+      code: 'clusterManagement'
     }
   },
   KafkaContent: {
@@ -89,7 +92,7 @@ const routerMap = {
     component: () => import('@/views/kafka/content'),
     name: 'KafkaContent',
     meta: {
-      title: '角色管理'
+      code: 'messageSearch'
     }
   },
   KafkaTopic: {
@@ -97,15 +100,15 @@ const routerMap = {
     component: () => import('@/views/kafka/topic'),
     name: 'KafkaTopic',
     meta: {
-      title: '权限管理'
+      code: 'topicManagement',
     }
   },
   KafkaMocker: {
     path: 'mock',
     component: () => import('@/views/kafka/mocker'),
-    name: 'Mocker',
+    name: 'KafkaMocker',
     meta: {
-      title: 'Mock数据'
+      code: 'mockData'
     }
   },
   DubboCall: {

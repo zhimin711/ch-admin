@@ -26,7 +26,7 @@ const rocketMQRouter = {
       component: () => import('@/views/rocketMQ/cluster'),
       name: 'RocketMQCluster',
       meta: {
-        code: 'clusterManager',
+        code: 'clusterManagement',
         title: '集群管理'
       }
     },
@@ -35,7 +35,7 @@ const rocketMQRouter = {
       component: () => import('@/views/rocketMQ/topic'),
       name: 'RocketMQTopic',
       meta: {
-        code: 'topicManager',
+        code: 'topicManagement',
         title: '主题管理'
       }
     },

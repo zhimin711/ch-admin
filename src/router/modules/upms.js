@@ -7,37 +7,34 @@ const umpsRouter = {
   component: Layout,
   redirect: '/upms/user',
   alwaysShow: true, // will always show the root menu
-  name: 'User Permission Manager',
+  name: 'UPMSManagement',
   meta: {
-    title: '系统管理',
+    code: 'systemManagement',
     icon: 'lock'
   },
   children: [
     {
       path: 'user',
       component: () => import('@/views/upms/user'),
-      name: 'User',
+      name: 'UserManagement',
       meta: {
-        title: '用户管理',
-        roles: ['admin'] // or you can only set roles in sub nav
+        code: 'userManagement'
       }
     },
     {
       path: 'role',
       component: () => import('@/views/upms/role'),
-      name: 'Role',
+      name: 'RoleManagement',
       meta: {
-        title: '角色管理',
-        roles: ['admin']
+        code: 'roleManagement'
       }
     },
     {
       path: 'permission',
       component: () => import('@/views/upms/permission'),
-      name: 'Permission',
+      name: 'PermissionManagement',
       meta: {
-        title: '权限管理',
-        roles: ['admin']
+        code: 'permissionManagement'
       }
     }/*,
     {
@@ -58,58 +55,57 @@ const routerMap = {
     component: Layout,
     redirect: '/upms/user',
     alwaysShow: true, // will always show the root menu
-    name: 'User Permission Manager',
+    name: 'UPMSManagement',
     meta: {
-      title: '系统管理',
-      icon: 'lock'
+      code: 'systemManagement'
     }
   },
   UpmsUser: {
     path: 'user',
     component: () => import('@/views/upms/user'),
-    name: 'UpmsUser',
+    name: 'UpmsUserManagement',
     meta: {
-      title: '用户管理'
+      code: 'userManagement'
     }
   },
   UpmsRole: {
     path: 'role',
     component: () => import('@/views/upms/role'),
-    name: 'UpmsRole',
+    name: 'UpmsRoleManagement',
     meta: {
-      title: '角色管理'
+      code: 'roleManagement'
     }
   },
   UpmsPermission: {
     path: 'permission',
     component: () => import('@/views/upms/permission'),
-    name: 'UpmsPermission',
+    name: 'UpmsPermissionManagement',
     meta: {
-      title: '权限管理'
+      code: 'permissionManagement'
     }
   },
   UpmsDepartment: {
     path: 'department',
     component: () => import('@/views/upms/department'),
-    name: 'UpmsDepartment',
+    name: 'UpmsDepartmentManagement',
     meta: {
-      title: '权限管理'
+      code: 'departmentManagement'
     }
   },
   UpmsPosition: {
     path: 'position',
     component: () => import('@/views/upms/position'),
-    name: 'UpmsPosition',
+    name: 'UpmsPositionManagement',
     meta: {
-      title: '权限管理'
+      code: 'positionManagement'
     }
   },
   UpmsDict: {
     path: 'dict',
     component: () => import('@/views/upms/dict'),
-    name: 'UpmsDict',
+    name: 'UpmsDictManagement',
     meta: {
-      title: '权限管理'
+      code: 'dictManagement'
     }
   }
 }

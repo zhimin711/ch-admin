@@ -6,23 +6,19 @@
         <el-option label="启用" value="1">启用</el-option>
         <el-option label="禁用" value="0">禁用</el-option>
       </el-select>
-      <el-button v-if="checkPermission2(['KAFKA_CLUSTER_SEARCH'])" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        查询
+      <el-button v-permission="['KAFKA_CLUSTER_SEARCH']" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+        {{$t('btn.search')}}
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
-        重置
+        {{$t('btn.reset')}}
       </el-button>
       <el-button v-permission="'KAFKA_CLUSTER_ADD'" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加集群
+        {{$t('cluster.add')}}
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="120px" label="集群名称">
-        <template slot-scope="scope">
-          <span>{{ scope.row.clusterName }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="ZK地址">
+      <el-table-column width="120px" :label="$t('cluster.name')" prop="clusterName"/>
+      <el-table-column :label="'ZK ' + $t('table.address')">
         <template slot-scope="scope">
           <span>{{ scope.row.zookeeper }}</span>
         </template>
@@ -32,24 +28,24 @@
           <span>{{ scope.row.brokers }}</span>
         </template>
       </el-table-column>
-      <el-table-column width="160px" align="center" label="创建时间">
+      <el-table-column width="160px" align="center" :label="$t('table.createDate')">
         <template slot-scope="scope">
           <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="120">
+      <el-table-column align="center" :label="$t('table.actions')" width="120">
         <template slot-scope="scope">
-          <el-link v-permission="'KAFKA_CLUSTER_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link v-permission="'KAFKA_CLUSTER_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <el-link v-permission="'KAFKA_CLUSTER_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">{{$t('btn.edit')}}</el-link>
+          <el-link v-permission="'KAFKA_CLUSTER_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{$t('btn.delete')}}</el-link>
         </template>
       </el-table-column>
     </el-table>
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 集群':'New 集群'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'? $t('cluster.edit'): $t('cluster.add')">
       <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="集群名称">
+        <el-form-item :label="$t('cluster.name')">
           <el-input v-model="record.clusterName" placeholder="集群名称" :disabled="dialogCodeEdit" />
         </el-form-item>
         <el-form-item label="zookeeper">
@@ -60,8 +56,8 @@
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button :loading="loading.handleSubmit" type="primary" @click="handleSubmit">保存</el-button>
-        <el-button :disabled="loading.handleSubmit" type="danger" @click="dialogVisible=false">取消</el-button>
+        <el-button :loading="loading.handleSubmit" type="primary" @click="handleSubmit">{{$t('btn.save')}}</el-button>
+        <el-button :disabled="loading.handleSubmit" type="danger" @click="dialogVisible=false">{{$t('btn.cancel')}}</el-button>
       </div>
     </el-dialog>
   </div>
