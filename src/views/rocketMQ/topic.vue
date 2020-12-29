@@ -31,7 +31,7 @@
         </template>
       </el-table-column>
       <el-table-column label="主题名称" prop="topicName" />
-      <el-table-column label="存储类型" width="127">
+      <!--<el-table-column label="存储类型" width="127">
         <template slot-scope="scope">
           <span>{{ scope.row.type }}</span>
         </template>
@@ -45,11 +45,15 @@
         <template slot-scope="scope">
           <span>{{ scope.row.replicaSize }}</span>
         </template>
-      </el-table-column>
-      <el-table-column align="center" label="操作" width="180">
+      </el-table-column>-->
+      <el-table-column align="center" label="操作">
         <template slot-scope="scope">
-          <el-link v-permission="'KAFKA_TOPIC_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link v-permission="'KAFKA_TOPIC_REFRESH'" type="warning" icon="el-icon-refresh" @click="handleRefresh(scope.row)">重建</el-link>
+          <el-link v-permission="'KAFKA_TOPIC_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">状态</el-link>
+          <el-link v-permission="'KAFKA_TOPIC_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">路由</el-link>
+          <el-link v-permission="'KAFKA_TOPIC_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">Consumer管理</el-link>
+          <el-link v-permission="'KAFKA_TOPIC_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">配置</el-link>
+          <el-link v-permission="'KAFKA_TOPIC_REFRESH'" type="warning" icon="el-icon-refresh" @click="handleRefresh(scope.row)">发消息</el-link>
+          <el-link v-permission="'KAFKA_TOPIC_REFRESH'" type="warning" icon="el-icon-refresh" @click="handleRefresh(scope.row)">重置消费起点</el-link>
           <el-link v-permission="'KAFKA_TOPIC_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
@@ -97,7 +101,6 @@
           <el-input-number v-model="record.replicaSize" :min="0" :max="10" :disabled="propDisabled" />
         </el-form-item>
         <el-form-item label="存储类型">
-          <!--<el-input v-model="record.type" placeholder="存储类型" />-->
           <el-select v-model="record.type" placeholder="请选择">
             <el-option key="JSON" label="JSON" value="JSON" />
             <el-option key="STRING" label="STRING" value="STRING" />
@@ -316,14 +319,8 @@ export default {
 </script>
 
 <style scoped>
-  .edit-input {
-    padding-right: 100px;
-  }
-
-  .cancel-btn {
-    position: absolute;
-    right: 15px;
-    top: 10px;
+  .el-table .el-link {
+    margin-right: 5px;
   }
 
   .el-select .el-input__inner {
