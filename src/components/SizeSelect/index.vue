@@ -5,19 +5,20 @@
     </div>
     <el-dropdown-menu slot="dropdown">
       <el-dropdown-item v-for="item of sizeOptions" :key="item.value" :disabled="size===item.value" :command="item.value">
-        {{
-          item.label }}
+        {{ translatedTitle('settings.' + item.value, item.label) }}
       </el-dropdown-item>
     </el-dropdown-menu>
   </el-dropdown>
 </template>
 
 <script>
+
+import { translatedTitle } from '@/i18n/i18n'
 export default {
   data() {
     return {
       sizeOptions: [
-        { label: '大', value: 'default' },
+        { label: '默认', value: 'default' },
         { label: '中', value: 'medium' },
         { label: '小', value: 'small' },
         { label: '迷你', value: 'mini' }
@@ -30,6 +31,7 @@ export default {
     }
   },
   methods: {
+    translatedTitle,
     handleSetSize(size) {
       this.$ELEMENT.size = size
       this.$store.dispatch('app/setSize', size)

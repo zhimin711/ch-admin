@@ -21,13 +21,20 @@ export function getLanguage() {
   return 'zh'
 }
 
-// translate router.meta.title, be used in breadcrumb sidebar tagsview
-export function translatedRouteTitle(code, title) {
+// 从localStorage获取语言选择。
+const i18n = new VueI18n({
+  locale: getLanguage(), // 初始未选择默认 zh 中文
+  messages
+})
+locale.i18n((key, value) => i18n.t(key, value)) // 兼容element
+
+// translate title
+export function translatedTitle(code, title) {
   if (code) {
-    const hasKey = this.$te('route.' + code)
+    const hasKey = i18n.te(code)
     if (hasKey) {
       // $t :this method from vue-i18n, inject in @/lang/index.js
-      const translatedTitle = this.$t('route.' + code)
+      const translatedTitle = i18n.t(code)
 
       return translatedTitle
     }
@@ -35,11 +42,12 @@ export function translatedRouteTitle(code, title) {
   return code || title
 }
 
-// 从localStorage获取语言选择。
-const i18n = new VueI18n({
-  locale: getLanguage(), // 初始未选择默认 zh 中文
-  messages
-})
-locale.i18n((key, value) => i18n.t(key, value)) // 兼容element
+// translate router.meta.title, be used in breadcrumb sidebar tagsview
+export function translatedRouteTitle(code, title) {
+  if (code) {
+    return translatedTitle('route.' + code, title)
+  }
+  return title
+}
 
 export default i18n

@@ -163,7 +163,11 @@ const cn = {
     theme: '主题色',
     tagsView: '开启 Tags-View',
     fixedHeader: '固定 Header',
-    sidebarLogo: '侧边栏 Logo'
+    sidebarLogo: '侧边栏 Logo',
+    default: '默认（大）',
+    medium: '中',
+    small: '小',
+    mini: '迷你'
   }
 }
 

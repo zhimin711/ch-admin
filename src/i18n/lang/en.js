@@ -167,6 +167,10 @@ export default {
     theme: 'Theme Color',
     tagsView: 'Open Tags-View',
     fixedHeader: 'Fixed Header',
-    sidebarLogo: 'Sidebar Logo'
+    sidebarLogo: 'Sidebar Logo',
+    default: 'Default（Big）',
+    medium: 'Medium',
+    small: 'Small',
+    mini: 'Mini'
   }
 }
