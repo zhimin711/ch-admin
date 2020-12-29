@@ -7,7 +7,7 @@
         <div class="head-container">
           <el-input
             v-model="departmentName"
-            placeholder="请输入部门名称"
+            :placeholder="$t('input.tips.departmentName')"
             clearable
             size="small"
             prefix-icon="el-icon-search"
@@ -28,55 +28,55 @@
       <!--用户数据-->
       <el-col :span="20" :xs="24" style="border-left: 1px solid #dedede;">
         <div class="filter-container">
-          <el-input v-model="recordPage.params.userId" placeholder="用户ID" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
-          <el-input v-model="recordPage.params.username" placeholder="用户名" style="width: 200px;" class="filter-item" />
-          <el-input v-model="recordPage.params.realName" placeholder="用户真实名称" style="width: 200px;" class="filter-item" />
-          <el-select v-model="recordPage.params.status" placeholder="状态" class="filter-item" clearable>
-            <el-option label="启用" value="1">启用</el-option>
-            <el-option label="禁用" value="0">禁用</el-option>
+          <el-input v-model="tableA.params.userId" :placeholder="$t('input.tips.userId')" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
+          <el-input v-model="tableA.params.username" :placeholder="$t('input.tips.username')" style="width: 200px;" class="filter-item" />
+          <el-input v-model="tableA.params.realName" :placeholder="$t('input.tips.realName')" style="width: 200px;" class="filter-item" />
+          <el-select v-model="tableA.params.status" :placeholder="$t('label.status')" class="filter-item" clearable>
+            <el-option :label="$t('label.enable')" value="1">{{ $t('label.enable') }}</el-option>
+            <el-option :label="$t('label.disable')" value="0">{{ $t('label.disable') }}</el-option>
           </el-select>
-          <el-button v-loading="recordPage.loading" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-            查询
+          <el-button v-loading="tableA.loading" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+            {{ $t('btn.search') }}
           </el-button>
-          <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="recordPage.params = {}">
-            重置
+          <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="tableA.params = {}">
+            {{ $t('btn.reset') }}
           </el-button>
-          <el-button v-if="checkPermission2(['UPMS_USER_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-            添加用户
+          <el-button v-permission="['UPMS_USER_ADD']" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+            {{ $t('user.add') }}
           </el-button>
-          <!--<el-button v-if="checkPermission2(['UPMS_USER_PASSWORD_INIT'])" class="filter-item" style="margin-left: 10px;" type="warning" icon="el-icon-refresh" @click="handleAdd">
+          <!--<el-button v-permission="['UPMS_USER_PASSWORD_INIT']" class="filter-item" style="margin-left: 10px;" type="warning" icon="el-icon-refresh" @click="handleAdd">
         初始化用户密码
       </el-button>-->
         </div>
-        <el-table v-loading="recordPage.loading" :data="recordPage.list" border fit highlight-current-row style="width: 100%">
-          <el-table-column width="180px" label="所属组织" prop="department" />
-          <el-table-column width="120px" align="center" label="用户ID">
+        <el-table v-loading="tableA.loading" :data="tableA.list" border fit highlight-current-row style="width: 100%">
+          <el-table-column width="180px" :label="$t('user.department')" prop="department" />
+          <el-table-column width="120px" align="center" :label="$t('user.userId')">
             <template slot-scope="scope">
               <span>{{ scope.row.userId }}</span>
             </template>
           </el-table-column>
-          <el-table-column width="120px" align="center" label="用户名">
+          <el-table-column width="120" align="center" :label="$t('user.username')">
             <template slot-scope="scope">
               <span>{{ scope.row.username }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="用户姓名">
+          <el-table-column :label="$t('user.realName')" min-width="120">
             <template slot-scope="scope">
               <span>{{ scope.row.realName }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="邮箱地址">
+          <el-table-column :label="$t('user.email')" min-width="120">
             <template slot-scope="scope">
               <span>{{ scope.row.email }}</span>
             </template>
           </el-table-column>
-          <el-table-column width="180px" align="center" label="创建时间">
+          <el-table-column width="180px" align="center" :label="$t('table.createDate')">
             <template slot-scope="scope">
               <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
             </template>
           </el-table-column>
 
-          <el-table-column class-name="status-col" label="状态" width="110">
+          <el-table-column class-name="status-col" :label="$t('table.status')" width="110">
             <template slot-scope="{row}">
               <el-tag :type="row.status | statusFilter">
                 {{ row.status | enableStatusNameFilter }}
@@ -84,32 +84,32 @@
             </template>
           </el-table-column>
 
-          <el-table-column align="center" label="操作" width="200">
+          <el-table-column align="center" :label="$t('table.actions')" width="200">
             <template slot-scope="scope">
-              <el-link v-if="checkPermission2(['UPMS_USER_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-              <el-link v-if="checkPermission2(['UPMS_USER_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
-              <el-link v-if="checkPermission2(['UPMS_USER_ROLE'])" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配角色</el-link>
-              <el-link v-if="checkPermission2(['UPMS_USER_PASSWORD_INIT'])" type="danger" icon="el-icon-refresh" @click="handleInitPwd(scope.row)">初始化密码</el-link>
+              <el-link v-permission="['UPMS_USER_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">{{ $t('btn.edit') }}</el-link>
+              <el-link v-permission="['UPMS_USER_DELETE']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
+              <el-link v-permission="['UPMS_USER_ROLE']" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">{{ $t('user.roles') }}</el-link>
+              <el-link v-permission="['UPMS_USER_PASSWORD_INIT']" type="danger" icon="el-icon-refresh" @click="handleInitPwd(scope.row)">{{ $t('user.initPwd') }}</el-link>
             </template>
           </el-table-column>
         </el-table>
 
-        <pagination v-show="recordPage.total>0" :total="recordPage.total" :page.sync="recordPage.num" :limit.sync="recordPage.size" @pagination="getList" />
+        <pagination v-show="tableA.total>0" :total="tableA.total" :page.sync="tableA.num" :limit.sync="tableA.size" @pagination="getList" />
       </el-col>
     </el-row>
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 用户':'添加 用户'">
-      <el-form :model="record" label-width="80px" label-position="left">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?$t('user.edit'): $t('user.add')">
+      <el-form :model="record" label-width="110px" label-position="left">
 
         <el-row>
           <el-col :span="12">
-            <el-form-item label="所属组织" prop="recordDepartments">
+            <el-form-item :label="$t('user.department')" prop="recordDepartments">
               <el-cascader ref="categoryCascader" v-model="recordDepartments" :options="options.departments" :show-all-levels="false" :props="{ checkStrictly: true }" clearable @change="getDepartmentPositions" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="职位" prop="position">
-              <el-select v-model="recordPositions" filterable placeholder="请选择">
+            <el-form-item :label="$t('user.position')" prop="position">
+              <el-select v-model="recordPositions" filterable :placeholder="$t('input.tips.select')">
                 <el-option
                   v-for="item in options.positions"
                   :key="item.id"
@@ -120,42 +120,42 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="用户ID">
-          <el-input v-model="record.userId" placeholder="用户ID（系统生成）" :disabled="true" />
+        <el-form-item :label="$t('user.userId')">
+          <el-input v-model="record.userId" :placeholder="$t('user.userId2')" :disabled="true" />
         </el-form-item>
-        <el-form-item label="用户名">
-          <el-input v-model="record.username" placeholder="用户名" :disabled="dialogCodeEdit" />
+        <el-form-item :label="$t('user.username')">
+          <el-input v-model="record.username" :placeholder="$t('input.tips.username')" :disabled="dialogCodeEdit" />
         </el-form-item>
-        <el-form-item label="用户姓名">
-          <el-input v-model="record.realName" placeholder="用户姓名" />
+        <el-form-item :label="$t('user.realName')">
+          <el-input v-model="record.realName" :placeholder="$t('input.tips.realName')" />
         </el-form-item>
-        <el-form-item label="邮箱">
-          <el-input v-model="record.email" placeholder="电子邮箱" />
+        <el-form-item :label="$t('user.email')">
+          <el-input v-model="record.email" :placeholder="$t('user.email')" />
         </el-form-item>
-        <el-form-item label="手机号">
-          <el-input v-model="record.mobilePhone" placeholder="手机号" />
+        <el-form-item :label="$t('user.mobilePhone')">
+          <el-input v-model="record.mobilePhone" :placeholder="$t('user.mobilePhone')" />
         </el-form-item>
-        <el-form-item label="简介">
+        <el-form-item :label="$t('user.introduction')">
           <el-input
             v-model="record.description"
             :autosize="{ minRows: 2, maxRows: 4}"
             type="textarea"
-            placeholder="用户 简介"
+            :placeholder="$t('user.introduction')"
           />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">保存</el-button>
+        <el-button type="danger" @click="dialogVisible=false">{{ $t('btn.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ $t('btn.save') }}</el-button>
       </div>
     </el-dialog>
-    <el-dialog :visible.sync="dialogVisible2" :title="'分配用户角色'" width="635px" center>
+    <el-dialog :visible.sync="dialogVisible2" :title="$t('user.roles')" width="635px" center>
       <div style="text-align:left;margin-bottom: 20px">
-        <el-transfer v-model="recordRoles" :data="roles" :titles="['未分配角色', '已分配角色']" :props="{ key: 'id', label: 'name' }" />
+        <el-transfer v-model="recordRoles" :data="roles" :titles="[$t('user.roles0'), $t('user.roles1')]" :props="{ key: 'id', label: 'name' }" />
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleSubmitAuth">保存</el-button>
-        <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
+        <el-button type="primary" @click="handleSubmitAuth">{{ $t('btn.save') }}</el-button>
+        <el-button type="danger" @click="dialogVisible2=false">{{ $t('btn.cancel') }}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -163,7 +163,6 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import waves from '@/directive/waves/index.js' // 水波纹指令
 
 import { handleClipboard2 } from '@/utils/clipboard' // use clipboard directly
@@ -178,7 +177,7 @@ export default {
   },
   data() {
     return {
-      recordPage: {
+      tableA: {
         loading: true,
         num: 1,
         size: 10,
@@ -206,7 +205,6 @@ export default {
     this.getList()
   },
   methods: {
-    checkPermission2,
     getTreeDepartments() {
       treeDepartment('0').then(resp => {
         if (resp.success) {
@@ -232,7 +230,7 @@ export default {
     },
     // 节点单击事件
     handleDepartmentClick(data) {
-      this.recordPage.params.department = data.value
+      this.tableA.params.department = data.value
       this.getList()
     },
     async getEnableRoles() {
@@ -240,11 +238,11 @@ export default {
       if (resp && resp.success) this.roles = resp.rows
     },
     getList() {
-      this.recordPage.loading = true
-      pageUser(this.recordPage).then(response => {
-        this.recordPage.list = response.rows
-        this.recordPage.total = response.total
-      }).finally(() => { this.recordPage.loading = false })
+      this.tableA.loading = true
+      pageUser(this.tableA).then(response => {
+        this.tableA.list = response.rows
+        this.tableA.total = response.total
+      }).finally(() => { this.tableA.loading = false })
     },
     handleAdd() {
       this.record = {}

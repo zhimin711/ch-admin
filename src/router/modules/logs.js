@@ -7,26 +7,26 @@ const logsRouter = {
   component: Layout,
   redirect: '/logs/login',
   alwaysShow: true, // will always show the root menu
-  name: 'Logs',
+  name: 'LogManagement',
   meta: {
-    title: '日志管理',
+    code: 'logManagement',
     icon: 'lock'
   },
   children: [
     {
       path: 'login',
       component: () => import('@/views/logs/login'),
-      name: 'Login',
+      name: 'LoginLog',
       meta: {
-        title: '登录日志'
+        code: 'loginLog'
       }
     },
     {
       path: 'operate',
       component: () => import('@/views/logs/operate'),
-      name: 'Operate',
+      name: 'OperateLog',
       meta: {
-        title: '操作日志'
+        code: 'operateLog'
       }
     }
   ]
@@ -38,26 +38,25 @@ const routerMap = {
     component: Layout,
     redirect: '/logs/login',
     alwaysShow: true, // will always show the root menu
-    name: 'Logs',
+    name: 'LogManagement',
     meta: {
-      title: '日志管理',
-      icon: 'lock'
+      code: 'logManagement'
     }
   },
   LogsLogin: {
     path: 'login',
     component: () => import('@/views/logs/login'),
-    name: 'Login',
+    name: 'LoginLog',
     meta: {
-      title: '登录日志'
+      code: 'loginLog'
     }
   },
   LogsOperate: {
     path: 'operate',
     component: () => import('@/views/logs/operate'),
-    name: 'Operate',
+    name: 'OperateLog',
     meta: {
-      title: '操作日志'
+      code: 'operateLog'
     }
   }
 }

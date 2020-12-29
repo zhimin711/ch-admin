@@ -2,6 +2,16 @@ export default {
   message: {
     'switchLanguage': 'switch English Language Success！'
   },
+  input: {
+    tips: {
+      select: 'Please Select',
+      userId: 'User ID',
+      username: 'Username',
+      realName: 'Real Name',
+      status: 'Status',
+      departmentName: 'please input department name'
+    }
+  },
   route: {
     dashboard: 'Dashboard',
     documentation: 'Documentation',
@@ -56,6 +66,30 @@ export default {
     documentation: 'Documentation',
     github: 'Github Repository'
   },
+  label: {
+    status: 'Status',
+    enable: 'Enabled',
+    disable: 'Disabled',
+    description: 'Description'
+  },
+  user: {
+    add: 'Add User',
+    edit: 'Edit User',
+    name: 'User Name',
+    roles: 'Assign Roles',
+    initPwd: 'Init Password',
+    department: 'Department',
+    userId: 'User ID',
+    username: 'Username',
+    realName: 'Real Name',
+    email: 'Email',
+    mobilePhone: 'Mobile Phone',
+    introduction: 'Introduction',
+    userId2: 'User ID(System Generate)',
+    position: 'Position',
+    roles0: 'All Roles',
+    roles1: 'Assign Roles'
+  },
   permission: {
     addRole: 'New Role',
     editPermission: 'Edit',
@@ -65,6 +99,11 @@ export default {
     delete: 'Delete',
     confirm: 'Confirm',
     cancel: 'Cancel'
+  },
+  cluster: {
+    add: 'Add Cluster',
+    edit: 'Edit Cluster',
+    name: 'Cluster Name'
   },
   guide: {
     description: 'The guide page is useful for some people who entered the project for the first time. You can briefly introduce the features of the project. Demo is based on ',
@@ -121,7 +160,7 @@ export default {
     cancel: 'Cancel',
     _cancel: 'Cancel',
     _confirm: 'Confirm',
-    avatarUpload: 'Avatar Upload',
+    avatarUpload: 'Avatar Upload'
   },
   example: {
     warning: 'Creating and editing pages cannot be cached by keep-alive because keep-alive include does not currently support caching based on routes, so it is currently cached based on component name. If you want to achieve a similar caching effect, you can use a browser caching scheme such as localStorage. Or do not use keep-alive include to cache all pages directly. See details'
@@ -142,11 +181,6 @@ export default {
   },
   pdf: {
     tips: 'Here we use window.print() to implement the feature of downloading PDF.'
-  },
-  cluster: {
-    add: 'Add Cluster',
-    edit: 'Edit Cluster',
-    name: 'Cluster Name',
   },
   tagsView: {
     refresh: 'Refresh',

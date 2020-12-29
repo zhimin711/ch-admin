@@ -2,6 +2,15 @@ const cn = {
   message: {
     'switchLanguage': '切换中文语言成功！'
   },
+  input: {
+    tips: {
+      select: '请选择',
+      userId: '用户ID',
+      username: '用户名',
+      realName: '真实姓名',
+      departmentName: '请输入部门名称'
+    }
+  },
   route: {
     dashboard: '首页',
     documentation: '文档',
@@ -56,6 +65,30 @@ const cn = {
     documentation: '文档',
     github: 'Github 地址'
   },
+  label: {
+    status: '状态',
+    enable: '启用',
+    disable: '禁用',
+    description: '描述'
+  },
+  user: {
+    add: '添加用户',
+    edit: '编辑用户',
+    name: '用户名称',
+    roles: '分配角色',
+    initPwd: '初始化密码',
+    department: '所属组织',
+    userId: '用户ID',
+    username: '用户名',
+    realName: '真实姓名',
+    email: '邮箱',
+    mobilePhone: '手机号',
+    introduction: '简介',
+    userId2: '用户ID（系统生成）',
+    position: '职位',
+    roles0: '未分配角色',
+    roles1: '已分配角色'
+  },
   permission: {
     addRole: '新增角色',
     editPermission: '编辑权限',
@@ -65,6 +98,11 @@ const cn = {
     delete: '删除',
     confirm: '确定',
     cancel: '取消'
+  },
+  cluster: {
+    add: '添加集群',
+    edit: '编辑集群',
+    name: '集群名称'
   },
   guide: {
     description: '引导页对于一些第一次进入项目的人很有用，你可以简单介绍下项目的功能。本 Demo 是基于',
@@ -120,7 +158,7 @@ const cn = {
     cancel: '取消',
     _cancel: '取 消',
     _confirm: '确 定',
-    avatarUpload: '头像上传',
+    avatarUpload: '头像上传'
   },
   example: {
     warning: '创建和编辑页面是不能被 keep-alive 缓存的，因为keep-alive 的 include 目前不支持根据路由来缓存，所以目前都是基于 component name 来进行缓存的。如果你想类似的实现缓存效果，可以使用 localStorage 等浏览器缓存方案。或者不要使用 keep-alive 的 include，直接缓存所有页面。详情见'
@@ -141,11 +179,6 @@ const cn = {
   },
   pdf: {
     tips: '这里使用   window.print() 来实现下载pdf的功能'
-  },
-  cluster: {
-    add: '添加集群',
-    edit: '编辑集群',
-    name: '集群名称',
   },
   tagsView: {
     refresh: '刷新',
