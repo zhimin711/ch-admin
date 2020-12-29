@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <!--<el-input v-model="listQuery.params.clusterName" placeholder="集群名称" style="width: 200px;" class="filter-item" />-->
-      <el-select v-model="listQuery.params.clusterName" placeholder="请选择" class="filter-item">
+      <el-select v-model="tableA.params.clusterName" placeholder="请选择" class="filter-item">
         <el-option
           v-for="item in options.clusters"
           :key="item.clusterName"
@@ -10,11 +10,11 @@
           :value="item.clusterName"
         />
       </el-select>
-      <el-input v-model="listQuery.params.topicName" placeholder="主题名称" style="width: 200px;" class="filter-item" />
+      <el-input v-model="tableA.params.topicName" placeholder="主题名称" style="width: 200px;" class="filter-item" />
       <el-button v-permission="'KAFKA_TOPIC_SEARCH'" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
-      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
+      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="tableA.params = {}">
         重置
       </el-button>
       <el-button v-permission="'KAFKA_TOPIC_SYNC'" class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-refresh" @click="handleSync">
@@ -24,17 +24,13 @@
         创建主题
       </el-button>
     </div>
-    <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
+    <el-table v-loading="tableA.loading" :data="tableA.data.slice((tableA.page - 1) * tableA.limit, (tableA.page - 1) * tableA.limit + tableA.limit)" border fit highlight-current-row style="width: 100%">
       <el-table-column width="133px" label="集群名称">
         <template slot-scope="scope">
           <span>{{ scope.row.clusterName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="主题名称">
-        <template slot-scope="scope">
-          <span>{{ scope.row.topicName }}</span>
-        </template>
-      </el-table-column>
+      <el-table-column label="主题名称" prop="topicName" />
       <el-table-column label="存储类型" width="127">
         <template slot-scope="scope">
           <span>{{ scope.row.type }}</span>
@@ -59,7 +55,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="tableA.total>0" :total="tableA.total" :page.sync="tableA.page" :limit.sync="tableA.limit" @pagination="handlePageChange" />
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改主题信息':'创建主题'">
       <el-form :model="record" label-width="100px" label-position="left">
@@ -153,21 +149,22 @@
 import { Loading } from 'element-ui'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
+import { listRocketMQTopic } from '@/api/rocketmq/topic'
 import { list, add, edit, del, getClusters, getTopics, syncAll, refresh2 } from '@/api/kafka/topic'
 
 export default {
-  name: 'KafkaTopic',
+  name: 'RocketMQTopic1',
   components: { Pagination },
   data() {
     return {
       listLoading: true,
-      listQuery: {
+      tableA: {
+        loading: false,
         page: 1,
         limit: 10,
         total: 0,
-        list: [],
-        params: {}
+        params: {},
+        data: []
       },
       record: {},
       dialogVisible: false,
@@ -183,21 +180,30 @@ export default {
   },
   created() {
     this.getList()
-    this.getClusters()
+    // this.getClusters()
   },
   methods: {
-    checkPermission2,
     async getClusters() {
       const resp = await getClusters()
       if (resp && resp.success) this.options.clusters = resp.rows
     },
+    handlePageChange(val) {
+      // this.tableA.page = val;
+    },
     getList() {
       this.listLoading = true
-      list(this.listQuery).then(response => {
-        this.listQuery.list = response.rows
-        this.listQuery.total = response.total
+      listRocketMQTopic().then(resp => {
         this.listLoading = false
-      }).catch(() => { this.loading = false })
+        if (resp.success) {
+          const { topicList } = resp.rows[0]
+          topicList.sort()
+          this.tableA.data = []
+          for (let i = 0; i < topicList.length; i++) {
+            this.tableA.data.push({ topicName: topicList[i] })
+          }
+          this.tableA.total = topicList.length
+        }
+      }).finally(() => { this.loading = false })
     },
     handleAdd() {
       this.record = { partitionSize: 4, replicaSize: 3, type: 'JSON' }

@@ -207,6 +207,7 @@ export function assemblyAsyncRoutes(menus) {
     }
     if (route) {
       route.name = menu.code
+      // route.meta.title = menu.code
       if (menu.name) {
         route.meta.title = menu.name
       }

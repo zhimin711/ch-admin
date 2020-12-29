@@ -12,9 +12,11 @@
 
         <!--<screenfull id="screenfull" class="right-menu-item hover-effect" />-->
 
-        <el-tooltip content="全局大小" effect="dark" placement="bottom">
+        <el-tooltip :content="$t('navbar.size')" effect="dark" placement="bottom">
           <size-select id="size-select" class="right-menu-item hover-effect" />
         </el-tooltip>
+
+        <lang-select class="right-menu-item hover-effect" />
 
       </template>
 
@@ -25,13 +27,13 @@
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/profile/index">
-            <el-dropdown-item>个人中心</el-dropdown-item>
+            <el-dropdown-item>{{ $t('navbar.profile') }}</el-dropdown-item>
           </router-link>
           <!--<router-link to="/">
             <el-dropdown-item>Dashboard</el-dropdown-item>
           </router-link>-->
           <el-dropdown-item divided>
-            <span style="display:block;" @click="logout">登 出</span>
+            <span style="display:block;" @click="logout">{{ $t('navbar.logOut') }}</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -44,6 +46,7 @@ import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 import ErrorLog from '@/components/ErrorLog'
+import LangSelect from '@/components/LangSelect'
 // import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
@@ -55,6 +58,7 @@ export default {
     ErrorLog,
     // Screenfull,
     SizeSelect,
+    LangSelect,
     Search
   },
   computed: {
