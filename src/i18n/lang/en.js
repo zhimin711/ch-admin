@@ -89,7 +89,9 @@ export default {
     btn: 'Button',
     catalog: 'Catalog',
     menu: 'Menu',
-    interface: 'Interface'
+    interface: 'Interface',
+    createTime: 'Create Time',
+    updateTime: 'Update Time'
   },
   user: {
     add: 'Add User',
@@ -117,10 +119,14 @@ export default {
   permission: {
     add: 'Add Permission',
     edit: 'Edit Permission',
-    editPermission: 'Edit',
-    roles: 'Your roles',
     switchRoles: 'Switch roles',
     tips: 'In some cases, using v-permission will have no effect. For example: Element-UI  el-tab or el-table-column and other scenes that dynamically render dom. You can only do this with v-if.'
+  },
+  department: {
+    add: 'Add Department',
+    edit: 'Edit Department',
+    addChild: 'Add Child',
+    positions: 'Assign Positions'
   },
   cluster: {
     add: 'Add Cluster',

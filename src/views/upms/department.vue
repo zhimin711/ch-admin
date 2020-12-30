@@ -1,17 +1,17 @@
 <template>
   <div class="app-container">
     <el-form :inline="true">
-      <el-form-item label="组织名称">
+      <el-form-item :label="$t('label.name')">
         <el-input
-          v-model="recordPage.params.deptName"
+          v-model="tableA.params.deptName"
           placeholder="请输入组织名称"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="状态">
-        <el-select v-model="recordPage.params.status" placeholder="组织状态" clearable size="small">
+      <el-form-item :label="$t('label.status')">
+        <el-select v-model="tableA.params.status" :placeholder="$t('label.status')" clearable size="small">
           <el-option
             v-for="dict in statusOptions"
             :key="dict.dictValue"
@@ -27,7 +27,7 @@
           icon="el-icon-search"
           size="mini"
           @click="handleQuery"
-        >搜索</el-button>
+        >{{ $t('btn.search') }}</el-button>
         <el-button
           v-permission="['UPMS_DEPARTMENT_ADD']"
           class="filter-item"
@@ -35,58 +35,58 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-        >新增</el-button>
+        >{{ $t('btn.add') }}</el-button>
       </el-form-item>
     </el-form>
 
     <el-table
-      v-loading="recordPage.loading"
-      :data="recordPage.list"
+      v-loading="tableA.loading"
+      :data="tableA.list"
       row-key="id"
       default-expand-all
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
-      <el-table-column prop="name" label="组织名称" width="260" />
-      <el-table-column prop="sort" label="排序" width="200" />
-      <el-table-column label="状态" width="110">
+      <el-table-column prop="name" :label="$t('label.name')" width="260" />
+      <el-table-column prop="sort" :label="$t('label.sort')" width="200" />
+      <el-table-column :label="$t('label.status')" width="110">
         <template slot-scope="{row}">
           <el-tag :type="row.status | statusFilter">
             {{ row.status | enableStatusNameFilter }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createAt" width="200">
+      <el-table-column :label="$t('label.createTime')" align="center" prop="createAt" width="200">
         <template slot-scope="scope">
           <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('label.actions')" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
             v-permission="['UPMS_DEPARTMENT_EDIT']"
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-          >修改</el-button>
+          >{{ $t('btn.edit') }}</el-button>
           <el-button
             v-permission="['UPMS_DEPARTMENT_ADD']"
             type="text"
             icon="el-icon-plus"
             @click="handleAdd(scope.row)"
-          >新增下级</el-button>
+          >{{ $t('department.addChild') }}</el-button>
           <el-button
             v-permission="['UPMS_DEPARTMENT_POSITIONS']"
             type="text"
             icon="el-icon-menu"
             @click="handlePosition(scope.row)"
-          >分配职位</el-button>
+          >{{ $t('department.positions') }}</el-button>
           <el-button
             v-if="scope.row.pid !== 0"
             v-permission="['UPMS_DEPARTMENT_DEL']"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-          >删除</el-button>
+          >{{ $t('btn.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -140,8 +140,8 @@
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" @click="submitForm">{{ $t('btn.save') }}</el-button>
+        <el-button @click="cancel">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
     <el-dialog :visible.sync="dialogVisible2" :title="'分配组织职位'" width="635px" center>
@@ -178,7 +178,7 @@ export default {
   data() {
     return {
       // 查询参数与结果
-      recordPage: {
+      tableA: {
         // 遮罩层
         loading: true,
         num: 1,
@@ -242,11 +242,11 @@ export default {
   methods: {
     /** 查询组织列表 */
     getList() {
-      this.recordPage.loading = true
-      pageDepartment(this.recordPage).then(response => {
-        this.recordPage.list = response.rows
-        this.recordPage.total = response.total
-      }).finally(() => { this.recordPage.loading = false })
+      this.tableA.loading = true
+      pageDepartment(this.tableA).then(response => {
+        this.tableA.list = response.rows
+        this.tableA.total = response.total
+      }).finally(() => { this.tableA.loading = false })
     },
     // 取消按钮
     cancel() {

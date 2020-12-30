@@ -24,12 +24,12 @@
           {{ scope.row.name }}
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="type" :label="$t('label.type')" width="100">
+      <el-table-column align="center" prop="type" :label="$t('label.type')" width="120">
         <template slot-scope="{row}">
           <el-tag v-if="row.type === '1'" type="warning">{{ $t('label.catalog') }}</el-tag>
           <el-tag v-else-if="row.type === '2'" type="success">{{ row.hidden? '['+$t('label.hidden')+']':'' }}{{ $t('label.menu') }}</el-tag>
           <el-tag v-else-if="row.type === '3'" type="primary">{{ $t('label.btn') }}</el-tag>
-          <el-tag v-else-if="row.type === '4'" type="info">隐藏菜单</el-tag>
+          <!--<el-tag v-else-if="row.type === '4'" type="info">隐藏菜单</el-tag>-->
           <el-tag v-else-if="row.type === '5'" type="danger">{{ row.hidden? '[私有]':'[开放]' }}{{ $t('label.interface') }}</el-tag>
         </template>
       </el-table-column>

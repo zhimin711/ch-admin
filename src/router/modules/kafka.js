@@ -116,7 +116,15 @@ const routerMap = {
     component: () => import('@/views/kafka/dubboCall'),
     name: 'DubboCall',
     meta: {
-      title: 'Dubbo接口测试'
+      code: 'dubboCall'
+    }
+  },
+  MockGPS: {
+    path: 'MockGPS',
+    component: () => import('@/views/kafka/mockGPS'),
+    name: 'MockGPS',
+    meta: {
+      title: 'MockGPS'
     }
   }
 }

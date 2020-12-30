@@ -88,7 +88,9 @@ const cn = {
     btn: '按钮',
     catalog: '目录',
     menu: '菜单',
-    interface: '接口'
+    interface: '接口',
+    createTime: '创建时间',
+    updateTime: '更新时间'
   },
   user: {
     add: '添加用户',
@@ -116,10 +118,14 @@ const cn = {
   permission: {
     add: '添加权限',
     edit: '编辑权限',
-    editPermission: '编辑权限',
-    roles: '你的权限',
     switchRoles: '切换权限',
     tips: '在某些情况下，不适合使用 v-permission。例如：Element-UI 的 el-tab 或 el-table-column 以及其它动态渲染 dom 的场景。你只能通过手动设置 v-if 来实现。'
+  },
+  department: {
+    add: '添加部门',
+    edit: '编辑部门',
+    addChild: '新增下级',
+    positions: '分配职位'
   },
   cluster: {
     add: '添加集群',

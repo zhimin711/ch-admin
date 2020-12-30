@@ -1,26 +1,27 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.params.url" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-input v-model="listQuery.params.authCode" placeholder="授权代码" style="width: 200px;" class="filter-item" />
+      <el-input v-model="listQuery.params.url" :placeholder="$t('label.address')" style="width: 200px;" class="filter-item" />
+      <el-input v-model="listQuery.params.authCode" :placeholder="$t('label.code')" style="width: 200px;" class="filter-item" />
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        查询
+        {{ $t('btn.search') }}
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
-        重置
+        {{ $t('btn.reset') }}
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column label="地址">
+      <el-table-column :label="$t('label.address')">
         <template slot-scope="scope">
           <span>{{ scope.row.url }}</span>
         </template>
-      </el-table-column> <el-table-column label="方法" width="70px">
+      </el-table-column>
+      <el-table-column :label="$t('label.method')" width="75px">
         <template slot-scope="scope">
           <span>{{ scope.row.method }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="授权代码">
+      <el-table-column :label="$t('label.code')">
         <template slot-scope="scope">
           <span>{{ scope.row.authCode }}</span>
         </template>
@@ -54,8 +55,6 @@
 
 <script>
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-// import { deepClone } from '@/utils'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { listOPRecord } from '@/api/logs/login-record'
 
 export default {
@@ -78,7 +77,6 @@ export default {
     this.getList()
   },
   methods: {
-    checkPermission2,
     getList() {
       this.listLoading = true
       listOPRecord(this.listQuery).then(response => {
