@@ -7,17 +7,17 @@
         <el-option label="禁用" value="0">禁用</el-option>
       </el-select>
       <el-button v-permission="['KAFKA_CLUSTER_SEARCH']" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        {{$t('btn.search')}}
+        {{ $t('btn.search') }}
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
-        {{$t('btn.reset')}}
+        {{ $t('btn.reset') }}
       </el-button>
       <el-button v-permission="'KAFKA_CLUSTER_ADD'" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        {{$t('cluster.add')}}
+        {{ $t('cluster.add') }}
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="120px" :label="$t('cluster.name')" prop="clusterName"/>
+      <el-table-column width="120px" :label="$t('cluster.name')" prop="clusterName" />
       <el-table-column :label="'ZK ' + $t('table.address')">
         <template slot-scope="scope">
           <span>{{ scope.row.zookeeper }}</span>
@@ -35,8 +35,8 @@
       </el-table-column>
       <el-table-column align="center" :label="$t('table.actions')" width="120">
         <template slot-scope="scope">
-          <el-link v-permission="'KAFKA_CLUSTER_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">{{$t('btn.edit')}}</el-link>
-          <el-link v-permission="'KAFKA_CLUSTER_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{$t('btn.delete')}}</el-link>
+          <el-link v-permission="'KAFKA_CLUSTER_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">{{ $t('btn.edit') }}</el-link>
+          <el-link v-permission="'KAFKA_CLUSTER_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
         </template>
       </el-table-column>
     </el-table>
@@ -56,8 +56,8 @@
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button :loading="loading.handleSubmit" type="primary" @click="handleSubmit">{{$t('btn.save')}}</el-button>
-        <el-button :disabled="loading.handleSubmit" type="danger" @click="dialogVisible=false">{{$t('btn.cancel')}}</el-button>
+        <el-button :loading="loading.handleSubmit" type="primary" @click="handleSubmit">{{ $t('btn.save') }}</el-button>
+        <el-button :disabled="loading.handleSubmit" type="danger" @click="dialogVisible=false">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
   </div>

@@ -100,7 +100,7 @@ const routerMap = {
     component: () => import('@/views/kafka/topic'),
     name: 'KafkaTopic',
     meta: {
-      code: 'topicManagement',
+      code: 'topicManagement'
     }
   },
   KafkaMocker: {

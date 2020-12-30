@@ -11,16 +11,16 @@
         />
       </el-select>
       <el-input v-model="tableA.params.topicName" placeholder="主题名称" style="width: 200px;" class="filter-item" />
-      <el-button v-permission="'KAFKA_TOPIC_SEARCH'" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        查询
+      <el-button v-permission="'ROCKET_MQ_TOPIC_SEARCH'" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+        {{ $t('btn.search') }}
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="tableA.params = {}">
-        重置
+        {{ $t('btn.reset') }}
       </el-button>
-      <el-button v-permission="'KAFKA_TOPIC_SYNC'" class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-refresh" @click="handleSync">
+      <el-button v-permission="'ROCKET_MQ_TOPIC_SYNC'" class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-refresh" @click="handleSync">
         同步集群主题
       </el-button>
-      <el-button v-permission="'KAFKA_TOPIC_ADD'" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+      <el-button v-permission="'ROCKET_MQ_TOPIC_ADD'" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
         创建主题
       </el-button>
     </div>
@@ -48,13 +48,13 @@
       </el-table-column>-->
       <el-table-column align="center" label="操作">
         <template slot-scope="scope">
-          <el-link v-permission="'KAFKA_TOPIC_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">状态</el-link>
-          <el-link v-permission="'KAFKA_TOPIC_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">路由</el-link>
-          <el-link v-permission="'KAFKA_TOPIC_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">Consumer管理</el-link>
-          <el-link v-permission="'KAFKA_TOPIC_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">配置</el-link>
-          <el-link v-permission="'KAFKA_TOPIC_REFRESH'" type="warning" icon="el-icon-refresh" @click="handleRefresh(scope.row)">发消息</el-link>
-          <el-link v-permission="'KAFKA_TOPIC_REFRESH'" type="warning" icon="el-icon-refresh" @click="handleRefresh(scope.row)">重置消费起点</el-link>
-          <el-link v-permission="'KAFKA_TOPIC_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <el-link v-permission="'ROCKET_MQ_TOPIC_STATUS'" type="warning" icon="el-icon-view" @click="handleStatus(scope.row, scope.$index)">状态</el-link>
+          <el-link v-permission="'ROCKET_MQ_TOPIC_ROUTE'" type="primary" icon="el-icon-share" @click="handleRoute(scope.row, scope.$index)">路由</el-link>
+          <el-link v-permission="'ROCKET_MQ_TOPIC_CONSUMER'" type="" icon="el-icon-connection" @click="handleEdit(scope.row, scope.$index)">Consumer管理</el-link>
+          <el-link v-permission="'ROCKET_MQ_TOPIC_CONFIG'" type="primary" icon="el-icon-set-up" @click="handleEdit(scope.row, scope.$index)">配置</el-link>
+          <el-link v-permission="'ROCKET_MQ_TOPIC_SEND'" type="success" icon="el-icon-s-promotion" @click="handleRefresh(scope.row)">发消息</el-link>
+          <el-link v-permission="'ROCKET_MQ_TOPIC_RESET'" type="warning" icon="el-icon-refresh" @click="handleRefresh(scope.row)">重置消费起点</el-link>
+          <el-link v-permission="'ROCKET_MQ_TOPIC_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
     </el-table>
@@ -63,64 +63,75 @@
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改主题信息':'创建主题'">
       <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="集群名称">
-          <!--<el-input v-model="record.clusterName" placeholder="集群名称" :disabled="dialogCodeEdit" />-->
-          <el-select v-model="record.clusterName" placeholder="请选择" :disabled="propDisabled">
-            <el-option
-              v-for="item in options.clusters"
-              :key="item.clusterName"
-              :label="item.clusterName"
-              :value="item.clusterName"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="主题名称">
-          <el-input v-model="record.topicName" placeholder="主题名称" :disabled="propDisabled" />
-          <!--<el-select
-            v-model="record.topicName"
-            filterable
-            remote
-            reserve-keyword
-            placeholder="请输入关键词"
-            :remote-method="remoteMethod"
-            :loading="loading"
-            style="width:100%"
-          >
-            <el-option
-              v-for="item in options.topics"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>-->
-        </el-form-item>
-        <el-form-item label="分区数">
-          <el-input-number v-model="record.partitionSize" :min="1" :max="50" :step="2" :disabled="propDisabled" />
-        </el-form-item>
-        <el-form-item label="复制数">
-          <el-input-number v-model="record.replicaSize" :min="0" :max="10" :disabled="propDisabled" />
-        </el-form-item>
-        <el-form-item label="存储类型">
-          <el-select v-model="record.type" placeholder="请选择">
-            <el-option key="JSON" label="JSON" value="JSON" />
-            <el-option key="STRING" label="STRING" value="STRING" />
-            <el-option key="PROTO_STUFF" label="PROTO_STUFF" value="PROTO_STUFF" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="存储Jar包">
-          <el-input v-model="record.classFile" placeholder="存储Jar包" />
-        </el-form-item>
-        <el-form-item label="存储对象">
-          <el-input v-model="record.className" placeholder="存储对象" />
-        </el-form-item>
-        <el-form-item label="说明">
-          <el-input
-            v-model="record.description"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            type="textarea"
-            placeholder="主题说明"
-          />
-        </el-form-item>
+        <el-tabs v-model="activeName">
+          <el-tab-pane label="基本配置" name="first">
+            <el-form-item label="集群名称">
+              <el-select v-model="record.clusterName" placeholder="请选择">
+                <el-option
+                  v-for="item in options.clusters"
+                  :key="item.clusterName"
+                  :label="item.clusterName"
+                  :value="item.clusterName"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="代理名">
+              <el-select v-model="record.brokerNameList" multiple placeholder="请选择" :disabled="brokerNameDisabled">
+                <el-option
+                  v-for="item in options.clusters"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+
+            </el-form-item>
+            <el-form-item label="主题名称">
+              <el-input v-model="record.topicName" placeholder="主题名称" :disabled="topicDisabled" />
+            </el-form-item>
+            <el-form-item label="写队列数量:">
+              <el-input-number v-model="record.writeQueueNums" :min="1" :max="1024" />
+            </el-form-item>
+            <el-form-item label="读队列数量:">
+              <el-input-number v-model="record.readQueueNums" :min="1" :max="1024" />
+            </el-form-item>
+            <el-form-item label="perm:">
+              <el-input-number v-model="record.perm" :min="0" :max="10" />
+            </el-form-item>
+            <el-form-item label="顺序:">
+              <el-switch
+                v-model="record.order"
+                active-color="#13ce66"
+                inactive-color="#ff4949"
+                :active-text="$t('label.enable')"
+                :inactive-text="$t('label.disable')"
+              />
+            </el-form-item>
+          </el-tab-pane>
+          <el-tab-pane label="扩展配置" name="second">
+            <el-form-item label="存储类型">
+              <el-select v-model="record.type" placeholder="请选择">
+                <el-option key="JSON" label="JSON" value="JSON" />
+                <el-option key="STRING" label="STRING" value="STRING" />
+                <el-option key="PROTO_STUFF" label="PROTO_STUFF" value="PROTO_STUFF" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="存储Jar包">
+              <el-input v-model="record.classFile" placeholder="存储Jar包" />
+            </el-form-item>
+            <el-form-item label="存储对象">
+              <el-input v-model="record.className" placeholder="存储对象" />
+            </el-form-item>
+            <el-form-item label="说明">
+              <el-input
+                v-model="record.description"
+                :autosize="{ minRows: 2, maxRows: 4}"
+                type="textarea"
+                placeholder="主题说明"
+              />
+            </el-form-item>
+          </el-tab-pane>
+        </el-tabs>
       </el-form>
       <div style="text-align:right;">
         <el-button type="primary" @click="handleSubmit">保存</el-button>
@@ -145,16 +156,72 @@
         <el-button type="danger" @click="dialogVisible2=false">关闭</el-button>
       </div>
     </el-dialog>
+
+    <el-dialog :visible.sync="dialog3Visible" :title="dialog3Title">
+      <el-table :data="tableB.data" max-height="500">
+        <el-table-column label="队列" prop="queue" />
+        <el-table-column label="最小位点" prop="minOffset" width="80" align="center" />
+        <el-table-column label="最大位点" prop="maxOffset" width="80" align="center" />
+        <el-table-column label="上次更新时间" prop="lastUpdate" width="180" />
+      </el-table>
+      <div slot="footer" style="text-align:right;">
+        <el-button @click="dialog3Visible=false">关 闭</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog :visible.sync="dialog4Visible" :title="dialog4Title">
+      <el-card class="box-card route-broker">
+        <div slot="header" class="clearfix">
+          <span>代理信息:	</span>
+        </div>
+        <div v-for="o in list.a" :key="o.brokerName" class="text item">
+          <el-row class="broker-row">
+            <el-col :span="4">代理名:</el-col>
+            <el-col :span="20">{{ o.brokerName }}</el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="4">代理地址:</el-col>
+            <el-col :span="20">
+              <div v-for="(p,k) in o.brokerAddrs" :key="p">
+                <el-col class="broker-addr-cell" :span="2">{{ k }}</el-col>
+                <el-col class="broker-addr-cell" :span="20">{{ p }}</el-col>
+              </div>
+            </el-col>
+          </el-row>
+          <el-divider content-position="right">[{{ o.brokerName }}] End</el-divider>
+        </div>
+      </el-card>
+      <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span>队列信息	</span>
+        </div>
+        <el-table :data="list.b" max-height="500">
+          <el-table-column label="代理名" prop="brokerName" />
+          <el-table-column label="读队列数量" prop="readQueueNums" width="100" align="center" />
+          <el-table-column label="写队列数量" prop="writeQueueNums" width="100" align="center" />
+          <el-table-column label="perm" prop="perm" width="100" />
+        </el-table>
+      </el-card>
+      <div slot="footer" style="text-align:right;">
+        <el-button @click="dialog4Visible=false">关 闭</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { Loading } from 'element-ui'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import { deepClone } from '@/utils'
-import { listRocketMQTopic } from '@/api/rocketmq/topic'
+import { deepClone, parseTime } from '@/utils'
+import { listRocketMQTopic, getRocketMQTopicStatus, getRocketMQTopicRoute, getRocketMQTopic } from '@/api/rocketmq/topic'
 import { list, add, edit, del, getClusters, getTopics, syncAll, refresh2 } from '@/api/kafka/topic'
 
+const defaultRecord = {
+  'writeQueueNums': 16,
+  'readQueueNums': 16,
+  'perm': 6,
+  'order': false,
+  type: 'JSON'
+}
 export default {
   name: 'RocketMQTopic1',
   components: { Pagination },
@@ -169,12 +236,27 @@ export default {
         params: {},
         data: []
       },
+      tableB: {
+        loading: false,
+        page: 1,
+        limit: 10,
+        total: 0,
+        params: {},
+        data: []
+      },
       record: {},
       dialogVisible: false,
       dialogType: false,
-      propDisabled: false,
+      brokerNameDisabled: false,
+      topicDisabled: false,
       dialogVisible2: false,
+      dialog3Visible: false,
+      dialog3Title: '',
+      dialog4Visible: false,
+      dialog4Title: '',
+      activeName: 'first',
       loading: false,
+      list: { a: [], b: [] },
       options: {
         clusters: [],
         topics: []
@@ -208,17 +290,51 @@ export default {
         }
       }).finally(() => { this.loading = false })
     },
+    handleStatus(row) {
+      getRocketMQTopicStatus({ topic: row.topicName }).then(resp => {
+        if (resp.success) {
+          const { offsetTable } = resp.rows[0]
+          this.tableB.data = []
+          for (const k in offsetTable) {
+            this.tableB.data.push({
+              queue: k,
+              minOffset: offsetTable[k].minOffset,
+              maxOffset: offsetTable[k].maxOffset,
+              lastUpdate: parseTime(offsetTable[k].lastUpdateTimestamp, '{y}-{m}-{d} {h}:{i}:{s}')
+            })
+          }
+          this.dialog3Title = `[${row.topicName}] ${this.$t('label.status')}`
+          this.dialog3Visible = true
+        }
+      })
+    },
+    handleRoute(row) {
+      getRocketMQTopicRoute({ topic: row.topicName }).then(resp => {
+        if (resp.success) {
+          const { brokerDatas, queueDatas } = resp.rows[0]
+          this.list.a = brokerDatas
+          this.list.b = queueDatas
+          this.dialog4Title = `[${row.topicName}] ${this.$t('label.status')}`
+          this.dialog4Visible = true
+        }
+      })
+    },
     handleAdd() {
-      this.record = { partitionSize: 4, replicaSize: 3, type: 'JSON' }
+      this.record = Object.assign({}, defaultRecord)
       this.dialogType = 'new'
       this.dialogVisible = true
-      this.propDisabled = false
+      this.topicDisabled = false
     },
     handleEdit(row) {
-      this.record = deepClone(row)
-      this.dialogType = 'edit'
-      this.dialogVisible = true
-      this.propDisabled = true
+      getRocketMQTopic({ topic: row.topicName }).then(resp => {
+        if (resp.success) {
+          this.dialogType = 'edit'
+          this.dialogVisible = true
+          this.record = resp.rows[0]
+          this.brokerNameDisabled = true
+          this.topicDisabled = true
+        }
+      })
     },
     handleDel(row) {
       const _this = this
@@ -325,5 +441,20 @@ export default {
 
   .el-select .el-input__inner {
     width: 360px;
+  }
+  .item {
+    margin-bottom: 10px;
+  }
+
+  .route-broker{
+    margin-bottom: 15px;
+  }
+  .route-broker .broker-row {
+    /*border-bottom: 1px solid #0a76a4;*/
+    padding-bottom: 15px;
+  }
+  .route-broker .broker-addr-cell {
+    padding: 5px;
+    /*border: 1px solid #d9d9d9;*/
   }
 </style>

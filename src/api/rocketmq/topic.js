@@ -9,9 +9,25 @@ export function listRocketMQTopic() {
   })
 }
 
-export function getRocketMQTopic(params) {
+export function getRocketMQTopicStatus(params) {
   return request({
     url: `${namespace}/stats`,
+    method: 'get',
+    params: params
+  })
+}
+
+export function getRocketMQTopicRoute(params) {
+  return request({
+    url: `${namespace}/route`,
+    method: 'get',
+    params: params
+  })
+}
+
+export function getRocketMQTopic(params) {
+  return request({
+    url: `${namespace}/config`,
     method: 'get',
     params: params
   })
