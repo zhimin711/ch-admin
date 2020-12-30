@@ -1,70 +1,72 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="recordPage.params.code" placeholder="代码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="recordPage.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-select v-model="recordPage.params.status" placeholder="状态" class="filter-item" clearable>
-        <el-option label="启用" value="1" />
-        <el-option label="禁用" value="0" />
+      <el-input v-model="tableA.params.code" :placeholder="$t('label.code')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="tableA.params.name" :placeholder="$t('label.name')" style="width: 200px;" class="filter-item" />
+      <el-select v-model="tableA.params.status" :placeholder="$t('label.status')" class="filter-item" clearable>
+        <el-option :label="$t('label.enable')" value="1" />
+        <el-option :label="$t('label.disable')" value="0" />
       </el-select>
-      <el-button v-loading="recordPage.loading" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        查询
+      <el-button v-loading="tableA.loading" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+        {{ $t('btn.search') }}
       </el-button>
-      <el-button class="filter-item" type="" icon="el-icon-refresh" @click="recordPage.params={}">
-        重置
+      <el-button class="filter-item" type="" icon="el-icon-refresh" @click="tableA.params={}">
+        {{ $t('btn.reset') }}
       </el-button>
-      <el-button v-if="checkPermission2(['UPMS_ROLE_ADD'])" type="primary" class="filter-item" icon="el-icon-plus" @click="handleAdd">添加角色</el-button>
+      <el-button v-permission="['UPMS_ROLE_ADD']" type="primary" class="filter-item" icon="el-icon-plus" @click="handleAdd">
+        {{ $t('role.add') }}
+      </el-button>
     </div>
 
-    <el-table v-loading="recordPage.loading" :data="recordPage.list" style="width: 100%;" border>
-      <el-table-column label="角色代码" width="220">
+    <el-table v-loading="tableA.loading" :data="tableA.list" style="width: 100%;" border>
+      <el-table-column :label="$t('label.code')" width="220">
         <template slot-scope="scope">
           {{ scope.row.code }}
         </template>
       </el-table-column>
-      <el-table-column label="角色名称" width="220">
+      <el-table-column :label="$t('label.name')" width="220">
         <template slot-scope="scope">
           {{ scope.row.name }}
         </template>
       </el-table-column>
-      <el-table-column align="header-center" label="描述">
+      <el-table-column align="header-center" :label="$t('label.description')">
         <template slot-scope="scope">
           {{ scope.row.description }}
         </template>
       </el-table-column>
-      <el-table-column prop="status" label="状态" width="80">
+      <el-table-column prop="status" :label="$t('label.status')" width="90">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.status === '0'" type="warning">禁用</el-tag>
-          <el-tag v-else-if="scope.row.status === '1'" type="success">启用</el-tag>
+          <el-tag v-if="scope.row.status === '0'" type="warning">{{ $t('label.disable') }}</el-tag>
+          <el-tag v-else-if="scope.row.status === '1'" type="success">{{ $t('label.enable') }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="250">
+      <el-table-column align="center" :label="$t('label.actions')" width="250">
         <template v-if="scope.row.type !== '0'" slot-scope="scope">
-          <el-link v-if="checkPermission2(['UPMS_ROLE_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link v-if="checkPermission2(['UPMS_ROLE_PERMISSION'])" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">分配权限</el-link>
-          <el-link v-if="checkPermission2(['UPMS_ROLE_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <el-link v-permission="['UPMS_ROLE_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">{{ $t('btn.edit') }}</el-link>
+          <el-link v-permission="['UPMS_ROLE_PERMISSION']" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">{{ $t('role.permissions') }}</el-link>
+          <el-link v-permission="['UPMS_ROLE_DELETE']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="recordPage.total>0" :total="recordPage.total" :page.sync="recordPage.num" :limit.sync="recordPage.size" @pagination="getList" />
+    <pagination v-show="tableA.total>0" :total="tableA.total" :page.sync="tableA.num" :limit.sync="tableA.size" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'Edit 角色':'New 角色'">
-      <el-form :model="role" label-width="80px" label-position="left">
-        <el-form-item label="代码" prop="code">
-          <el-input v-model="role.code" placeholder="Role 代码" :disabled="dataForm.codeDisabled" />
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?$t('role.edit'): $t('role.add')">
+      <el-form :model="role" label-width="100px" label-position="left">
+        <el-form-item :label="$t('label.code')" prop="code">
+          <el-input v-model="role.code" :placeholder="$t('label.code')" :disabled="dataForm.codeDisabled" />
         </el-form-item>
-        <el-form-item label="名称">
-          <el-input v-model="role.name" placeholder="Role 名称" />
+        <el-form-item :label="$t('label.name')">
+          <el-input v-model="role.name" :placeholder="$t('label.name')" />
         </el-form-item>
-        <el-form-item label="描述">
+        <el-form-item :label="$t('label.description')">
           <el-input
             v-model="role.description"
             :autosize="{ minRows: 2, maxRows: 4}"
             type="textarea"
-            placeholder="Role 描述"
+            :placeholder="$t('label.description')"
           />
         </el-form-item>
-        <el-form-item label="状态">
+        <el-form-item :label="$t('label.status')">
           <!--<el-select v-model="role.status" placeholder="请选择">
             <el-option key="enabled" label="启用" value="1" />
             <el-option key="disabled" label="禁用" value="0" />
@@ -74,19 +76,19 @@
             v-model="recordStatus"
             active-color="#13ce66"
             inactive-color="#ff4949"
-            active-text="开启"
-            inactive-text="禁用"
+            :active-text="$t('label.enable')"
+            :inactive-text="$t('label.disable')"
           />
         </el-form-item>
       </el-form>
       <div style="text-align:center;">
-        <el-button type="primary" @click="confirmRole">保存</el-button>
-        <el-button type="danger" @click="dialogVisible=false">取消</el-button>
+        <el-button type="primary" @click="confirmRole">{{ $t('btn.save') }}</el-button>
+        <el-button type="danger" @click="dialogVisible=false">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
-    <el-dialog :visible.sync="dialogVisible2" :title="'分配角色权限'">
+    <el-dialog :visible.sync="dialogVisible2" :title="$t('role.permissions')">
       <el-form :model="role" label-width="80px" label-position="left">
-        <el-form-item label="菜单">
+        <el-form-item :label="$t('label.menu')">
           <el-tree
             ref="tree"
             :check-strictly="checkStrictly"
@@ -101,8 +103,8 @@
         </el-form-item>
       </el-form>
       <div style="text-align:center;">
-        <el-button v-loading="treeLoading" type="primary" @click="confirmAuth">保存</el-button>
-        <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
+        <el-button v-loading="treeLoading" type="primary" @click="confirmAuth">{{ $t('btn.save') }}</el-button>
+        <el-button type="danger" @click="dialogVisible2=false">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -110,7 +112,6 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { pageRole, addRole, editRole, delRole, getRolePermissions, editRolePermissions } from '@/api/upms/role'
 import { treePermission } from '@/api/upms/permission'
 
@@ -125,7 +126,7 @@ export default {
   name: 'UpmsRole',
   data() {
     return {
-      recordPage: {
+      tableA: {
         loading: true,
         num: 1,
         size: 10,
@@ -164,7 +165,6 @@ export default {
     this.getRoutes()
   },
   methods: {
-    checkPermission2,
     async getRoutes() {
       this.treeLoading = true
       this.routes = []
@@ -175,11 +175,11 @@ export default {
       if (this.routes.length === 0) this.treeTip = '未加载到数据！'
     },
     getList() {
-      this.recordPage.loading = true
-      pageRole(this.recordPage).then(response => {
-        this.recordPage.list = response.rows
-        this.recordPage.total = response.total
-      }).finally(() => { this.recordPage.loading = false })
+      this.tableA.loading = true
+      pageRole(this.tableA).then(response => {
+        this.tableA.list = response.rows
+        this.tableA.total = response.total
+      }).finally(() => { this.tableA.loading = false })
     },
     handleFilter() {
       this.getList()
@@ -207,9 +207,9 @@ export default {
       })
     },
     handleDel(row) {
-      this.$confirm('确认删除选择角色，操作不可回退??', '告警', {
-        confirmButtonText: '确认',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('message.deleteTip'), this.$t('label.warning'), {
+        confirmButtonText: this.$t('btn.confirm'),
+        cancelButtonText: this.$t('btn.cancel'),
         type: 'warning'
       })
         .then(async() => {
@@ -217,7 +217,7 @@ export default {
           this.getList()
           this.$message({
             type: 'success',
-            message: 'Delete success!'
+            message: this.$t('message.deleteSuccess')
           })
         }).catch(err => { console.error(err) })
     },

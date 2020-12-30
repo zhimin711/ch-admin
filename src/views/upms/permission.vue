@@ -1,107 +1,107 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="recordPage.params.userId" placeholder="代码" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
-      <el-input v-model="recordPage.params.username" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-select v-model="recordPage.params.status" placeholder="状态" class="filter-item" clearable>
-        <el-option label="启用" value="1" />
-        <el-option label="禁用" value="0" />
+      <el-input v-model="tableA.params.code" :placeholder="$t('label.code')" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
+      <el-input v-model="tableA.params.name" :placeholder="$t('label.name')" style="width: 200px;" class="filter-item" />
+      <el-select v-model="tableA.params.status" :placeholder="$t('label.status')" class="filter-item" clearable>
+        <el-option :label="$t('label.enable')" value="1" />
+        <el-option :label="$t('label.disable')" value="0" />
       </el-select>
-      <el-button v-loading="recordPage.loading" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        查询
+      <el-button v-loading="tableA.loading" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+        {{ $t('btn.search') }}
       </el-button>
-      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="recordPage.params = {}">
-        重置
+      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="tableA.params = {}">
+        {{ $t('btn.reset') }}
       </el-button>
-      <el-button v-if="checkPermission2(['UPMS_PERMISSION_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加权限
+      <el-button v-permission="['UPMS_PERMISSION_ADD']" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+        {{ $t('permission.add') }}
       </el-button>
-      <!--<el-button type="primary" class="filter-item" icon="el-icon-plus" @click="handleAddRole">New Role</el-button>-->
     </div>
 
-    <el-table v-loading="recordPage.loading" :data="recordPage.list" style="width: 100%;margin-bottom: 20px;" row-key="id" border :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
-      <el-table-column label="名称" prop="name">
+    <el-table v-loading="tableA.loading" :data="tableA.list" style="width: 100%;margin-bottom: 20px;" row-key="id" border :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+      <el-table-column :label="$t('label.name')" prop="name">
         <template slot-scope="scope">
           {{ scope.row.name }}
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="type" label="类型" width="100">
+      <el-table-column align="center" prop="type" :label="$t('label.type')" width="100">
         <template slot-scope="{row}">
-          <el-tag v-if="row.type === '1'" type="warning">目录</el-tag>
-          <el-tag v-else-if="row.type === '2'" type="success">{{ row.hidden? '[隐藏]':'' }}菜单</el-tag>
-          <el-tag v-else-if="row.type === '3'" type="primary">按钮</el-tag>
+          <el-tag v-if="row.type === '1'" type="warning">{{ $t('label.catalog') }}</el-tag>
+          <el-tag v-else-if="row.type === '2'" type="success">{{ row.hidden? '['+$t('label.hidden')+']':'' }}{{ $t('label.menu') }}</el-tag>
+          <el-tag v-else-if="row.type === '3'" type="primary">{{ $t('label.btn') }}</el-tag>
           <el-tag v-else-if="row.type === '4'" type="info">隐藏菜单</el-tag>
-          <el-tag v-else-if="row.type === '5'" type="danger">{{ row.hidden? '[私有]':'[开放]' }}接口</el-tag>
+          <el-tag v-else-if="row.type === '5'" type="danger">{{ row.hidden? '[私有]':'[开放]' }}{{ $t('label.interface') }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="代码" prop="code">
+      <el-table-column :label="$t('label.code')" prop="code">
         <template slot-scope="scope">
           {{ scope.row.code }}
         </template>
       </el-table-column>
-      <el-table-column label="地址">
+      <el-table-column :label="$t('label.address')">
         <template slot-scope="scope">
           <span>{{ scope.row.url }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="图标" width="70">
+      <el-table-column align="center" :label="$t('label.icon')" width="70">
         <template slot-scope="{row}">
           <!--<i v-if="row.icon" :class="row.icon" />-->
           <svg-icon v-if="row.icon" :icon-class="row.icon" />
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="sort" label="排序" width="69" />
-      <el-table-column align="center" prop="status" label="状态" width="69">
+      <el-table-column align="center" prop="sort" :label="$t('label.status')" width="69" />
+      <el-table-column align="center" prop="status" :label="$t('label.status')" width="69">
         <template slot-scope="{row}">
           <el-tag :type="row.status | statusFilter">
             {{ row.status | enableStatusNameFilter }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="200">
+      <el-table-column align="center" :label="$t('label.actions')" width="200">
         <template slot-scope="scope">
-          <el-button v-if="checkPermission2(['UPMS_PERMISSION_EDIT'])" type="text" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑
+          <el-button v-permission="['UPMS_PERMISSION_EDIT']" type="text" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">
+            {{ $t('btn.edit') }}
           </el-button>
-          <el-link v-if="checkPermission2(['UPMS_PERMISSION_COPY'])" type="success" icon="el-icon-document-copy" @click="handleCopy(scope.row)">复制</el-link>
-          <el-link v-if="checkPermission2(['UPMS_PERMISSION_DELETE'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <el-link v-permission="['UPMS_PERMISSION_COPY']" type="success" icon="el-icon-document-copy" @click="handleCopy(scope.row)">{{ $t('btn.copy') }}</el-link>
+          <el-link v-permission="['UPMS_PERMISSION_DELETE']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="recordPage.total>0" :total="recordPage.total" :page.sync="recordPage.num" :limit.sync="recordPage.size" @pagination="getList" />
+    <pagination v-show="tableA.total>0" :total="tableA.total" :page.sync="tableA.num" :limit.sync="tableA.size" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改权限':'新增权限'" :close-on-click-modal="false">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?$t('permission.edit'): $t('permission.add')" :close-on-click-modal="false">
       <el-form ref="baseForm" :model="record" :rules="rules" label-width="100px">
-        <el-form-item label="类型">
+        <el-form-item :label="$t('label.type')">
           <el-radio-group v-model="record.type" @change="changeType">
-            <el-radio-button label="1">目录</el-radio-button>
-            <el-radio-button label="2">菜单</el-radio-button>
+            <el-radio-button label="1">{{ $t('label.catalog') }}</el-radio-button>
+            <el-radio-button label="2">{{ $t('label.menu') }}</el-radio-button>
+            <el-radio-button label="3">{{ $t('label.btn') }}</el-radio-button>
             <!--<el-radio-button label="4">隐藏菜单</el-radio-button>-->
-            <el-radio-button label="3">按钮</el-radio-button>
-            <el-radio-button label="5">接口</el-radio-button>
+            <el-radio-button label="5">{{ $t('label.interface') }}</el-radio-button>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="上级">
+        <el-form-item :label="$t('label.parent')">
           <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" :props="recordParentsProps" clearable />
           <el-icon v-show="dialogLoadingVisible" class="el-icon-loading" />
         </el-form-item>
-        <el-form-item label="代码" prop="code">
+        <el-form-item :label="$t('label.code')" prop="code">
           <el-input v-model="record.code" :disabled="recordForm.codeDisabled" placeholder="目录或菜单代码需与前端路由一致" />
         </el-form-item>
-        <el-form-item label="名称" prop="name">
+        <el-form-item :label="$t('label.name')" prop="name">
           <el-input v-model="record.name" />
         </el-form-item>
-        <el-form-item label="图标" prop="icon">
+        <el-form-item :label="$t('label.icon')" prop="icon">
           <!--<el-input v-model="record.icon" placeholder="仅支持SVG" />-->
           <icon-selector v-model="record.icon" />
         </el-form-item>
-        <el-form-item label="地址">
+        <el-form-item :label="$t('label.address')">
           <el-input v-model="record.url" placeholder="按钮或接口必填" />
         </el-form-item>
         <!--<el-form-item v-show="recordForm.redirectShow" label="重定向地址">
           <el-input v-model="record.redirect" placeholder="目录与隐藏地址" />
         </el-form-item>-->
-        <el-form-item v-if="record.type === '3' || record.type === '5'" label="请求方法">
+        <el-form-item v-if="record.type === '3' || record.type === '5'" :label="$t('label.method')">
           <el-radio-group v-model="record.method">
             <el-radio-button label="">ALL</el-radio-button>
             <el-radio-button label="GET" />
@@ -114,22 +114,22 @@
           <el-radio v-model="record.hidden" :label="false">{{ record.type === '2'?'否':'是' }}</el-radio>
           <el-radio v-model="record.hidden" :label="true">{{ record.type === '2'?'是':'否' }}</el-radio>
         </el-form-item>
-        <el-form-item label="排序">
+        <el-form-item :label="$t('label.sort')">
           <el-input-number v-model="record.sort" />
         </el-form-item>
-        <el-form-item label="权限状态">
+        <el-form-item :label="$t('label.status')">
           <el-switch
             v-model="recordStatus"
             active-color="#13ce66"
             inactive-color="#ff4949"
-            active-text="开启"
-            inactive-text="禁用"
+            :active-text="$t('label.enable')"
+            :inactive-text="$t('label.disable')"
           />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="primary" @click="handleSubmit">保存</el-button>
-        <el-button type="danger" @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ $t('btn.save') }}</el-button>
+        <el-button type="danger" @click="dialogVisible = false">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -138,7 +138,6 @@
 <script>
 import IconSelector from '@/components/IconSelector'
 import { deepClone } from '@/utils'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { validAlphabetsAndNumber, isEmpty } from '@/utils/validate'
 import { treePermission, pagePermission, addPermission, editPermission, delPermission } from '@/api/upms/permission'
 
@@ -154,7 +153,7 @@ export default {
   data() {
     return {
       treeData1: [],
-      recordPage: {
+      tableA: {
         loading: true,
         num: 1,
         size: 10,
@@ -204,7 +203,6 @@ export default {
     this.getList()
   },
   methods: {
-    checkPermission2,
     getTree(type) {
       // this.options.parents = []
       this.dialogLoadingVisible = true
@@ -223,11 +221,11 @@ export default {
       // this.getList()
     },
     getList() {
-      this.recordPage.loading = true
-      pagePermission(this.recordPage).then(response => {
-        this.recordPage.list = response.rows
-        this.recordPage.total = response.total
-      }).finally(() => { this.recordPage.loading = false })
+      this.tableA.loading = true
+      pagePermission(this.tableA).then(response => {
+        this.tableA.list = response.rows
+        this.tableA.total = response.total
+      }).finally(() => { this.tableA.loading = false })
     },
     handleAdd() {
       this.getTree('1')
@@ -271,9 +269,9 @@ export default {
     },
     handleDel(row) {
       const _this = this
-      this.$confirm('确认删除选择权限，操作不可回退?', '警告', {
-        confirmButtonText: '确认',
-        cancelButtonText: '取消',
+      this.$confirm(this.$t('message.deleteTip'), this.$t('label.warning'), {
+        confirmButtonText: this.$t('btn.confirm'),
+        cancelButtonText: this.$t('btn.cancel'),
         type: 'warning'
       })
         .then(async() => {
@@ -282,7 +280,7 @@ export default {
               _this.getList()
               this.$message({
                 type: 'success',
-                message: 'Delete success!'
+                message: this.$t('message.deleteSuccess')
               })
             }
           })

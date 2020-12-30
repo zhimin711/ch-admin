@@ -277,9 +277,9 @@ export default {
     },
     handleDel(row) {
       const _this = this
-      this.$confirm('Confirm to remove the user?', 'Warning', {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
+      this.$confirm(this.$t('message.deleteTip'), this.$t('label.warning'), {
+        confirmButtonText: this.$t('btn.confirm'),
+        cancelButtonText: this.$t('btn.cancel'),
         type: 'warning'
       })
         .then(async() => {
@@ -287,7 +287,7 @@ export default {
           _this.getList()
           this.$message({
             type: 'success',
-            message: 'Delete success!'
+            message: this.$t('message.deleteSuccess')
           })
         })
         .catch(err => { console.error(err) })
@@ -295,16 +295,16 @@ export default {
     handleInitPwd(row) {
       const _this = this
       _this.$confirm(`请确认是否初始化用户[${row.username}]密码，操作不可回退?`, '', {
-        confirmButtonText: '确认',
-        cancelButtonText: '取消',
+        confirmButtonText: this.$t('btn.confirm'),
+        cancelButtonText: this.$t('btn.cancel'),
         type: 'warning'
       })
         .then(async() => {
           const resp = await initPwd(row.id)
           if (resp.success) {
             _this.$confirm(`初始化成功！ (${resp.rows[0]})`, `[${row.username}]用户密码`, {
-              confirmButtonText: '复制',
-              cancelButtonText: '关闭',
+              confirmButtonText: this.$t('btn.copy'),
+              cancelButtonText: this.$t('btn.close'),
               callback: action => {
                 if (action === 'confirm') {
                   handleClipboard2(resp.rows[0])

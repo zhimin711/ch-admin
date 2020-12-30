@@ -1,6 +1,8 @@
 export default {
   message: {
-    'switchLanguage': 'switch English Language Success！'
+    'switchLanguage': 'switch English Language Success！',
+    deleteTip: 'Confirm to remove the selected data?',
+    deleteSuccess: 'Delete success!'
   },
   input: {
     tips: {
@@ -67,10 +69,27 @@ export default {
     github: 'Github Repository'
   },
   label: {
+    actions: 'Actions',
     status: 'Status',
     enable: 'Enabled',
     disable: 'Disabled',
-    description: 'Description'
+    hidden: 'Hidden',
+    code: 'Code',
+    name: 'Name',
+    description: 'Description',
+    sort: 'Sort',
+    address: 'Address',
+    icon: 'Icon',
+    type: 'Type',
+    method: 'Method',
+    parent: 'Parent',
+    warning: 'Warning',
+    success: 'Success',
+    tip: 'Tip',
+    btn: 'Button',
+    catalog: 'Catalog',
+    menu: 'Menu',
+    interface: 'Interface'
   },
   user: {
     add: 'Add User',
@@ -90,15 +109,18 @@ export default {
     roles0: 'All Roles',
     roles1: 'Assign Roles'
   },
+  role: {
+    add: 'Add Role',
+    edit: 'Edit Role',
+    permissions: 'Assign Permissions'
+  },
   permission: {
-    addRole: 'New Role',
+    add: 'Add Permission',
+    edit: 'Edit Permission',
     editPermission: 'Edit',
     roles: 'Your roles',
     switchRoles: 'Switch roles',
-    tips: 'In some cases, using v-permission will have no effect. For example: Element-UI  el-tab or el-table-column and other scenes that dynamically render dom. You can only do this with v-if.',
-    delete: 'Delete',
-    confirm: 'Confirm',
-    cancel: 'Cancel'
+    tips: 'In some cases, using v-permission will have no effect. For example: Element-UI  el-tab or el-table-column and other scenes that dynamically render dom. You can only do this with v-if.'
   },
   cluster: {
     add: 'Add Cluster',
@@ -134,7 +156,6 @@ export default {
     id: 'ID',
     date: 'Date',
     createDate: 'Create Date',
-    address: 'Address',
     author: 'Author',
     readings: 'Readings',
     status: 'Status',
@@ -151,6 +172,7 @@ export default {
     add: 'Add',
     edit: 'Edit',
     delete: 'Delete',
+    copy: 'Copy',
     reset: 'Reset',
     publish: 'Publish',
     draft: 'Draft',

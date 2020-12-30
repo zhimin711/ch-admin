@@ -1,6 +1,8 @@
 const cn = {
   message: {
-    'switchLanguage': '切换中文语言成功！'
+    'switchLanguage': '切换中文语言成功！',
+    deleteTip: '确认删除选择数据码?操作不可回退。',
+    deleteSuccess: '删除成功!'
   },
   input: {
     tips: {
@@ -66,10 +68,27 @@ const cn = {
     github: 'Github 地址'
   },
   label: {
+    actions: '操作',
     status: '状态',
     enable: '启用',
     disable: '禁用',
-    description: '描述'
+    hidden: '隐藏',
+    code: '代码',
+    name: '名称',
+    description: '描述',
+    sort: '排序',
+    address: '地址',
+    icon: '图标',
+    type: '类型',
+    method: '方法',
+    parent: '上级',
+    warning: '告警',
+    success: '成功',
+    tip: '提示',
+    btn: '按钮',
+    catalog: '目录',
+    menu: '菜单',
+    interface: '接口'
   },
   user: {
     add: '添加用户',
@@ -89,15 +108,18 @@ const cn = {
     roles0: '未分配角色',
     roles1: '已分配角色'
   },
+  role: {
+    add: '添加角色',
+    edit: '编辑角色',
+    permissions: '分配权限'
+  },
   permission: {
-    addRole: '新增角色',
+    add: '添加权限',
+    edit: '编辑权限',
     editPermission: '编辑权限',
     roles: '你的权限',
     switchRoles: '切换权限',
-    tips: '在某些情况下，不适合使用 v-permission。例如：Element-UI 的 el-tab 或 el-table-column 以及其它动态渲染 dom 的场景。你只能通过手动设置 v-if 来实现。',
-    delete: '删除',
-    confirm: '确定',
-    cancel: '取消'
+    tips: '在某些情况下，不适合使用 v-permission。例如：Element-UI 的 el-tab 或 el-table-column 以及其它动态渲染 dom 的场景。你只能通过手动设置 v-if 来实现。'
   },
   cluster: {
     add: '添加集群',
@@ -133,7 +155,6 @@ const cn = {
     id: '序号',
     date: '时间',
     createDate: '创建时间',
-    address: '地址',
     author: '作者',
     readings: '阅读数',
     status: '状态',
@@ -150,6 +171,7 @@ const cn = {
     add: '添加',
     edit: '编辑',
     delete: '删除',
+    copy: '复制',
     reset: '重置',
     publish: '发布',
     draft: '草稿',
