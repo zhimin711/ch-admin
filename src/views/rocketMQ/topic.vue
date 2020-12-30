@@ -211,9 +211,9 @@
 <script>
 import { Loading } from 'element-ui'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import { deepClone, parseTime } from '@/utils'
+import { parseTime } from '@/utils'
 import { listRocketMQTopic, getRocketMQTopicStatus, getRocketMQTopicRoute, getRocketMQTopic } from '@/api/rocketmq/topic'
-import { list, add, edit, del, getClusters, getTopics, syncAll, refresh2 } from '@/api/kafka/topic'
+import { add, edit, del, getClusters, getTopics, syncAll, refresh2 } from '@/api/kafka/topic'
 
 const defaultRecord = {
   'writeQueueNums': 16,

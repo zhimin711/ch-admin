@@ -180,7 +180,7 @@
         <el-amap-search-box class="search-box" :search-option="searchOption" :on-search-result="onSearchResult" />
         <el-amap vid="amap" class="amap-demo" :zoom="12" :center="mapCenter" :events="events">
           <el-amap-marker v-if="point" :position="point.pos" />
-          <el-amap-marker v-for="marker in markers" :position="marker.pos" :icon="marker.icon" />
+          <el-amap-marker v-for="marker in markers" :key="marker.id" :position="marker.pos" :icon="marker.icon" />
         </el-amap>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -285,6 +285,9 @@ const rules2 = [
   { value: 'AUTO_DECR_RANGE', label: '递减+范围', types: [], filterTypes: ['{}', 'java.lang.String', 'java.lang.Boolean'] },
   { value: 'OBJECT', label: '对象', types: ['{}'], filterTypes: [] }
 ]
+
+const AMap = window.AMap
+
 export default {
   name: 'KafkaGPSMock',
   data() {
@@ -566,6 +569,7 @@ export default {
 
       const mark = Object.assign({}, this.point)
       mark.type = op
+      mark.id = mark.lng + ',' + mark.lat
       if (op === 0) {
         mark.icon = 'https://webapi.amap.com/theme/v1.3/markers/n/start.png'
         if (this.markers.length > 0) {
