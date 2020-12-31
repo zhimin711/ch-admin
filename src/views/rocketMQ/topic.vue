@@ -47,13 +47,13 @@
       </el-table-column>-->
       <el-table-column align="center" :label="$t('label.actions')">
         <template slot-scope="scope">
-          <el-link v-permission="'ROCKET_MQ_TOPIC_STATUS'" type="warning" icon="el-icon-view" @click="handleStatus(scope.row, scope.$index)">状态</el-link>
+          <el-link v-permission="'ROCKET_MQ_TOPIC_STATUS'" type="warning" icon="el-icon-view" @click="handleStatus(scope.row, scope.$index)">{{ $t('label.status') }}</el-link>
           <el-link v-permission="'ROCKET_MQ_TOPIC_ROUTE'" type="primary" icon="el-icon-share" @click="handleRoute(scope.row, scope.$index)">路由</el-link>
           <el-link v-permission="'ROCKET_MQ_TOPIC_CONSUMER'" type="" icon="el-icon-connection" @click="handleConsume(scope.row, scope.$index)">Consumer管理</el-link>
           <el-link v-permission="'ROCKET_MQ_TOPIC_CONFIG'" type="primary" icon="el-icon-set-up" @click="handleEdit(scope.row, scope.$index)">配置</el-link>
           <el-link v-permission="'ROCKET_MQ_TOPIC_SEND'" type="success" icon="el-icon-s-promotion" @click="handleSend(scope.row)">发消息</el-link>
           <el-link v-permission="'ROCKET_MQ_TOPIC_RESET'" type="warning" icon="el-icon-refresh" @click="handleOffset(scope.row)">重置消费起点</el-link>
-          <el-link v-permission="'ROCKET_MQ_TOPIC_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <el-link v-permission="'ROCKET_MQ_TOPIC_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
         </template>
       </el-table-column>
     </el-table>

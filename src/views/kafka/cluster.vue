@@ -18,7 +18,7 @@
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
       <el-table-column width="120px" :label="$t('cluster.name')" prop="clusterName" />
-      <el-table-column :label="'ZK ' + $t('table.address')">
+      <el-table-column :label="'ZK ' + $t('label.address')">
         <template slot-scope="scope">
           <span>{{ scope.row.zookeeper }}</span>
         </template>
