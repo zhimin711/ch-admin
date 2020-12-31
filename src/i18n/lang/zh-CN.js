@@ -183,6 +183,7 @@ const cn = {
     draft: '草稿',
     save: '保存',
     close: '关闭',
+    confirm: '确 定',
     cancel: '取消',
     _cancel: '取 消',
     _confirm: '确 定',
