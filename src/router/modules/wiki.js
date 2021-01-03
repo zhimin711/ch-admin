@@ -94,10 +94,9 @@ const routerMap = {
     component: Layout,
     redirect: '/wiki/base/user',
     alwaysShow: true, // will always show the root menu
-    name: 'Wiki',
+    name: 'WikiManagement',
     meta: {
-      title: '极客管理',
-      icon: 'lock'
+      code: 'wikiManagement'
     }
   },
   WikiBase: {
@@ -105,10 +104,9 @@ const routerMap = {
     redirect: '/wiki/base/user',
     component: Blank,
     alwaysShow: true,
-    name: 'WikiBase',
+    name: 'WikiBaseManagement',
     meta: {
-      title: '基础管理',
-      icon: 'lock'
+      code: 'baseManagement'
     }
   },
   WikiUser: {
@@ -116,7 +114,7 @@ const routerMap = {
     component: () => import('@/views/wiki/base/user'),
     name: 'WikiUser',
     meta: {
-      title: '用户管理'
+      code: 'userManagement'
     }
   },
   WikiCategory: {
@@ -134,8 +132,7 @@ const routerMap = {
     alwaysShow: true,
     name: 'WikiBusiness',
     meta: {
-      title: '运营管理',
-      icon: 'lock'
+      code: 'businessManagement'
     }
   },
   WikiAd: {
@@ -143,7 +140,7 @@ const routerMap = {
     component: () => import('@/views/wiki/business/ad'),
     name: 'WikiAd',
     meta: {
-      title: '广告管理'
+      code: 'adManagement'
     }
   },
   WikiArticle: {
@@ -151,7 +148,7 @@ const routerMap = {
     component: () => import('@/views/wiki/business/article/index'),
     name: 'WikiArticle',
     meta: {
-      title: '文章管理'
+      code: 'articleManagement'
     }
   },
   WikiBooks: {
@@ -159,7 +156,7 @@ const routerMap = {
     component: () => import('@/views/wiki/business/books/index'),
     name: 'WikiBooks',
     meta: {
-      title: '书籍管理'
+      code: 'bookManagement'
     }
   },
   WikiBookmark: {
@@ -167,7 +164,7 @@ const routerMap = {
     component: () => import('@/views/wiki/business/bookmark'),
     name: 'WikiBookmark',
     meta: {
-      title: '权限管理'
+      code: 'bookmarkManagement'
     }
   },
   WikiArticleAdd: {
@@ -266,8 +263,7 @@ const routerMap = {
     alwaysShow: true,
     name: 'WikiResources',
     meta: {
-      title: '运营管理',
-      icon: 'lock'
+      code: 'resourceManagement'
     }
   },
   WikiResourcesImage: {
@@ -275,7 +271,7 @@ const routerMap = {
     component: () => import('@/views/wiki/resources/images'),
     name: 'WikiResourcesImage',
     meta: {
-      title: '广告管理'
+      code: 'imageManagement'
     }
   },
   WikiResourcesFile: {
@@ -283,7 +279,7 @@ const routerMap = {
     component: () => import('@/views/wiki/resources/files'),
     name: 'WikiResourcesFile',
     meta: {
-      title: '文章管理'
+      code: 'fileManagement'
     }
   },
   WikiResourcesRecord: {
@@ -291,7 +287,7 @@ const routerMap = {
     component: () => import('@/views/wiki/resources/uploadFile'),
     name: 'WikiResourcesRecord',
     meta: {
-      title: '书籍管理'
+      code: 'uploadRecord'
     }
   }
 }

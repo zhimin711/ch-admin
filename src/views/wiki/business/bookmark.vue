@@ -23,12 +23,12 @@
         </el-form-item>
       </el-form>
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        查询
+        {{ $t('btn.search') }}
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = { status: '0', type: '2' }">
-        重置
+        {{ $t('btn.reset') }}
       </el-button>
-      <el-button v-if="checkPermission2(['WIKI_BOOKMARK_ADD'])" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+      <el-button v-permission="['WIKI_BOOKMARK_ADD']" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
         创建书签
       </el-button>
     </div>
@@ -65,10 +65,10 @@
           <span v-if="scope.row.status === '4'">已停更</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="120">
+      <el-table-column align="center" :label="$t('table.actions')" width="130">
         <template slot-scope="scope">
-          <el-link v-if="checkPermission2(['WIKI_BOOKMARK_EDIT'])" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link v-if="checkPermission2(['WIKI_BOOKMARK_DEL'])" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <el-link v-permission="['WIKI_BOOKMARK_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">{{ $t('btn.edit') }}</el-link>
+          <el-link v-permission="['WIKI_BOOKMARK_DEL']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
         </template>
       </el-table-column>
     </el-table>
@@ -89,7 +89,8 @@
           <el-input v-model="record.name" />
         </el-form-item>
         <el-form-item label="标签" prop="mark">
-          <el-input v-model="record.mark" />
+          <el-input v-if="Number.isNaN(Number(record.mark))" v-model="record.mark" />
+          <el-input-number v-else v-model="record.mark" :min="1" :max="10000" />
         </el-form-item>
         <el-form-item label="链接" prop="href">
           <el-input v-model="record.href" />
@@ -110,8 +111,8 @@
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button :loading="loading.handleSubmit" type="primary" @click="handleSubmit">保存</el-button>
-        <el-button :disabled="loading.handleSubmit" type="danger" @click="dialogVisible=false">取消</el-button>
+        <el-button :loading="loading.handleSubmit" type="primary" @click="handleSubmit">{{ $t('btn.save') }}</el-button>
+        <el-button :disabled="loading.handleSubmit" type="danger" @click="dialogVisible=false">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -120,7 +121,6 @@
 <script>
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { listBookmark, addBookmark, editBookmark, delBookmark } from '@/api/wiki/bookmark'
 
 const defaultRecord = { type: '2', status: '0' }
@@ -150,7 +150,6 @@ export default {
     this.getList()
   },
   methods: {
-    checkPermission2,
     getList() {
       this.listLoading = true
       listBookmark(this.listQuery).then(response => {
