@@ -57,7 +57,7 @@ const rocketMQRouter = {
     },
     {
       path: 'message',
-      component: () => import('@/views/logs/operate'),
+      component: () => import('@/views/rocketMQ/message'),
       name: 'RocketMQMessage',
       meta: {
         title: '消息搜索'
@@ -88,7 +88,15 @@ const routerMap = {
   RocketMQCluster: {
     path: 'cluster',
     component: () => import('@/views/rocketMQ/cluster')
-  }
+  },
+  RocketMQMessage: {
+      path: 'message',
+      component: () => import('@/views/rocketMQ/message'),
+      name: 'RocketMQMessage',
+      meta: {
+        title: '消息搜索'
+      }
+    }
 }
 
 export function getRocketMQRouter(code) {

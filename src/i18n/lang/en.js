@@ -91,6 +91,7 @@ export default {
     success: 'Success',
     tip: 'Tip',
     btn: 'Button',
+    detail: 'Detail',
     catalog: 'Catalog',
     menu: 'Menu',
     interface: 'Interface',

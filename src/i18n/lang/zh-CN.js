@@ -89,6 +89,7 @@ const cn = {
     success: '成功',
     tip: '提示',
     btn: '按钮',
+    detail: '详细',
     catalog: '目录',
     menu: '菜单',
     interface: '接口',
