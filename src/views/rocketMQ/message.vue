@@ -47,7 +47,7 @@
         </el-form-item>
       </el-form>
     </div>
-    <el-table v-loading="listLoading" :data="table.main.data.slice((table.main.page - 1) * table.main.limit, (table.main.page - 1) * table.main.limit + table.main.limit)">
+    <el-table v-loading="table.main.loading" :data="table.main.data.slice((table.main.page - 1) * table.main.limit, (table.main.page - 1) * table.main.limit + table.main.limit)">
       <el-table-column label="Message ID" prop="msgId" />
       <el-table-column label="Tag" prop="properties.TAGS" width="180" />
       <el-table-column label="Key" prop="properties.KEYS" width="180" />
@@ -115,10 +115,9 @@ import { listRocketMQMessage, listRocketMQMessage2, detailRocketMQMessage, resen
 import { isEmpty } from '@/utils/validate'
 
 export default {
-  name: 'RocketMQMessage1',
+  name: 'RocketMQMessage',
   data() {
     return {
-      listLoading: true,
       params: {},
       record: {},
       dateOptions: {
@@ -194,9 +193,7 @@ export default {
   },
   methods: {
     getTopics() {
-      this.listLoading = true
       listRocketMQTopic().then(resp => {
-        this.listLoading = false
         if (resp.success) {
           const { topicList } = resp.rows[0]
           topicList.sort()
@@ -205,7 +202,7 @@ export default {
             this.options.topics.push({ label: topicList[i], value: topicList[i] })
           }
         }
-      }).catch(() => { this.listLoading = false })
+      })
     },
     initParams() {
       const end = new Date()
