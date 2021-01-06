@@ -41,7 +41,7 @@ import {
 import { listRocketMQProducer } from '@/api/rocketmq/producer'
 
 export default {
-  name: 'RocketMQProducer1',
+  name: 'RocketMQProducer',
   data() {
     return {
       listLoading: true,

@@ -10,50 +10,30 @@
         />
       </el-select>
       <el-input v-model="table.main.params.topicName" placeholder="主题名称" style="width: 200px;" class="filter-item" />
-      <el-button v-permission="'ROCKET_MQ_TOPIC_SEARCH'" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-permission="'ROCKET_MQ_CONSUMER_SEARCH'" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         {{ $t('btn.search') }}
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="table.main.params = {}">
         {{ $t('btn.reset') }}
       </el-button>
-      <!--<el-button v-permission="'ROCKET_MQ_TOPIC_SYNC'" class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-refresh" @click="handleSync">
-        同步集群主题
-      </el-button>-->
-      <el-button v-permission="'ROCKET_MQ_TOPIC_ADD'" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+      <el-button v-permission="'ROCKET_MQ_CONSUMER_ADD'" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
         创建主题
       </el-button>
     </div>
     <el-table v-loading="table.main.loading" :data="table.main.data.slice((table.main.page - 1) * table.main.limit, (table.main.page - 1) * table.main.limit + table.main.limit)" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="133px" label="集群名称">
-        <template slot-scope="scope">
-          <span>{{ scope.row.clusterName }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="主题名称" prop="topicName" />
-      <!--<el-table-column label="存储类型" width="127">
-        <template slot-scope="scope">
-          <span>{{ scope.row.type }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="分区数" width="70" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.partitionSize }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="复制数" width="70" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.replicaSize }}</span>
-        </template>
-      </el-table-column>-->
+      <el-table-column label="集群名称" prop="group" />
+      <el-table-column label="数量" prop="count" width="50" align="center" />
+      <el-table-column label="版本" prop="version" />
+      <el-table-column label="类型" prop="consumeType" />
+      <el-table-column label="模式" prop="messageModel" />
+      <el-table-column label="TPS" prop="consumeTps" width="50" align="center" />
+      <el-table-column label="延迟" prop="diffTotal" width="50" align="center" />
       <el-table-column align="center" :label="$t('label.actions')">
         <template slot-scope="scope">
-          <el-link v-permission="'ROCKET_MQ_TOPIC_STATUS'" type="warning" icon="el-icon-view" @click="handleStatus(scope.row, scope.$index)">{{ $t('label.status') }}</el-link>
-          <el-link v-permission="'ROCKET_MQ_TOPIC_ROUTE'" type="primary" icon="el-icon-share" @click="handleRoute(scope.row, scope.$index)">路由</el-link>
-          <el-link v-permission="'ROCKET_MQ_TOPIC_CONSUMER'" type="" icon="el-icon-connection" @click="handleConsume(scope.row, scope.$index)">Consumer管理</el-link>
-          <el-link v-permission="'ROCKET_MQ_TOPIC_CONFIG'" type="primary" icon="el-icon-set-up" @click="handleEdit(scope.row, scope.$index)">配置</el-link>
-          <el-link v-permission="'ROCKET_MQ_TOPIC_SEND'" type="success" icon="el-icon-s-promotion" @click="handleSend(scope.row)">发消息</el-link>
-          <el-link v-permission="'ROCKET_MQ_TOPIC_RESET'" type="warning" icon="el-icon-refresh" @click="handleOffset(scope.row)">重置消费起点</el-link>
-          <el-link v-permission="'ROCKET_MQ_TOPIC_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
+          <el-link v-permission="'ROCKET_MQ_CONSUMER_STATUS'" type="warning" icon="el-icon-view" @click="handleStatus(scope.row, scope.$index)">{{ $t('label.status') }}</el-link>
+          <el-link v-permission="'ROCKET_MQ_CONSUMER_DETAIL'" type="primary" icon="el-icon-share" @click="handleRoute(scope.row, scope.$index)">{{ $t('label.detail') }}</el-link>
+          <el-link v-permission="'ROCKET_MQ_CONSUMER_CONFIG'" type="primary" icon="el-icon-set-up" @click="handleEdit(scope.row, scope.$index)">配置</el-link>
+          <el-link v-permission="'ROCKET_MQ_CONSUMER_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
         </template>
       </el-table-column>
     </el-table>
@@ -158,46 +138,50 @@
 
     <el-dialog :visible.sync="dialog.visible.status" :title="dialog.title">
       <el-table :data="table.stats.data" max-height="500">
-        <el-table-column label="队列" prop="queue" />
-        <el-table-column label="最小位点" prop="minOffset" width="80" align="center" />
-        <el-table-column label="最大位点" prop="maxOffset" width="80" align="center" />
-        <el-table-column label="上次更新时间" prop="lastUpdate" width="180" />
+        <el-table-column label="ClientId" prop="clientId" />
+        <el-table-column label="ClientAddr" prop="clientAddr" />
+        <el-table-column label="Language" prop="language" />
+        <el-table-column label="Version" prop="versionDesc" />
       </el-table>
+      <el-card style="margin-top: 30px">
+        <div slot="header" class="clearfix">
+          <span>Below is subscription:</span>
+        </div>
+        <el-table :data="list.subscription" max-height="500">
+          <el-table-column label="Topic" prop="topic" />
+          <el-table-column label="SubExpression" prop="subString" />
+        </el-table>
+      </el-card>
+      <div style="margin-top: 30px">
+        <span>ConsumeType: {{ record.consumeType }}</span>
+        <el-divider />
+        <span>MessageModel: {{ record.messageModel }}</span>
+        <el-divider />
+        <span>ConsumeFromWhere: {{ record.consumeFromWhere }}</span>
+      </div>
       <div slot="footer" style="text-align:right;">
         <el-button @click="dialog.visible.status=false">{{ $t('btn.close') }}</el-button>
       </div>
     </el-dialog>
-    <el-dialog :visible.sync="dialog.visible.route" :title="dialog.title">
-      <el-card class="box-card route-broker">
+    <el-dialog :visible.sync="dialog.visible.route" :title="dialog.title" width="80%">
+      <el-card v-for="item in list.consumerDetail" class="box-card route-broker">
         <div slot="header" class="clearfix">
-          <span>代理信息:	</span>
+          <span>主题	:	<el-tag>{{ item.topic }}</el-tag></span>
+          <span>延迟	:	<el-tag type="warning">{{ item.diffTotal }}</el-tag></span>
+          <span>最后消费时间	:	<el-tag type="success">{{ item.lastTimestamp | parseTime }}</el-tag></span>
         </div>
-        <div v-for="o in list.a" :key="o.brokerName" class="text item">
-          <el-row class="broker-row">
-            <el-col :span="4">代理名:</el-col>
-            <el-col :span="20">{{ o.brokerName }}</el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="4">代理地址:</el-col>
-            <el-col :span="20">
-              <div v-for="(p,k) in o.brokerAddrs" :key="p">
-                <el-col class="broker-addr-cell" :span="2">{{ k }}</el-col>
-                <el-col class="broker-addr-cell" :span="20">{{ p }}</el-col>
-              </div>
-            </el-col>
-          </el-row>
-          <el-divider content-position="right">[{{ o.brokerName }}] End</el-divider>
-        </div>
-      </el-card>
-      <el-card class="box-card">
-        <div slot="header" class="clearfix">
-          <span>队列信息	</span>
-        </div>
-        <el-table :data="list.b" max-height="500">
-          <el-table-column label="代理名" prop="brokerName" />
-          <el-table-column label="读队列数量" prop="readQueueNums" width="100" align="center" />
-          <el-table-column label="写队列数量" prop="writeQueueNums" width="100" align="center" />
-          <el-table-column label="perm" prop="perm" width="100" />
+        <el-table :data="item.queueStatInfoList" max-height="500">
+          <el-table-column label="broker" prop="brokerName" />
+          <el-table-column label="queue" prop="queueId" width="100" align="center" />
+          <el-table-column label="consumerClient" prop="clientInfo" />
+          <el-table-column label="brokerOffset" prop="brokerOffset" width="120" align="center" />
+          <el-table-column label="consumerOffset" prop="consumerOffset" width="130" align="center" />
+          <el-table-column label="diffTotal" prop="diffTotal" width="100" align="center" />
+          <el-table-column label="lastTimestamp" prop="lastTimestamp" width="180" align="center">
+            <template slot-scope="{row}">
+              {{ row.lastTimestamp | parseTime }}
+            </template>
+          </el-table-column>
         </el-table>
       </el-card>
       <div slot="footer" style="text-align:right;">
@@ -294,9 +278,9 @@ import Pagination from '@/components/Pagination' // Secondary package based on e
 import { parseTime } from '@/utils'
 import { listRocketMQ } from '@/api/rocketmq/cluster'
 import {
-  listRocketMQTopic,
-  getRocketMQTopicStatus,
-  getRocketMQTopicRoute,
+  listRocketMQConsumerGroups,
+  getRocketMQConsumerStatus,
+  getRocketMQConsumerDetail,
   getRocketMQTopic,
   addRocketMQTopic,
   editRocketMQTopic,
@@ -304,7 +288,7 @@ import {
   getRocketMQTopicConsumerInfo,
   sendRocketMQTopicMessage,
   deleteRocketMQTopic
-} from '@/api/rocketmq/topic'
+} from '@/api/rocketmq/consumer'
 import { getTopics, syncAll, refresh2 } from '@/api/kafka/topic'
 
 const defaultRecord = {
@@ -315,7 +299,7 @@ const defaultRecord = {
   'type': 'JSON'
 }
 export default {
-  name: 'RocketMQTopic',
+  name: 'RocketMQConsumer1',
   components: { Pagination },
   data() {
     return {
@@ -366,6 +350,8 @@ export default {
       list: {
         loading: false,
         consumeGroup: [],
+        subscription: [],
+        consumerDetail: [],
         a: [],
         b: []
       },
@@ -407,45 +393,36 @@ export default {
       // this.table.main.page = val;
     },
     getList() {
-      this.listLoading = true
-      listRocketMQTopic().then(resp => {
-        this.listLoading = false
+      this.table.main.loading = true
+      listRocketMQConsumerGroups().then(resp => {
         if (resp.success) {
-          const { topicList } = resp.rows[0]
-          topicList.sort()
-          this.table.main.data = []
-          for (let i = 0; i < topicList.length; i++) {
-            this.table.main.data.push({ topicName: topicList[i] })
-          }
-          this.table.main.total = topicList.length
+          this.table.main.data = resp.rows
+          this.table.main.total = resp.rows.length
         }
-      }).finally(() => { this.loading = false })
+      }).finally(() => { this.table.main.loading = false })
     },
     handleStatus(row) {
-      getRocketMQTopicStatus({ topic: row.topicName }).then(resp => {
+      getRocketMQConsumerStatus({ consumerGroup: row.group }).then(resp => {
         if (resp.success) {
-          const { offsetTable } = resp.rows[0]
-          this.table.stats.data = []
-          for (const k in offsetTable) {
-            this.table.stats.data.push({
-              queue: k,
-              minOffset: offsetTable[k].minOffset,
-              maxOffset: offsetTable[k].maxOffset,
-              lastUpdate: parseTime(offsetTable[k].lastUpdateTimestamp, '{y}-{m}-{d} {h}:{i}:{s}')
-            })
+          this.record = resp.rows[0]
+          this.table.stats.data = this.record.connectionSet
+          if (this.record.subscriptionTable) {
+            this.list.subscription = []
+            for (const k in this.record.subscriptionTable) {
+              this.list.subscription.push({ topic: this.record.subscriptionTable[k].topic, subString: this.record.subscriptionTable[k].subString })
+            }
           }
-          this.dialog.title = `[${row.topicName}] ${this.$t('label.status')}`
+
+          this.dialog.title = `[${row.group}] ${this.$t('label.status')}`
           this.dialog.visible.status = true
         }
       })
     },
     handleRoute(row) {
-      getRocketMQTopicRoute({ topic: row.topicName }).then(resp => {
+      getRocketMQConsumerDetail({ consumerGroup: row.group }).then(resp => {
         if (resp.success) {
-          const { brokerDatas, queueDatas } = resp.rows[0]
-          this.list.a = brokerDatas
-          this.list.b = queueDatas
-          this.dialog.title = `[${row.topicName}] ${this.$t('label.status')}`
+          this.list.consumerDetail = resp.rows
+          this.dialog.title = `[${row.group}] ${this.$t('label.status')}`
           this.dialog.visible.route = true
         }
       })
@@ -628,5 +605,8 @@ export default {
   .route-broker .broker-addr-cell {
     padding: 5px;
     /*border: 1px solid #d9d9d9;*/
+  }
+  .el-card__header span {
+    margin-right: 10px;
   }
 </style>

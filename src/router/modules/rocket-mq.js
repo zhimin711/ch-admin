@@ -41,7 +41,7 @@ const rocketMQRouter = {
     },
     {
       path: 'consumer',
-      component: () => import('@/views/logs/operate'),
+      component: () => import('@/views/rocketMQ/consumer'),
       name: 'RocketMQConsumer',
       meta: {
         title: '消费者管理'
