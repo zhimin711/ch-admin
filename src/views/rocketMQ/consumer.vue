@@ -112,8 +112,8 @@
         </el-tabs>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="primary" v-loading="dialog.loading" @click="handleSubmit()">{{ $t('btn.save') }}</el-button>
-        <el-button type="danger" v-loading="dialog.loading" @click="dialog.visible.addOrEdit=false">{{ $t('btn.cancel') }}</el-button>
+        <el-button v-loading="dialog.loading" type="primary" @click="handleSubmit()">{{ $t('btn.save') }}</el-button>
+        <el-button v-loading="dialog.loading" type="danger" @click="dialog.visible.addOrEdit=false">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
 
@@ -233,6 +233,7 @@ import {
   getRocketMQConsumerStatus,
   getRocketMQConsumerDetail,
   getRocketMQConsumerClient,
+  getRocketMQConsumerConfig,
   fetchRocketMQConsumerBrokerNameList,
   addRocketMQConsumer,
   editRocketMQConsumer,
@@ -290,6 +291,7 @@ export default {
         },
         record: {},
         record2: {},
+        data: [],
         type: '',
         activeName: 'first'
       },
@@ -410,9 +412,9 @@ export default {
     },
     async handleEdit(row) {
       await this.getClusters()
-      getRocketMQConsumerDetail({ topic: row.topicName }).then(resp => {
+      getRocketMQConsumerConfig({ consumerGroup: row.group }).then(resp => {
         if (resp.success) {
-          this.record = resp.rows[0]
+          this.dialog.data = resp.rows
           this.dialog.visible.addOrEdit = true
           this.dialog.type = 'edit'
           this.dataForm.visible.clusterName = false
@@ -440,9 +442,9 @@ export default {
     handleDel(row) {
       fetchRocketMQConsumerBrokerNameList({ consumerGroup: row.group }).then(resp => {
         this.options.brokers = []
+        this.dialog.record = {}
         if (resp.success) {
           this.dialog.record.groupName = row.group
-          this.dialog.record.brokerNameList = []
           this.options.brokers = resp.rows.map(item => {
             return { value: item, label: item }
           })
@@ -457,7 +459,7 @@ export default {
       let opName = '添加'
 
       if (this.dialog.type === 'new') {
-        if(isEmpty(this.record.clusterNameList)) {
+        if (isEmpty(this.record.clusterNameList)) {
           this.$message.warning('please select clusterName!')
           return
         }
@@ -471,7 +473,7 @@ export default {
         opName = '修改'
         this.dialog.loading = true
         resp = await editRocketMQConsumer(this.record)
-      }else{
+      } else {
         this.$message.error('unknown operate!')
         return
       }

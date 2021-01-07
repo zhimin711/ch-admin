@@ -25,6 +25,14 @@ export function getRocketMQConsumerDetail(params) {
   })
 }
 
+export function getRocketMQConsumerConfig(params) {
+  return request({
+    url: `${namespace}/examineSubscriptionGroupConfig`,
+    method: 'get',
+    params: params
+  })
+}
+
 export function getRocketMQConsumerClient(params) {
   return request({
     url: `${namespace}/runningInfo`,
