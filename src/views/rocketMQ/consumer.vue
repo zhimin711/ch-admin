@@ -40,8 +40,8 @@
 
     <pagination v-show="table.main.total>0" :total="table.main.total" :page.sync="table.main.page" :limit.sync="table.main.limit" @pagination="handlePageChange" />
 
-    <el-dialog :visible.sync="dialog.visible.addOrEdit" :title="dialog.type==='edit'?'修改主题信息':'创建主题'">
-      <el-form :model="record" label-width="100px" label-position="left">
+    <el-dialog :visible.sync="dialog.visible.addOrEdit" :title="dialog.type==='edit'?'修改订阅':'新增订阅'" width="70%">
+      <el-form :model="record" label-width="200px" label-position="left">
         <el-tabs v-model="dialog.activeName">
           <el-tab-pane label="基本配置" name="first">
             <el-form-item v-if="dataForm.visible.clusterName" label="集群名称">
@@ -54,7 +54,7 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="代理名">
+            <el-form-item label="brokerName">
               <el-select v-model="record.brokerNameList" multiple :placeholder="$t('input.tips.select')" style="min-width: 300px" :disabled="dataForm.disable.brokerName">
                 <el-option
                   v-for="item in options.brokers"
@@ -65,74 +65,55 @@
               </el-select>
 
             </el-form-item>
-            <el-form-item label="主题名称">
-              <el-input v-model="record.topicName" placeholder="主题名称" :disabled="dataForm.disable.topicName" />
+            <el-form-item label="groupName">
+              <el-input v-model="record.subscriptionGroupConfig.groupName" placeholder="group名称" :disabled="dataForm.disable.groupName" />
             </el-form-item>
-            <el-form-item label="写队列数量:">
-              <el-input-number v-model="record.writeQueueNums" :min="1" :max="1024" />
-            </el-form-item>
-            <el-form-item label="读队列数量:">
-              <el-input-number v-model="record.readQueueNums" :min="1" :max="1024" />
-            </el-form-item>
-            <el-form-item label="perm:">
-              <el-input-number v-model="record.perm" :min="0" :max="10" />
-            </el-form-item>
-            <el-form-item label="顺序:">
+            <el-form-item label="consumeEnable">
               <el-switch
-                v-model="record.order"
+                v-model="record.subscriptionGroupConfig.consumeEnable"
                 active-color="#13ce66"
                 inactive-color="#ff4949"
                 :active-text="$t('label.enable')"
                 :inactive-text="$t('label.disable')"
               />
             </el-form-item>
-          </el-tab-pane>
-          <el-tab-pane label="扩展配置" name="second">
-            <el-form-item label="存储类型">
-              <el-select v-model="record.type" placeholder="请选择">
-                <el-option key="JSON" label="JSON" value="JSON" />
-                <el-option key="STRING" label="STRING" value="STRING" />
-                <el-option key="PROTO_STUFF" label="PROTO_STUFF" value="PROTO_STUFF" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="存储Jar包">
-              <el-input v-model="record.classFile" placeholder="存储Jar包" />
-            </el-form-item>
-            <el-form-item label="存储对象">
-              <el-input v-model="record.className" placeholder="存储对象" />
-            </el-form-item>
-            <el-form-item label="说明">
-              <el-input
-                v-model="record.description"
-                :autosize="{ minRows: 2, maxRows: 4}"
-                type="textarea"
-                placeholder="主题说明"
+            <el-form-item label="consumeFromMinEnable">
+              <el-switch
+                v-model="record.subscriptionGroupConfig.consumeFromMinEnable"
+                active-color="#13ce66"
+                inactive-color="#ff4949"
+                :active-text="$t('label.enable')"
+                :inactive-text="$t('label.disable')"
               />
             </el-form-item>
+            <el-form-item label="consumeBroadcastEnable">
+              <el-switch
+                v-model="record.subscriptionGroupConfig.consumeBroadcastEnable"
+                active-color="#13ce66"
+                inactive-color="#ff4949"
+                :active-text="$t('label.enable')"
+                :inactive-text="$t('label.disable')"
+              />
+            </el-form-item>
+            <el-form-item label="retryQueueNums">
+              <el-input-number v-model="record.subscriptionGroupConfig.retryQueueNums" :min="1" :max="1024" />
+            </el-form-item>
+            <el-form-item label="retryMaxTimes">
+              <el-input-number v-model="record.subscriptionGroupConfig.retryMaxTimes" :min="16" :max="1024" />
+            </el-form-item>
+            <el-form-item label="brokerId">
+              <el-input-number v-model="record.subscriptionGroupConfig.brokerId" :min="0" :max="1024" />
+            </el-form-item>
+            <el-form-item label="whichBrokerWhenConsumeSlowly">
+              <el-input-number v-model="record.subscriptionGroupConfig.whichBrokerWhenConsumeSlowly" :min="1" :max="100" />
+            </el-form-item>
           </el-tab-pane>
+          <el-tab-pane label="扩展配置" name="second" />
         </el-tabs>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="primary" @click="handleSubmit">{{ $t('btn.save') }}</el-button>
-        <el-button type="danger" @click="dialog.visible.addOrEdit=false">{{ $t('btn.cancel') }}</el-button>
-      </div>
-    </el-dialog>
-    <el-dialog :visible.sync="dialog.visible.sync" :title="'同步Kafka集群主题'" width="400px">
-      <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="集群名称">
-          <el-select v-model="record.clusterName" placeholder="请选择">
-            <el-option
-              v-for="item in options.clusters"
-              :key="item.clusterName"
-              :label="item.clusterName"
-              :value="item.clusterName"
-            />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <div style="text-align:right;">
-        <el-button type="primary" @click="handleSyncSubmit">{{ $t('btn.save') }}</el-button>
-        <el-button type="danger" @click="dialog.visible.sync=false">{{ $t('btn.close') }}</el-button>
+        <el-button type="primary" v-loading="dialog.loading" @click="handleSubmit()">{{ $t('btn.save') }}</el-button>
+        <el-button type="danger" v-loading="dialog.loading" @click="dialog.visible.addOrEdit=false">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
 
@@ -173,7 +154,13 @@
         <el-table :data="item.queueStatInfoList" max-height="500">
           <el-table-column label="broker" prop="brokerName" />
           <el-table-column label="queue" prop="queueId" width="100" align="center" />
-          <el-table-column label="consumerClient" prop="clientInfo" />
+          <el-table-column label="consumerClient" prop="clientInfo">
+            <template slot-scope="{row}">
+              <el-button v-if="row.clientInfo" type="text" @click="handleDetail2(row)">
+                {{ row.clientInfo }}
+              </el-button>
+            </template>
+          </el-table-column>
           <el-table-column label="brokerOffset" prop="brokerOffset" width="120" align="center" />
           <el-table-column label="consumerOffset" prop="consumerOffset" width="130" align="center" />
           <el-table-column label="diffTotal" prop="diffTotal" width="100" align="center" />
@@ -189,114 +176,81 @@
       </div>
     </el-dialog>
 
-    <el-dialog :visible.sync="dialog.visible.offset" :title="'重置位点'">
-      <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="订阅组">
-          <el-select v-model="record.consumerGroup" placeholder="请选择">
-            <el-option
-              v-for="item in options.consumerGroupList"
-              :key="item.clusterName"
-              :label="item.clusterName"
-              :value="item.clusterName"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="时间点">
-          <el-date-picker v-model="record.currMarkAt" type="datetime" placeholder="选择时间" value-format="timestamp" />
+    <el-dialog :visible.sync="dialog.visible.consumer" :title="dialog.title + '订阅组'" width="80%">
+      <el-form :model="dialog.record2" label-width="250px" label-position="left">
+        <el-form-item v-for="(v,k,i) in dialog.record2.properties" :label="k">
+          {{ v }}
         </el-form-item>
       </el-form>
-      <div style="text-align:right;">
-        <el-button type="primary" @click="handleSyncSubmit">{{ $t('btn.reset') }}</el-button>
-        <el-button type="danger" @click="dialog.visible.offset=false">{{ $t('btn.cancel') }}</el-button>
+      <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span>状态</span>
+        </div>
+        <el-table :data="list.a" max-height="500">
+          <el-table-column label="Topic" prop="topic" />
+          <el-table-column label="pullRT" prop="pullRT" />
+          <el-table-column label="pullTPS" prop="pullTPS" />
+          <el-table-column label="consumeRT" prop="consumeRT" />
+          <el-table-column label="consumeOKTPS" prop="consumeOKTPS" />
+          <el-table-column label="consumeFailedTPS" prop="consumeFailedTPS" />
+          <el-table-column label="consumeFailedMsgs" prop="consumeFailedMsgs" />
+        </el-table>
+      </el-card>
+      <div slot="footer" style="text-align:right;">
+        <el-button @click="dialog.visible.consumer=false">{{ $t('btn.close') }}</el-button>
       </div>
     </el-dialog>
 
-    <el-dialog :visible.sync="dialog.visible.send" :title="'推送主题消息'">
-      <el-form :model="record" label-width="100px" label-position="left">
-        <!--<el-form-item label="集群名称">
-          <el-select v-model="record.cluster" placeholder="请选择">
+    <el-dialog :visible.sync="dialog.visible.delete" :title="dialog.title">
+      <el-form label-width="180">
+        <el-form-item label="broker">
+          <el-select v-model="dialog.record.brokerNameList" multiple :placeholder="$t('input.tips.select')" style="min-width: 300px" :disabled="dataForm.disable.brokerName">
             <el-option
-              v-for="item in options.clusters"
-              :key="item.clusterName"
-              :label="item.clusterName"
-              :value="item.clusterName"
-            />
-          </el-select>
-        </el-form-item>-->
-        <el-form-item label="主题名称">
-          <!--<el-select
-            v-model="record.topicName"
-            filterable
-            remote
-            reserve-keyword
-            placeholder="请输入关键词"
-            :remote-method="remoteMethodSend"
-            :loading="loading"
-            style="width:100%"
-          >
-            <el-option
-              v-for="item in options.topics"
+              v-for="item in options.brokers"
               :key="item.value"
               :label="item.label"
               :value="item.value"
             />
-          </el-select>-->
-          <el-input v-model="record.topic" placeholder="主题名称" :disabled="dataForm.disable.topicName" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="标签">
-          <el-input v-model="record.key" placeholder="标签" />
-        </el-form-item>
-        <el-form-item label="值">
-          <el-input v-model="record.tag" placeholder="值" />
-        </el-form-item>
-        <el-form-item label="发送消息">
-          <el-input
-            v-model="record.messageBody"
-            :autosize="{ minRows: 5, maxRows: 15}"
-            type="textarea"
-            placeholder="发送消息"
-          />
-        </el-form-item>
-        <div style="text-align:right;">
-          <el-button type="primary" :loading="dialog.loading" @click="submitSend">发送</el-button>
-          <el-button type="danger" :loading="dialog.loading" @click="dialog.visible.send=false">{{ $t('btn.cancel') }}</el-button>
-        </div>
       </el-form>
-    </el-dialog>
-    <el-dialog :visible.sync="dialog.visible.consumer" :title="dialog.title + '订阅组'">
-
       <div slot="footer" style="text-align:right;">
-        <el-button @click="dialog.visible.consumer=false">{{ $t('btn.close') }}</el-button>
+        <el-button type="primary" @click="submitDel">{{ $t('btn.confirm') }}</el-button>
+        <el-button @click="dialog.visible.delete=false">{{ $t('btn.close') }}</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { Loading } from 'element-ui'
+import { deepClone } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { parseTime } from '@/utils'
+import { isEmpty } from '@/utils/validate'
 import { listRocketMQ } from '@/api/rocketmq/cluster'
 import {
   listRocketMQConsumerGroups,
   getRocketMQConsumerStatus,
   getRocketMQConsumerDetail,
-  getRocketMQTopic,
-  addRocketMQTopic,
-  editRocketMQTopic,
-  getRocketMQTopicConsumer,
-  getRocketMQTopicConsumerInfo,
-  sendRocketMQTopicMessage,
-  deleteRocketMQTopic
+  getRocketMQConsumerClient,
+  fetchRocketMQConsumerBrokerNameList,
+  addRocketMQConsumer,
+  editRocketMQConsumer,
+  deleteRocketMQConsumer
 } from '@/api/rocketmq/consumer'
-import { getTopics, syncAll, refresh2 } from '@/api/kafka/topic'
 
 const defaultRecord = {
-  'writeQueueNums': 16,
-  'readQueueNums': 16,
-  'perm': 6,
-  'order': false,
-  'type': 'JSON'
+  brokerNameList: [],
+  subscriptionGroupConfig: {
+    groupName: '',
+    consumeEnable: true,
+    consumeFromMinEnable: true,
+    consumeBroadcastEnable: true,
+    retryQueueNums: 1,
+    retryMaxTimes: 16,
+    brokerId: 0,
+    whichBrokerWhenConsumeSlowly: 1
+  }
 }
 export default {
   name: 'RocketMQConsumer1',
@@ -321,7 +275,7 @@ export default {
           data: []
         }
       },
-      record: {},
+      record: Object.assign({}, defaultRecord),
       dialog: {
         title: '',
         loading: false,
@@ -332,8 +286,10 @@ export default {
           route: false,
           send: false,
           offset: false,
-          sync: false
+          delete: false
         },
+        record: {},
+        record2: {},
         type: '',
         activeName: 'first'
       },
@@ -421,15 +377,31 @@ export default {
     handleRoute(row) {
       getRocketMQConsumerDetail({ consumerGroup: row.group }).then(resp => {
         if (resp.success) {
+          this.dialog.record = row
           this.list.consumerDetail = resp.rows
           this.dialog.title = `[${row.group}] ${this.$t('label.status')}`
           this.dialog.visible.route = true
         }
       })
     },
+    handleDetail2(row) {
+      getRocketMQConsumerClient({ clientId: row.clientInfo, consumerGroup: this.dialog.record.group, jstack: false }).then(resp => {
+        if (resp.success) {
+          this.dialog.record2 = resp.rows[0]
+          this.list.a = []
+          for (const k in this.dialog.record2.statusTable) {
+            const v = Object.assign({}, this.dialog.record2.statusTable[k])
+            v.topic = k
+            this.list.a.push(v)
+          }
+          this.dialog.visible.consumer = true
+        }
+      }).finally(() => {
+      })
+    },
     async handleAdd() {
       await this.getClusters()
-      this.record = Object.assign({}, defaultRecord)
+      this.record = deepClone(defaultRecord)
       this.dialog.visible.addOrEdit = true
       this.dialog.type = 'new'
       this.dataForm.visible.clusterName = true
@@ -438,7 +410,7 @@ export default {
     },
     async handleEdit(row) {
       await this.getClusters()
-      getRocketMQTopic({ topic: row.topicName }).then(resp => {
+      getRocketMQConsumerDetail({ topic: row.topicName }).then(resp => {
         if (resp.success) {
           this.record = resp.rows[0]
           this.dialog.visible.addOrEdit = true
@@ -449,134 +421,72 @@ export default {
         }
       })
     },
-    handleConsume(row) {
-      getRocketMQTopicConsumer({ topic: row.topicName }).then(resp => {
-        if (resp.success) {
-          this.list.consumeGroup = []
-          this.dialog.visible.consumer = true
-        }
-      }).finally(() => {
-      })
-    },
-    handleSend(row) {
-      this.record = { topic: row.topicName }
-      this.dialog.visible.send = true
-      this.dataForm.disable.topicName = true
-    },
-    submitSend() {
-      this.dialog.loading = true
-      sendRocketMQTopicMessage(this.record).then(resp => {
-        if (resp.success) {
-          this.$message.success('send message success!')
-          this.dialog.visible.send = false
-        }
-      }).finally(() => {
-        this.dialog.loading = false
-      })
-    },
-    handleOffset(row) {
-      getRocketMQTopicConsumerInfo({ topic: row.topicName }).then(resp => {
-        if (resp.success) {
-          const { groupList } = resp.rows[0]
-          this.list.consumeGroup = groupList
-          this.dialog.visible.offset = true
-        }
-      })
-    },
-    handleDel(row) {
+    submitDel() {
       const _this = this
       this.$confirm(this.$t('message.deleteTip'), this.$t('label.warning'), {
         confirmButtonText: this.$t('btn.confirm'),
         cancelButtonText: this.$t('btn.cancel'),
         type: 'warning'
       }).then(() => {
-        deleteRocketMQTopic({ topic: row.topicName }).then(resp => {
+        deleteRocketMQConsumer(this.dialog.record).then(resp => {
           if (resp.success) {
-            _this.getList()
+            this.dialog.visible.delete = false
             _this.$message.success(this.$t('message.deleteSuccess'))
+            _this.getList()
           }
         })
-      })
-        .catch(err => { console.error(err) })
+      }).catch(err => { console.error(err) })
     },
-    handleRefresh(row) {
-      this.$confirm('请确认是否重建主题，当前主题消息将删除?', '重建主题', {
-        confirmButtonText: '确认',
-        cancelButtonText: '取消',
-        type: 'warning'
+    handleDel(row) {
+      fetchRocketMQConsumerBrokerNameList({ consumerGroup: row.group }).then(resp => {
+        this.options.brokers = []
+        if (resp.success) {
+          this.dialog.record.groupName = row.group
+          this.dialog.record.brokerNameList = []
+          this.options.brokers = resp.rows.map(item => {
+            return { value: item, label: item }
+          })
+          this.dialog.title = `[${row.group}] Delete!`
+          this.dialog.visible.delete = true
+        }
       })
-        .then(async() => {
-          await refresh2(row)
-          this.$message.success('重建主题成功!')
-        })
-        .catch(err => { console.error(err) })
     },
     async handleSubmit() {
       const _this = this
       let resp = null
       let opName = '添加'
-      if (this.dialogType === 'new') {
-        resp = await addRocketMQTopic(this.record)
-      } else if (this.dialogType === 'edit') {
+
+      if (this.dialog.type === 'new') {
+        if(isEmpty(this.record.clusterNameList)) {
+          this.$message.warning('please select clusterName!')
+          return
+        }
+        if (isEmpty(this.record.brokerNameList)) {
+          this.$message.warning('please select brokerName!')
+          return
+        }
+        this.dialog.loading = true
+        resp = await addRocketMQConsumer(this.record)
+      } else if (this.dialog.type === 'edit') {
         opName = '修改'
-        resp = await editRocketMQTopic(this.record.id, this.record)
+        this.dialog.loading = true
+        resp = await editRocketMQConsumer(this.record)
+      }else{
+        this.$message.error('unknown operate!')
+        return
       }
+      this.dialog.loading = false
       if (resp.success) {
-        this.dialogVisible = false
+        this.dialog.visible.addOrEdit = false
         this.$notify({
           title: `${opName}集群名称 Success!`,
           dangerouslyUseHTMLString: true,
           message: `
-            <div>集群名称: ${this.record.topicName}</div>
+            <div>名称: ${this.record.subscriptionGroupConfig.groupName}</div>
           `,
           type: 'success'
         })
         _this.getList()
-      }
-    },
-    handleSync() {
-      this.record = {}
-      this.dialogType = 'new'
-      this.dialogVisible2 = true
-    },
-    async handleSyncSubmit() {
-      this.dialogVisible2 = false
-      const loadingS = Loading.service({ target: document.querySelector('.app-container'), text: `正在同步${this.record.clusterName}主题，请稍后......`, fullscreen: false })
-      const _this = this
-      const resp = await syncAll(_this.record).catch(() => { loadingS.close() })
-      loadingS.close()
-      if (resp && resp.success) {
-        this.$notify({
-          title: `Kafka集群主题同步成功!`,
-          dangerouslyUseHTMLString: true,
-          message: `
-            <div>集群名称: ${this.record.clusterName}</div>
-          `,
-          type: 'success'
-        })
-        _this.getList()
-      } else {
-        // _this.dialogVisible2 = true
-        _this.$message.error('同步失败！')
-      }
-    },
-    async remoteMethod(query) {
-      if (!this.record.clusterName || this.record.clusterName === '') {
-        this.$message.warn('请先选择集群...')
-        return
-      }
-      if (query !== '') {
-        this.loading = true
-        getTopics(this.record.clusterName, query).then(response => {
-          this.loading = false
-          if (response.success) {
-            this.options.topics = response.rows.map(item => {
-              return { value: item, label: item }
-            })
-          }
-        })
-      } else {
-        this.options.topics = []
       }
     }
   }

@@ -25,17 +25,9 @@ export function getRocketMQConsumerDetail(params) {
   })
 }
 
-export function getRocketMQTopic(params) {
+export function getRocketMQConsumerClient(params) {
   return request({
-    url: `${namespace}/config`,
-    method: 'get',
-    params: params
-  })
-}
-
-export function getRocketMQTopicConsumer(params) {
-  return request({
-    url: `${namespace}/consumer`,
+    url: `${namespace}/runningInfo`,
     method: 'get',
     params: params
   })
@@ -49,7 +41,7 @@ export function getRocketMQTopicConsumerInfo(params) {
   })
 }
 
-export function addRocketMQTopic(data) {
+export function addRocketMQConsumer(data) {
   return request({
     url: `${namespace}`,
     method: 'post',
@@ -57,7 +49,7 @@ export function addRocketMQTopic(data) {
   })
 }
 
-export function editRocketMQTopic(data) {
+export function editRocketMQConsumer(data) {
   return request({
     url: `${namespace}`,
     method: 'put',
@@ -65,19 +57,18 @@ export function editRocketMQTopic(data) {
   })
 }
 
-export function deleteRocketMQTopic(params) {
+export function fetchRocketMQConsumerBrokerNameList(params) {
   return request({
-    url: `${namespace}`,
-    method: 'delete',
+    url: `${namespace}/fetchBrokerNameList`,
+    method: 'get',
     params
   })
 }
 
-export function sendRocketMQTopicMessage(data) {
+export function deleteRocketMQConsumer(data) {
   return request({
-    url: `${namespace}/sendMessage`,
+    url: `${namespace}/deleteSubGroup`,
     method: 'post',
     data
   })
 }
-

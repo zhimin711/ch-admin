@@ -26,6 +26,7 @@ export function validUsername(str) {
  */
 export function isEmpty(val) {
   if (val === undefined || val === null) return true
+  if(Array.isArray(val)) return val.length === 0
   // 去除空格
   const str = val.replace(/(^\s*)|(\s*$)/g, '')
   return str === '' || str === undefined || str === null
