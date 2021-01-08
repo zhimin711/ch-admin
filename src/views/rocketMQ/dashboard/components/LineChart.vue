@@ -20,15 +20,11 @@ export default {
     },
     height: {
       type: String,
-      default: '350px'
+      default: '300px'
     },
     autoResize: {
       type: Boolean,
       default: true
-    },
-    chartData: {
-      type: Object,
-      required: true
     }
   },
   data() {
@@ -59,76 +55,68 @@ export default {
   methods: {
     initChart() {
       this.chart = echarts.init(this.$el, 'macarons')
-      this.setOptions(this.chartData)
-    },
-    setOptions({ xData, legendData, expectedData, actualData } = {}) {
       this.chart.setOption({
-        xAxis: {
-          data: xData || ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-          boundaryGap: false,
-          axisTick: {
-            show: false
-          }
+        title: {
+          text: 'Broker 5min trend'
         },
-        grid: {
-          left: 10,
-          right: 10,
-          bottom: 20,
-          top: 30,
-          containLabel: true
+        toolbox: {
+          feature: {
+            dataZoom: {
+              yAxisIndex: 'none'
+            },
+            restore: {},
+            saveAsImage: {}
+          }
         },
         tooltip: {
           trigger: 'axis',
           axisPointer: {
-            type: 'cross'
-          },
-          padding: [5, 10]
-        },
-        yAxis: {
-          axisTick: {
-            show: false
+            animation: false
           }
         },
+        yAxis: {
+          type: 'value',
+          boundaryGap: [0, '80%'],
+          axisLabel: {
+            formatter: function(value) {
+              return value.toFixed(2)
+            }
+          },
+          splitLine: {
+            show: true
+          }
+        },
+        dataZoom: [{
+          type: 'inside',
+          start: 90,
+          end: 100
+        }, {
+          start: 0,
+          end: 10,
+          handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+          handleSize: '80%',
+          handleStyle: {
+            color: '#fff',
+            shadowBlur: 3,
+            shadowColor: 'rgba(0, 0, 0, 0.6)',
+            shadowOffsetX: 2,
+            shadowOffsetY: 2
+          }
+        }],
         legend: {
-          data: legendData || ['expected', 'actual']
+          data: [],
+          top: 30
         },
-        series: [{
-          name: legendData[0], itemStyle: {
-            normal: {
-              color: '#FF005A',
-              lineStyle: {
-                color: '#FF005A',
-                width: 2
-              }
-            }
-          },
-          smooth: true,
-          type: 'line',
-          data: expectedData,
-          animationDuration: 2800,
-          animationEasing: 'cubicInOut'
+        xAxis: {
+          type: 'time',
+          boundaryGap: false,
+          data: []
         },
-        {
-          name: legendData[1],
-          smooth: true,
-          type: 'line',
-          itemStyle: {
-            normal: {
-              color: '#3888fa',
-              lineStyle: {
-                color: '#3888fa',
-                width: 2
-              },
-              areaStyle: {
-                color: '#f3f8ff'
-              }
-            }
-          },
-          data: actualData,
-          animationDuration: 2800,
-          animationEasing: 'quadraticOut'
-        }]
+        series: []
       })
+    },
+    setOptions(option) {
+      this.chart.setOption(option)
     }
   }
 }

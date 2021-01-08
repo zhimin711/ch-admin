@@ -26,7 +26,7 @@
       <el-table-column label="版本" prop="version" />
       <el-table-column label="类型" prop="consumeType" />
       <el-table-column label="模式" prop="messageModel" />
-      <el-table-column label="TPS" prop="consumeTps" width="50" align="center" />
+      <el-table-column label="TPS" prop="consumeTps" width="80" align="center" />
       <el-table-column label="延迟" prop="diffTotal" width="50" align="center" />
       <el-table-column align="center" :label="$t('label.actions')">
         <template slot-scope="scope">

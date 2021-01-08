@@ -44,8 +44,9 @@ export default {
     initChart() {
       this.chart = echarts.init(this.$el, 'macarons')
       this.chart.setOption({
+
         title: {
-          text: 'Broker TOP 10'
+          text: 'Topic TOP 10'
         },
         tooltip: {},
         legend: {
@@ -100,7 +101,7 @@ export default {
             textStyle: {
               color: '#000000'
             },
-            rotate: 0,
+            rotate: 60,
             interval: 0
           },
           axisTick: {

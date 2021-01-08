@@ -344,7 +344,7 @@ const defaultRecord = {
   'type': 'JSON'
 }
 export default {
-  name: 'RocketMQTopic1',
+  name: 'RocketMQTopic',
   components: { Pagination },
   data() {
     return {
@@ -551,8 +551,7 @@ export default {
             _this.$message.success(this.$t('message.deleteSuccess'))
           }
         })
-      })
-        .catch(err => { console.error(err) })
+      }).catch(err => { console.error(err) })
     },
     handleRefresh(row) {
       this.$confirm('请确认是否重建主题，当前主题消息将删除?', '重建主题', {
@@ -570,14 +569,17 @@ export default {
       const _this = this
       let resp = null
       let opName = '添加'
-      if (this.dialogType === 'new') {
+      if (this.dialog.type === 'new') {
         resp = await addRocketMQTopic(this.record)
-      } else if (this.dialogType === 'edit') {
+      } else if (this.dialog.type === 'edit') {
         opName = '修改'
         resp = await editRocketMQTopic(this.record.id, this.record)
+      } else {
+        this.$message.error('unknown operate!')
+        return
       }
       if (resp.success) {
-        this.dialogVisible = false
+        this.dialog.visible = false
         this.$notify({
           title: `${opName}集群名称 Success!`,
           dangerouslyUseHTMLString: true,
