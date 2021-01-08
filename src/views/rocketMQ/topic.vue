@@ -279,8 +279,37 @@
         </div>
       </el-form>
     </el-dialog>
-    <el-dialog :visible.sync="dialog.visible.consumer" :title="dialog.title + '订阅组'">
-
+    <el-dialog :visible.sync="dialog.visible.consumer" :title="dialog.title + '订阅组'" width="70%">
+      <div v-if="list.consumeGroup.length === 0">
+        Don't have 订阅组
+        <el-divider />
+      </div>
+      <div v-for="(item2,index) in list.consumeGroup" :key="'consumeGroup'+index">
+        <el-card v-for="(item, k) in item2" :key="'consumeGroup'+k" class="box-card route-broker">
+          <div slot="header" class="clearfix">
+            <span>订阅组	:	<el-tag>{{ k }}</el-tag></span>
+            <span>延迟	:	<el-tag type="warning">{{ item.diffTotal }}</el-tag></span>
+            <span>最后消费时间	:	<el-tag type="success">{{ item.lastTimestamp | parseTime }}</el-tag></span>
+          </div>
+          <el-table :data="item.queueStatInfoList" max-height="500">
+            <el-table-column label="broker" prop="brokerName" />
+            <el-table-column label="queue" prop="queueId" width="100" align="center" />
+            <el-table-column label="consumerClient" prop="clientInfo">
+              <template slot-scope="{row}">
+                {{ row.clientInfo }}
+              </template>
+            </el-table-column>
+            <el-table-column label="brokerOffset" prop="brokerOffset" width="120" align="center" />
+            <el-table-column label="consumerOffset" prop="consumerOffset" width="130" align="center" />
+            <el-table-column label="diffTotal" prop="diffTotal" width="100" align="center" />
+            <el-table-column label="lastTimestamp" prop="lastTimestamp" width="180" align="center">
+              <template slot-scope="{row}">
+                {{ row.lastTimestamp | parseTime }}
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+      </div>
       <div slot="footer" style="text-align:right;">
         <el-button @click="dialog.visible.consumer=false">{{ $t('btn.close') }}</el-button>
       </div>
@@ -315,7 +344,7 @@ const defaultRecord = {
   'type': 'JSON'
 }
 export default {
-  name: 'RocketMQTopic',
+  name: 'RocketMQTopic1',
   components: { Pagination },
   data() {
     return {
@@ -369,6 +398,7 @@ export default {
         a: [],
         b: []
       },
+      consumeGroupMap: {},
       options: {
         clusters: [],
         brokers: [],
@@ -475,7 +505,9 @@ export default {
     handleConsume(row) {
       getRocketMQTopicConsumer({ topic: row.topicName }).then(resp => {
         if (resp.success) {
-          this.list.consumeGroup = []
+          this.dialog.record = row
+          this.list.consumeGroup = resp.rows
+          this.dialog.title = `[${row.topicName}] ${this.$t('label.status')}`
           this.dialog.visible.consumer = true
         }
       }).finally(() => {
@@ -628,5 +660,8 @@ export default {
   .route-broker .broker-addr-cell {
     padding: 5px;
     /*border: 1px solid #d9d9d9;*/
+  }
+  .el-card__header span {
+    margin-right: 10px;
   }
 </style>

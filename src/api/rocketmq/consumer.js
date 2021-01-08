@@ -60,7 +60,7 @@ export function addRocketMQConsumer(data) {
 export function editRocketMQConsumer(data) {
   return request({
     url: `${namespace}`,
-    method: 'put',
+    method: 'post',
     data
   })
 }

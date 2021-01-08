@@ -17,11 +17,11 @@
         {{ $t('btn.reset') }}
       </el-button>
       <el-button v-permission="'ROCKET_MQ_CONSUMER_ADD'" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        创建主题
+        添加订阅
       </el-button>
     </div>
     <el-table v-loading="table.main.loading" :data="table.main.data.slice((table.main.page - 1) * table.main.limit, (table.main.page - 1) * table.main.limit + table.main.limit)" border fit highlight-current-row style="width: 100%">
-      <el-table-column label="集群名称" prop="group" />
+      <el-table-column label="订阅组名称" prop="group" />
       <el-table-column label="数量" prop="count" width="50" align="center" />
       <el-table-column label="版本" prop="version" />
       <el-table-column label="类型" prop="consumeType" />
@@ -41,11 +41,11 @@
     <pagination v-show="table.main.total>0" :total="table.main.total" :page.sync="table.main.page" :limit.sync="table.main.limit" @pagination="handlePageChange" />
 
     <el-dialog :visible.sync="dialog.visible.addOrEdit" :title="dialog.type==='edit'?'修改订阅':'新增订阅'" width="70%">
-      <el-form :model="record" label-width="200px" label-position="left">
-        <el-tabs v-model="dialog.activeName">
-          <el-tab-pane label="基本配置" name="first">
+      <el-tabs v-model="dialog.activeName">
+        <el-tab-pane v-for="(record2, index) in dialog.data" :key="'addOrEdit'+index" :label="`基本配置[${index+1}]`" :name="'name'+index">
+          <el-form :model="record2" label-width="200px" label-position="left">
             <el-form-item v-if="dataForm.visible.clusterName" label="集群名称">
-              <el-select v-model="record.clusterNameList" multiple :placeholder="$t('input.tips.select')" style="min-width: 300px">
+              <el-select v-model="record2.clusterNameList" multiple :placeholder="$t('input.tips.select')" style="min-width: 300px">
                 <el-option
                   v-for="item in options.clusters"
                   :key="item.value"
@@ -55,7 +55,7 @@
               </el-select>
             </el-form-item>
             <el-form-item label="brokerName">
-              <el-select v-model="record.brokerNameList" multiple :placeholder="$t('input.tips.select')" style="min-width: 300px" :disabled="dataForm.disable.brokerName">
+              <el-select v-model="record2.brokerNameList" multiple :placeholder="$t('input.tips.select')" style="min-width: 300px" :disabled="dataForm.disable.brokerName">
                 <el-option
                   v-for="item in options.brokers"
                   :key="item.value"
@@ -66,11 +66,11 @@
 
             </el-form-item>
             <el-form-item label="groupName">
-              <el-input v-model="record.subscriptionGroupConfig.groupName" placeholder="group名称" :disabled="dataForm.disable.groupName" />
+              <el-input v-model="record2.subscriptionGroupConfig.groupName" placeholder="group名称" :disabled="dataForm.disable.groupName" />
             </el-form-item>
             <el-form-item label="consumeEnable">
               <el-switch
-                v-model="record.subscriptionGroupConfig.consumeEnable"
+                v-model="record2.subscriptionGroupConfig.consumeEnable"
                 active-color="#13ce66"
                 inactive-color="#ff4949"
                 :active-text="$t('label.enable')"
@@ -79,7 +79,7 @@
             </el-form-item>
             <el-form-item label="consumeFromMinEnable">
               <el-switch
-                v-model="record.subscriptionGroupConfig.consumeFromMinEnable"
+                v-model="record2.subscriptionGroupConfig.consumeFromMinEnable"
                 active-color="#13ce66"
                 inactive-color="#ff4949"
                 :active-text="$t('label.enable')"
@@ -88,7 +88,7 @@
             </el-form-item>
             <el-form-item label="consumeBroadcastEnable">
               <el-switch
-                v-model="record.subscriptionGroupConfig.consumeBroadcastEnable"
+                v-model="record2.subscriptionGroupConfig.consumeBroadcastEnable"
                 active-color="#13ce66"
                 inactive-color="#ff4949"
                 :active-text="$t('label.enable')"
@@ -96,25 +96,24 @@
               />
             </el-form-item>
             <el-form-item label="retryQueueNums">
-              <el-input-number v-model="record.subscriptionGroupConfig.retryQueueNums" :min="1" :max="1024" />
+              <el-input-number v-model="record2.subscriptionGroupConfig.retryQueueNums" :min="1" :max="1024" />
             </el-form-item>
             <el-form-item label="retryMaxTimes">
-              <el-input-number v-model="record.subscriptionGroupConfig.retryMaxTimes" :min="16" :max="1024" />
+              <el-input-number v-model="record2.subscriptionGroupConfig.retryMaxTimes" :min="16" :max="1024" />
             </el-form-item>
             <el-form-item label="brokerId">
-              <el-input-number v-model="record.subscriptionGroupConfig.brokerId" :min="0" :max="1024" />
+              <el-input-number v-model="record2.subscriptionGroupConfig.brokerId" :min="0" :max="1024" />
             </el-form-item>
             <el-form-item label="whichBrokerWhenConsumeSlowly">
-              <el-input-number v-model="record.subscriptionGroupConfig.whichBrokerWhenConsumeSlowly" :min="1" :max="100" />
+              <el-input-number v-model="record2.subscriptionGroupConfig.whichBrokerWhenConsumeSlowly" :min="1" :max="100" />
             </el-form-item>
-          </el-tab-pane>
-          <el-tab-pane label="扩展配置" name="second" />
-        </el-tabs>
-      </el-form>
-      <div style="text-align:right;">
-        <el-button v-loading="dialog.loading" type="primary" @click="handleSubmit()">{{ $t('btn.save') }}</el-button>
-        <el-button v-loading="dialog.loading" type="danger" @click="dialog.visible.addOrEdit=false">{{ $t('btn.cancel') }}</el-button>
-      </div>
+            <div style="text-align:right;">
+              <el-button v-loading="dialog.loading" type="primary" @click="handleSubmit(record2)">{{ $t('btn.save') }}</el-button>
+              <el-button v-loading="dialog.loading" type="danger" @click="dialog.visible.addOrEdit=false">{{ $t('btn.cancel') }}</el-button>
+            </div>
+          </el-form>
+        </el-tab-pane>
+      </el-tabs>
     </el-dialog>
 
     <el-dialog :visible.sync="dialog.visible.status" :title="dialog.title">
@@ -145,7 +144,7 @@
       </div>
     </el-dialog>
     <el-dialog :visible.sync="dialog.visible.route" :title="dialog.title" width="80%">
-      <el-card v-for="item in list.consumerDetail" class="box-card route-broker">
+      <el-card v-for="item in list.consumerDetail" :key="item.topic" class="box-card route-broker">
         <div slot="header" class="clearfix">
           <span>主题	:	<el-tag>{{ item.topic }}</el-tag></span>
           <span>延迟	:	<el-tag type="warning">{{ item.diffTotal }}</el-tag></span>
@@ -178,7 +177,7 @@
 
     <el-dialog :visible.sync="dialog.visible.consumer" :title="dialog.title + '订阅组'" width="80%">
       <el-form :model="dialog.record2" label-width="250px" label-position="left">
-        <el-form-item v-for="(v,k,i) in dialog.record2.properties" :label="k">
+        <el-form-item v-for="(v,k) in dialog.record2.properties" :key="k" :label="k">
           {{ v }}
         </el-form-item>
       </el-form>
@@ -225,7 +224,6 @@
 <script>
 import { deepClone } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import { parseTime } from '@/utils'
 import { isEmpty } from '@/utils/validate'
 import { listRocketMQ } from '@/api/rocketmq/cluster'
 import {
@@ -254,7 +252,7 @@ const defaultRecord = {
   }
 }
 export default {
-  name: 'RocketMQConsumer1',
+  name: 'RocketMQConsumer',
   components: { Pagination },
   data() {
     return {
@@ -299,7 +297,7 @@ export default {
         disable: {
           clusterName: false,
           brokerName: false,
-          topicName: false
+          groupName: false
         },
         visible: {
           clusterName: true
@@ -403,23 +401,25 @@ export default {
     },
     async handleAdd() {
       await this.getClusters()
-      this.record = deepClone(defaultRecord)
+      this.dialog.data = [deepClone(defaultRecord)]
       this.dialog.visible.addOrEdit = true
       this.dialog.type = 'new'
+      this.dialog.activeName = 'name0'
       this.dataForm.visible.clusterName = true
       this.dataForm.disable.brokerName = false
-      this.dataForm.disable.topicName = false
+      this.dataForm.disable.groupName = false
     },
     async handleEdit(row) {
       await this.getClusters()
       getRocketMQConsumerConfig({ consumerGroup: row.group }).then(resp => {
         if (resp.success) {
           this.dialog.data = resp.rows
+          this.dialog.activeName = 'name0'
           this.dialog.visible.addOrEdit = true
           this.dialog.type = 'edit'
           this.dataForm.visible.clusterName = false
           this.dataForm.disable.brokerName = true
-          this.dataForm.disable.topicName = true
+          this.dataForm.disable.groupName = true
         }
       })
     },
@@ -453,38 +453,37 @@ export default {
         }
       })
     },
-    async handleSubmit() {
+    async handleSubmit(record) {
       const _this = this
       let resp = null
       let opName = '添加'
 
       if (this.dialog.type === 'new') {
-        if (isEmpty(this.record.clusterNameList)) {
+        if (isEmpty(record.clusterNameList)) {
           this.$message.warning('please select clusterName!')
           return
         }
-        if (isEmpty(this.record.brokerNameList)) {
+        if (isEmpty(record.brokerNameList)) {
           this.$message.warning('please select brokerName!')
           return
         }
         this.dialog.loading = true
-        resp = await addRocketMQConsumer(this.record)
+        resp = await addRocketMQConsumer(record).finally(() => { this.dialog.loading = false })
       } else if (this.dialog.type === 'edit') {
         opName = '修改'
         this.dialog.loading = true
-        resp = await editRocketMQConsumer(this.record)
+        resp = await editRocketMQConsumer(record).finally(() => { this.dialog.loading = false })
       } else {
         this.$message.error('unknown operate!')
         return
       }
-      this.dialog.loading = false
       if (resp.success) {
         this.dialog.visible.addOrEdit = false
         this.$notify({
-          title: `${opName}集群名称 Success!`,
+          title: `${opName}订阅成功!`,
           dangerouslyUseHTMLString: true,
           message: `
-            <div>名称: ${this.record.subscriptionGroupConfig.groupName}</div>
+            <div>名称: ${record.subscriptionGroupConfig.groupName}</div>
           `,
           type: 'success'
         })
