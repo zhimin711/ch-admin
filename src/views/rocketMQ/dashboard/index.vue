@@ -1,6 +1,5 @@
 <template>
   <div class="dashboard-editor-container">
-    <github-corner class="github-corner" />
 
     <el-row :gutter="32">
       <el-col :xs="24" :sm="24" :lg="12">
@@ -10,12 +9,12 @@
       </el-col>
       <el-col :xs="24" :sm="24" :lg="12">
         <div class="chart-wrapper">
-          <line-chart ref="brokerLineChart" />
+          <bar-chart-topic ref="topicBarChart" />
         </div>
       </el-col>
       <el-col :xs="24" :sm="24" :lg="12">
         <div class="chart-wrapper">
-          <bar-chart-topic ref="topicBarChart" />
+          <line-chart ref="brokerLineChart" />
         </div>
       </el-col>
       <el-col :xs="24" :sm="24" :lg="12">
@@ -28,7 +27,6 @@
 </template>
 
 <script>
-import GithubCorner from '@/components/GithubCorner'
 import BarChart from './components/BarChart'
 import BarChartTopic from './components/BarChartTopic'
 import LineChart from './components/LineChart'
@@ -47,7 +45,6 @@ import {
 export default {
   name: 'RocketMQDashboard1',
   components: {
-    GithubCorner,
     LineChart,
     LineChartTopic,
     BarChart,
