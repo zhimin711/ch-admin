@@ -12,6 +12,36 @@
           <bar-chart-topic ref="topicBarChart" />
         </div>
       </el-col>
+    </el-row>
+    <el-row :gutter="32">
+      <el-form label-width="100px">
+        <el-col :span="12">
+          <el-form-item label="日期">
+            <el-date-picker
+              v-model="params.date"
+              type="date"
+              value-format="yyyy-MM-dd"
+              :picker-options="dateOptions.pickerOptions"
+              placeholder="选择日期"
+              @change="handleDateChange"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="主题">
+            <el-select v-model="params.topicName" placeholder="请选择" class="filter-item" @change="handleTopicChange">
+              <el-option
+                v-for="item in options.topics"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-form>
+    </el-row>
+    <el-row :gutter="32">
       <el-col :xs="24" :sm="24" :lg="12">
         <div class="chart-wrapper">
           <line-chart ref="brokerLineChart" />
@@ -58,7 +88,19 @@ export default {
         broker: {},
         topic: {}
       },
-      options: { topic: [] }
+      timer: '',
+      dateOptions: {
+        pickerOptions: {
+          disabledDate(time) {
+            const times = 86400000 * 7// 一周的毫秒数
+            const curTime = new Date().getTime()
+            const before = curTime - times// 前一周毫秒数
+            const after = curTime// 后一周毫秒数
+            return time.getTime() > after || time.getTime() < before
+          }
+        }
+      },
+      options: { topics: [] }
     }
   },
   created() {
@@ -66,8 +108,26 @@ export default {
     this.getReportTopic()
     this.getBrokerTrend()
   },
+  mounted() {
+    this.timer = setInterval(() => {
+      this.refreshTrend()
+    }, 5000)
+  },
+  beforeDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer)
+    }
+  },
   methods: {
-    handleSetLineChartData(type) {
+    handleDateChange(time) {
+      this.refreshTrend()
+    },
+    handleTopicChange(val) {
+      this.getTopicTrend(val)
+    },
+    refreshTrend() {
+      this.getBrokerTrend()
+      this.getTopicTrend()
     },
     getReportCluster() {
       listRocketMQ().then(resp => {
@@ -101,7 +161,7 @@ export default {
     },
     getReportTopic() {
       listRocketDashboardTopicCurrent().then(resp => {
-        this.options.topic = []
+        this.options.topics = []
         if (resp.success) {
           const topicList = resp.rows
           topicList.sort(function(first, last) {
@@ -117,19 +177,20 @@ export default {
               xAxisData.push(currentArray[0])
               data.push(currentArray[1])
             }
-            this.options.topic.push(currentArray[0])
+            this.options.topics.push({ label: currentArray[0], value: currentArray[0] })
           }
           this.barChartData.topic.xData = xAxisData
           this.barChartData.topic.yData = data
           this.$refs.topicBarChart.setOptions(this.barChartData.topic)
-          this.params.topic = this.options.topic[0]
-          this.getTopicTrend(this.params.topic)
+          if (this.options.topics.length > 0) {
+            this.getTopicTrend(this.options.topics[0].value)
+          }
         }
       })
     },
     getBrokerTrend() {
       const params = { date: this.params.date }
-      if (isEmpty(this.params.date)) {
+      if (isEmpty(params.date)) {
         params.date = parseTime(new Date(), '{y}-{m}-{d}')
       }
       listRocketDashboardBroker(params).then(resp => {
@@ -185,15 +246,19 @@ export default {
       }
     },
     getTopicTrend(topic) {
-      const params = { date: this.params.date, topicName: topic }
+      const params = { date: this.params.date, topicName: topic || this.params.topicName }
+      if (isEmpty(params.topicName)) {
+        return
+      }
       if (isEmpty(this.params.date)) {
         params.date = parseTime(new Date(), '{y}-{m}-{d}')
       }
+      this.params = Object.assign(params)
       listRocketDashboardTopic(params).then(resp => {
         if (resp.success) {
           const _data = {}
           _data[topic] = resp.rows
-          const _xAxisData = [topic]
+          const _xAxisData = [params.topicName]
           this.$refs.topicLineChart.setOptions(this.getTopicLineChart(_xAxisData, _data))
         }
       })
