@@ -79,15 +79,24 @@ const routerMap = {
     path: '/rocketMQ',
     component: Layout,
     redirect: '/rocketMQ/dashboard',
-    alwaysShow: true // will always show the root menu
+    alwaysShow: true, // will always show the root menu
+    meta: {
+      title: 'RocketMQ'
+    }
   },
   RocketMQDashboard: {
     path: 'dashboard',
-    component: () => import('@/views/rocketMQ/dashboard')
+    component: () => import('@/views/rocketMQ/dashboard'),
+    meta: {
+      code: 'rocketMQDashboard'
+    }
   },
   RocketMQCluster: {
     path: 'cluster',
-    component: () => import('@/views/rocketMQ/cluster')
+    component: () => import('@/views/rocketMQ/cluster'),
+    meta: {
+      code: 'RocketMQCluster'
+    }
   },
   RocketMQMessage: {
     path: 'message',
