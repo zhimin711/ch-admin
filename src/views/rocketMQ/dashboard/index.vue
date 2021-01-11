@@ -257,7 +257,7 @@ export default {
       listRocketDashboardTopic(params).then(resp => {
         if (resp.success) {
           const _data = {}
-          _data[topic] = resp.rows
+          _data[params.topicName] = resp.rows
           const _xAxisData = [params.topicName]
           this.$refs.topicLineChart.setOptions(this.getTopicLineChart(_xAxisData, _data))
         }
