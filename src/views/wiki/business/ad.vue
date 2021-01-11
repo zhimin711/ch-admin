@@ -15,9 +15,10 @@
       <div class="handle-box">
         <el-row>
           <el-col :span="24">
-            <el-button type="primary" icon="el-icon-search" @click="doSearch">搜索</el-button>
-            <el-button icon="el-icon-refresh" @click="search = {}">重置</el-button>
-            <el-button v-if="checkPermission2(['WIKI_AD_ADD'])" type="primary" icon="el-icon-plus" class="handle-del mr10" @click="baseAdd()">新增
+            <el-button type="primary" icon="el-icon-search" @click="doSearch">{{ $t('btn.search') }}</el-button>
+            <el-button icon="el-icon-refresh" @click="search = {}">{{ $t('btn.reset') }}</el-button>
+            <el-button v-permission="['WIKI_AD_ADD']" type="primary" icon="el-icon-plus" class="handle-del mr10" @click="baseAdd()">
+              {{ $t('btn.add') }}
             </el-button>
             <!--<el-button type="primary" icon="el-icon-download" class="handle-del mr10">导出</el-button>-->
           </el-col>
@@ -63,22 +64,14 @@
         </el-table-column>
         <el-table-column label="操作" width="130" align="center">
           <template slot-scope="scope">
-            <el-button v-if="checkPermission2(['WIKI_AD_EDIT'])" v-show="scope.row.type !== '0'" type="text" icon="el-icon-edit" @click="baseEdit(scope.row)">编辑
+            <el-button v-show="scope.row.type !== '0'" v-permission="['WIKI_AD_EDIT']" type="text" icon="el-icon-edit" @click="baseEdit(scope.row)">
+              {{ $t('btn.edit') }}
             </el-button>
-            <el-button v-if="checkPermission2(['WIKI_AD_DEL'])" v-show="scope.row.type !== '0'" type="text" icon="el-icon-delete" class="red" @click="baseDel(scope.$index, scope.row)">删除
+            <el-button v-show="scope.row.type !== '0'" v-permission="['WIKI_AD_DEL']" type="text" icon="el-icon-delete" class="red" @click="baseDel(scope.$index, scope.row)">
+              {{ $t('btn.delete') }}
             </el-button>
           </template>
         </el-table-column>
-        <!-- <el-table-column label="操作" width="280" align="center">
-          <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-refresh" @click="bookSync(scope.row)">同步</el-button>
-            <el-button type="text" icon="el-icon-edit" @click="baseEdit(scope.$index, scope.row)">编辑
-            </el-button>
-            <el-button type="text" icon="el-icon-delete" class="red"
-                       @click="baseDelete(scope.$index, scope.row)">删除
-            </el-button>
-          </template>
-        </el-table-column>-->
       </el-table>
       <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
     </div>
@@ -144,8 +137,8 @@
       <el-row slot="footer">
         <el-col :span="20" :offset="4">
           <span class="dialog-footer">
-            <el-button :loading="baseForm.loading" @click="resetForm('baseForm')">取 消</el-button>
-            <el-button :loading="baseForm.loading" type="primary" @click="saveEdit('baseForm')">确 定</el-button>
+            <el-button :loading="baseForm.loading" @click="resetForm('baseForm')">{{ $t('btn.cancel') }}</el-button>
+            <el-button :loading="baseForm.loading" type="primary" @click="saveEdit('baseForm')">{{ $t('btn.save') }}</el-button>
           </span>
         </el-col>
       </el-row>
@@ -158,8 +151,8 @@
     <el-dialog title="提示" :visible.sync="delVisible" width="300px" center>
       <div class="del-dialog-cnt">删除不可恢复，是否确定删除？</div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="delVisible = false">取 消</el-button>
-        <el-button type="primary" @click="deleteRow">确 定</el-button>
+        <el-button @click="delVisible = false">{{ $t('btn.cancel') }}</el-button>
+        <el-button type="primary" @click="deleteRow">{{ $t('btn.confirm') }}</el-button>
       </span>
     </el-dialog>
   </div>
