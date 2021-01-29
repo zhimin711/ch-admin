@@ -1,35 +1,77 @@
 /** When your routing table is too long, you can split it into small modules **/
 
 import Layout from '@/layout'
+import Blank from '@/layout/index2'
 
 const sysRouter = {
-  path: '/project',
+  path: '/cloud',
   component: Layout,
-  redirect: '/project/project/code',
+  redirect: '/cloud/project/code',
   alwaysShow: true, // will always show the root menu
-  name: 'Platform Manager',
+  name: 'CloudPlatform',
   meta: {
-    title: '项目管理',
+    title: 'Cloud Platform',
     icon: 'lock'
   },
   children: [
     {
-      path: 'code',
-      component: () => import('@/views/sys/project/code'),
-      name: 'project code',
+      path: 'IaaS',
+      redirect: '/cloud/IaaS/machine',
+      component: Blank,
+      alwaysShow: true,
+      name: 'IaaS Management',
       meta: {
-        title: '项目代码'
-      }
-    },
-    {
-      path: 'version',
-      component: () => import('@/views/sys/project/version'),
-      name: 'Version',
+        title: 'IaaS管理',
+        icon: 'lock'
+      },
+      children: [
+        {
+          path: 'host',
+          component: () => import('@/views/sys/IaaS/host'),
+          name: 'IaaSHost',
+          meta: {
+            title: '主机管理'
+          }
+        },
+        {
+          path: 'database',
+          component: () => import('@/views/sys/IaaS/database'),
+          name: 'IaaSDatabase',
+          meta: {
+            title: 'Database'
+          }
+        }
+      ]
+    }, {
+      path: 'project',
+      redirect: '/cloud/project/code',
+      component: Blank,
+      alwaysShow: true,
+      name: 'WikiBase',
       meta: {
-        title: '项目版本'
-      }
-    },
-    {
+        title: '项目管理',
+        icon: 'lock'
+      },
+      children: [
+        {
+          path: 'user',
+          component: () => import('@/views/sys/project/code'),
+          name: 'WikiUser',
+          meta: {
+            title: '项目代码'
+          }
+        },
+        {
+          path: 'version',
+          component: () => import('@/views/sys/project/version'),
+          name: 'Version',
+          meta: {
+            title: '项目版本'
+          }
+        }
+      ]
+    }
+    /* {
       path: 'instance',
       component: () => import('@/views/sys/app/instance'),
       name: 'Instance',
@@ -44,7 +86,7 @@ const sysRouter = {
       meta: {
         title: '应用日志'
       }
-    }/*,
+    },
     {
       path: 'directive',
       component: () => import('@/views/permission/directive'),

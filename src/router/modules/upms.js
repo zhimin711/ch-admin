@@ -36,16 +36,15 @@ const umpsRouter = {
       meta: {
         code: 'permissionManagement'
       }
-    }/*,
+    },
     {
-      path: 'directive',
-      component: () => import('@/views/permission/directive'),
-      name: 'DirectivePermission',
+      path: 'swagger',
+      component: () => import('@/views/swagger/index'),
+      name: 'Swagger',
       meta: {
-        title: 'Directive Permission'
-        // if do not set roles, means: this page does not require permission
+        title: 'Swagger'
       }
-    }*/
+    }
   ]
 }
 
