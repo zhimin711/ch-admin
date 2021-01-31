@@ -98,6 +98,13 @@ const routerMap = {
       code: 'RocketMQCluster'
     }
   },
+  RocketMQTopic: {
+    path: 'topic',
+    component: () => import('@/views/rocketMQ/topic'),
+    meta: {
+      code: 'RocketMQTopic'
+    }
+  },
   RocketMQMessage: {
     path: 'message',
     component: () => import('@/views/rocketMQ/message'),

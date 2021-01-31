@@ -19,7 +19,7 @@
     </div>
 
     <el-table v-loading="tableA.loading" :data="tableA.list" style="width: 100%;margin-bottom: 20px;" row-key="id" border :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
-      <el-table-column :label="$t('label.name')" prop="name">
+      <el-table-column :label="$t('label.name')" prop="name" min-width="220">
         <template slot-scope="scope">
           {{ scope.row.name }}
         </template>
@@ -33,14 +33,15 @@
           <el-tag v-else-if="row.type === '5'" type="danger">{{ row.hidden? '[私有]':'[开放]' }}{{ $t('label.interface') }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('label.code')" prop="code">
+      <el-table-column :label="$t('label.code')" prop="code" min-width="280">
         <template slot-scope="scope">
           {{ scope.row.code }}
         </template>
       </el-table-column>
-      <el-table-column :label="$t('label.address')">
-        <template slot-scope="scope">
-          <span>{{ scope.row.url }}</span>
+      <el-table-column :label="$t('label.address')" min-width="280">
+        <template slot-scope="{row}">
+          <span v-if="row.type === '3' || row.type === '5'">{{ row.url }}</span>
+          <span v-else>-</span>
         </template>
       </el-table-column>
       <el-table-column align="center" :label="$t('label.icon')" width="70">
@@ -91,11 +92,11 @@
         <el-form-item :label="$t('label.name')" prop="name">
           <el-input v-model="record.name" />
         </el-form-item>
-        <el-form-item :label="$t('label.icon')" prop="icon">
+        <el-form-item v-if="record.type === '1' || record.type === '2'" :label="$t('label.icon')" prop="icon">
           <!--<el-input v-model="record.icon" placeholder="仅支持SVG" />-->
           <icon-selector v-model="record.icon" />
         </el-form-item>
-        <el-form-item :label="$t('label.address')">
+        <el-form-item v-if="record.type === '3' || record.type === '5'" :label="$t('label.address')">
           <el-input v-model="record.url" placeholder="按钮或接口必填" />
         </el-form-item>
         <!--<el-form-item v-show="recordForm.redirectShow" label="重定向地址">

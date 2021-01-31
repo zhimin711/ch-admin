@@ -98,4 +98,57 @@ const sysRouter = {
     }*/
   ]
 }
+
+const routerMap = {
+  Cloud: {
+    path: '/cloud',
+    component: Layout,
+    redirect: '/cloud/project/code',
+    alwaysShow: true, // will always show the root menu
+    name: 'Cloud',
+    meta: {
+      title: 'Cloud Platform'
+    }
+  },
+  IaaSManagement: {
+    path: 'IaaS',
+    redirect: '/cloud/IaaS/machine',
+    component: Blank,
+    alwaysShow: true,
+    name: 'IaaSManagement',
+    meta: {
+      title: 'IaaS管理',
+      icon: 'lock'
+    }
+  },
+  IaaSHost: {
+    path: 'host',
+    component: () => import('@/views/sys/IaaS/host'),
+    name: 'IaaSHost',
+    meta: {
+      title: '主机管理'
+    }
+  },
+  IaaSDatabase: {
+    path: 'database',
+    component: () => import('@/views/sys/IaaS/database'),
+    name: 'IaaSDatabase',
+    meta: {
+      title: 'Database'
+    }
+  },
+  IaaSDataSource: {
+    path: 'dataSource',
+    component: () => import('@/views/sys/IaaS/datasource'),
+    name: 'IaaSDatabase',
+    meta: {
+      title: 'DataSource'
+    }
+  }
+}
+
+export function getCloudRouter(code) {
+  return routerMap[code]
+}
+
 export default sysRouter

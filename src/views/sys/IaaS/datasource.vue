@@ -63,30 +63,25 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 主机':'添加 主机'">
-      <el-form :model="record" label-width="80px" label-position="left">
-        <el-form-item label="类型">
-          <el-select v-model="record.type" placeholder="请选择">
-            <el-option key="1" label="MySQL" value="MySQL" />
-            <el-option key="2" label="Oracle" value="Oracle" />
-            <!--<el-option key="3" label="" value="3" />-->
-            <!--<el-option key="4" label="" value="4" />-->
-          </el-select>
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 数据源':'添加 数据源'">
+      <el-form :model="record" label-width="120px" label-position="left">
+        <el-form-item label="所属数据库">
+          <el-select v-model="record.dbId" placeholder="请选择" />
         </el-form-item>
-        <el-form-item label="名称">
-          <el-input v-model="record.name" placeholder="实例名称" />
-        </el-form-item>
-        <el-form-item label="地址">
-          <el-input v-model="record.url" placeholder="连接地址" />
-        </el-form-item>
-        <el-form-item label="端口">
-          <el-input v-model="record.port" placeholder="端口" />
+        <el-form-item label="Schema 名称">
+          <el-select v-model="record.schemaName" placeholder="请选择" />
         </el-form-item>
         <el-form-item label="用户名">
-          <el-input v-model="record.username" placeholder="用户名" />
+          <el-input v-model="record.username" placeholder="用户名" auto-complete="false" />
         </el-form-item>
-        <el-form-item label="用户密码">
-          <el-input v-model="record.password" type="password" placeholder="用户密码" />
+        <el-form-item label="密码">
+          <el-input v-model="record.password" type="password" placeholder="用户密码" auto-complete="false" />
+        </el-form-item>
+        <el-form-item label="别名">
+          <el-input v-model="record.alias" placeholder="数据库别名" />
+        </el-form-item>
+        <el-form-item label="起始编号">
+          <el-input v-model="record.beginNo" placeholder="起始编号(001)" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="record.status" placeholder="请选择">
@@ -106,7 +101,7 @@
 <script>
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
-import { listDatabase, addDatabase, editDatabase, delDatabase } from '@/api/sys/IaaS/database'
+import { listDataSource, addDataSource, editDataSource, delDataSource } from '@/api/sys/IaaS/data-source'
 
 export default {
   name: 'IaaSDatabase2',
@@ -137,7 +132,7 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      listDatabase(this.listQuery).then(response => {
+      listDataSource(this.listQuery).then(response => {
         this.listQuery.list = response.rows
         this.listQuery.total = response.total
         this.listLoading = false
@@ -163,7 +158,7 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          await delDatabase(row.id)
+          await delDataSource(row.id)
           _this.getList()
           this.$message({
             type: 'success',
@@ -177,10 +172,10 @@ export default {
       let resp = null
       let opName = '添加'
       if (this.dialogType === 'new') {
-        resp = await addDatabase(this.record)
+        resp = await addDataSource(this.record)
       } else if (this.dialogType === 'edit') {
         opName = '修改'
-        resp = await editDatabase(this.record.id, this.record)
+        resp = await editDataSource(this.record.id, this.record)
       }
       if (resp.success) {
         this.dialogVisible = false

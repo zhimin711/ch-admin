@@ -10,7 +10,7 @@ import Layout from '@/layout'
 import upmsRouter, { getUpmsRouter } from './modules/upms'
 import logsRouter, { getLogsRouter } from './modules/logs'
 import wikiRouter, { getWikiRouter } from './modules/wiki'
-import sysRouter from './modules/sys'
+import sysRouter, { getCloudRouter } from './modules/sys'
 import kafkaRouter, { getKafkaRouter } from './modules/kafka'
 import nacosRouter, { getNacosRouter } from './modules/nacos'
 import rocketMQRouter, { getRocketMQRouter } from './modules/rocket-mq'
@@ -204,6 +204,9 @@ export function assemblyAsyncRoutes(menus) {
     }
     if (!route) {
       route = getRocketMQRouter(menu.code)
+    }
+    if (!route) {
+      route = getCloudRouter(menu.code)
     }
     if (route) {
       route.name = menu.code
