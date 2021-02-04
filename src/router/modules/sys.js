@@ -42,31 +42,53 @@ const sysRouter = {
           }
         }
       ]
-    }, {
+    },
+    {
       path: 'project',
-      redirect: '/cloud/project/code',
+      redirect: '/cloud/project/order',
       component: Blank,
       alwaysShow: true,
-      name: 'WikiBase',
+      name: 'ProjectManagement',
       meta: {
         title: '项目管理',
         icon: 'lock'
       },
       children: [
         {
-          path: 'user',
+          path: 'order',
           component: () => import('@/views/sys/project/code'),
-          name: 'WikiUser',
+          name: 'ProjectOrder',
           meta: {
-            title: '项目代码'
+            title: 'Project Order'
           }
         },
         {
           path: 'version',
           component: () => import('@/views/sys/project/version'),
-          name: 'Version',
+          name: 'ProjectVersion',
           meta: {
             title: '项目版本'
+          }
+        }
+      ]
+    },
+    {
+      path: 'tools',
+      redirect: '/cloud/tools/gen',
+      component: Blank,
+      alwaysShow: true,
+      name: 'CloudTools',
+      meta: {
+        title: '平台工具',
+        icon: 'lock'
+      },
+      children: [
+        {
+          path: 'gen',
+          component: () => import('@/views/sys/tools/gen'),
+          name: 'CodeGen',
+          meta: {
+            title: '代码生成'
           }
         }
       ]
