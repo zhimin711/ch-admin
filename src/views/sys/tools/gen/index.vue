@@ -216,10 +216,10 @@ export default {
       dateRange: '',
       // 查询参数
       queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        tableName: undefined,
-        tableComment: undefined
+        page: 1,
+        size: 10,
+        total: 0,
+        params: {}
       },
       // 预览参数
       preview: {

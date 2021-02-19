@@ -1,19 +1,21 @@
-import request from '@/utils/request'
+import request from '@/utils/request2'
+
+const namespace = '/sys/tools/codegen'
 
 // 查询生成表数据
 export function listTable(query) {
   return request({
-    url: '/tool/gen/list',
+    url: `${namespace}/${query.page}/${query.size}`,
     method: 'get',
-    params: query
+    params: query.params
   })
 }
 // 查询db数据库列表
-export function listDbTable(query) {
+export function listDbTable(params) {
   return request({
-    url: '/tool/gen/db/list',
+    url: `${namespace}/db/list`,
     method: 'get',
-    params: query
+    params: params
   })
 }
 
