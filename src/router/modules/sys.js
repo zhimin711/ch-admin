@@ -6,7 +6,7 @@ import Blank from '@/layout/index2'
 const sysRouter = {
   path: '/cloud',
   component: Layout,
-  redirect: '/cloud/project/code',
+  redirect: '/cloud/IaaS/database',
   alwaysShow: true, // will always show the root menu
   name: 'CloudPlatform',
   meta: {
@@ -16,7 +16,6 @@ const sysRouter = {
   children: [
     {
       path: 'IaaS',
-      redirect: '/cloud/IaaS/machine',
       component: Blank,
       alwaysShow: true,
       name: 'IaaS Management',
@@ -39,6 +38,17 @@ const sysRouter = {
           name: 'IaaSDatabase',
           meta: {
             title: 'Database'
+          }
+        },
+        {
+          path: 'database/:id(\\d+)',
+          component: () => import('@/views/sys/IaaS/datasource'),
+          name: 'IaaSDatabaseEdit',
+          hidden: true,
+          meta: {
+            title: '数据库管理',
+            noCache: true,
+            activeMenu: '/cloud/IaaS/database'
           }
         }
       ]

@@ -1,8 +1,10 @@
 import request from '@/utils/request2'
-const baseUrl = '/sys/iaas/database'
+
+const namespace = '/sys/iaas/database'
+
 export function listDatabase(query) {
   return request({
-    url: `${baseUrl}/${query.page}/${query.limit}`,
+    url: `${namespace}/${query.page}/${query.limit}`,
     method: 'get',
     params: query.params
   })
@@ -10,15 +12,14 @@ export function listDatabase(query) {
 
 export function getDatabase(id) {
   return request({
-    url: `${baseUrl}/${id}`,
-    method: 'get',
-    params: { id }
+    url: `${namespace}/${id}`,
+    method: 'get'
   })
 }
 
 export function addDatabase(data) {
   return request({
-    url: `${baseUrl}`,
+    url: `${namespace}`,
     method: 'post',
     data
   })
@@ -26,7 +27,7 @@ export function addDatabase(data) {
 
 export function editDatabase(id, data) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'put',
     data
   })
@@ -34,7 +35,7 @@ export function editDatabase(id, data) {
 
 export function delDatabase(id) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'delete'
   })
 }

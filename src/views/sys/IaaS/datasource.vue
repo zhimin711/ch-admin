@@ -101,6 +101,7 @@
 <script>
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
+import { getDatabase } from '@/api/sys/IaaS/database'
 import { listDataSource, addDataSource, editDataSource, delDataSource } from '@/api/sys/IaaS/data-source'
 
 export default {
@@ -126,10 +127,17 @@ export default {
     }
   },
   created() {
-    this.getList()
-    // this.getEnableRoles()
+    const id = this.$route.params && this.$route.params.id
+    this.fetchData(id)
+    // this.tempRoute = Object.assign({}, this.$route)
+    // this.getList()
   },
   methods: {
+    fetchData(id) {
+      getDatabase(id).then(resp => {
+
+      })
+    },
     getList() {
       this.listLoading = true
       listDataSource(this.listQuery).then(response => {

@@ -55,7 +55,10 @@
 
       <el-table-column align="center" label="操作" width="200">
         <template slot-scope="scope">
-          <el-link v-permission="['IAAS_DATABASE_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
+          <!--<el-link v-permission="['IAAS_DATABASE_EDIT']" type="primary" icon="el-icon-setting" @click="handleEdit(scope.row, scope.$index)">管理</el-link>-->
+          <router-link v-permission="['IAAS_DATABASE_EDIT']" :to="'/cloud/IaaS/database/'+scope.row.id">
+            <el-button type="text" icon="el-icon-setting">管理</el-button>
+          </router-link>
           <el-link v-permission="['IAAS_DATABASE_DELETE']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
@@ -63,7 +66,7 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 主机':'添加 主机'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 数据库实例':'添加 数据库实例'">
       <el-form :model="record" label-width="80px" label-position="left">
         <el-form-item label="类型">
           <el-select v-model="record.type" placeholder="请选择">
@@ -83,7 +86,7 @@
           <el-input v-model="record.port" placeholder="端口" />
         </el-form-item>
         <el-form-item label="用户名">
-          <el-input v-model="record.username" placeholder="用户名" />
+          <el-input v-model="record.username" placeholder="用户名(管理员)" />
         </el-form-item>
         <el-form-item label="用户密码">
           <el-input v-model="record.password" type="password" placeholder="用户密码" />
