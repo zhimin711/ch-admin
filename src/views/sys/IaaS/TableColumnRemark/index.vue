@@ -54,7 +54,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="tables.a.total>0" :total="tables.a.total" :page.sync="tables.a.page" :limit.sync="tables.a.limit" />
+    <pagination v-show="tables.a.total>0" :total="tables.a.total" :page.sync="tables.a.page" :limit.sync="tables.a.limit" @pagination="handleSearch" />
 
     <!-- 添加或修改业务-数据库列备注对话框 -->
     <el-dialog :visible.sync="dialogs.a.visible" :title="dialogs.a.type==='edit'?'修改业务-数据库列备注':'创建业务-数据库列备注'">
