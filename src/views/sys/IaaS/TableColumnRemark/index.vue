@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-form ref="queryForm" :model="tables.a.params" :inline="true" label-width="180px">
+      <el-form ref="queryForm" :model="tables.a.params" :inline="true" label-width="120px">
         <el-form-item label="表名称" prop="tableName">
           <el-input
             v-model="tables.a.params.tableName"
@@ -44,21 +44,9 @@
       <el-table-column label="表名称" prop="tableName" />
       <el-table-column label="字段名称" prop="columnName" />
       <el-table-column label="类型" prop="type" />
-      <el-table-column label="备注" prop="remark" />
+      <el-table-column label="备注2" prop="remark" />
       <el-table-column label="备注" prop="originRemark" />
       <el-table-column label="状态" prop="status" />
-      <el-table-column label="创建时间" align="center" prop="createAt" width="180">
-        <template slot-scope="scope">
-          <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="创建人" prop="createBy" />
-      <el-table-column label="更新时间" align="center" prop="updateAt" width="180">
-        <template slot-scope="scope">
-          <span>{{ scope.row.updateAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="更新人" prop="updateBy" />
       <el-table-column align="center" prop="created_at" label="操作" min-width="150">
         <template slot-scope="{row}">
           <el-button v-permission="'SysTableColumnRemarkEdit'" type="text" @click.native="handleEdit(row)">{{ $t('btn.edit') }}</el-button>
@@ -227,7 +215,7 @@ export default {
         this.dialogs.a.visible = false
         this.$message({
           type: 'success',
-          message: `${opName} ${this.record.username} 成功!`
+          message: `${opName} 成功!`
         })
         _this.handleSearch()
       }
