@@ -50,6 +50,14 @@ const sysRouter = {
             noCache: true,
             activeMenu: '/cloud/IaaS/database'
           }
+        },
+        {
+          path: 'TableColumnRemark',
+          component: () => import('@/views/sys/IaaS/TableColumnRemark/index'),
+          name: 'SysTableColumnRemark',
+          meta: {
+            title: '业务-数据库列备注'
+          }
         }
       ]
     },
