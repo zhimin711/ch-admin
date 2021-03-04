@@ -43,7 +43,7 @@
           </div>
           <div class="text item">
             <el-table v-loading="tables.instanceLoading" :data="tables.instances" border>
-              <el-table-column label="IP" width="100" prop="ip" />
+              <el-table-column label="IP" width="150" prop="ip" />
               <el-table-column label="端口" width="60" prop="port" />
               <el-table-column label="临时实例" width="100" align="center" prop="ephemeral">
                 <template slot-scope="{row}">

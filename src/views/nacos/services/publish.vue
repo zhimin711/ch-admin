@@ -223,7 +223,7 @@ export default {
       })
     },
     handleDetail(row) {
-      this.$router.push(`/nacos/services/detail?name=${row.name}&groupName=${row.groupName}`)
+      this.$router.push(`/nacos/services/detail?serviceName=${row.name}&groupName=${row.groupName}`)
     }
   }
 }
