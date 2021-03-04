@@ -28,7 +28,7 @@ export function addNacosService(data) {
 
 export function getNacosService(params) {
   return request({
-    url: `${namespace}?serviceName=${params.name}&groupName=${params.groupName}`,
+    url: `${namespace}`,
     method: 'get',
     params: params
   })

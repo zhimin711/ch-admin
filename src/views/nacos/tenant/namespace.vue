@@ -64,7 +64,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确定</el-button>
+        <el-button v-loading="listLoading2" type="primary" @click="handleSubmit">确定</el-button>
       </div>
     </el-dialog>
     <el-dialog
@@ -107,7 +107,7 @@ export default {
     return {
       list: null,
       listLoading: true,
-      listLoading2: true,
+      listLoading2: false,
       count: 0,
       listQuery: {
         page: 1,
@@ -158,6 +158,7 @@ export default {
     handleSubmit() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
+          this.listLoading2 = true
           if (this.dialogStatus === 'create') {
             const formData = new FormData()
             formData.append('customNamespaceId', this.record.namespace || '')
@@ -166,7 +167,7 @@ export default {
             // formData.append('namespaceId', '')
             addNacosNamespaces(formData).then(res => {
               this.handleResult(res)
-            })
+            }).finally(() => { this.listLoading2 = false })
           }
           if (this.dialogStatus === 'update') {
             const formData = new FormData()
@@ -175,7 +176,7 @@ export default {
             formData.append('namespaceDesc', this.record.namespaceDesc)
             updateNacosNamespaces(formData).then(res => {
               this.handleResult(res)
-            })
+            }).finally(() => { this.listLoading2 = false })
           }
         }
       })

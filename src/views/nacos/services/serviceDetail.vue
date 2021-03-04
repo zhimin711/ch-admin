@@ -215,6 +215,7 @@ export default {
       this.dialogVisible = true
     },
     loadData(params) {
+      params.namespaceId = this.$store.getters.tenant
       getNacosService(params).then(data => {
         if (data) {
           this.detail = deepClone(data.service)
