@@ -1,10 +1,10 @@
 import request from '@/utils/request2'
 
-const baseUrl = '/upms/dict'
+const namespace = '/upms/dict'
 
 export function pageDict(query) {
   return request({
-    url: `${baseUrl}/${query.num}/${query.size}`,
+    url: `${namespace}/${query.num}/${query.size}`,
     method: 'get',
     params: query.params
   })
@@ -12,14 +12,14 @@ export function pageDict(query) {
 
 export function getDict(id) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'get'
   })
 }
 
 export function addDict(data) {
   return request({
-    url: `${baseUrl}`,
+    url: `${namespace}`,
     method: 'post',
     data
   })
@@ -27,7 +27,7 @@ export function addDict(data) {
 
 export function editDict(id, data) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'put',
     data
   })
@@ -35,14 +35,14 @@ export function editDict(id, data) {
 
 export function delDict(id) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'delete'
   })
 }
 
-export function searchDict(name) {
+export function searchDict(code, name) {
   return request({
-    url: `${baseUrl}/search`,
+    url: `${namespace}/data/${code}`,
     method: 'get',
     name
   })

@@ -94,6 +94,12 @@
         </el-form-item>
         <el-form-item label="链接" prop="href">
           <el-input v-model="record.href" />
+          <el-alert
+            v-if="record.href2"
+            :title="record.href2"
+            type="info"
+            :closable="false"
+          />
         </el-form-item>
         <el-form-item label="时间">
           <el-date-picker v-model="markTime" type="datetime" placeholder="选择日期" value-format="timestamp" />
@@ -123,7 +129,7 @@ import Pagination from '@/components/Pagination' // Secondary package based on e
 import { deepClone } from '@/utils'
 import { listBookmark, addBookmark, editBookmark, delBookmark } from '@/api/wiki/bookmark'
 
-const defaultRecord = { type: '2', status: '0' }
+const defaultRecord = { type: '2', status: '0', href: '' }
 
 export default {
   name: 'WikiBookmark',
@@ -168,6 +174,8 @@ export default {
     },
     handleEdit(row) {
       this.record = deepClone(row)
+      this.record.href2 = this.record.href
+      this.record.href = ''
       this.record.lastMarkAt = this.record.markAt
       this.markTime = new Date()
 
@@ -197,15 +205,19 @@ export default {
       let resp = null
       let opName = '添加'
       this.loading.handleSubmit = true
+      const data = Object.assign({}, this.record)
+      if (this.record.href === '') {
+        data.href = this.record.href2
+      }
       if (this.dialogType === 'new') {
-        this.record.markAt = this.markTime
-        resp = await addBookmark(this.record).catch(() => { this.loading.handleSubmit = false })
+        data.markAt = this.markTime
+        resp = await addBookmark(data).catch(() => { this.loading.handleSubmit = false })
       } else if (this.dialogType === 'edit') {
         if (!this.unmark) {
-          this.record.markAt = this.markTime
+          data.markAt = this.markTime
         }
         opName = '修改'
-        resp = await editBookmark(this.record.id, this.record).catch(() => { this.loading.handleSubmit = false })
+        resp = await editBookmark(this.record.id, data).catch(() => { this.loading.handleSubmit = false })
       }
       this.loading.handleSubmit = false
       const ok = resp && resp.success
@@ -227,6 +239,10 @@ export default {
 <style scoped>
 .edit-input {
   padding-right: 100px;
+}
+.el-alert {
+  width: 100%;
+  padding: 3px 16px;
 }
 .cancel-btn {
   position: absolute;

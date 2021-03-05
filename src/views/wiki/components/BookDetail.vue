@@ -594,8 +594,11 @@ export default {
     right: 10px;
     top: 0px;
   }
-  .chapter-preview {
-    font-size: 1.2rem
+  .chapter-preview ::v-deep {
+    font-size: 1.2rem;
+    p {
+      text-indent: 2em;
+    }
   }
 }
 
