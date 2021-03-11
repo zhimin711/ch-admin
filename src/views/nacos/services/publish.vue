@@ -31,12 +31,12 @@
       highlight-current-row
     >
       <el-table-column label="服务名称" min-width="200" prop="name" />
-      <el-table-column label="分组名称" min-width="200" prop="groupName" />
-      <el-table-column label="集群数目" min-width="100" align="center" prop="clusterCount" />
-      <el-table-column label="实例数" min-width="100" align="center" prop="ipCount" />
-      <el-table-column label="健康实例数" min-width="100" align="center" prop="healthyInstanceCount" />
-      <el-table-column class-name="status-col" label="触发保护阈值" min-width="150" align="center" prop="triggerFlag" />
-      <el-table-column align="center" label="操作" min-width="150">
+      <el-table-column label="分组名称" min-width="150" prop="groupName" />
+      <el-table-column label="集群数目" width="80" align="center" prop="clusterCount" />
+      <el-table-column label="实例数" width="70" align="center" prop="ipCount" />
+      <el-table-column label="健康实例数" width="100" align="center" prop="healthyInstanceCount" />
+      <el-table-column class-name="status-col" label="触发保护阈值" width="110" align="center" prop="triggerFlag" />
+      <el-table-column align="center" label="操作" width="180">
         <template slot-scope="{row}">
           <el-button v-permission="'NacosServicesIndexDetail'" type="text" @click.native="handleDetail(row)">详情</el-button>
           <el-button type="text" @click.native="handleCode(row)">示例代码</el-button>
@@ -45,7 +45,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination v-show="count>0" :total="count" :page.sync="listQuery.page" :limit.sync="listQuery.size" @pagination="fetchData()" />
+    <pagination v-show="count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
 
     <el-dialog :visible.sync="dialogVisible" title="创建服务" width="600px">
       <el-form ref="dataForm" :rules="rules" :model="record" label-position="left" label-width="100px">
@@ -111,7 +111,7 @@ export default {
         hasIpCount: true,
         withInstances: false,
         pageNo: 1,
-        pageSize: 20
+        pageSize: 10
       },
       dialogVisible: false,
       dialogVisible2Code: false,
