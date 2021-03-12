@@ -79,7 +79,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
-          <router-link v-if="checkOperation('WIKI_ARTICLE_EDIT',scope.row)" :to="'/wiki/article/'+scope.row.id">
+          <router-link v-if="checkOperation('WIKI_ARTICLE_EDIT',scope.row)" :to="'/wiki/business/article/edit/'+scope.row.id">
             <el-button type="text" icon="el-icon-edit">编辑</el-button>
           </router-link>
           <el-button-group>

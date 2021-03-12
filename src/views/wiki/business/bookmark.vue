@@ -89,7 +89,7 @@
           <el-input v-model="record.name" />
         </el-form-item>
         <el-form-item label="标签" prop="mark">
-          <el-input v-if="Number.isNaN(Number(record.mark))" v-model="record.mark" />
+          <el-input v-if="Number.isNaN&&Number.isNaN(Number(record.mark))" v-model="record.mark" />
           <el-input-number v-else v-model="record.mark" :min="1" :max="10000" />
         </el-form-item>
         <el-form-item label="链接" prop="href">
