@@ -101,19 +101,37 @@ service2.interceptors.response.use(
   }
 )
 let isOpen = false
-function toLogin() {
+
+/**
+ * 跳转登录：0 未登录 1登录过期
+ * @param type
+ */
+export function toLogin(type, to) {
+  type = type || 1
   if (!isOpen) {
     // to re-login
     isOpen = true
-    MessageBox.confirm('登录已失效, 取消停留在当前页面， 或重新登录', '登录过期', {
-      confirmButtonText: '重新登录',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }).then(() => {
-      store.dispatch('user/removeToken').then(() => {
-        router.push('/login')
+    if (type === 1) {
+      MessageBox.confirm('登录已失效, 取消停留在当前页面， 或重新登录', '登录过期', {
+        confirmButtonText: '重新登录',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        store.dispatch('user/removeToken').then(() => {
+          router.push('/login')
+        })
+      }).finally(() => { isOpen = false })
+    } else {
+      // to re-login
+      MessageBox.alert('登录已失效,请重新登录', '登录过期', {
+        confirmButtonText: '重新登录',
+        callback: () => {
+          store.dispatch('user/removeToken').then(() => {
+            if (to) { router.push(`/login?redirect=${to}`) } else { router.push('/login') }
+          })
+        }
       })
-    }).finally(() => { isOpen = false })
+    }
   }
 }
 

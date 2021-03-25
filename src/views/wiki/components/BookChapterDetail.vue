@@ -3,24 +3,25 @@
     <el-form ref="record" :model="record" :rules="rules" class="form-container">
 
       <sticky :z-index="10" :class-name="'sub-navbar '+record.status">
-
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm">
           保存
         </el-button>
         <el-button v-loading="loading" type="warning" @click="draftForm">
           草稿
         </el-button>
+        <el-button type="danger" @click="closeView">
+          关闭
+        </el-button>
       </sticky>
 
       <div class="createPost-main-container">
         <el-row>
-          <Warning />
 
           <el-col :span="24">
 
             <div class="postInfo-container">
               <el-row>
-                <el-col :span="8">
+                <!--<el-col :span="8">
                   <el-form-item label-width="80px" label="上一章节:" class="postInfo-container-item">
                     <el-select v-model="pre" placeholder="请选择" style="display:block;" value-key="id" clearable @change="(val)=> handlePreAndNext(val,-1)">
                       <el-option
@@ -50,6 +51,62 @@
                         <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
                       </el-option>
                     </el-select>
+                  </el-form-item>
+                </el-col>-->
+                <el-col :span="8">
+                  <el-form-item label-width="80px" label="上一章节:" class="postInfo-container-item">
+                    <el-input
+                      v-model="pre.name"
+                      placeholder="请输入内容"
+                      class="input-with-select"
+                      disabled
+                    >
+                      <template #prepend>
+                        <el-select v-model="pre" placeholder="请选择" style="display:block;" value-key="id" clearable @change="(val)=> handlePreAndNext(val,-1)">
+                          <el-option
+                            v-for="item in catalogs"
+                            :key="item.id"
+                            :label="item.number || item.name"
+                            :value="item"
+                            :disabled="record.id===item.id"
+                          >
+                            <span style="float: left">{{ item.number }}</span>
+                            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
+                          </el-option>
+                        </el-select>
+                      </template>
+                      <template #append>
+                        <el-button icon="el-icon-edit" @click="fetchData(pre.id, true)" />
+                      </template>
+                    </el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label-width="80px" label="下一章节:" class="postInfo-container-item">
+                    <el-input
+                      v-model="next.name"
+                      placeholder="请输入内容"
+                      class="input-with-select"
+                      disabled
+                    >
+                      <template #prepend>
+                        <el-select v-model="next" placeholder="请选择" value-key="id" clearable @change="(val)=> handlePreAndNext(val,1)">
+                          <el-option
+                            v-for="item in catalogs"
+                            :key="item.id"
+                            :label="item.number || item.name"
+                            :value="item"
+                            :disabled="record.id===item.id"
+                          >
+                            <span style="float: left">{{ item.number }}</span>
+                            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.name }}</span>
+                          </el-option>
+                        </el-select>
+                      </template>
+                      <template #append>
+                        <el-button icon="el-icon-edit" @click="fetchData(next.id, true)" />
+                      </template>
+                    </el-input>
                   </el-form-item>
                 </el-col>
 
@@ -81,11 +138,11 @@
 import Tinymce from '@/components/Tinymce'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
-import { validURL } from '@/utils/validate'
-import Warning from './Warning'
+import { isEmpty, validURL } from '@/utils/validate'
 
 import { getBookCatalogs } from '@/api/wiki/books'
 import { getBookChapter, addBookChapter, editBookChapter } from '@/api/wiki/books/chapter'
+import { Loading } from 'element-ui'
 
 const defaultForm = {
   status: '1',
@@ -103,7 +160,7 @@ const defaultForm = {
 
 export default {
   name: 'BookChapterDetail',
-  components: { Tinymce, MDinput, Sticky, Warning },
+  components: { Tinymce, MDinput, Sticky },
   props: {
     isEdit: {
       type: Boolean,
@@ -143,6 +200,7 @@ export default {
       catalogs: [],
       pre: {},
       next: {},
+      loadingIns: {},
       rules: {
         image_uri: [{ validator: validateRequire }],
         title: [{ validator: validateRequire }],
@@ -183,12 +241,14 @@ export default {
     this.tempRoute = Object.assign({}, this.$route)
   },
   methods: {
-    fetchData(id) {
+    fetchData(id, clean = false) {
+      if (isEmpty(id)) return
+      if (clean) this.record.content = 'clean'
+
+      this.loadingIns = Loading.service({ target: document.querySelector('.createPost-container'), fullscreen: false })
       getBookChapter(id).then(response => {
         this.record = response.rows[0]
 
-        this.pre = { id: this.record.pre }
-        this.next = { id: this.record.next }
         // just for test
         // this.record.title += `   Article Id:${this.record.id}`
         // this.record.content_short += `   Article Id:${this.record.id}`
@@ -214,7 +274,6 @@ export default {
       document.title = `${title} - ${this.record.number || this.record.name}`
     },
     submitForm() {
-      console.log(this.record)
       this.$refs.record.validate(async valid => {
         if (valid) {
           // this.record = {}
@@ -233,14 +292,14 @@ export default {
             resp = await editBookChapter(this.record.id, this.record).catch(() => {})
           }
           this.loading = false
-          console.log(resp)
           if (resp && resp.success) {
             this.$message({
               type: 'success',
               message: `${opName} ${this.record.name} success!`
             })
-            this.$store.dispatch('tagsView/delView', this.tempRoute)
-            this.$router.go(-1)
+            this.$store.dispatch('tagsView/delView', this.tempRoute).then(() => {
+              this.$router.go(-1)
+            })
           }
           // this.loading = true
           // this.$notify({
@@ -278,22 +337,40 @@ export default {
         // if (!response.data.items) return
         // this.catalogs = response.data.items.map(v => v.name)
         this.catalogs = response.rows
+        this.pre = { id: this.record.pre }
+        this.next = { id: this.record.next }
+        this.getCatalogName()
+      }).finally(() => {
+        this.loadingIns.close()
       })
     },
     handlePreAndNext(row, op) {
       if (op === 1) {
-        if (row.pre === this.record.id) {
-          this.pre = {}
-          return
-        }
         this.pre = { id: row.pre }
-      } else if (op === -1) {
-        if (row.next === this.record.id) {
-          this.next = {}
-          return
+        if (row.pre === this.record.id) {
+          this.pre = { id: this.record.pre }
         }
+      } else if (op === -1) {
         this.next = { id: row.next }
+        if (row.next === this.record.id) {
+          this.next = { id: this.record.next }
+        }
       }
+      this.getCatalogName()
+    },
+    getCatalogName() {
+      this.catalogs.forEach(item => {
+        if (item.id === this.pre.id) {
+          this.pre.name = item.name
+        } else if (this.next.id && item.id === this.next.id) {
+          this.next.name = item.name
+        }
+      })
+    },
+    closeView() {
+      this.$store.dispatch('tagsView/delView', this.tempRoute).then(() => {
+        this.$router.go(-1)
+      })
     }
   }
 }
@@ -308,7 +385,7 @@ export default {
   .createPost-main-container {
     padding: 40px 45px 20px 50px;
 
-    .postInfo-container {
+    .postInfo-container ::v-deep {
       position: relative;
       @include clearfix;
       margin-top: 10px;
@@ -319,6 +396,11 @@ export default {
         .postInfo-container-item .el-select {
           display: block;
         }
+      }
+
+      .input-with-select .el-input-group__prepend {
+        background-color: #fff;
+        width: 130px;
       }
     }
   }
@@ -340,4 +422,5 @@ export default {
     border-bottom: 1px solid #bfcbd9;
   }
 }
+
 </style>

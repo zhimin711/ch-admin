@@ -1,6 +1,12 @@
 <template>
   <div ref="viewContainer" class="view-container">
     <sticky :z-index="10" :class-name="'sub-navbar published'">
+      <el-input v-model="input3" placeholder="请跳转页" style="width: 250px; margin-right: 10px">
+        <template #prepend>{{ list.length }}页</template>
+        <template #append>
+          <el-button icon="el-icon-search" @click="skipPage" />
+        </template>
+      </el-input>
       <el-button v-loading="loading" type="warning" @click="getBookPreview">
         刷新
       </el-button>
@@ -10,7 +16,7 @@
     </sticky>
     <div class="img-list">
       <ul>
-        <li v-for="(img, index) in list" :key="index">
+        <li v-for="(img, index) in list" :id="'img'+(index+1)" :key="index">
           <img :key="img.src" v-lazy="img.src" :style="{'width':imgWidth}">
         </li>
       </ul>
@@ -36,6 +42,9 @@ export default {
       id: -1,
       loading: true,
       imgWidth: '66.66%',
+      input3: 1,
+      select: '',
+      currentPage3: 1,
       list: [],
       // customizable button style, show/hide critical point, return position
       myBackToTopStyle: {
@@ -87,6 +96,16 @@ export default {
       this.$store.dispatch('tagsView/delView', this.tempRoute).then(() => {
         this.$router.go(-1)
       })
+    },
+    skipPage() {
+      if (this.input3 < 1 || this.input3 > this.list.length) {
+        this.$alert('超出范围')
+        return
+      }
+      const returnEle = document.querySelector('#img' + this.input3)
+      if (returnEle) {
+        returnEle.scrollIntoView(true)
+      }
     }
   }
 }
@@ -95,7 +114,6 @@ export default {
 <style scoped>
   .view-container{
   }
-
   .img-list ul {
     margin: 0;
     padding: 0;

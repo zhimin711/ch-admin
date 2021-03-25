@@ -64,6 +64,7 @@ export default {
   data() {
     return {
       hasChange: false,
+      hasClean: false,
       hasInit: false,
       tinymceId: this.id,
       fullscreen: false,
@@ -86,13 +87,16 @@ export default {
   },
   watch: {
     value(val) {
-      // console.log('tinymce watch value' + val)
+      // console.log('tinymce watch value => [' + val + ']')
+      if (this.hasClean && val === '') return
       if (val === 'clean' && this.hasInit) {
         this.$nextTick(() => {
           window.tinymce.get(this.tinymceId).setContent('')
           // this.$emit('input', '')
+          this.hasClean = true
         })
-      } else if (!this.hasChange && this.hasInit) {
+      } else if ((this.hasClean || !this.hasChange) && this.hasInit) {
+        if (this.hasClean) this.hasClean = false
         this.$nextTick(() =>
           window.tinymce.get(this.tinymceId).setContent(val || ''))
       }
@@ -150,8 +154,8 @@ export default {
             editor.setContent(_this.value)
           }
           _this.hasInit = true
-          editor.on('NodeChange Change KeyUp SetContent', () => {
-            this.hasChange = true
+          editor.on('NodeChange Change KeyUp SetContent', (e) => {
+            if (!this.hasClean) this.hasChange = true
             this.$emit('input', editor.getContent())
           })
         },

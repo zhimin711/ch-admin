@@ -17,6 +17,9 @@
         <el-button v-if="checkPermission2(['WIKI_BOOKS_CATALOG_FIX']) && record.status === '2'" type="danger" @click="fixForm">
           修复目录链接
         </el-button>
+        <el-button type="danger" @click="closeView">
+          关闭
+        </el-button>
       </sticky>
 
       <div class="createPost-main-container">
@@ -184,7 +187,8 @@
     <el-dialog
       :title="previewTitle"
       :visible.sync="previewDialogVisible"
-      width="80%"
+      :width="dialogWidth"
+      destroy-on-close
       :center="true"
       :before-close="handlePreviewClose"
     >
@@ -285,6 +289,7 @@ export default {
       record: Object.assign({}, defaultForm),
       loading: false,
       dialogVisible: false,
+      dialogWidth: '80%',
       dialogType: 'add',
       recordCatalog: Object.assign({}, defaultCatalog),
       catalogs: [],
@@ -342,6 +347,14 @@ export default {
     // Because if you enter this page and quickly switch tag, may be in the execution of the setTagsViewTitle function, this.$route is no longer pointing to the current page
     // https://github.com/PanJiaChen/vue-element-admin/issues/1221
     this.tempRoute = Object.assign({}, this.$route)
+    this.setDialogWidth()
+  },
+  mounted() {
+    window.onresize = () => {
+      return (() => {
+        this.setDialogWidth()
+      })()
+    }
   },
   methods: {
     checkPermission2,
@@ -563,6 +576,20 @@ export default {
         return str.substring(0, len) + '...'
       }
       return str
+    },
+    closeView() {
+      this.$store.dispatch('tagsView/delView', this.tempRoute).then(() => {
+        this.$router.go(-1)
+      })
+    },
+    setDialogWidth() {
+      const val = document.body.clientWidth
+      const def = 800 // 默认宽度
+      if (val < def) {
+        this.dialogWidth = '100%'
+      } else {
+        this.dialogWidth = '80%'
+      }
     }
   }
 }
