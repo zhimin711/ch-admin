@@ -76,6 +76,7 @@ export default {
       if (resp.success && resp.rows.length > 0) {
         this.$refs.uploader.clearFiles()
         this.emitInput(resp.rows[0].url)
+        this.$emit('success', resp.rows[0])
       }
     },
     uploadError(resp) {

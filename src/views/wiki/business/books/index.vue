@@ -125,7 +125,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item v-show="baseForm.uploadShow" label="上传文件">
-          <UploadSingleFile v-model="record.srcUrl" :data="{'type':'2'}" />
+          <UploadSingleFile v-model="record.srcUrl" :data="{'type':'2'}" @success="uploadSuccess" />
         </el-form-item>
         <el-form-item
           v-if="record.srcType === '1' || (record.srcUrl && record.srcUrl.length>1)"
@@ -157,6 +157,7 @@ import { CategoryDropdown } from '../../components/Dropdown'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 
 import { fetchBookList, addBook, editBook, syncBook } from '@/api/wiki/books'
+import { isEmpty } from '../../../../utils/validate'
 
 const defaultRecord = {
   type: '1',
@@ -253,9 +254,9 @@ export default {
       this.loading = true
       let resp
       if (this.baseForm.action === 'add') {
-        resp = await addBook(this.record)
+        resp = await addBook(this.record).finally(() => { this.loading = false })
       } else {
-        resp = await editBook(this.record.id, this.record)
+        resp = await editBook(this.record.id, this.record).finally(() => { this.loading = false })
       }
       this.loading = false
       if (resp && resp.success) {
@@ -312,17 +313,9 @@ export default {
         }
       }
     },
-    uploadSuccess(resp, file, fileList) {
-      if (resp.success) {
-        this.$message.success('上传成功！')
-        if (fileList.length > 1) fileList.shift()
-        this.record.latestChapterUrl = resp.rows[0]
-        this.record.srcUrl = resp.rows[1]
-        this.record.originalType = '0'
-        this.baseForm.uploadShow = false
-      } else {
-        this.$message.error('上传失败,' + resp.error.name)
-        fileList.pop()
+    uploadSuccess(row) {
+      if (isEmpty(this.record.name)) {
+        // this.record.name = row.name
       }
     },
     removeUpload() {

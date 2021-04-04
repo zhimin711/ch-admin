@@ -33,6 +33,7 @@ import Sticky from '@/components/Sticky' // 粘性header组件
 import BackToTop from '@/components/BackToTop'
 import { getToken } from '@/utils/auth'
 import { getBook } from '@/api/wiki/books'
+import { isEmpty } from '../../../../utils/validate'
 
 export default {
   name: 'BookPreview',
@@ -62,11 +63,13 @@ export default {
   created() {
     this.tempRoute = Object.assign({}, this.$route)
     this.id = this.$route.params && this.$route.params.id
-    const w = window.innerWidth
-    if (w > 1200) {
-      this.imgWidth = '55%'
-    } else if (w < 800) {
+    const w = window.innerWidth - 220
+    if (w < 800) {
       this.imgWidth = '100%'
+    } else if (w > 800 && w < 1500) {
+      this.imgWidth = '85%'
+    } else if (w >= 1500) {
+      this.imgWidth = '55%'
     }
     this.getBookPreview()
   },
@@ -77,9 +80,13 @@ export default {
       getBook(this.id).then((resp) => {
         if (resp.success) {
           //
+          let imgSuffix = ''
+          if (!isEmpty(resp.rows[0].image)) {
+            imgSuffix = resp.rows[0].image.substring(resp.rows[0].image.indexOf('.'))
+          }
           const len = resp.rows[0].latestChapter
           for (let i = 1; i <= len; i++) {
-            this.list.push({ src: '/api/wiki/admin' + resp.rows[0].latestChapterUrl + '/' + i + '.jpg?token=' + getToken() })
+            this.list.push({ src: '/api/wiki/admin' + resp.rows[0].latestChapterUrl + '/' + i + imgSuffix + '?token=' + getToken() })
           }
         }
       }).finally(() => { this.loading = false })
