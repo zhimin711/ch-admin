@@ -85,9 +85,9 @@ export default {
     return {
       listLoading: false,
       params: {
-        address: 'zookeeper://10.202.39.19:2181?backup=10.202.39.20:2181,10.202.39.21:2181',
-        interfaceName: 'com.sf.shiva.trtms.ground.require.api.TempLineService',
-        method: 'checkCancel',
+        address: 'zookeeper://10.206.53.185:2181?backup=10.206.53.186:2181,10.206.53.187:2181',
+        interfaceName: 'com.sf.grd.require.micro.service.temp.ITempRequireExtInfoService',
+        method: 'findByPid',
         version: '1.0.1'
       },
       subParams: [{}],
@@ -146,7 +146,7 @@ export default {
           if (resp.success) {
             this.disableSave = true
           }
-        }).catch(() => {
+        }).finally(() => {
           this.loadingIns.close()
         })
       })

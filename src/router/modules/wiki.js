@@ -53,6 +53,14 @@ const wikiRouter = {
           meta: {
             title: '书籍管理'
           }
+        },
+        {
+          path: 'bookmark',
+          component: () => import('@/views/wiki/business/bookmark'),
+          name: 'WikiBookmark',
+          meta: {
+            title: '书签管理'
+          }
         }
       ]
     },
