@@ -46,7 +46,9 @@ module.exports = [
       return {
         code: 20000,
         success: true,
-        rows: [ { token: token.token, refreshToken: token.token} ]
+        rows: [
+          { token: token.token, refreshToken: token.token }
+        ]
       }
     }
   },
