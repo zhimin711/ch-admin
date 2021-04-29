@@ -2,7 +2,7 @@ import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
 import router from '@/router'
-import { isExpired } from '@/utils/auth'
+import { refreshToken } from '@/utils/request-token'
 
 // create an axios instance
 const service2 = axios.create({
@@ -16,27 +16,14 @@ service2.interceptors.request.use(
   async config => {
     // do something before request is sent
     if (store.getters.token) {
+      if (!await refreshToken()) {
+        return Promise.reject({ success: false, code: '307' })
+      }
       // let each request carry token
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
       config.headers['X-Token'] = store.getters.token
       if (process.env.VUE_APP_MOCK_BASE) config.headers['X-AUTH-USER'] = store.getters.name
-      if (isExpired()) {
-        await axios.get(process.env.VUE_APP_API + '/auth/login/token/refresh?token=' + store.getters.token + '&refreshToken=' + store.getters.refreshToken)
-          .then(resp => {
-            if (resp.data.success) {
-              store.dispatch('user/refreshToken', resp.data.rows[0])
-              config.headers['X-Token'] = resp.data.rows[0].token
-            } else if (resp.code === '12') {
-              return Promise.reject({ code: '307' })
-            } else {
-              return Promise.reject(resp)
-            }
-          }).catch(() => {
-            return Promise.reject({ code: '307' })
-          })
-      }
-      // if (config.url === '/upms/user/1/10') return Promise.reject({ 'code': '307', success: false })
     }
     return config
   },
@@ -71,7 +58,7 @@ service2.interceptors.response.use(
     if (res.success || res.code === 20000) {
       return res
     } else {
-      // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
+      // 200: Illegal token; 50012: Other clients logged in; 307: Token expired;
       if (res.code === '200' || res.code === '307') {
         toLogin()
       } else if (res.code && res.code !== 50000) {
