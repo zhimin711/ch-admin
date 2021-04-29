@@ -23,7 +23,7 @@ service2.interceptors.request.use(
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
       config.headers['X-Token'] = store.getters.token
-      if (process.env.VUE_APP_MOCK_BASE) config.headers['X-AUTH-USER'] = store.getters.name
+      if (process.env.VUE_APP_MOCK_BASE === 'true') config.headers['X-AUTH-USER'] = store.getters.name
     }
     return config
   },

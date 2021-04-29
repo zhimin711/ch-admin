@@ -183,7 +183,9 @@ export function resetRouter() {
 }
 
 export function assemblyAsyncRoutes(menus) {
-  if (process.env.VUE_APP_MOCK_BASE) return asyncRoutes
+  if (process.env.VUE_APP_MOCK_BASE === 'true') {
+    return asyncRoutes
+  }
   const list = []
   menus.forEach(menu => {
     let route = getUpmsRouter(menu.code)
