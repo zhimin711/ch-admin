@@ -519,9 +519,7 @@ const asyncRoutes = [
         meta: { title: 'External Link', icon: 'link' }
       }
     ]
-  },
-
-  { path: '*', redirect: '/404', hidden: true }
+  }
 ]
 
 module.exports = {

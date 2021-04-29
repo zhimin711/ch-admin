@@ -15,7 +15,7 @@ function checkPermission(el, binding) {
       return permissionRoles.includes(permission.code)
     })
 
-    if (!hasPermission) {
+    if (!hasPermission && !process.env.VUE_APP_MOCK_BASE) {
       el.parentNode && el.parentNode.removeChild(el)
     }
   } else {
