@@ -189,7 +189,7 @@ export default {
         code: [
           { required: true, message: '权限代码不能为空' },
           {
-            pattern: /^[A-Za-z0-9]+$/,
+            pattern: /^[A-Za-z0-9_]+$/,
             message: '请输入正确的权限代码',
             trigger: 'blur'
           }
