@@ -33,7 +33,7 @@
 <script>
 
 export default {
-  name: 'Pagination',
+  name: 'Catalog',
   props: {
     rows: {
       required: true,

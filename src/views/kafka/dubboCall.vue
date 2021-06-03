@@ -80,7 +80,7 @@ import { Loading } from 'element-ui'
 import { call } from '@/api/kafka/dubboCall'
 
 export default {
-  name: 'KafkaContent',
+  name: 'DubboCall',
   data() {
     return {
       listLoading: false,

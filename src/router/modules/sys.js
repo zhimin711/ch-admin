@@ -15,6 +15,27 @@ const sysRouter = {
   },
   children: [
     {
+      path: 'tenant',
+      redirect: '/cloud/tenant/index',
+      component: Blank,
+      // alwaysShow: true,
+      name: 'CloudTenant',
+      meta: {
+        title: '租户管理',
+        icon: 'lock'
+      },
+      children: [
+        {
+          path: 'index',
+          component: () => import('@/views/sys/Tenant/index'),
+          name: 'Tenant',
+          meta: {
+            title: '租户管理'
+          }
+        }
+      ]
+    },
+    {
       path: 'IaaS',
       component: Blank,
       alwaysShow: true,
@@ -56,7 +77,7 @@ const sysRouter = {
           component: () => import('@/views/sys/IaaS/TableColumnRemark/index'),
           name: 'SysTableColumnRemark',
           meta: {
-            title: '业务-数据库列备注'
+            title: '数据表(列备注)'
           }
         }
       ]

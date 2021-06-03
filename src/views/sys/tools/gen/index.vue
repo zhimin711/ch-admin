@@ -259,13 +259,13 @@ export default {
     /** 生成代码操作 */
     handleGenTable(row) {
       const tableNames = row.tableName || this.tableNames
-      if (tableNames === '') {
-        this.msgError('请选择要生成的数据')
+      if (tableNames === '' || tableNames.length === 0) {
+        this.$message.warning('请选择要生成的数据表')
         return
       }
       if (row.genType === '1') {
         genCode(row.tableName).then(response => {
-          this.msgSuccess('成功生成到自定义路径：' + row.genPath)
+          this.$message.success('成功生成到自定义路径：' + row.genPath)
         })
       } else {
         // downLoadZip("/tool/gen/batchGenCode?tables=" + tableNames, "ruoyi");
