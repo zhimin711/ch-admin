@@ -66,7 +66,7 @@ export default {
     const w = window.innerWidth - 220
     if (w < 800) {
       this.imgWidth = '100%'
-    } else if (w > 800 && w < 1500) {
+    } else if (w >= 800 && w < 1500) {
       this.imgWidth = '85%'
     } else if (w >= 1500) {
       this.imgWidth = '55%'
@@ -80,13 +80,30 @@ export default {
       getBook(this.id).then((resp) => {
         if (resp.success) {
           //
-          let imgSuffix = ''
-          if (!isEmpty(resp.rows[0].image)) {
-            imgSuffix = resp.rows[0].image.substring(resp.rows[0].image.indexOf('.'))
-          }
-          const len = resp.rows[0].latestChapter
-          for (let i = 1; i <= len; i++) {
-            this.list.push({ src: '/api/wiki/admin' + resp.rows[0].latestChapterUrl + '/' + i + imgSuffix + '?token=' + getToken() })
+          const row = resp.rows[0]
+          if (row.type === '2') {
+            const { content } = row.chapterList[0]
+            const urls = content.split(',')
+            urls.forEach(url => {
+              let url1 = '/api/wiki/admin' + url
+              if (url.indexOf('?') > 0) {
+                url1 += '&'
+              } else {
+                url1 += '?'
+              }
+              if (url.indexOf('md5=') < 0) {
+                this.list.push({ src: url1 + 'token=' + getToken() })
+              }
+            })
+          } else if (row.type === '3') {
+            let imgSuffix = ''
+            if (!isEmpty(row.image)) {
+              imgSuffix = row.image.substring(row.image.indexOf('.'))
+            }
+            const len = row.latestChapter
+            for (let i = 1; i <= len; i++) {
+              this.list.push({ src: '/api/wiki/admin' + row.latestChapterUrl + '/' + i + imgSuffix + '?token=' + getToken() })
+            }
           }
         }
       }).finally(() => { this.loading = false })

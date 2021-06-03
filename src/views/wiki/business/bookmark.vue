@@ -75,7 +75,7 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑书签':'创建书签'" :close-on-click-modal="false">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑书签':'创建书签'" :close-on-click-modal="false" :width="defaultDialogWidth()">
       <el-form ref="recordForm" :model="record" label-width="100px">
         <el-form-item label="类型">
           <el-radio-group v-model="record.type">
@@ -126,7 +126,7 @@
 
 <script>
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import { deepClone } from '@/utils'
+import { deepClone, defaultDialogWidth } from '@/utils'
 import { listBookmark, addBookmark, editBookmark, delBookmark } from '@/api/wiki/bookmark'
 
 const defaultRecord = { type: '2', status: '0', href: '' }
@@ -149,6 +149,7 @@ export default {
       loading: { handleSubmit: false },
       recordRoles: [],
       dialogVisible: false,
+      // dialogWidth: defaultDialogWidth(),
       unmark: false,
       dialogType: false
     }
@@ -157,6 +158,7 @@ export default {
     this.getList()
   },
   methods: {
+    defaultDialogWidth,
     getList() {
       this.listLoading = true
       listBookmark(this.listQuery).then(response => {

@@ -8,6 +8,8 @@
       :page-sizes="pageSizes"
       :total="total"
       v-bind="$attrs"
+      :prev-text="preText"
+      :next-text="nextText"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
     />
@@ -16,6 +18,7 @@
 
 <script>
 import { scrollTo } from '@/utils/scroll-to'
+import { isMobile } from '@/utils/validate'
 
 export default {
   name: 'Pagination',
@@ -40,7 +43,7 @@ export default {
     },
     layout: {
       type: String,
-      default: 'total, sizes, prev, pager, next, jumper'
+      default: 'total, sizes, jumper, prev, pager, next'
     },
     background: {
       type: Boolean,
@@ -53,6 +56,14 @@ export default {
     hidden: {
       type: Boolean,
       default: false
+    },
+    preText: {
+      type: String,
+      default: ''
+    },
+    nextText: {
+      type: String,
+      default: ''
     }
   },
   computed: {
@@ -71,6 +82,12 @@ export default {
       set(val) {
         this.$emit('update:limit', val)
       }
+    }
+  },
+  mounted() {
+    if (isMobile()) {
+      // this.layout = 'prev, pager, next'
+      this.$emit('update:layout', this.layout)
     }
   },
   methods: {
@@ -97,5 +114,9 @@ export default {
 }
 .pagination-container.hidden {
   display: none;
+}
+.pagination-container ::v-deep .el-pagination__jump{
+    margin-left: 0;
+    margin-right: 5px;
 }
 </style>

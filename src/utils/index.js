@@ -2,6 +2,8 @@
  * Created by PanJiaChen on 16/11/18.
  */
 
+import { isMobile } from './validate'
+
 /**
  * Parse the time to string
  * @param {(Object|string|number)} time
@@ -354,5 +356,15 @@ export function removeClass(ele, cls) {
   if (hasClass(ele, cls)) {
     const reg = new RegExp('(\\s|^)' + cls + '(\\s|$)')
     ele.className = ele.className.replace(reg, ' ')
+  }
+}
+
+export function defaultDialogWidth() {
+  // const val = document.body.clientWidth
+  // const def = 800 // 默认宽度
+  if (isMobile()) {
+    return '100%'
+  } else {
+    return null
   }
 }
