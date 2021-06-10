@@ -58,7 +58,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" :label="$t('label.actions')" width="200">
+      <el-table-column align="center" :label="$t('label.actions')" width="200" fixed="right">
         <template slot-scope="scope">
           <el-button v-permission="['UPMS_PERMISSION_EDIT']" type="text" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">
             {{ $t('btn.edit') }}
@@ -129,8 +129,8 @@
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="primary" @click="handleSubmit">{{ $t('btn.save') }}</el-button>
-        <el-button type="danger" @click="dialogVisible = false">{{ $t('btn.cancel') }}</el-button>
+        <el-button type="primary" :loading="dialogLoading" @click="handleSubmit">{{ $t('btn.save') }}</el-button>
+        <el-button type="danger" :loading="dialogLoading" @click="dialogVisible = false">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -139,13 +139,14 @@
 <script>
 import IconSelector from '@/components/IconSelector'
 import { deepClone } from '@/utils'
-import { validAlphabetsAndNumber, isEmpty } from '@/utils/validate'
+import { isEmpty } from '@/utils/validate'
 import { treePermission, pagePermission, addPermission, editPermission, delPermission } from '@/api/upms/permission'
 
 const defaultRecord = {
   type: '1',
   code: '',
   sort: 1,
+  hidden: false,
   name: ''
 }
 export default {
@@ -178,6 +179,7 @@ export default {
       dialogVisible: false,
       dialogType: false,
       dialogLoadingVisible: false,
+      dialogLoading: false,
       defaultProps: {
         children: 'children',
         label: 'name'
@@ -291,13 +293,13 @@ export default {
     async handleSubmit() {
       const _this = this
       // this.record = {}
-      if (isEmpty(this.record.url)) {
+      if ((this.record.type !== '1' && this.record.type !== '2') && isEmpty(this.record.url)) {
         this.$message.error(`地址不能为空!`)
         return
-      } else if ((this.record.type === '1' || this.record.type === '2') && !validAlphabetsAndNumber(this.record.url)) {
+      } /* else if ((this.record.type === '1' || this.record.type === '2') && !validAlphabetsAndNumber(this.record.url)) {
         this.$message.error(`地址格式错误，目录或菜单地址只能是字母数字!`)
         return
-      }
+      }*/
       if (this.recordParents.length > 0) {
         this.record.parentId = this.recordParents.join(',')
       } else this.record.parentId = null
@@ -307,12 +309,13 @@ export default {
       }
       let resp = null
       let opName = '添加'
+      this.dialogLoading = true
       if (this.dialogType === 'new' || this.dialogType === 'copy') {
-        resp = await addPermission(this.record).catch(() => {})
+        resp = await addPermission(this.record).finally(() => { this.dialogLoading = false })
       } else if (this.dialogType === 'edit') {
         opName = '修改'
         this.record.children = []
-        resp = await editPermission(this.record.id, this.record)
+        resp = await editPermission(this.record.id, this.record).finally(() => { this.dialogLoading = false })
       }
       if (resp && resp.success) {
         this.dialogVisible = false

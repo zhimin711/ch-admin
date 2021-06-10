@@ -4,7 +4,7 @@
       <el-tab-pane label="基本信息" name="basic">
         <basic-info-form ref="basicInfo" :info="info" />
       </el-tab-pane>
-      <el-tab-pane label="字段信息" name="cloum">
+      <el-tab-pane label="字段信息" name="cloumns">
         <el-table ref="dragTable" :data="cloumns" row-key="columnId" :max-height="tableHeight">
           <el-table-column label="序号" type="index" min-width="5%" class-name="allowDrag" />
           <el-table-column
@@ -126,12 +126,13 @@
   </el-card>
 </template>
 <script>
-import { getGenTable, updateGenTable } from '@/api/tool/gen'
-import { optionselect as getDictOptionselect } from '@/api/system/dict/type'
-import { listMenu as getMenuTreeselect } from '@/api/system/menu'
+import { getGenTable, updateGenTable } from '@/api/sys/tools/gen'
+// import { optionselect as getDictOptionselect } from '@/api/system/dict/type'
+// import { listMenu as getMenuTreeselect } from '@/api/system/menu'
 import basicInfoForm from './basicInfoForm'
 import genInfoForm from './genInfoForm'
 import Sortable from 'sortablejs'
+import { isEmpty } from '@/utils/validate'
 
 export default {
   name: 'GenEdit',
@@ -142,7 +143,7 @@ export default {
   data() {
     return {
       // 选中选项卡的 name
-      activeName: 'cloum',
+      activeName: 'basic',
       // 表格的高度
       tableHeight: document.documentElement.scrollHeight - 245 + 'px',
       // 表信息
@@ -158,22 +159,30 @@ export default {
     }
   },
   created() {
-    const tableId = this.$route.params && this.$route.params.tableId
-    if (tableId) {
+    const dsId = this.$route.query && this.$route.query.dsId
+    const tableName = this.$route.query && this.$route.query.tableName
+    const tableComment = this.$route.query && this.$route.query.tableComment
+    if (dsId && tableName) {
       // 获取表详细信息
-      getGenTable(tableId).then(res => {
-        this.cloumns = res.data.rows
-        this.info = res.data.info
-        this.tables = res.data.tables
+      getGenTable(dsId, { tableName: tableName }).then(resp => {
+        if (resp.success) {
+          this.info = resp.rows[0]
+          this.info.tableComment = tableComment
+          if (isEmpty(this.info.functionAuthor)) {
+            this.info.functionAuthor = this.$store.state.user.name
+          }
+          this.cloumns = this.info.columns
+          // this.tables = resp.data.tables
+        }
       })
       /** 查询字典下拉列表 */
-      getDictOptionselect().then(response => {
-        this.dictOptions = response.data
-      })
+      // getDictOptionselect().then(response => {
+      //   this.dictOptions = response.data
+      // })
       /** 查询菜单下拉列表 */
-      getMenuTreeselect().then(response => {
-        this.menus = this.handleTree(response.data, 'menuId')
-      })
+      // getMenuTreeselect().then(response => {
+      //   this.menus = this.handleTree(response.data, 'menuId')
+      // })
     }
   },
   mounted() {

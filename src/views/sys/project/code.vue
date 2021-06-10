@@ -109,7 +109,7 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del, getParents, getUsers, getProjectUsers, editProjectUsers } from '@/api/sys/project/code'
+import { list, add, edit, del, getParents, getUsers, getProjectUsers, editProjectUsers } from '@/api/sys/project/index'
 
 export default {
   name: 'SysProjectCodeManager',

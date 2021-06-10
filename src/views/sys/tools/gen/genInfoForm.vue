@@ -68,14 +68,14 @@
               <i class="el-icon-question" />
             </el-tooltip>
           </span>
-          <treeselect
+          <!--          <treeselect
             v-model="info.parentMenuId"
             :append-to-body="true"
             :options="menus"
             :normalizer="normalizer"
             :show-count="true"
             placeholder="请选择系统菜单"
-          />
+          />-->
         </el-form-item>
       </el-col>
 
@@ -172,7 +172,7 @@
         </el-form-item>
       </el-col>
     </el-row>
-    <el-row v-show="info.tplCategory == 'sub'">
+    <!--<el-row v-show="info.tplCategory == 'sub'">
       <h4 class="form-header">关联信息</h4>
       <el-col :span="12">
         <el-form-item>
@@ -210,16 +210,16 @@
           </el-select>
         </el-form-item>
       </el-col>
-    </el-row>
+    </el-row>-->
   </el-form>
 </template>
 <script>
-import Treeselect from '@riophae/vue-treeselect'
-import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+// import Treeselect from '@riophae/vue-treeselect'
+// import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
 export default {
   name: 'BasicInfoForm',
-  components: { Treeselect },
+  // components: { Treeselect },
   props: {
     info: {
       type: Object,

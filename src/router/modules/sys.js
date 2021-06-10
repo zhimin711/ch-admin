@@ -205,6 +205,34 @@ const routerMap = {
     meta: {
       title: 'DataSource'
     }
+  },
+  Tools: {
+    path: 'tools',
+    redirect: '/cloud/tools/gen',
+    component: Blank,
+    alwaysShow: true,
+    name: 'Tools',
+    meta: {
+      title: '平台工具',
+      icon: 'lock'
+    }
+  },
+  Codegen: {
+    path: 'codegen',
+    component: () => import('@/views/sys/tools/gen'),
+    name: 'Codegen',
+    meta: {
+      title: '代码生成'
+    }
+  },
+  CodegenRule: {
+    path: 'codegen/rule',
+    component: () => import('@/views/sys/tools/gen/editTable'),
+    name: 'CodegenRule',
+    hidden: true,
+    meta: {
+      title: '代码生成规则'
+    }
   }
 }
 

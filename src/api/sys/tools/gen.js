@@ -5,7 +5,7 @@ const namespace = '/sys/tools/codegen'
 // 查询生成表数据
 export function listTable(query) {
   return request({
-    url: `${namespace}/${query.page}/${query.size}`,
+    url: `${namespace}/${query.dsId}/${query.page}/${query.size}`,
     method: 'get',
     params: query.params
   })
@@ -20,10 +20,11 @@ export function listDbTable(params) {
 }
 
 // 查询表详细信息
-export function getGenTable(tableId) {
+export function getGenTable(dsId, params) {
   return request({
-    url: '/tool/gen/' + tableId,
-    method: 'get'
+    url: `${namespace}/${dsId}`,
+    method: 'get',
+    params: params
   })
 }
 
@@ -74,5 +75,13 @@ export function synchDb(tableName) {
   return request({
     url: '/tool/gen/synchDb/' + tableName,
     method: 'get'
+  })
+}
+// 预览生成代码
+export function previewTable2(dsId, data) {
+  return request({
+    url: `${namespace}/preview/${dsId}`,
+    method: 'post',
+    data
   })
 }

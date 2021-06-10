@@ -1,8 +1,9 @@
 import request from '@/utils/request2'
-const baseUrl = '/sys/app/datasource'
+const namespace = '/sys/app/datasource'
+
 export function listDataSource(query) {
   return request({
-    url: `${baseUrl}/${query.page}/${query.limit}`,
+    url: `${namespace}/${query.page}/${query.limit}`,
     method: 'get',
     params: query.params
   })
@@ -10,7 +11,7 @@ export function listDataSource(query) {
 
 export function getDataSource(id) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'get',
     params: { id }
   })
@@ -18,7 +19,7 @@ export function getDataSource(id) {
 
 export function addDataSource(data) {
   return request({
-    url: `${baseUrl}`,
+    url: `${namespace}`,
     method: 'post',
     data
   })
@@ -26,7 +27,7 @@ export function addDataSource(data) {
 
 export function editDataSource(id, data) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'put',
     data
   })
@@ -34,7 +35,14 @@ export function editDataSource(id, data) {
 
 export function delDataSource(id) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'delete'
+  })
+}
+
+export function getDbDs(dbId) {
+  return request({
+    url: `${namespace}/${dbId}/ds`,
+    method: 'get'
   })
 }
