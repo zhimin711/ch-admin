@@ -1,10 +1,11 @@
 import request from '@/utils/request2'
-const baseUrl = '/sys/project/version'
+const namespace = '/sys/project/version'
+
 const projectCodeUrl = '/sys/project/code'
 
 export function list(query) {
   return request({
-    url: `${baseUrl}/${query.page}/${query.limit}`,
+    url: `${namespace}/${query.page}/${query.limit}`,
     method: 'get',
     params: query.params
   })
@@ -12,7 +13,7 @@ export function list(query) {
 
 export function get(id) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'get',
     params: { id }
   })
@@ -20,7 +21,7 @@ export function get(id) {
 
 export function add(data) {
   return request({
-    url: `${baseUrl}`,
+    url: `${namespace}`,
     method: 'post',
     data
   })
@@ -28,7 +29,7 @@ export function add(data) {
 
 export function edit(id, data) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'put',
     data
   })
@@ -36,7 +37,7 @@ export function edit(id, data) {
 
 export function del(id) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'delete'
   })
 }

@@ -17,6 +17,9 @@
             <el-option key="-" label="正在同步" value="-" />
           </el-select>
         </el-form-item>
+        <el-form-item label="章节或页数">
+          <el-input-number v-model="listQuery.param.sort" controls-position="right" :min="10" :max="200" />
+        </el-form-item>
         <el-form-item label="">
           <el-checkbox v-model="listQuery.param.inFavor">我的收藏</el-checkbox>
         </el-form-item>
@@ -107,7 +110,7 @@
         </div>
       </div>
     </div>
-    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" pre-text="上一页" next-text="下一页" @pagination="getList" />
+    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" pre-text="<<上一页" next-text="下一页>>" @pagination="getList" />
 
     <!-- 编辑弹出框 -->
     <el-dialog :title="baseForm.title" :visible.sync="baseForm.visible">
@@ -240,11 +243,13 @@ export default {
       return { type: '2', version: '1' }
     }
   },
-  created() {
+  mounted() {
     this.getList()
   },
   methods: {
     getList() {
+      const a = document.querySelector('.app-container')
+      console.log(a)
       this.loadingIns = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
       this.listQuery.param.classify = undefined
       if (this.listQuery.categoryValues.length > 0) {
