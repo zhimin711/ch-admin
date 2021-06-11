@@ -248,8 +248,6 @@ export default {
   },
   methods: {
     getList() {
-      const a = document.querySelector('.app-container')
-      console.log(a)
       this.loadingIns = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
       this.listQuery.param.classify = undefined
       if (this.listQuery.categoryValues.length > 0) {

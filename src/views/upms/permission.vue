@@ -19,7 +19,7 @@
     </div>
 
     <el-table v-loading="tableA.loading" :data="tableA.list" style="width: 100%;margin-bottom: 20px;" row-key="id" border :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
-      <el-table-column :label="$t('label.name')" prop="name" min-width="220">
+      <el-table-column :label="$t('label.name')" prop="name" min-width="220" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           {{ scope.row.name }}
         </template>
@@ -33,12 +33,12 @@
           <el-tag v-else-if="row.type === '5'" type="danger">{{ row.hidden? '[私有]':'[开放]' }}{{ $t('label.interface') }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('label.code')" prop="code" min-width="280">
+      <el-table-column :label="$t('label.code')" prop="code" min-width="280" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           {{ scope.row.code }}
         </template>
       </el-table-column>
-      <el-table-column :label="$t('label.address')" min-width="280">
+      <el-table-column :label="$t('label.address')" min-width="280" :show-overflow-tooltip="true">
         <template slot-scope="{row}">
           <span v-if="row.type === '3' || row.type === '5'">{{ row.url }}</span>
           <span v-else>-</span>
@@ -293,7 +293,7 @@ export default {
     async handleSubmit() {
       const _this = this
       // this.record = {}
-      if ((this.record.type !== '1' && this.record.type !== '2') && isEmpty(this.record.url)) {
+      if ((this.record.type === '3' || this.record.type === '4') && isEmpty(this.record.url)) {
         this.$message.error(`地址不能为空!`)
         return
       } /* else if ((this.record.type === '1' || this.record.type === '2') && !validAlphabetsAndNumber(this.record.url)) {

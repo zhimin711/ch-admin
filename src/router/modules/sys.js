@@ -171,7 +171,7 @@ const routerMap = {
       title: 'Cloud Platform'
     }
   },
-  IaaSManagement: {
+  CloudIaaS: {
     path: 'IaaS',
     redirect: '/cloud/IaaS/machine',
     component: Blank,
@@ -206,7 +206,7 @@ const routerMap = {
       title: 'DataSource'
     }
   },
-  Tools: {
+  CloudTools: {
     path: 'tools',
     redirect: '/cloud/tools/gen',
     component: Blank,
@@ -217,7 +217,7 @@ const routerMap = {
       icon: 'lock'
     }
   },
-  Codegen: {
+  ToolsCodegen: {
     path: 'codegen',
     component: () => import('@/views/sys/tools/gen'),
     name: 'Codegen',
@@ -225,13 +225,32 @@ const routerMap = {
       title: '代码生成'
     }
   },
-  CodegenRule: {
+  ToolsCodegenRule: {
     path: 'codegen/rule',
     component: () => import('@/views/sys/tools/gen/editTable'),
     name: 'CodegenRule',
     hidden: true,
     meta: {
       title: '代码生成规则'
+    }
+  },
+  SysTenant: {
+    path: 'tenant',
+    component: () => import('@/views/sys/Tenant/index'),
+    name: 'SysTenant',
+    meta: {
+      title: '租户管理'
+    }
+  },
+  Tenant: {
+    path: 'tenant',
+    redirect: '/cloud/tenant/tenant',
+    component: Blank,
+    alwaysShow: true,
+    name: 'CloudTenant',
+    meta: {
+      title: '租户管理',
+      icon: 'lock'
     }
   }
 }

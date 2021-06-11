@@ -13,6 +13,18 @@
       </el-col>
 
       <el-col :span="12">
+        <el-form-item prop="baseEntity">
+          <span slot="label">父类</span>
+          <el-select v-model="info.baseEntity" clearable>
+            <el-option label="BaseEntity" value="BaseEntity" />
+            <el-option label="BaseEntityWithStatus" value="BaseEntityWithStatus" />
+            <el-option label="BaseEntityV2" value="BaseEntityV2" />
+            <el-option label="BaseEntityWithStatusV2" value="BaseEntityWithStatusV2" />
+          </el-select>
+        </el-form-item>
+      </el-col>
+
+      <el-col :span="12">
         <el-form-item prop="packageName">
           <span slot="label">
             生成包路径
@@ -59,6 +71,17 @@
           <el-input v-model="info.functionName" />
         </el-form-item>
       </el-col>
+      <el-col :span="12">
+        <el-form-item prop="namespace">
+          <span slot="label">
+            生成API地址
+            <el-tooltip content="用作类描述，例如 用户" placement="top">
+              <i class="el-icon-question" />
+            </el-tooltip>
+          </span>
+          <el-input v-model="info.namespace" />
+        </el-form-item>
+      </el-col>
 
       <el-col :span="12">
         <el-form-item>
@@ -68,14 +91,7 @@
               <i class="el-icon-question" />
             </el-tooltip>
           </span>
-          <!--          <treeselect
-            v-model="info.parentMenuId"
-            :append-to-body="true"
-            :options="menus"
-            :normalizer="normalizer"
-            :show-count="true"
-            placeholder="请选择系统菜单"
-          />-->
+          <el-cascader ref="categoryCascader" v-model="info.menus" :options="menus" :props="menusProps" clearable />
         </el-form-item>
       </el-col>
 
@@ -92,7 +108,7 @@
         </el-form-item>
       </el-col>
 
-      <el-col v-if="info.genType == '1'" :span="24">
+      <el-col v-if="info.genType === '1'" :span="24">
         <el-form-item prop="genPath">
           <span slot="label">
             自定义路径
@@ -115,7 +131,7 @@
       </el-col>
     </el-row>
 
-    <el-row v-show="info.tplCategory == 'tree'">
+    <el-row v-show="info.tplCategory === 'tree'">
       <h4 class="form-header">其他信息</h4>
       <el-col :span="12">
         <el-form-item>
@@ -214,12 +230,9 @@
   </el-form>
 </template>
 <script>
-// import Treeselect from '@riophae/vue-treeselect'
-// import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
 export default {
   name: 'BasicInfoForm',
-  // components: { Treeselect },
   props: {
     info: {
       type: Object,
@@ -231,11 +244,16 @@ export default {
     },
     menus: {
       type: Array,
+      // eslint-disable-next-line vue/require-valid-default-prop
       default: []
     }
   },
   data() {
     return {
+      recordParents: [],
+      menusProps: {
+        checkStrictly: false
+      },
       subColumns: [],
       rules: {
         tplCategory: [
@@ -259,21 +277,13 @@ export default {
   watch: {
     'info.subTableName': function(val) {
       this.setSubTableColumns(val)
+    },
+    'info.menus': function(val) {
+      this.setCovertMenuCodes(val)
     }
   },
   created() {},
   methods: {
-    /** 转换菜单数据结构 */
-    normalizer(node) {
-      if (node.children && !node.children.length) {
-        delete node.children
-      }
-      return {
-        id: node.menuId,
-        label: node.menuName,
-        children: node.children
-      }
-    },
     /** 选择子表名触发 */
     subSelectChange(value) {
       this.info.subTableFkName = ''
@@ -287,12 +297,23 @@ export default {
     },
     /** 设置关联外键 */
     setSubTableColumns(value) {
-      for (var item in this.tables) {
+      for (const item in this.tables) {
         const name = this.tables[item].tableName
         if (value === name) {
           this.subColumns = this.tables[item].columns
           break
         }
+      }
+    },
+    /** 设置关联外键 */
+    setCovertMenuCodes(value) {
+      if (value.length > 0) {
+        const nodes = this.$refs.categoryCascader.getCheckedNodes()
+        let tmp = ''
+        for (let i = 0; i < nodes[0].pathNodes.length; i++) {
+          tmp += nodes[0].pathNodes[i].data.key
+        }
+        console.log(value, tmp)
       }
     }
   }

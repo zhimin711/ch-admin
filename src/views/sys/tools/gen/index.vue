@@ -141,13 +141,6 @@
           <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right" width="180">
             <template slot-scope="scope">
               <el-button
-                v-permission="['SYS_TOOLS_CODEGEN_PREVIEW']"
-                type="text"
-                size="small"
-                icon="el-icon-view"
-                @click="handlePreview(scope.row)"
-              >预览</el-button>
-              <el-button
                 v-permission="['SYS_TOOLS_CODEGEN_MYBATIS']"
                 type="text"
                 size="small"
@@ -185,19 +178,6 @@
           :limit.sync="queryParams.size"
           @pagination="getList"
         />
-        <!-- 预览界面 -->
-        <el-dialog :title="preview.title" :visible.sync="preview.open" width="80%" top="5vh" append-to-body>
-          <el-tabs v-model="preview.activeName">
-            <el-tab-pane
-              v-for="(value, key) in preview.data"
-              :key="key"
-              :label="key.substring(key.lastIndexOf('/')+1,key.indexOf('.vm'))"
-              :name="key.substring(key.lastIndexOf('/')+1,key.indexOf('.vm'))"
-            >
-              <pre><code class="hljs" v-html="highlightedCode(value, key)" /></pre>
-            </el-tab-pane>
-          </el-tabs>
-        </el-dialog>
         <import-table ref="import" @ok="handleQuery" />
       </el-col>
     </el-row>
@@ -205,20 +185,12 @@
 </template>
 
 <script>
-import { listTable, previewTable2, delTable, genCode, synchDb } from '@/api/sys/tools/gen'
+import { listTable, delTable, genCode, synchDb } from '@/api/sys/tools/gen'
 import { getCurrentUserTree, getProjectDb } from '@/api/sys/project/index'
 import { getDbDs } from '@/api/sys/IaaS/data-source'
+import { isEmpty } from '@/utils/validate'
 import importTable from './importTable'
 // import { downLoadZip } from "@/utils/zipdownload";
-import hljs from 'highlight.js/lib/highlight'
-import 'highlight.js/styles/github-gist.css'
-import { isEmpty } from '@/utils/validate'
-hljs.registerLanguage('java', require('highlight.js/lib/languages/java'))
-hljs.registerLanguage('xml', require('highlight.js/lib/languages/xml'))
-hljs.registerLanguage('html', require('highlight.js/lib/languages/xml'))
-hljs.registerLanguage('vue', require('highlight.js/lib/languages/xml'))
-hljs.registerLanguage('javascript', require('highlight.js/lib/languages/javascript'))
-hljs.registerLanguage('sql', require('highlight.js/lib/languages/sql'))
 
 export default {
   name: 'Codegen',
@@ -260,13 +232,6 @@ export default {
       filterProjectText: '',
       options: {
         projects: []
-      },
-      // 预览参数
-      preview: {
-        open: false,
-        title: '代码预览',
-        data: {},
-        activeName: 'domain.java'
       }
     }
   },
@@ -377,22 +342,6 @@ export default {
       this.dateRange = []
       this.resetForm('queryForm')
       this.handleQuery()
-    },
-    /** 预览按钮 */
-    handlePreview(row) {
-      previewTable2(this.queryParams.dsId, row).then(resp => {
-        if (resp.success) {
-          this.preview.data = resp.rows[0]
-          this.preview.open = true
-        }
-      })
-    },
-    /** 高亮显示 */
-    highlightedCode(code, key) {
-      const vmName = key.substring(key.lastIndexOf('/') + 1, key.indexOf('.vm'))
-      const language = vmName.substring(vmName.indexOf('.') + 1, vmName.length)
-      const result = hljs.highlight(language, code || '', true)
-      return result.value || '&nbsp;'
     },
     // 多选框选中数据
     handleSelectionChange(selection) {

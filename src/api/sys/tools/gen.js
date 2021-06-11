@@ -46,27 +46,11 @@ export function importTable(data) {
   })
 }
 
-// 预览生成代码
-export function previewTable(tableId) {
-  return request({
-    url: '/tool/gen/preview/' + tableId,
-    method: 'get'
-  })
-}
-
 // 删除表数据
 export function delTable(tableId) {
   return request({
     url: '/tool/gen/' + tableId,
     method: 'delete'
-  })
-}
-
-// 生成代码（自定义路径）
-export function genCode(tableName) {
-  return request({
-    url: '/tool/gen/genCode/' + tableName,
-    method: 'get'
   })
 }
 
@@ -85,3 +69,13 @@ export function previewTable2(dsId, data) {
     data
   })
 }
+
+// 生成代码（自定义路径）
+export function codegen(dsId, data) {
+  return request({
+    url: `${namespace}/mybatis/${dsId}`,
+    method: 'post',
+    data
+  })
+}
+

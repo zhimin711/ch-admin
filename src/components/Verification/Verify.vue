@@ -89,9 +89,11 @@ export default {
         }
       }
     },
+    // eslint-disable-next-line vue/require-default-prop
     blockSize: {
       type: Object
     },
+    // eslint-disable-next-line vue/require-default-prop
     barSize: {
       type: Object
     }

@@ -161,7 +161,7 @@ const routerMap = {
   },
   WikiBooks: {
     path: 'books',
-    component: () => import('@/views/wiki/business/books/index'),
+    component: () => import('@/views/wiki/business/books/index2'),
     name: 'WikiBooks',
     meta: {
       code: 'bookManagement'
