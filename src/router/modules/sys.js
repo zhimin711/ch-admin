@@ -73,11 +73,11 @@ const sysRouter = {
           }
         },
         {
-          path: 'TableColumnRemark',
-          component: () => import('@/views/sys/IaaS/TableColumnRemark/index'),
-          name: 'SysTableColumnRemark',
+          path: 'table/column',
+          component: () => import('@/views/sys/tools/TableColumnRemark/index'),
+          name: 'SysToolsTableColumnRemark',
           meta: {
-            title: '数据表(列备注)'
+            title: '表字段备注'
           }
         }
       ]
@@ -251,6 +251,14 @@ const routerMap = {
     meta: {
       title: '租户管理',
       icon: 'lock'
+    }
+  },
+  SysToolsTableColumnRemark: {
+    path: 'table/column',
+    component: () => import('@/views/sys/tools/TableColumnRemark/index'),
+    name: 'SysToolsTableColumnRemark',
+    meta: {
+      title: '表字段备注'
     }
   }
 }

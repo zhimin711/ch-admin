@@ -274,7 +274,14 @@ export default {
             genTable.parentMenuId = '0'
           }
           genTable.menus = undefined
-          genTable.columns = this.columns
+          genTable.columns = Object.assign([], this.columns)
+          if (!isEmpty(genTable.baseEntity)) {
+            this.info.columns.forEach(item => {
+              if (item.superColumn) {
+                genTable.columns.push(item)
+              }
+            })
+          }
           const params = {
             treeCode: genTable.treeCode,
             treeName: genTable.treeName,

@@ -25,6 +25,18 @@
       </el-col>
 
       <el-col :span="12">
+        <el-form-item>
+          <span slot="label">
+            上级菜单
+            <el-tooltip content="分配到指定菜单下，例如 系统管理" placement="top">
+              <i class="el-icon-question" />
+            </el-tooltip>
+          </span>
+          <el-cascader ref="categoryCascader" v-model="info.menus" :options="menus" :props="menusProps" clearable />
+        </el-form-item>
+      </el-col>
+
+      <el-col :span="12">
         <el-form-item prop="packageName">
           <span slot="label">
             生成包路径
@@ -40,7 +52,7 @@
         <el-form-item prop="moduleName">
           <span slot="label">
             生成模块名
-            <el-tooltip content="可理解为子系统名，例如 system" placement="top">
+            <el-tooltip content="可理解为子系统名，例如 system or sys.tools" placement="top">
               <i class="el-icon-question" />
             </el-tooltip>
           </span>
@@ -72,10 +84,21 @@
         </el-form-item>
       </el-col>
       <el-col :span="12">
+        <el-form-item prop="api">
+          <span slot="label">
+            网关路由地址
+            <el-tooltip content="用作生成权限与网关路由，例如 /sys" placement="top">
+              <i class="el-icon-question" />
+            </el-tooltip>
+          </span>
+          <el-input v-model="info.api" />
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
         <el-form-item prop="namespace">
           <span slot="label">
-            生成API地址
-            <el-tooltip content="用作类描述，例如 用户" placement="top">
+            请求地址
+            <el-tooltip content="用作前端请求地址，例如 /user" placement="top">
               <i class="el-icon-question" />
             </el-tooltip>
           </span>
@@ -83,19 +106,7 @@
         </el-form-item>
       </el-col>
 
-      <el-col :span="12">
-        <el-form-item>
-          <span slot="label">
-            上级菜单
-            <el-tooltip content="分配到指定菜单下，例如 系统管理" placement="top">
-              <i class="el-icon-question" />
-            </el-tooltip>
-          </span>
-          <el-cascader ref="categoryCascader" v-model="info.menus" :options="menus" :props="menusProps" clearable />
-        </el-form-item>
-      </el-col>
-
-      <el-col :span="12">
+      <!--      <el-col :span="12">
         <el-form-item prop="genType">
           <span slot="label">
             生成代码方式
@@ -106,7 +117,7 @@
           <el-radio v-model="info.genType" label="0">zip压缩包</el-radio>
           <el-radio v-model="info.genType" label="1">自定义路径</el-radio>
         </el-form-item>
-      </el-col>
+      </el-col>-->
 
       <el-col v-if="info.genType === '1'" :span="24">
         <el-form-item prop="genPath">
@@ -230,7 +241,9 @@
   </el-form>
 </template>
 <script>
+import { isEmpty } from '@/utils/validate'
 
+const regModuleName = /^(([a-z]+$)|([a-z]+\.[a-z]+$))/
 export default {
   name: 'BasicInfoForm',
   props: {
@@ -249,6 +262,15 @@ export default {
     }
   },
   data() {
+    const validateModuleName = (rule, value, callback) => {
+      if (isEmpty(value)) {
+        callback(new Error('请输入模块名'))
+      } else if (!regModuleName.test(value)) {
+        callback(new Error('请输入正确的模块名(纯小写英文:test或demo.test)'))
+      } else {
+        callback()
+      }
+    }
     return {
       recordParents: [],
       menusProps: {
@@ -263,13 +285,16 @@ export default {
           { required: true, message: '请输入生成包路径', trigger: 'blur' }
         ],
         moduleName: [
-          { required: true, message: '请输入生成模块名', trigger: 'blur' }
+          { required: true, trigger: 'blur', validator: validateModuleName }
         ],
         businessName: [
           { required: true, message: '请输入生成业务名', trigger: 'blur' }
         ],
         functionName: [
           { required: true, message: '请输入生成功能名', trigger: 'blur' }
+        ],
+        namespace: [
+          { required: true, message: '请输入请求地址', trigger: 'blur' }
         ]
       }
     }

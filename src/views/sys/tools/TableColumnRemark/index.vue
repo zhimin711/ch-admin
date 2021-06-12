@@ -29,6 +29,7 @@
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" @click="handleSearch">{{ $t('btn.search') }}</el-button>
           <el-button icon="el-icon-refresh" @click="handleReset">{{ $t('btn.reset') }}</el-button>
+          <el-button v-permission="'SysToolsTableColumnRemarkAdd'" icon="el-icon-plus" @click="handleAdd">{{ $t('btn.add') }}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -44,20 +45,25 @@
       <el-table-column label="表名称" prop="tableName" />
       <el-table-column label="字段名称" prop="columnName" />
       <el-table-column label="类型" prop="type" />
-      <el-table-column label="备注2" prop="remark" />
+      <el-table-column label="备注" prop="remark" />
       <el-table-column label="备注" prop="originRemark" />
       <el-table-column label="状态" prop="status" />
-      <el-table-column align="center" prop="created_at" label="操作" min-width="150">
+      <el-table-column label="创建时间" align="center" prop="createAt" width="180">
+        <template slot-scope="scope">
+          <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="操作" min-width="150">
         <template slot-scope="{row}">
-          <el-button v-permission="'SysTableColumnRemarkEdit'" type="text" @click.native="handleEdit(row)">{{ $t('btn.edit') }}</el-button>
-          <el-button v-permission="'SysTableColumnRemarkDelete'" type="text" @click.native="handleDel(row)">{{ $t('btn.delete') }}</el-button>
+          <el-button v-permission="'SysToolsTableColumnRemarkEdit'" type="text" @click.native="handleEdit(row)">{{ $t('btn.edit') }}</el-button>
+          <el-button v-permission="'SysToolsTableColumnRemarkDelete'" type="text" @click.native="handleDel(row)">{{ $t('btn.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
     <pagination v-show="tables.a.total>0" :total="tables.a.total" :page.sync="tables.a.page" :limit.sync="tables.a.limit" @pagination="handleSearch" />
 
-    <!-- 添加或修改业务-数据库列备注对话框 -->
-    <el-dialog :visible.sync="dialogs.a.visible" :title="dialogs.a.type==='edit'?'修改业务-数据库列备注':'创建业务-数据库列备注'">
+    <!-- 添加或修改表字段备注对话框 -->
+    <el-dialog :visible.sync="dialogs.a.visible" :title="dialogs.a.type==='edit'?'修改表字段备注':'创建表字段备注'">
       <el-form ref="form" :model="record" :rules="rules" label-width="100px" label-position="left">
         <el-form-item label="系统代码" prop="sysCode">
           <el-input v-model="record.sysCode" placeholder="请输入系统代码" />
@@ -84,16 +90,6 @@
         <el-form-item label="备注" prop="originRemark">
           <el-input v-model="record.originRemark" type="textarea" placeholder="请输入内容" />
         </el-form-item>
-        <el-form-item label="状态：0.失效 1.生效 2.删除" prop="status">
-          <el-select v-model="record.status" placeholder="请选择状态：0.失效 1.生效 2.删除">
-            <el-option
-              v-for="dict in options.status"
-              :key="dict.value"
-              :label="dict.label"
-              :value="dict.value"
-            />
-          </el-select>
-        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="handleSubmit">{{ $t('btn.confirm') }}</el-button>
@@ -104,7 +100,7 @@
 </template>
 
 <script>
-import { pageTableColumnRemark, addTableColumnRemark, editTableColumnRemark, delTableColumnRemark } from '@/api/sys/IaaS/table-column-remark'
+import { pageTableColumnRemark, addTableColumnRemark, editTableColumnRemark, delTableColumnRemark } from '@/api/sys/tools/table-column-remark'
 
 const defaultRecord = {
   sysCode: null,
@@ -113,11 +109,10 @@ const defaultRecord = {
   columnName: null,
   type: null,
   remark: null,
-  originRemark: null,
-  status: 0
+  originRemark: null
 }
 export default {
-  name: 'TableColumnRemark',
+  name: 'SysToolsTableColumnRemark',
   data() {
     return {
       tables: {
@@ -145,9 +140,7 @@ export default {
       options: {
         loading: false,
         // 类型
-        type: [],
-        // 状态：0.失效 1.生效 2.删除
-        status: []
+        type: []
       },
       rules: {
 
@@ -209,7 +202,7 @@ export default {
         resp = await addTableColumnRemark(this.record)
       } else if (this.dialogs.a.type === 'edit') {
         opName = '修改'
-        resp = await editTableColumnRemark(this.record.id, this.record)
+        resp = await editTableColumnRemark(this.record)
       }
       if (resp.success) {
         this.dialogs.a.visible = false

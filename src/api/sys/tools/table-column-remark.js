@@ -1,8 +1,8 @@
 import request from '@/utils/request2'
 
-const namespace = '/sys/table/column'
+const namespace = '/sys/tools/table/column'
 
-// 分页查询业务-数据库列备注列表
+// 分页查询表字段备注列表
 export function pageTableColumnRemark(query) {
   return request({
     url: `${namespace}/${query.page}/${query.limit}`,
@@ -11,7 +11,7 @@ export function pageTableColumnRemark(query) {
   })
 }
 
-// 查询业务-数据库列备注详细
+// 查询表字段备注详细
 export function getTableColumnRemark(id) {
   return request({
     url: `${namespace}/${id}`,
@@ -19,7 +19,7 @@ export function getTableColumnRemark(id) {
   })
 }
 
-// 新增业务-数据库列备注
+// 新增表字段备注
 export function addTableColumnRemark(data) {
   return request({
     url: `${namespace}`,
@@ -28,16 +28,16 @@ export function addTableColumnRemark(data) {
   })
 }
 
-// 修改业务-数据库列备注
-export function editTableColumnRemark(id, data) {
+// 修改表字段备注
+export function editTableColumnRemark(data) {
   return request({
-    url: `${namespace}/${id}`,
+    url: `${namespace}`,
     method: 'put',
     data
   })
 }
 
-// 删除业务-数据库列备注
+// 删除表字段备注
 export function delTableColumnRemark(id) {
   return request({
     url: `${namespace}/${id}`,
