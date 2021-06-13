@@ -195,13 +195,14 @@ const routerMap = {
     component: () => import('@/views/sys/IaaS/database'),
     name: 'IaaSDatabase',
     meta: {
-      title: 'Database'
+      title: '数据库'
     }
   },
   IaaSDataSource: {
-    path: 'dataSource',
+    path: 'dataSource/:id(\\d+)',
     component: () => import('@/views/sys/IaaS/datasource'),
     name: 'IaaSDatabase',
+    hidden: true,
     meta: {
       title: 'DataSource'
     }
