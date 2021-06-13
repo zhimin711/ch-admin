@@ -99,8 +99,8 @@ export default {
     }
   },
   created() {
-    const dbId = this.$route.params && this.$route.params.id
-    this.fetchData(dbId)
+    this.dbId = this.$route.params && this.$route.params.id
+    this.fetchData(this.dbId)
     // this.tempRoute = Object.assign({}, this.$route)
     // this.getList()
   },
