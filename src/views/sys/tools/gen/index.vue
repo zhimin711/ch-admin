@@ -138,15 +138,23 @@
               <span>{{ scope.row.updateTime | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right" width="180">
+          <el-table-column label="操作" align="center" class-name="small-padding fixed-width" fixed="right" width="130">
             <template slot-scope="scope">
               <el-button
                 v-permission="['SYS_TOOLS_CODEGEN_MYBATIS']"
                 type="text"
                 size="small"
-                icon="el-icon-s-unfold"
+                icon="el-icon-download"
                 @click="handleEditTable(scope.row)"
-              >生成规则</el-button>
+              >生成代码(模板)</el-button>
+              <el-button
+                v-permission="['SYS_TOOLS_CODEGEN_MYBATIS3']"
+                type="text"
+                size="small"
+                icon="el-icon-download"
+                disabled
+                @click="handleGenTable(scope.row)"
+              >生成代码(工具)</el-button>
               <el-button
                 v-permission="['tool:gen:remove']"
                 type="text"
@@ -161,13 +169,6 @@
                 icon="el-icon-refresh"
                 @click="handleSynchDb(scope.row)"
               >同步</el-button>
-              <el-button
-                v-permission="['tool:gen:code']"
-                type="text"
-                size="small"
-                icon="el-icon-download"
-                @click="handleGenTable(scope.row)"
-              >生成代码</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -193,7 +194,7 @@ import importTable from './importTable'
 // import { downLoadZip } from "@/utils/zipdownload";
 
 export default {
-  name: 'Codegen',
+  name: 'ToolsCodegen',
   components: { importTable },
   data() {
     return {

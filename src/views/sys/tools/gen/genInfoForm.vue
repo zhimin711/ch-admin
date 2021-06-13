@@ -1,7 +1,7 @@
 <template>
   <el-form ref="genInfoForm" :model="info" :rules="rules" label-width="150px">
     <el-row>
-      <el-col :span="12">
+      <!--<el-col :span="12">
         <el-form-item prop="tplCategory">
           <span slot="label">生成模板</span>
           <el-select v-model="info.tplCategory" @change="tplSelectChange">
@@ -9,6 +9,18 @@
             <el-option label="树表（增删改查）" value="tree" />
             <el-option label="主子表（增删改查）" value="sub" />
           </el-select>
+        </el-form-item>
+      </el-col>-->
+
+      <el-col :span="12">
+        <el-form-item>
+          <span slot="label">
+            上级菜单
+            <el-tooltip content="分配到指定菜单下，例如 系统管理" placement="top">
+              <i class="el-icon-question" />
+            </el-tooltip>
+          </span>
+          <el-cascader ref="categoryCascader" v-model="info.menus" :options="menus" :props="menusProps" clearable />
         </el-form-item>
       </el-col>
 
@@ -21,18 +33,6 @@
             <el-option label="BaseEntityV2" value="BaseEntityV2" />
             <el-option label="BaseEntityWithStatusV2" value="BaseEntityWithStatusV2" />
           </el-select>
-        </el-form-item>
-      </el-col>
-
-      <el-col :span="12">
-        <el-form-item>
-          <span slot="label">
-            上级菜单
-            <el-tooltip content="分配到指定菜单下，例如 系统管理" placement="top">
-              <i class="el-icon-question" />
-            </el-tooltip>
-          </span>
-          <el-cascader ref="categoryCascader" v-model="info.menus" :options="menus" :props="menusProps" clearable />
         </el-form-item>
       </el-col>
 
@@ -84,14 +84,14 @@
         </el-form-item>
       </el-col>
       <el-col :span="12">
-        <el-form-item prop="api">
+        <el-form-item prop="apiRoute">
           <span slot="label">
             网关路由地址
             <el-tooltip content="用作生成权限与网关路由，例如 /sys" placement="top">
               <i class="el-icon-question" />
             </el-tooltip>
           </span>
-          <el-input v-model="info.api" />
+          <el-input v-model="info.apiRoute" placeholder="默认使用模块名前缀" />
         </el-form-item>
       </el-col>
       <el-col :span="12">

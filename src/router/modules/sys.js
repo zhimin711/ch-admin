@@ -260,6 +260,14 @@ const routerMap = {
     meta: {
       title: '表字段备注'
     }
+  },
+  SysToolsSwagger: {
+    path: 'swagger',
+    component: () => import('@/views/swagger/index'),
+    name: 'SysToolsSwagger',
+    meta: {
+      title: 'Swagger'
+    }
   }
 }
 
