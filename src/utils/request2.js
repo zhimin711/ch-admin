@@ -73,15 +73,22 @@ service2.interceptors.response.use(
     }
   },
   error => {
-    // console.log('request2 response err: ' + JSON.stringify(error)) // for debug
-    if (error.code === 'ECONNABORTED') {
+    const { code, response } = error
+    console.log(JSON.stringify(response))
+    if (code === 'ECONNABORTED') {
       Message({
         message: '请求超时，请重试...',
         type: 'error',
         duration: 5 * 1000
       })
-    } else if (error.code === '307' || error.code === '304' || (error.data && (error.data.code === '307' || error.data.code === '304'))) {
+    } else if (code === '307' || code === '304' || (error.data && (error.data.code === '307' || error.data.code === '304'))) {
       toLogin()
+    } else if (response && response.status === 401) {
+      Message({
+        message: 'Not authority this request address!',
+        type: 'error',
+        duration: 5 * 1000
+      })
     } else if (error.message) {
       Message({
         message: error.message,

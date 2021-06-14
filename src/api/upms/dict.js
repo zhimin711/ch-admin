@@ -47,3 +47,10 @@ export function searchDict(code, name) {
     name
   })
 }
+export function searchDictList(name) {
+  return request({
+    url: `${namespace}/list`,
+    method: 'get',
+    name
+  })
+}

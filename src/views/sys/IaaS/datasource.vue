@@ -121,7 +121,6 @@ export default {
       listDataSource(this.listQuery).then(response => {
         this.listQuery.list = response.rows
         this.listQuery.total = response.total
-        this.listLoading = false
       }).finally(() => {
         this.listLoading = false
       })

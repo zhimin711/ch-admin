@@ -72,7 +72,7 @@
           icon="el-icon-edit"
           size="mini"
           :disabled="single"
-          @click="handleUpdate"
+          @click="handleUpdate()"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -267,6 +267,7 @@ export default {
       loading: true,
       // 选中数组
       ids: [],
+      selectRows: [],
       // 非单个禁用
       single: true,
       // 非多个禁用
@@ -321,6 +322,7 @@ export default {
     },
     handleAddNode() {
       const node = Object.assign({}, defaultRecordNode)
+      node.sort = this.recordNodes.length + 1
       this.recordNodes.push(node)
     },
     handleDelNode(index) {
@@ -360,14 +362,15 @@ export default {
       this.ids = selection.map(item => item.id)
       this.single = selection.length !== 1
       this.multiple = !selection.length
+      this.selectRows = selection
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset()
       this.open = true
       this.title = '修改字典'
-
-      this.record = deepClone(row)
+      const item = row || this.selectRows[0]
+      this.record = deepClone(item)
       this.recordStatus = (this.record.status === '1')
       getDict(this.record.id).then(resp => {
         if (resp.success) {

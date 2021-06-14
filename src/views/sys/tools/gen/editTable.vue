@@ -45,6 +45,44 @@
               <el-input v-model="scope.row.javaField" />
             </template>
           </el-table-column>
+          <el-table-column label="显示类型" min-width="130">
+            <template slot-scope="scope">
+              <el-select v-model="scope.row.htmlType">
+                <el-option label="文本框" value="INPUT" />
+                <el-option label="数字框" value="INPUT_NUMBER" />
+                <el-option label="文本域" value="TEXTAREA" />
+                <el-option label="下拉框" value="SELECT" />
+                <el-option label="单选框" value="RADIO" />
+                <el-option label="复选框" value="CHECKBOX" />
+                <el-option label="日期控件" value="DATETIME" />
+                <el-option label="图片上传" value="IMAGE_UPLOAD" />
+                <el-option label="文件上传" value="FILE_UPLOAD" />
+                <el-option label="富文本控件" value="EDITOR" />
+              </el-select>
+            </template>
+          </el-table-column>
+          <el-table-column label="字典类型" min-width="120">
+            <template slot-scope="scope">
+              <el-select
+                v-model="scope.row.dictCode"
+                clearable
+                filterable
+                placeholder="请选择"
+                :disabled="scope.row.htmlType!=='SELECT' && scope.row.htmlType!=='RADIO' && scope.row.htmlType!=='CHECKBOX'"
+                @change="handleDictChange(scope.row, $event)"
+              >
+                <el-option
+                  v-for="dict in dictOptions"
+                  :key="dict.value"
+                  :label="dict.label"
+                  :value="dict.value"
+                >
+                  <span style="float: left">{{ dict.label }}</span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">{{ dict.value }}</span>
+                </el-option>
+              </el-select>
+            </template>
+          </el-table-column>
 
           <el-table-column label="插入" min-width="50">
             <template slot-scope="scope">
@@ -66,40 +104,9 @@
               <el-checkbox v-model="scope.row.isQuery" true-label="1" />
             </template>
           </el-table-column>
-          <el-table-column label="必填" min-width="50">
+          <!--<el-table-column label="必填" min-width="50">
             <template slot-scope="scope">
               <el-checkbox v-model="scope.row.isRequired" true-label="1" />
-            </template>
-          </el-table-column>
-          <el-table-column label="显示类型" min-width="130">
-            <template slot-scope="scope">
-              <el-select v-model="scope.row.htmlType">
-                <el-option label="文本框" value="INPUT" />
-                <el-option label="数字框" value="INPUT_NUMBER" />
-                <el-option label="文本域" value="TEXTAREA" />
-                <el-option label="下拉框" value="SELECT" />
-                <el-option label="单选框" value="RADIO" />
-                <el-option label="复选框" value="CHECKBOX" />
-                <el-option label="日期控件" value="DATETIME" />
-                <el-option label="图片上传" value="IMAGE_UPLOAD" />
-                <el-option label="文件上传" value="FILE_UPLOAD" />
-                <el-option label="富文本控件" value="EDITOR" />
-              </el-select>
-            </template>
-          </el-table-column>
-          <!--<el-table-column label="字典类型" min-width="120">
-            <template slot-scope="scope">
-              <el-select v-model="scope.row.dictType" clearable filterable placeholder="请选择">
-                <el-option
-                  v-for="dict in dictOptions"
-                  :key="dict.dictType"
-                  :label="dict.dictName"
-                  :value="dict.dictType"
-                >
-                  <span style="float: left">{{ dict.dictName }}</span>
-                  <span style="float: right; color: #8492a6; font-size: 13px">{{ dict.dictType }}</span>
-                </el-option>
-              </el-select>
             </template>
           </el-table-column>-->
           <!--<el-table-column label="查询方式" min-width="100">
@@ -143,7 +150,7 @@
 </template>
 <script>
 import { getGenTable, codegen, previewTable2 } from '@/api/sys/tools/gen'
-// import { optionselect as getDictOptionselect } from '@/api/system/dict/type'
+import { searchDictList, searchDict } from '@/api/upms/dict'
 import { treePermission } from '@/api/upms/permission'
 import basicInfoForm from './basicInfoForm'
 import genInfoForm from './genInfoForm'
@@ -217,12 +224,12 @@ export default {
           // this.tables = resp.data.tables
         }
       })
-      /** 查询字典下拉列表 */
-      // getDictOptionselect().then(response => {
-      //   this.dictOptions = response.data
-      // })
       /** 查询菜单下拉列表 */
       this.getMenus('2')
+      /** 查询字典下拉列表 */
+      searchDictList().then(resp => {
+        this.dictOptions = resp.rows
+      })
     }
   },
   mounted() {
@@ -301,6 +308,13 @@ export default {
           }
         } else {
           this.$message.error('表单校验未通过，请重新检查提交内容')
+        }
+      })
+    },
+    handleDictChange(row, val) {
+      searchDict(val).then(resp => {
+        if (resp.success) {
+          row.dictData = resp.rows
         }
       })
     },

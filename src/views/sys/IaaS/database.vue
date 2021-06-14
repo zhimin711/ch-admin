@@ -107,13 +107,11 @@
 </template>
 
 <script>
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { listDatabase, addDatabase, editDatabase, delDatabase } from '@/api/sys/IaaS/database'
 
 export default {
-  name: 'IaaSDatabase2',
-  components: { Pagination },
+  name: 'IaaSDatabase',
   data() {
     return {
       listLoading: true,
