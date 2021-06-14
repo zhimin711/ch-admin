@@ -79,3 +79,12 @@ export function codegen(dsId, data) {
   })
 }
 
+// 生成代码（自定义路径）
+export function codegen3(dsId, data) {
+  return request({
+    url: `${namespace}/mybatis3/${dsId}`,
+    method: 'post',
+    data
+  })
+}
+

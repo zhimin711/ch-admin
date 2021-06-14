@@ -152,7 +152,6 @@
                 type="text"
                 size="small"
                 icon="el-icon-download"
-                disabled
                 @click="handleGenTable(scope.row)"
               >生成代码(工具)</el-button>
               <el-button
@@ -186,7 +185,7 @@
 </template>
 
 <script>
-import { listTable, delTable, genCode, synchDb } from '@/api/sys/tools/gen'
+import { listTable, delTable, synchDb } from '@/api/sys/tools/gen'
 import { getCurrentUserTree, getProjectDb } from '@/api/sys/project/index'
 import { getDbDs } from '@/api/sys/IaaS/data-source'
 import { isEmpty } from '@/utils/validate'
@@ -308,18 +307,9 @@ export default {
     },
     /** 生成代码操作 */
     handleGenTable(row) {
-      const tableNames = row.tableName || this.tableNames
-      if (tableNames === '' || tableNames.length === 0) {
-        this.$message.warning('请选择要生成的数据表')
-        return
-      }
-      if (row.genType === '1') {
-        genCode(row.tableName).then(response => {
-          this.$message.success('成功生成到自定义路径：' + row.genPath)
-        })
-      } else {
-        // downLoadZip("/tool/gen/batchGenCode?tables=" + tableNames, "ruoyi");
-      }
+      const tableName = row.tableName
+      const tableComment = row.tableComment
+      this.$router.push({ path: '/cloud/tools/codegen/rule3', query: { dsId: this.queryParams.dsId, tableName: tableName, tableComment: tableComment }})
     },
     /** 同步数据库操作 */
     handleSynchDb(row) {
@@ -331,7 +321,7 @@ export default {
       }).then(function() {
         return synchDb(tableName)
       }).then(() => {
-        this.msgSuccess('同步成功')
+        this.$message.success('同步成功')
       })
     },
     /** 打开导入表弹窗 */

@@ -229,7 +229,16 @@ const routerMap = {
   ToolsCodegenRule: {
     path: 'codegen/rule',
     component: () => import('@/views/sys/tools/gen/editTable'),
-    name: 'CodegenRule',
+    name: 'ToolsCodegenRule',
+    hidden: true,
+    meta: {
+      title: '代码生成规则'
+    }
+  },
+  ToolsCodegenRule3: {
+    path: 'codegen/rule3',
+    component: () => import('@/views/sys/tools/gen/codegen3'),
+    name: 'ToolsCodegenRule3',
     hidden: true,
     meta: {
       title: '代码生成规则'
