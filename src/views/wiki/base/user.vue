@@ -21,17 +21,17 @@
           <span>{{ scope.row.userId }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="用户名">
+      <el-table-column label="用户名" min-width="150" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span>{{ scope.row.username }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="昵称">n
+      <el-table-column label="昵称" min-width="150" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span>{{ scope.row.nickname }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="邮箱地址">
+      <el-table-column label="邮箱地址" min-width="150" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span>{{ scope.row.email }}</span>
         </template>

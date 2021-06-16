@@ -11,7 +11,7 @@
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column :label="$t('label.address')">
+      <el-table-column :label="$t('label.address')" min-width="150" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span>{{ scope.row.url }}</span>
         </template>
@@ -21,7 +21,7 @@
           <span>{{ scope.row.method }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('label.code')">
+      <el-table-column :label="$t('label.code')" min-width="150" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span>{{ scope.row.authCode }}</span>
         </template>
