@@ -33,7 +33,7 @@
             <el-tag v-if="scope.row.srcType === '1'" type="success">广告</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="title" label="标题" />
+        <el-table-column prop="title" label="标题" min-width="200" />
         <el-table-column prop="image" label="图片" width="260">
           <template slot-scope="scope">
             <img :src="scope.row.image" width="240" height="100">
@@ -62,7 +62,7 @@
             <el-tag v-if="scope.row.status === '2'" type="danger">删除</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="130" align="center">
+        <el-table-column label="操作" width="130" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button v-show="scope.row.type !== '0'" v-permission="['WIKI_AD_EDIT']" type="text" icon="el-icon-edit" @click="baseEdit(scope.row)">
               {{ $t('btn.edit') }}

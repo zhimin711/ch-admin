@@ -65,7 +65,7 @@
           <span v-if="scope.row.status === '4'">已停更</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" :label="$t('table.actions')" width="130">
+      <el-table-column align="center" :label="$t('table.actions')" width="130" fixed="right">
         <template slot-scope="scope">
           <el-link v-permission="['WIKI_BOOKMARK_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">{{ $t('btn.edit') }}</el-link>
           <el-link v-permission="['WIKI_BOOKMARK_DEL']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
