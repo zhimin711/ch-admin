@@ -59,7 +59,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
-          <el-link v-permission="'ROCKETMQ_CLUSTER_STATUS'" type="success" icon="el-icon-view" @click="handleStatus(scope.row)">状态</el-link>
+          <el-link type="success" icon="el-icon-view" @click="handleStatus(scope.row)">状态</el-link>
           <el-link v-permission="'ROCKETMQ_CLUSTER_CONFIG'" type="primary" icon="el-icon-setting" @click="handleConfig(scope.row)">配置</el-link>
         </template>
       </el-table-column>
@@ -82,7 +82,7 @@ import { generateBrokerMap } from '@/api/rocketmq/tools'
 import { listRocketMQ, getRocketMQ } from '@/api/rocketmq/cluster'
 
 export default {
-  name: 'RocketMQCluster',
+  name: 'RocketMQCluster1',
   data() {
     return {
       listLoading: true,
