@@ -75,3 +75,11 @@ export function editRoles(id, data) {
     data
   })
 }
+
+export function findUserList(name) {
+  return request({
+    url: `${baseUrl}/valid`,
+    method: 'get',
+    params: { name }
+  })
+}

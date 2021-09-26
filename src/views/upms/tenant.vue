@@ -102,7 +102,7 @@
 </template>
 
 <script>
-import { pageTenant, addTenant, editTenant, delTenant } from '@/api/sys/tenant'
+import { pageTenant, addTenant, editTenant, delTenant } from '@/api/upms/tenant'
 
 const defaultRecord = {
   code: null,
@@ -115,7 +115,7 @@ const defaultRecord = {
   deleted: 0
 }
 export default {
-  name: 'SysTenant',
+  name: 'UpmsTenant1',
   data() {
     return {
       tables: {

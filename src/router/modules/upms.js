@@ -44,6 +44,14 @@ const umpsRouter = {
       meta: {
         title: 'Swagger'
       }
+    },
+    {
+      path: 'tenant',
+      component: () => import('@/views/upms/tenant'),
+      name: 'Tenant',
+      meta: {
+        title: '租户管理'
+      }
     }
   ]
 }
@@ -105,6 +113,22 @@ const routerMap = {
     name: 'UpmsDictManagement',
     meta: {
       code: 'dictManagement'
+    }
+  },
+  UpmsProject: {
+    path: 'project',
+    component: () => import('@/views/upms/project'),
+    name: 'UpmsProjectManagement',
+    meta: {
+      code: 'projectManagement'
+    }
+  },
+  UpmsTenant: {
+    path: 'tenant',
+    component: () => import('@/views/upms/tenant'),
+    name: 'UpmsTenantManagement',
+    meta: {
+      code: 'tenantManagement'
     }
   }
 }

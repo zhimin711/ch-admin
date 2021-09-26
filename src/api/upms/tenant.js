@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
 
-const namespace = '/sys/tenant'
+const namespace = '/upms/tenant'
 
 // 分页查询业务-租户列表
 export function pageTenant(query) {

@@ -108,7 +108,16 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="负责人" prop="leader">
-              <el-input v-model="record.leader" placeholder="请输入负责人" maxlength="20" />
+              <!--              <el-input v-model="record.leader" placeholder="请输入负责人" maxlength="20" />-->
+
+              <el-select v-model="record.leader" filterable :placeholder="$t('input.tips.select')">
+                <el-option
+                  v-for="item in options.users"
+                  :key="item.username"
+                  :label="item.realName"
+                  :value="item.username"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -169,6 +178,7 @@ import { deepClone } from '@/utils'
 import { isEmpty } from '@/utils/validate'
 import { pageDepartment, delDepartment, addDepartment, editDepartment, treeDepartment, getDepartmentPositions, editDepartmentPositions } from '@/api/upms/department'
 import { searchPosition } from '@/api/upms/position'
+import { findUserList } from '@/api/upms/user'
 
 const defaultRecord = { pid: '0', sort: 1, status: '1' }
 
@@ -196,7 +206,7 @@ export default {
       recordParentsProps: { checkStrictly: true },
       recordPositions: [],
       // 表格树数据
-      options: { parents: [], positions: [] },
+      options: { parents: [], positions: [], users: [] },
       // 弹出层标题
       title: '',
       // 是否显示弹出层
@@ -238,6 +248,7 @@ export default {
   },
   created() {
     this.getList()
+    this.getUserList()
   },
   methods: {
     /** 查询组织列表 */
@@ -247,6 +258,13 @@ export default {
         this.tableA.list = response.rows
         this.tableA.total = response.total
       }).finally(() => { this.tableA.loading = false })
+    },
+    getUserList() {
+      findUserList('').then(resp => {
+        if (resp.success) {
+          this.options.users = resp.rows
+        }
+      })
     },
     // 取消按钮
     cancel() {
@@ -331,10 +349,10 @@ export default {
     submitForm: function() {
       this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.recordParents.length === 0) {
+          if (this.record.pid !== '0' && this.recordParents.length === 0) {
             this.$message.error('上级组织不能为空')
             return false
-          } else {
+          } else if (this.recordParents.length > 0) {
             this.record.pid = this.recordParents.join(',')
           }
           this.record.status = this.recordStatus ? '1' : '0'
