@@ -2,13 +2,6 @@
   <div class="app-container">
     <div class="filter-container">
       <el-form ref="queryForm" :model="tables.a.params" :inline="true" label-width="120px">
-        <el-form-item label="代码" prop="code">
-          <el-input
-            v-model="tables.a.params.code"
-            placeholder="请输入代码"
-            clearable
-          />
-        </el-form-item>
         <el-form-item label="名称" prop="name">
           <el-input
             v-model="tables.a.params.name"
@@ -29,7 +22,7 @@
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" @click="handleSearch">{{ $t('btn.search') }}</el-button>
           <el-button icon="el-icon-refresh" @click="handleReset">{{ $t('btn.reset') }}</el-button>
-          <el-button v-permission="'SysTenantAdd'" icon="el-icon-plus" @click="handleAdd">{{ $t('btn.add') }}</el-button>
+          <el-button v-permission="'UPMS_TENANT_ADD'" icon="el-icon-plus" @click="handleAdd">{{ $t('btn.add') }}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -40,12 +33,10 @@
       fit
       highlight-current-row
     >
-      <el-table-column label="代码" prop="code" />
+      <el-table-column label="所属部门" prop="departmentName" />
       <el-table-column label="名称" prop="name" />
-      <el-table-column label="所属部门" prop="department" />
       <el-table-column label="负责人" prop="manager" />
       <el-table-column label="排序" prop="sort" />
-      <el-table-column label="描述" prop="description" />
       <el-table-column label="状态" prop="status" />
       <el-table-column label="创建时间" align="center" prop="createAt" width="180">
         <template slot-scope="scope">
@@ -54,34 +45,34 @@
       </el-table-column>
       <el-table-column align="center" label="操作" min-width="150">
         <template slot-scope="{row}">
-          <el-button v-permission="'SysTenantEdit'" type="text" @click.native="handleEdit(row)">{{ $t('btn.edit') }}</el-button>
-          <el-button v-permission="'SysTenantDelete'" type="text" @click.native="handleDel(row)">{{ $t('btn.delete') }}</el-button>
+          <el-button v-permission="'UPMS_TENANT_EDIT'" type="text" @click.native="handleEdit(row)">{{ $t('btn.edit') }}</el-button>
+          <el-button v-permission="'UPMS_TENANT_DELETE'" type="text" @click.native="handleDel(row)">{{ $t('btn.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
     <pagination v-show="tables.a.total>0" :total="tables.a.total" :page.sync="tables.a.page" :limit.sync="tables.a.limit" @pagination="handleSearch" />
 
     <!-- 添加或修改业务-租户对话框 -->
-    <el-dialog :visible.sync="dialogs.a.visible" :title="dialogs.a.type==='edit'?'修改业务-租户':'创建业务-租户'">
+    <el-dialog :visible.sync="dialogs.a.visible" :title="dialogs.a.type==='edit'?'修改租户':'创建租户'">
       <el-form ref="form" :model="record" :rules="rules" label-width="100px" label-position="left">
-        <el-form-item label="代码" prop="code">
-          <el-input v-model="record.code" placeholder="请输入代码" />
+        <!--<el-form-item label="所属部门" prop="department">
+          <el-input v-model="record.department" placeholder="请输入所属部门" />
+        </el-form-item>-->
+        <el-form-item :label="$t('user.department')" prop="recordDepartments">
+          <el-cascader ref="categoryCascader" v-model="recordDepartments" :options="options.departments" :show-all-levels="false" :props="{ checkStrictly: true }" clearable />
         </el-form-item>
         <el-form-item label="名称" prop="name">
-          <el-input v-model="record.name" placeholder="请输入名称" />
-        </el-form-item>
-        <el-form-item label="所属部门" prop="department">
-          <el-input v-model="record.department" placeholder="请输入所属部门" />
+          <el-input v-model="record.name" placeholder="请输入名称(默认部门名称)" />
         </el-form-item>
         <el-form-item label="负责人" prop="manager">
-          <el-input v-model="record.manager" placeholder="请输入负责人" />
+          <el-input v-model="record.manager" placeholder="请输入负责人(默认部门负责人)" />
         </el-form-item>
         <el-form-item label="排序" prop="sort">
           <el-input-number v-model="record.sort" placeholder="请输入排序" />
         </el-form-item>
-        <el-form-item label="描述" prop="description">
+        <!--<el-form-item label="描述" prop="description">
           <el-input v-model="record.description" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
+        </el-form-item>-->
         <el-form-item label="状态" prop="status">
           <el-select v-model="record.status" placeholder="请选择状态">
             <el-option
@@ -103,19 +94,19 @@
 
 <script>
 import { pageTenant, addTenant, editTenant, delTenant } from '@/api/upms/tenant'
+import { treeDepartment } from '@/api/upms/department'
 
 const defaultRecord = {
   code: null,
   name: null,
-  department: null,
+  departmentId: null,
   manager: null,
-  sort: null,
+  sort: 1,
   description: null,
-  status: 0,
-  deleted: 0
+  status: '1'
 }
 export default {
-  name: 'UpmsTenant1',
+  name: 'UpmsTenant',
   data() {
     return {
       tables: {
@@ -137,13 +128,18 @@ export default {
         }
       },
       record: Object.assign({}, defaultRecord),
+      recordDepartments: [],
       list: {
         loading: false
       },
       options: {
         loading: false,
+        departments: [],
         // 状态：0.失效 1.生效
-        status: []
+        status: [
+          { value: '1', label: '启用' },
+          { value: '0', label: '禁用' }
+        ]
       },
       rules: {
 
@@ -152,8 +148,16 @@ export default {
   },
   created() {
     this.handleSearch()
+    this.getTreeDepartments()
   },
   methods: {
+    getTreeDepartments() {
+      treeDepartment('0').then(resp => {
+        if (resp.success) {
+          this.options.departments = resp.rows
+        }
+      })
+    },
     handleSearch() {
       this.tables.a.loading = true
       pageTenant(this.tables.a).then(resp => {
@@ -173,6 +177,8 @@ export default {
     },
     handleEdit(row) {
       this.record = Object.assign({}, row)
+      this.recordDepartments = []
+      this.recordDepartments = row.departmentId.split(',')
       this.dialogs.a.visible = true
       this.dialogs.a.type = 'edit'
     },
@@ -198,16 +204,16 @@ export default {
       let resp = null
       let opName = '添加'
       // this.record.dutyList = []
-      // if (this.recordDepartments.length > 0) {
-      // this.record.departmentId = this.recordDepartments.join(',')
-      // }
+      if (this.recordDepartments.length > 0) {
+        this.record.departmentId = this.recordDepartments.join(',')
+      }
       if (this.dialogs.a.type === 'new') {
         resp = await addTenant(this.record)
       } else if (this.dialogs.a.type === 'edit') {
         opName = '修改'
         resp = await editTenant(this.record)
       }
-      if (resp.success) {
+      if (resp && resp.success) {
         this.dialogs.a.visible = false
         this.$message({
           type: 'success',

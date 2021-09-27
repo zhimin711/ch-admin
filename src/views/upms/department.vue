@@ -97,7 +97,7 @@
         <el-row>
           <el-col v-if="record.pid !== '0'" :span="24">
             <el-form-item label="上级组织" prop="recordParents">
-              <el-cascader ref="categoryCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" :props="recordParentsProps" clearable />
+              <el-cascader ref="parentCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" :props="recordParentsProps" clearable />
               <!--<treeselect v-model="record.parentId" :options="deptOptions" :normalizer="normalizer" placeholder="选择上级组织" />-->
             </el-form-item>
           </el-col>
@@ -353,7 +353,15 @@ export default {
             this.$message.error('上级组织不能为空')
             return false
           } else if (this.recordParents.length > 0) {
-            this.record.pid = this.recordParents.join(',')
+            this.record.pid = this.recordParents[this.recordParents.length - 1]
+            this.record.parentId = this.recordParents.join(',')
+            const checkedNodes = this.$refs['parentCascader'].getCheckedNodes()
+            if (checkedNodes && checkedNodes.length > 0) {
+              this.record.parentName = ''
+              checkedNodes.forEach(item => {
+                this.record.parentName += item.label
+              })
+            }
           }
           this.record.status = this.recordStatus ? '1' : '0'
           if (this.record.id > 0) {

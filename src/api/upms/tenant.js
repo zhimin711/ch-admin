@@ -31,7 +31,7 @@ export function addTenant(data) {
 // 修改业务-租户
 export function editTenant(data) {
   return request({
-    url: `${namespace}`,
+    url: `${namespace}/${data.id}`,
     method: 'put',
     data
   })
