@@ -53,6 +53,7 @@
 <script>
 import CodeMirror from '@/components/CodeMirror/ConfigFile'
 import { getNacosConfig, releaseNacosConfig } from '@/api/nacos/configs'
+import { isEmpty } from '@/utils/validate'
 import CodeDiff from 'vue-code-diff'
 
 import CodeMirror2 from 'codemirror'
@@ -147,7 +148,7 @@ export default {
       } else {
         this.record.tenant = this.$store.getters.tenant
         for (const p in this.record) {
-          formData.append(p, this.record[p])
+          if (!isEmpty(this.record[p])) formData.append(p, this.record[p])
         }
       }
       return formData

@@ -27,7 +27,7 @@ export function resendRocketMQMessage(data) {
   return request({
     url: `${namespace}/consumeMessageDirectly`,
     method: 'post',
-    data
+    params: data
   })
 }
 
