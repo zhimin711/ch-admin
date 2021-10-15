@@ -85,7 +85,7 @@
           />
         </el-form-item>
         <el-form-item label="Message body">
-          <el-input v-model="dialog.record.messageBody" type="textarea" />
+          <el-input v-model="dialog.record.messageBody" :rows="5" type="textarea" />
         </el-form-item>
       </el-form>
       <el-table :data="dialog.data">

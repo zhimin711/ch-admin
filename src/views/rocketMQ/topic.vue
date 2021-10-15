@@ -29,7 +29,14 @@
         <el-checkbox label="死信" />
       </el-checkbox-group>
     </div>
-    <el-table v-loading="table.main.loading" :data="table.main.data.slice((table.main.page - 1) * table.main.limit, (table.main.page - 1) * table.main.limit + table.main.limit)" border fit highlight-current-row style="width: 100%">
+    <el-table
+      v-loading="table.main.loading"
+      :data="table.main.data.filter(item => filterData(item)).slice((table.main.page - 1) * table.main.limit, (table.main.page - 1) * table.main.limit + table.main.limit)"
+      border
+      fit
+      highlight-current-row
+      style="width: 100%"
+    >
       <!--<el-table-column width="133px" label="集群名称">
         <template slot-scope="scope">
           <span>{{ scope.row.clusterName }}</span>
@@ -350,11 +357,11 @@ const defaultRecord = {
   'type': 'JSON'
 }
 export default {
-  name: 'RocketMQTopic1',
+  name: 'RocketMQTopic',
   components: { Pagination },
   data() {
     return {
-      checkList: [],
+      checkList: ['普通'],
       table: {
         main: {
           loading: false,
@@ -642,6 +649,12 @@ export default {
       } else {
         this.options.topics = []
       }
+    },
+    filterData(item) {
+      if (this.checkList.length === 0) return false
+      if (this.checkList.includes('重试') && item.topicName.startsWith('%R')) { return true }
+      if (this.checkList.includes('死信') && item.topicName.startsWith('%D')) { return true }
+      return this.checkList.includes('普通') && item.topicName.startsWith('%') === false
     }
   }
 }
