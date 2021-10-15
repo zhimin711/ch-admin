@@ -95,6 +95,20 @@ const routerMap = {
     meta: {
       title: '权限管理'
     }
+  },
+  NodeServerLog: {
+    path: 'nodeServerLog',
+    component: () => import('@/views/canal/server/serverLog'),
+    name: 'NodeServerLog',
+    hidden: true,
+    meta: { title: '服务日志', noCache: true }
+  },
+  InstanceLog: {
+    path: 'instanceLog',
+    component: () => import('@/views/canal/instance/instanceLog'),
+    name: 'InstanceLog',
+    hidden: true,
+    meta: { title: '实例日志', noCache: true }
   }
 }
 

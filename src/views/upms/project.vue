@@ -17,13 +17,8 @@
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="120px" label="上级项目">
-        <template slot-scope="scope">
-          <el-tag v-if="scope.row.parentCode">
-            {{ scope.row.parentName }}
-          </el-tag>
-        </template>
-      </el-table-column>
+      <el-table-column label="租户" prop="tenantName" />
+      <el-table-column label="所属部门" prop="departmentName" />
       <el-table-column label="项目代码">
         <template slot-scope="scope">
           <span v-if="scope.row.parentCode">{{ scope.row.parentCode + ':' + scope.row.code }}</span>
@@ -45,19 +40,19 @@
 
       <el-table-column align="center" label="操作" width="200">
         <template slot-scope="scope">
-          <el-link v-permission="['SYS_PROJECT_CODE_USERS_ASSIGN']" type="primary" icon="el-icon-menu" @click="handleAuthUsers(scope.row)">分配用户</el-link>
-          <el-link v-permission="['SYS_PROJECT_CODE_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link v-permission="['SYS_PROJECT_CODE_DEL']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
+          <el-link v-permission="['UPMS_PROJECT_NAMESPACE_ASSIGN']" type="primary" icon="el-icon-menu" @click="handleAuthUsers(scope.row)">分配空间</el-link>
+          <el-link v-permission="['UPMS_PROJECT_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
+          <el-link v-permission="['UPMS_PROJECT_DEL']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
     </el-table>
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 项目代码':'添加 项目代码'">
+    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 项目':'添加 项目'">
       <el-form :model="record" label-width="80px" label-position="left">
-        <el-form-item label="上级项目">
-          <el-cascader ref="parentsSelect" v-model="recordParents" :options="options.parents" :show-all-levels="false" clearable @change="changeParent" />
+        <el-form-item label="归属部门">
+          <el-cascader ref="deptCascader" v-model="recordDepartments" :options="options.departments" :show-all-levels="false" :props="{ checkStrictly: true }" clearable />
         </el-form-item>
         <el-form-item label="代码">
           <el-input v-model="record.code" placeholder="项目代码" :disabled="dialogCodeEdit">
@@ -107,13 +102,15 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { list, add, edit, del, getParents, getUsers, getProjectUsers, editProjectUsers } from '@/api/upms/project'
+import { list, add, edit, del, getUsers, getProjectUsers, editProjectUsers } from '@/api/upms/project'
+import { treeDepartment } from '@/api/upms/department'
+import { getAvailableList } from '@/api/upms/namespace'
 
 export default {
-  name: 'UpmsProject',
+  name: 'UpmsProject1',
   filters: {
-    convertTypeFilter(type) {
-      return ['', 'DB(数据库)', '远程终端(SSH)', '(FTP)'][type]
+    statusFilter(type) {
+      return ['待审核', '正常', '远程终端(SSH)', '(FTP)'][type]
     }
   },
   data() {
@@ -133,22 +130,32 @@ export default {
       dialogCodeEdit: false,
       dialogVisible2: false,
       recordParents: [],
+      recordDepartments: [],
       recordUsers: [],
       options: {
         parents: [],
+        departments: [],
         users: []
       }
     }
   },
   created() {
     this.getList()
-    // this.getParents('1')
+    this.getTreeDepartments()
+    this.getNamespaces()
     // this.getUsers()
   },
   methods: {
-    async getParents(type) {
-      const resp = await getParents(type)
-      if (resp && resp.success) this.options.parents = resp.rows
+    getTreeDepartments() {
+      treeDepartment('0').then(resp => {
+        if (resp.success) {
+          this.options.departments = resp.rows
+        }
+      })
+    },
+    async getNamespaces(s) {
+      const resp = await getAvailableList(s)
+      if (resp && resp.success) this.options.namespaces = resp.rows
     },
     async getUsers() {
       const resp = await getUsers()
@@ -180,6 +187,8 @@ export default {
       if (this.record.parentCode) {
         this.recordParents = [this.record.parentCode]
       }
+      this.recordDepartments = []
+      if (row.department) this.recordDepartments = row.department.split(',')
     },
     handleDel(row) {
       const _this = this
@@ -206,9 +215,8 @@ export default {
       if (this.recordStatus) {
         this.record.status = '1'
       }
-      const typeLabels = _this.$refs['parentsSelect'].currentLabels
-      if (typeLabels && typeLabels.length > 0) {
-        this.record.parentName = typeLabels.join('/')
+      if (this.recordDepartments.length > 0) {
+        this.record.department = this.recordDepartments.join(',')
       }
       if (this.dialogType === 'new') {
         resp = await add(this.record)
@@ -216,7 +224,7 @@ export default {
         opName = '修改'
         resp = await edit(this.record.id, this.record)
       }
-      if (resp.success) {
+      if (resp && resp.success) {
         this.dialogVisible = false
         this.$message({
           type: 'success',

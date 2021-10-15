@@ -107,7 +107,7 @@ const defaultRecord = {
   description: null
 }
 export default {
-  name: 'UpmsNamespace1',
+  name: 'UpmsNamespace',
   data() {
     return {
       tables: {

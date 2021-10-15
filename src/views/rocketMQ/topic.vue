@@ -1,14 +1,14 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-select v-model="table.main.params.clusterName" :placeholder="$t('input.tips.select')" class="filter-item">
+      <!--<el-select v-model="table.main.params.clusterName" :placeholder="$t('input.tips.select')" class="filter-item">
         <el-option
           v-for="item in options.clusters"
           :key="item.clusterName"
           :label="item.clusterName"
           :value="item.clusterName"
         />
-      </el-select>
+      </el-select>-->
       <el-input v-model="table.main.params.topicName" placeholder="主题名称" style="width: 200px;" class="filter-item" />
       <el-button v-permission="'ROCKET_MQ_TOPIC_SEARCH'" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         {{ $t('btn.search') }}
@@ -22,13 +22,19 @@
       <el-button v-permission="'ROCKET_MQ_TOPIC_ADD'" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
         创建主题
       </el-button>
+
+      <el-checkbox-group v-model="checkList">
+        <el-checkbox label="普通" />
+        <el-checkbox label="重试" />
+        <el-checkbox label="死信" />
+      </el-checkbox-group>
     </div>
     <el-table v-loading="table.main.loading" :data="table.main.data.slice((table.main.page - 1) * table.main.limit, (table.main.page - 1) * table.main.limit + table.main.limit)" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="133px" label="集群名称">
+      <!--<el-table-column width="133px" label="集群名称">
         <template slot-scope="scope">
           <span>{{ scope.row.clusterName }}</span>
         </template>
-      </el-table-column>
+      </el-table-column>-->
       <el-table-column label="主题名称" prop="topicName" />
       <!--<el-table-column label="存储类型" width="127">
         <template slot-scope="scope">
@@ -344,10 +350,11 @@ const defaultRecord = {
   'type': 'JSON'
 }
 export default {
-  name: 'RocketMQTopic',
+  name: 'RocketMQTopic1',
   components: { Pagination },
   data() {
     return {
+      checkList: [],
       table: {
         main: {
           loading: false,

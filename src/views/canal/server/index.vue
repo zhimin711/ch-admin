@@ -403,7 +403,7 @@ export default {
       })
     },
     handleLog(row) {
-      this.$router.push('nodeServer/log?id=' + row.id)
+      this.$router.push('/canal/nodeServerLog?id=' + row.id)
     },
     handleStartInstance(row) {
       if (row.runningStatus !== '0') {

@@ -529,6 +529,8 @@ export default {
       this.dialogStatus = 'config'
       getCanalConfigTemplate(row.id).then(resp => {
         this.canalClusterConfig = resp.data
+        this.canalClusterConfig.name = row.name
+        this.canalClusterConfig.name = row.name
         this.initConfig()
         this.dialogFormVisible2 = true
       })

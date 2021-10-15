@@ -273,9 +273,9 @@ export default {
           this.$message.warning('please select date range!')
           return
         }
-        resp = await listRocketMQMessage({ topic: this.params.topicName, begin: this.dateOptions.s2e[0], end: this.dateOptions.s2e[1] })
+        resp = await listRocketMQMessage({ topic: this.params.topicName, begin: this.dateOptions.s2e[0], end: this.dateOptions.s2e[1] }).catch(() => {})
       }
-      if (resp.success) {
+      if (resp && resp.success) {
         this.table.main.data = resp.rows
         this.table.main.total = resp.rows.length
       }

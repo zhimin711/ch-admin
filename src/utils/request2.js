@@ -85,7 +85,7 @@ service2.interceptors.response.use(
       toLogin()
     } else if (response && response.status === 401) {
       Message({
-        message: 'Not authority this request address!',
+        message: response.data && response.data.message || 'Not authority this request address!',
         type: 'error',
         duration: 5 * 1000
       })

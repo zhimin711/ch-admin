@@ -510,7 +510,7 @@ export default {
         this.$message({ message: '当前Instance不是启动状态，无法查看日志', type: 'warning' })
         return
       }
-      this.$router.push('instance/log?id=' + row.id + '&nodeId=' + row.nodeServer.id)
+      this.$router.push('/canal/instanceLog?id=' + row.id + '&nodeId=' + row.nodeServer.id)
     },
     handleCursor(row) {
       this.listLoading = true

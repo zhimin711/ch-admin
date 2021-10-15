@@ -52,3 +52,10 @@ export function syncNacosNamespaces() {
     method: 'get'
   })
 }
+
+export function getAvailableList(name) {
+  return request({
+    url: `${namespace}/available?s=${name}`,
+    method: 'get'
+  })
+}
