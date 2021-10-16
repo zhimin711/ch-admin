@@ -90,54 +90,6 @@ const routerMap = {
     meta: {
       code: 'permissionManagement'
     }
-  },
-  UpmsDepartment: {
-    path: 'department',
-    component: () => import('@/views/upms/department'),
-    name: 'UpmsDepartmentManagement',
-    meta: {
-      code: 'departmentManagement'
-    }
-  },
-  UpmsPosition: {
-    path: 'position',
-    component: () => import('@/views/upms/position'),
-    name: 'UpmsPositionManagement',
-    meta: {
-      code: 'positionManagement'
-    }
-  },
-  UpmsDict: {
-    path: 'dict',
-    component: () => import('@/views/upms/dict'),
-    name: 'UpmsDictManagement',
-    meta: {
-      code: 'dictManagement'
-    }
-  },
-  UpmsProject: {
-    path: 'project',
-    component: () => import('@/views/upms/project'),
-    name: 'UpmsProjectManagement',
-    meta: {
-      code: 'projectManagement'
-    }
-  },
-  UpmsTenant: {
-    path: 'tenant',
-    component: () => import('@/views/upms/tenant'),
-    name: 'UpmsTenantManagement',
-    meta: {
-      code: 'tenantManagement'
-    }
-  },
-  UpmsNamespace: {
-    path: 'namespace',
-    component: () => import('@/views/upms/namespace'),
-    name: 'UpmsNamespaceManagement',
-    meta: {
-      code: 'namespaceManagement'
-    }
   }
 }
 

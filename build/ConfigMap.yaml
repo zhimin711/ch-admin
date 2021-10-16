@@ -9,7 +9,7 @@ metadata:
   labels:
     {}
   #    key: string
-  namespace: cloud
+  namespace: ch
 #binaryData:
 #  key: string
 data:

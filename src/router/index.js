@@ -8,6 +8,7 @@ import Layout from '@/layout'
 
 /* Router Modules */
 import upmsRouter, { getUpmsRouter } from './modules/upms'
+import orgRouter, { getOrgRouter } from './modules/org'
 import logsRouter, { getLogsRouter } from './modules/logs'
 import wikiRouter, { getWikiRouter } from './modules/wiki'
 import sysRouter, { getCloudRouter } from './modules/sys'
@@ -160,6 +161,7 @@ export const exampleRoutes = [
  */
 export const asyncRoutes = [
   upmsRouter,
+  orgRouter,
   logsRouter,
   sysRouter,
   wikiRouter,
@@ -189,6 +191,9 @@ export function assemblyAsyncRoutes(menus) {
   const list = []
   menus.forEach(menu => {
     let route = getUpmsRouter(menu.code)
+    if (!route) {
+      route = getOrgRouter(menu.code)
+    }
     if (!route) {
       route = getLogsRouter(menu.code)
     }
