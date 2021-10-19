@@ -8,6 +8,8 @@
       <template v-if="device!=='mobile'">
         <search id="header-search" class="right-menu-item" />
 
+        <tenant-select />
+
         <error-log class="errLog-container right-menu-item hover-effect" />
 
         <!--<screenfull id="screenfull" class="right-menu-item hover-effect" />-->
@@ -17,7 +19,6 @@
         </el-tooltip>
 
         <lang-select class="right-menu-item hover-effect" />
-
       </template>
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
@@ -47,6 +48,7 @@ import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 import ErrorLog from '@/components/ErrorLog'
 import LangSelect from '@/components/LangSelect'
+import TenantSelect from '@/components/TenantSelect'
 // import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
@@ -58,6 +60,7 @@ export default {
     ErrorLog,
     // Screenfull,
     SizeSelect,
+    TenantSelect,
     LangSelect,
     Search
   },

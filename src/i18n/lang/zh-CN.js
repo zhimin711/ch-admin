@@ -10,7 +10,8 @@ const cn = {
       userId: '用户ID',
       username: '用户名',
       realName: '真实姓名',
-      departmentName: '请输入部门名称'
+      departmentName: '请输入部门名称',
+      projectName: '请输入项目名称'
     }
   },
   route: {

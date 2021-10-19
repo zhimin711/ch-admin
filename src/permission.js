@@ -116,6 +116,8 @@ function convertRoute(to) {
 }
 
 router.afterEach(() => {
+  const hasToken = getToken()
+  if (hasToken) store.dispatch('user/getTenants')
   // finish progress bar
   NProgress.done()
 })

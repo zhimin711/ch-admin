@@ -83,3 +83,17 @@ export function findUserList(name) {
     params: { name }
   })
 }
+
+export function getUserTenants() {
+  return request({
+    url: `${baseUrl}/tenants`,
+    method: 'get'
+  })
+}
+
+export function getUserTenantProjects(tenant) {
+  return request({
+    url: `${baseUrl}/tenant/${tenant}/projects`,
+    method: 'get'
+  })
+}

@@ -11,7 +11,8 @@ export default {
       username: 'Username',
       realName: 'Real Name',
       status: 'Status',
-      departmentName: 'please input department name'
+      departmentName: 'please input department name',
+      projectName: 'please input project name'
     }
   },
   route: {

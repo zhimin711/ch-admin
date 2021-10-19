@@ -51,9 +51,29 @@
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 项目':'添加 项目'">
       <el-form :model="record" label-width="80px" label-position="left">
-        <el-form-item label="归属部门">
+        <!--<el-form-item label="归属部门">
           <el-cascader ref="deptCascader" v-model="recordDepartments" :options="options.departments" :show-all-levels="false" :props="{ checkStrictly: true }" clearable />
-        </el-form-item>
+        </el-form-item>-->
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item :label="$t('user.department')" prop="recordDepartments">
+              <el-cascader ref="deptCascader" v-model="recordDepartments" :options="options.departments" :show-all-levels="false" :props="{ checkStrictly: true }" clearable @change="getDepartmentTenants" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="租户" prop="tenant">
+              <el-select v-model="recordTenant" filterable :placeholder="$t('input.tips.select')">
+                <el-option
+                  v-for="item in options.tenants"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="代码">
           <el-input v-model="record.code" placeholder="项目代码" :disabled="dialogCodeEdit">
             <template v-if="recordParents.length>0" slot="prepend">{{ record.parentCode }}</template>
@@ -132,7 +152,9 @@ export default {
       recordParents: [],
       recordDepartments: [],
       recordUsers: [],
+      recordTenant: [],
       options: {
+        tenants: [],
         parents: [],
         departments: [],
         users: []
@@ -152,6 +174,9 @@ export default {
           this.options.departments = resp.rows
         }
       })
+    },
+    getDepartmentTenants(val) {
+      //
     },
     async getNamespaces(s) {
       const resp = await getAvailableList(s)
