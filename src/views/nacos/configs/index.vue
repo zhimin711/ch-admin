@@ -1,52 +1,61 @@
 <template>
   <div class="app-container">
-    <sticky :z-index="10" :class-name="'sub-navbar2 '">
-      <tenant @change="queryData" />
-    </sticky>
-    <div class="query-container">
-      <el-form ref="queryForm" :model="listQuery" :inline="true">
-        <el-form-item label="Data ID">
-          <el-input v-model="listQuery.dataId" placeholder="请输入Data ID" style="width: 200px;" />
-        </el-form-item>
-        <el-form-item label="Group">
-          <el-input v-model="listQuery.group" placeholder="请输入Group" style="width: 200px;" />
-        </el-form-item>
-      </el-form>
-      <el-button type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
-      <el-button v-permission="'NacosConfigsIndexAdd'" type="primary" @click="handleCreate()">创建配置</el-button>
-      <el-button v-permission="'NacosConfigsIndexDelete'" type="danger" @click="onDelete2()">删除</el-button>
-      <!--<el-button type="primary" @click="handleCreate()">导出查询结果</el-button>-->
-      <el-button v-permission="'NacosConfigsIndexExport'" type="success" plain @click="handleExports()">导出配置</el-button>
-      <el-button v-permission="'NacosConfigsIndexImport'" type="primary" @click="handleImports()">导入配置</el-button>
-      <el-button v-permission="'NacosConfigsIndexClone'" type="primary" plain @click="handleClone()">克隆配置</el-button>
-    </div>
-    <el-table
-      v-loading="listLoading"
-      :data="list"
-      element-loading-text="Loading"
-      border
-      fit
-      highlight-current-row
-      @selection-change="handleSelectionChange"
-    >
-      <el-table-column
-        type="selection"
-        align="center"
-        width="55"
-      />
-      <el-table-column label="Data Id" min-width="200" prop="dataId" />
-      <el-table-column label="Group" min-width="200" prop="group" />
-      <el-table-column label="归属应用" min-width="100" prop="appName" />
-      <el-table-column align="center" prop="created_at" label="操作" min-width="150">
-        <template slot-scope="{row}">
-          <el-button v-permission="'NacosConfigsIndexSearch'" type="text" @click.native="handleDetail(row)">详情</el-button>
-          <el-button type="text" @click.native="handleCode(row)">示例代码</el-button>
-          <el-button v-permission="'NacosConfigsIndexEdit'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
-          <el-button v-permission="'NacosConfigsIndexDelete'" type="text" @click.native="onDelete(row)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
+    <el-row :gutter="20">
+      <!--部门数据-->
+      <el-col :span="4" :xs="24">
+        <project-menu />
+      </el-col>
+      <!--用户数据-->
+      <el-col :span="20" :xs="24" style="border-left: 1px solid #dedede;">
+        <sticky :z-index="10" :class-name="'sub-navbar2 '">
+          <tenant @change="queryData" />
+        </sticky>
+        <div class="query-container">
+          <el-form ref="queryForm" :model="listQuery" :inline="true">
+            <el-form-item label="Data ID">
+              <el-input v-model="listQuery.dataId" placeholder="请输入Data ID" style="width: 200px;" />
+            </el-form-item>
+            <el-form-item label="Group">
+              <el-input v-model="listQuery.group" placeholder="请输入Group" style="width: 200px;" />
+            </el-form-item>
+          </el-form>
+          <el-button type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
+          <el-button v-permission="'NacosConfigsIndexAdd'" type="primary" @click="handleCreate()">创建配置</el-button>
+          <el-button v-permission="'NacosConfigsIndexDelete'" type="danger" @click="onDelete2()">删除</el-button>
+          <!--<el-button type="primary" @click="handleCreate()">导出查询结果</el-button>-->
+          <el-button v-permission="'NacosConfigsIndexExport'" type="success" plain @click="handleExports()">导出配置</el-button>
+          <el-button v-permission="'NacosConfigsIndexImport'" type="primary" @click="handleImports()">导入配置</el-button>
+          <el-button v-permission="'NacosConfigsIndexClone'" type="primary" plain @click="handleClone()">克隆配置</el-button>
+        </div>
+        <el-table
+          v-loading="listLoading"
+          :data="list"
+          element-loading-text="Loading"
+          border
+          fit
+          highlight-current-row
+          @selection-change="handleSelectionChange"
+        >
+          <el-table-column
+            type="selection"
+            align="center"
+            width="55"
+          />
+          <el-table-column label="Data Id" min-width="200" prop="dataId" />
+          <el-table-column label="Group" min-width="200" prop="group" />
+          <el-table-column label="归属应用" min-width="100" prop="appName" />
+          <el-table-column align="center" prop="created_at" label="操作" min-width="150">
+            <template slot-scope="{row}">
+              <el-button v-permission="'NacosConfigsIndexSearch'" type="text" @click.native="handleDetail(row)">详情</el-button>
+              <el-button type="text" @click.native="handleCode(row)">示例代码</el-button>
+              <el-button v-permission="'NacosConfigsIndexEdit'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
+              <el-button v-permission="'NacosConfigsIndexDelete'" type="text" @click.native="onDelete(row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <pagination v-show="count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
+      </el-col>
+    </el-row>
     <el-dialog title="删除配置" :visible.sync="dialogVisible2Del" width="380px">
       <el-alert
         title="确定要删除以下配置吗？"
@@ -181,6 +190,7 @@ import Pagination from '@/components/Pagination'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/tenant' // 粘性header组件
 import CodeViewer from '../components/showCodeConfig' // 粘性header组件
+import projectMenu from '../components/projectMenu' // 粘性header组件
 import { deepClone } from '@/utils'
 
 const opName = {
@@ -189,10 +199,11 @@ const opName = {
 }
 export default {
   name: 'NacosConfigs',
-  components: { Pagination, Sticky, Tenant, SingleFile, CodeViewer },
+  components: { Pagination, Sticky, Tenant, SingleFile, CodeViewer, projectMenu },
   data() {
     return {
       list: null,
+      projectName: '',
       listLoading: true,
       multipleSelection: [],
       count: 0,
@@ -235,7 +246,8 @@ export default {
         }, {
           value: 'OVERWRITE',
           label: '覆盖'
-        }]
+        }],
+        projects: []
       },
       rules: {
         dataId: [{ required: true, message: 'Data ID 不能为空', trigger: 'change' }],

@@ -75,9 +75,9 @@ export function getCurrentUserTree() {
   })
 }
 
-export function getProjectDb(id) {
+export function getProjectNamespaces(id) {
   return request({
-    url: `${namespace}/${id}/db`,
+    url: `${namespace}/${id}/namespaces`,
     method: 'get'
   })
 }

@@ -40,7 +40,7 @@
 
       <el-table-column align="center" label="操作" width="200">
         <template slot-scope="scope">
-          <el-link v-permission="['UPMS_PROJECT_NAMESPACE_ASSIGN']" type="primary" icon="el-icon-menu" @click="handleAuthUsers(scope.row)">分配空间</el-link>
+          <el-link v-permission="['UPMS_PROJECT_NAMESPACES_EDIT']" type="primary" icon="el-icon-menu" @click="handleProjectNamespaces(scope.row)">分配空间</el-link>
           <el-link v-permission="['UPMS_PROJECT_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
           <el-link v-permission="['UPMS_PROJECT_DEL']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
@@ -82,6 +82,15 @@
         <el-form-item label="项目名称">
           <el-input v-model="record.name" placeholder="项目名称" />
         </el-form-item>
+        <el-form-item label="负责人">
+          <el-input v-model="record.manager" placeholder="负责人" />
+        </el-form-item>
+        <el-form-item label="开发用户">
+          <el-input v-model="record.dev" placeholder="开发用户" />
+        </el-form-item>
+        <el-form-item label="测试用户">
+          <el-input v-model="record.test" placeholder="测试用户" />
+        </el-form-item>
         <el-form-item label="排序">
           <el-input v-model="record.sort" placeholder="排序" />
         </el-form-item>
@@ -108,11 +117,19 @@
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
       </div>
     </el-dialog>
-    <el-dialog :visible.sync="dialogVisible2" :title="'分配用户'" width="544px">
+    <el-dialog :visible.sync="dialogVisible2" :title="'分配空间'" width="635px">
       <div style="text-align:left;margin-bottom: 20px">
-        <el-transfer v-model="recordUsers" filterable :filter-method="filterUsersMethod" filter-placeholder="请输入城市拼音" :render-content="renderUserShow" :data="options.users" :titles="['未分配用户', '已分配用户']" :props="{ key: 'username', label: 'realName' }" />
+        <el-transfer
+          v-model="recordUsers"
+          filterable
+          :filter-method="filterNamespacesMethod"
+          filter-placeholder="请输入空间"
+          :data="options.namespaces"
+          :titles="['未分配空间', '已分配空间']"
+          :props="{ key: 'value', label: 'label' }"
+        />
       </div>
-      <div style="text-align:left;padding-left:170px">
+      <div style="text-align:left;padding-left:220px">
         <el-button type="primary" @click="handleSubmitUsers">保存</el-button>
         <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
       </div>
@@ -122,7 +139,7 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { list, add, edit, del, getUsers, getProjectUsers, editProjectUsers } from '@/api/upms/project'
+import { add, del, edit, editProjectUsers, getProjectNamespaces, getUsers, list } from '@/api/upms/project'
 import { treeDepartment } from '@/api/upms/department'
 import { getAvailableList } from '@/api/upms/namespace'
 
@@ -152,6 +169,7 @@ export default {
       recordParents: [],
       recordDepartments: [],
       recordUsers: [],
+      recordNamespaces: [],
       recordTenant: [],
       options: {
         tenants: [],
@@ -179,7 +197,7 @@ export default {
       //
     },
     async getNamespaces(s) {
-      const resp = await getAvailableList(s)
+      const resp = await getAvailableList(s || '')
       if (resp && resp.success) this.options.namespaces = resp.rows
     },
     async getUsers() {
@@ -258,16 +276,16 @@ export default {
         _this.getList()
       }
     },
-    handleAuthUsers(row) {
+    handleProjectNamespaces(row) {
       //
       this.dialogVisible2 = true
 
       this.record = deepClone(row)
       this.recordUsers = []
-      getProjectUsers(row.id).then(resp => {
+      getProjectNamespaces(row.id).then(resp => {
         if (resp.success) {
           resp.rows.forEach(e => {
-            this.recordUsers.push(e)
+            this.recordNamespaces.push(e)
           })
         }
       })
@@ -284,17 +302,9 @@ export default {
         type: resp && resp.success ? 'success' : 'error'
       })
     },
-    filterUsersMethod(query, item) {
+    filterNamespacesMethod(query, item) {
       if (query === '') return true
-      let hasQuery = item.username.indexOf(query) > -1
-      if (!hasQuery) {
-        hasQuery = item.realName.indexOf(query) > -1
-      }
-      return hasQuery
-    },
-    renderUserShow(h, option) {
-      // return `<span>${option.username} - ${option.realName}</span>`
-      return <span>{ option.username } - { option.realName }</span>
+      return item.label.indexOf(query) > -1
     },
     changeParent(val) {
       this.record.parentCode = ''
