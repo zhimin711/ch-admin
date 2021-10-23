@@ -1,6 +1,6 @@
 <template>
 
-  <el-dropdown split-button trigger="click" class="international" style="top: -18px" @command="handleSetTenant">
+  <el-dropdown split-button trigger="click" class="international" style="top: -18px; margin: 0 15px" @command="handleSetTenant">
     <div>
       租户： {{ tenant.label }}
     </div>

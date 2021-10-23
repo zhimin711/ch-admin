@@ -17,8 +17,8 @@
       </el-button>
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column label="租户" prop="tenantName" />
       <el-table-column label="所属部门" prop="departmentName" />
+      <el-table-column label="租户" prop="tenantName" />
       <el-table-column label="项目代码">
         <template slot-scope="scope">
           <span v-if="scope.row.parentCode">{{ scope.row.parentCode + ':' + scope.row.code }}</span>
