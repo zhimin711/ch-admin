@@ -68,3 +68,10 @@ export function searchDepartmentPositions(id, name) {
     method: 'get'
   })
 }
+
+export function getDepartmentTenants(id, name = '') {
+  return request({
+    url: `${baseUrl}/${id}/tenants`,
+    method: 'get'
+  })
+}

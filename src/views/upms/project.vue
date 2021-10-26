@@ -50,7 +50,7 @@
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改 项目':'添加 项目'">
-      <el-form :model="record" label-width="80px" label-position="left">
+      <el-form :model="record" :rules="rules" label-width="80px" label-position="left">
         <!--<el-form-item label="归属部门">
           <el-cascader ref="deptCascader" v-model="recordDepartments" :options="options.departments" :show-all-levels="false" :props="{ checkStrictly: true }" clearable />
         </el-form-item>-->
@@ -62,8 +62,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="租户" prop="tenant">
-              <el-select v-model="recordTenant" filterable :placeholder="$t('input.tips.select')">
+            <el-form-item label="租户" prop="tenantId">
+              <el-select v-model="record.tenantId" filterable :placeholder="$t('input.tips.select')" @change="changeTenant">
                 <el-option
                   v-for="item in options.tenants"
                   :key="item.id"
@@ -120,7 +120,7 @@
     <el-dialog :visible.sync="dialogVisible2" :title="'分配空间'" width="635px">
       <div style="text-align:left;margin-bottom: 20px">
         <el-transfer
-          v-model="recordUsers"
+          v-model="recordNamespaces"
           filterable
           :filter-method="filterNamespacesMethod"
           filter-placeholder="请输入空间"
@@ -130,7 +130,7 @@
         />
       </div>
       <div style="text-align:left;padding-left:220px">
-        <el-button type="primary" @click="handleSubmitUsers">保存</el-button>
+        <el-button type="primary" @click="handleSubmitNamespaces">保存</el-button>
         <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
       </div>
     </el-dialog>
@@ -139,8 +139,8 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { add, del, edit, editProjectUsers, getProjectNamespaces, getUsers, list } from '@/api/upms/project'
-import { treeDepartment } from '@/api/upms/department'
+import { add, del, edit, editProjectNamespaces, getProjectNamespaces, getUsers, list } from '@/api/upms/project'
+import { treeDepartment, getDepartmentTenants } from '@/api/upms/department'
 import { getAvailableList } from '@/api/upms/namespace'
 
 export default {
@@ -170,12 +170,16 @@ export default {
       recordDepartments: [],
       recordUsers: [],
       recordNamespaces: [],
-      recordTenant: [],
+      recordTenant: '',
       options: {
         tenants: [],
         parents: [],
         departments: [],
         users: []
+      },
+      rules: {
+        // recordDepartments: [{ required: true, message: '所属部门不能为空', trigger: 'change' }],
+        tenantId: [{ required: true, message: '租户不能为空', trigger: 'change' }]
       }
     }
   },
@@ -194,7 +198,15 @@ export default {
       })
     },
     getDepartmentTenants(val) {
-      //
+      this.options.tenants = []
+      if (val.length <= 0) {
+        return
+      }
+      getDepartmentTenants(val[val.length - 1]).then(resp => {
+        if (resp.success) {
+          this.options.tenants = resp.rows
+        }
+      })
     },
     async getNamespaces(s) {
       const resp = await getAvailableList(s || '')
@@ -231,7 +243,11 @@ export default {
         this.recordParents = [this.record.parentCode]
       }
       this.recordDepartments = []
-      if (row.department) this.recordDepartments = row.department.split(',')
+      if (row.department) {
+        this.recordDepartments = row.department.split(',')
+        this.getDepartmentTenants(this.recordDepartments)
+      }
+      // if (row.tenantId) this.getDepartmentTenants([row.tenantId])
     },
     handleDel(row) {
       const _this = this
@@ -290,15 +306,15 @@ export default {
         }
       })
     },
-    async handleSubmitUsers() {
-      const resp = await editProjectUsers(this.record.id, this.recordUsers)
+    async handleSubmitNamespaces() {
+      const resp = await editProjectNamespaces(this.record.id, this.recordNamespaces)
       if (resp && resp.success) {
         this.dialogVisible2 = false
       }
       this.$notify({
-        title: '用户授权',
+        title: '授权空间',
         dangerouslyUseHTMLString: true,
-        message: `Auth 用户 ` + (resp && resp.success ? 'success!' : 'error...'),
+        message: `授权空间 ` + (resp && resp.success ? 'success!' : 'error...'),
         type: resp && resp.success ? 'success' : 'error'
       })
     },
@@ -315,6 +331,13 @@ export default {
           return item.value === val[0]
         })
         this.record.parentName = obj.label
+      }
+    },
+    changeTenant(val) {
+      this.record.tenantName = ''
+      if (val) {
+        const tenant = this.options.tenants.find(item => item.id === val)
+        this.record.tenantName = tenant.name
       }
     }
   }

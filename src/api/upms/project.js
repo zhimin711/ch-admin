@@ -81,3 +81,11 @@ export function getProjectNamespaces(id) {
     method: 'get'
   })
 }
+
+export function editProjectNamespaces(id, data) {
+  return request({
+    url: `${namespace}/${id}/namespaces`,
+    method: 'post',
+    data
+  })
+}

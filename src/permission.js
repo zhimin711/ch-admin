@@ -9,7 +9,7 @@ import getPageTitle from '@/utils/get-page-title'
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['/login', '/auth-redirect'] // no redirect whitelist
-
+let isGetTenant = false
 router.beforeEach(async(to, from, next) => {
   // start progress bar
   NProgress.start()
@@ -117,7 +117,10 @@ function convertRoute(to) {
 
 router.afterEach(() => {
   const hasToken = getToken()
-  if (hasToken) store.dispatch('user/getTenants')
+  if (hasToken && !isGetTenant) {
+    store.dispatch('user/getTenants')
+    isGetTenant = true
+  }
   // finish progress bar
   NProgress.done()
 })
