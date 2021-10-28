@@ -48,6 +48,11 @@ export default {
       }
     }
   },
+  watch: {
+    tenant(nv, ov) {
+      console.log(nv, ov)
+    }
+  },
   mounted() {
     this.loadData()
   },
@@ -58,17 +63,20 @@ export default {
     },
     // 节点单击事件
     handleProjectClick(data) {
+      this.$emit('change', data.value)
       // this.projects = data.value
       // this.fetchData()
     },
     loadData() {
       const tenant = this.$store.getters.tenant
-      getUserTenantProjects(tenant.value).then((resp) => {
-        if (resp.success) {
-          this.projects = resp.rows
-        }
-        // this.$store.dispatch('user/setTenants', this.namespaces)
-      })
+      if (tenant && tenant.value) {
+        getUserTenantProjects(tenant.value).then((resp) => {
+          if (resp.success) {
+            this.projects = resp.rows
+          }
+          // this.$store.dispatch('user/setTenants', this.namespaces)
+        })
+      }
     },
     selectNamespace(val) {
       // this.$store.dispatch('user/setTenant', val).then(() => {

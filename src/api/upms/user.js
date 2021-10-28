@@ -97,3 +97,10 @@ export function getUserTenantProjects(tenant) {
     method: 'get'
   })
 }
+
+export function getUserProjectNamespaces(projectId) {
+  return request({
+    url: `${baseUrl}/project/${projectId}/namespaces`,
+    method: 'get'
+  })
+}

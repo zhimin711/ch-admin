@@ -86,6 +86,7 @@ export default {
       tempRoute: {},
       record: {},
       content: '',
+      projectNamespace: sessionStorage.getItem('projectNamespace'),
       isEdit: false,
       dialogCompareVisible: false,
       releaseLoading: false,
@@ -125,8 +126,8 @@ export default {
     },
     loadConfig(params) {
       params.show = 'all'
-      params.namespaceId = this.$store.getters.tenant
-      params.tenant = this.$store.getters.tenant
+      params.namespaceId = this.projectNamespace
+      params.tenant = this.projectNamespace
       getNacosConfig(params).then(data => {
         if (data) {
           this.record = Object.assign({}, data)
@@ -137,8 +138,8 @@ export default {
     convertData() {
       const formData = new URLSearchParams()
       if (!this.isEdit) {
-        formData.append('namespaceId', this.$store.getters.tenant)
-        formData.append('tenant', this.$store.getters.tenant)
+        formData.append('namespaceId', this.projectNamespace)
+        formData.append('tenant', this.projectNamespace)
         formData.append('appName', this.record.appName || '')
         formData.append('dataId', this.record.dataId)
         formData.append('group', this.record.group)
@@ -146,7 +147,7 @@ export default {
         formData.append('type', this.record.type)
         formData.append('configTags', this.record.configTags || '')
       } else {
-        this.record.tenant = this.$store.getters.tenant
+        this.record.tenant = this.projectNamespace
         for (const p in this.record) {
           if (!isEmpty(this.record[p])) formData.append(p, this.record[p])
         }
@@ -174,8 +175,8 @@ export default {
         params.show = 'all'
         params.dataId = this.record.dataId
         params.group = this.record.group
-        params.tenant = this.$store.getters.tenant
-        params.namespaceId = this.$store.getters.tenant
+        params.tenant = this.projectNamespace
+        params.namespaceId = this.projectNamespace
         this.releaseLoading = true
         getNacosConfig(params).then(data => {
           if (data) {

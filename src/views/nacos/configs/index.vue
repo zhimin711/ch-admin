@@ -3,12 +3,12 @@
     <el-row :gutter="20">
       <!--部门数据-->
       <el-col :span="4" :xs="24">
-        <project-menu />
+        <project-menu @change="handleSelectProject" />
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24" style="border-left: 1px solid #dedede;">
         <sticky :z-index="10" :class-name="'sub-navbar2 '">
-          <tenant @change="queryData" />
+          <tenant :project-id="projectSelection" @change="handleNamespaceChange" />
         </sticky>
         <div class="query-container">
           <el-form ref="queryForm" :model="listQuery" :inline="true">
@@ -43,7 +43,7 @@
           />
           <el-table-column label="Data Id" min-width="200" prop="dataId" />
           <el-table-column label="Group" min-width="200" prop="group" />
-          <el-table-column label="归属应用" min-width="100" prop="appName" />
+          <!--          <el-table-column label="归属应用" min-width="100" prop="appName" />-->
           <el-table-column align="center" prop="created_at" label="操作" min-width="150">
             <template slot-scope="{row}">
               <el-button v-permission="'NacosConfigsIndexSearch'" type="text" @click.native="handleDetail(row)">详情</el-button>
@@ -204,7 +204,8 @@ export default {
     return {
       list: null,
       projectName: '',
-      listLoading: true,
+      projectSelection: '',
+      listLoading: false,
       multipleSelection: [],
       count: 0,
       listQuery: {
@@ -276,15 +277,22 @@ export default {
   },
   // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
   created() {
-    this.fetchData()
+    // this.fetchData()
   },
   methods: {
+    handleSelectProject(val) {
+      this.projectSelection = val
+    },
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
+    handleNamespaceChange(val) {
+      this.listQuery.tenant = val
+      this.queryData()
+    },
     fetchData() {
       this.listLoading = true
-      this.listQuery.tenant = this.$store.getters.tenant
+      // this.listQuery.tenant = this.$store.getters.tenant
       pageNacosConfigs(this.listQuery).then(res => {
         this.list = res.pageItems
         this.count = res.totalCount

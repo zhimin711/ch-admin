@@ -54,6 +54,7 @@ export default {
   },
   data() {
     return {
+      projectNamespace: sessionStorage.getItem('projectNamespace'),
       tempRoute: {},
       record: {},
       isHistory: false,
@@ -72,8 +73,8 @@ export default {
     editorInit() {
     },
     loadConfig(params) {
-      params.namespaceId = this.$store.getters.tenant
-      params.tenant = this.$store.getters.tenant
+      params.namespaceId = this.projectNamespace
+      params.tenant = this.projectNamespace
       if (this.isHistory) {
         getNacosConfigsHistory(params).then(data => {
           if (data) {

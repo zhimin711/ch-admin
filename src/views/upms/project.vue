@@ -301,7 +301,7 @@ export default {
       getProjectNamespaces(row.id).then(resp => {
         if (resp.success) {
           resp.rows.forEach(e => {
-            this.recordNamespaces.push(e)
+            this.recordNamespaces.push(e.value)
           })
         }
       })
