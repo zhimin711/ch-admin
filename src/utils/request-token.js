@@ -11,7 +11,13 @@ const instance = axios.create({
 
 export async function refreshToken() {
   if (!isExpired()) return true
-  const resp = await instance.get(`/auth/login/token/refresh?token=${store.getters.token}&refreshToken=${store.getters.refreshToken}`)
+  // const resp = await instance.get(`/auth/login/token/refresh?token=${store.getters.token}&refreshToken=${store.getters.refreshToken}`, {
+  const resp = await instance.get(`/auth/login/token/refresh`, {
+    headers: {
+      'X-TOKEN': `${store.getters.token}`,
+      'X-REFRESH-TOKEN': `${store.getters.refreshToken}`
+    }
+  })
   const { data } = resp
   if (data.success) {
     store.dispatch('user/refreshToken', data.rows[0])

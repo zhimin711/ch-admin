@@ -9,7 +9,7 @@ import getPageTitle from '@/utils/get-page-title'
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['/login', '/auth-redirect'] // no redirect whitelist
-let isGetTenant = false
+
 router.beforeEach(async(to, from, next) => {
   // start progress bar
   NProgress.start()
@@ -38,9 +38,9 @@ router.beforeEach(async(to, from, next) => {
       } else {
         try {
           // get user info
-          const menuList = await store.dispatch('user/getInfo')
+          const user = await store.dispatch('user/getInfo')
+          const menuList = await store.dispatch('user/getPermissions', user)
 
-          // const accessRoutes = await store.dispatch('permission/generateRoutes', roleList)
           const accessRoutes = await store.dispatch('permission/assemblyRouters', menuList)
           // dynamically add accessible routes
           router.addRoutes(accessRoutes)
@@ -116,11 +116,6 @@ function convertRoute(to) {
 }
 
 router.afterEach(() => {
-  const hasToken = getToken()
-  if (hasToken && !isGetTenant) {
-    store.dispatch('user/getTenants')
-    isGetTenant = true
-  }
   // finish progress bar
   NProgress.done()
 })

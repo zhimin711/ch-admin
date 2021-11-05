@@ -4,7 +4,9 @@
     <el-col :span="21" class="tenant-space">
       <el-menu v-if="namespaces.length>0" :default-active="tenant" class="el-menu-namespace" mode="horizontal" @select="selectNamespace">
         <el-menu-item v-for="item in namespaces" :key="item.key" :index="item.key">{{ item.label }}</el-menu-item>
+        <el-button size="mini" icon="el-icon-plus">申请空间</el-button>
       </el-menu>
+      <el-tag v-if="projectId===''" type="warning">请先从左侧列表选择项目</el-tag>
     </el-col>
   </el-row>
 </template>
@@ -48,6 +50,7 @@ export default {
   },
   methods: {
     fetchData(projectId) {
+      // this.namespaces = []
       getUserProjectNamespaces(projectId).then((resp) => {
         if (resp.success) {
           this.namespaces = resp.rows

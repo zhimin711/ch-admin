@@ -49,7 +49,12 @@
       </el-button>-->
         </div>
         <el-table v-loading="tableA.loading" :data="tableA.list" border fit highlight-current-row style="width: 100%">
-          <el-table-column width="180px" :label="$t('user.department')" prop="department" />
+          <el-table-column width="180px" :label="$t('user.department')" prop="department">
+            <template slot-scope="{row}">
+              <el-tag v-if="row.department==='1'">附属部门</el-tag>
+              <el-tag v-else-if="row.department==='0'">{{ row.departmentName }}</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column width="120px" align="center" :label="$t('user.userId')">
             <template slot-scope="scope">
               <span>{{ scope.row.userId }}</span>
@@ -120,6 +125,27 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-form-item label="附属部门">
+          <el-table
+            :data="currDeptList"
+            border
+            size="mini"
+            style="width: 100%; margin-bottom: 10px;"
+          >
+            <el-table-column prop="departmentName" label="部门" width="180" />
+            <el-table-column prop="dutyName" label="职位" />
+            <el-table-column align="center" label="操作" width="100">
+              <template slot-scope="scope">
+                <el-link type="primary" @click="handleAddNode(scope.$index)">
+                  添加
+                </el-link>
+                <el-link v-if="scope.$index>0" type="danger" @click="handleDelNode(scope.$index)">
+                  删除
+                </el-link>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-form-item>
         <el-form-item :label="$t('user.userId')">
           <el-input v-model="record.userId" :placeholder="$t('user.userId2')" :disabled="true" />
         </el-form-item>
@@ -163,7 +189,7 @@
 
 <script>
 import { deepClone } from '@/utils'
-import waves from '@/directive/waves/index.js' // 水波纹指令
+import waves from '@/directive/waves/index' // 水波纹指令
 
 import { handleClipboard2 } from '@/utils/clipboard' // use clipboard directly
 
@@ -171,7 +197,7 @@ import { pageUser, addUser, getUser, editUser, delUser, initPwd, getEnableRoles,
 import { treeDepartment, searchDepartmentPositions } from '@/api/upms/department'
 
 export default {
-  name: 'UpmsUser',
+  name: 'UpmsUser1',
   directives: {
     waves
   },
@@ -192,6 +218,7 @@ export default {
       dialogCodeEdit: false,
       dialogVisible2: false,
       roles: [],
+      currDeptList: [],
       recordDepartments: [],
       recordPositions: undefined,
       options: { departments: [], positions: [] },
@@ -205,6 +232,8 @@ export default {
     this.getList()
   },
   methods: {
+    handleAddNode() {},
+    handleDelNode() {},
     getTreeDepartments() {
       treeDepartment('0').then(resp => {
         if (resp.success) {
@@ -213,6 +242,10 @@ export default {
       })
     },
     getDepartmentPositions(val) {
+      if (val === '') {
+        this.options.positions = []
+        return
+      }
       let did = val
       if (did.length > 1) {
         did = val[val.length - 1]
@@ -261,10 +294,14 @@ export default {
       this.recordDepartments = []
       this.recordPositions = undefined
       getUser(row.id).then(resp => {
+        this.currDeptList = []
         if (resp.success) {
           const duties = resp.rows[0].dutyList
           if (duties) {
             duties.forEach(e => {
+              if (row.departmentId !== e.department) {
+                this.currDeptList.push(e)
+              }
               this.recordDepartments = e.department.split(',')
               this.getDepartmentPositions(this.recordDepartments)
               this.recordPositions = Number(e.duty)
@@ -321,19 +358,21 @@ export default {
       let opName = '添加'
       this.record.dutyList = []
       if (this.recordDepartments.length > 0) {
-        // this.record.departmentId = this.recordDepartments.join(',')
+        this.record.departmentId = this.recordDepartments.join(',')
         this.record.dutyList.push({ department: this.recordDepartments.join(','), duty: this.recordPositions })
       }
-      // if (this.recordPositions.length > 0) {
-      //   this.record.positionId = this.recordPositions.join(',')
-      // }
+      if (this.currDeptList.length > 0) {
+        this.currDeptList.forEach(item => {
+          this.record.dutyList.push(item)
+        })
+      }
       if (this.dialogType === 'new') {
         resp = await addUser(this.record)
       } else if (this.dialogType === 'edit') {
         opName = '修改'
         resp = await editUser(this.record.id, this.record)
       }
-      if (resp.success) {
+      if (resp && resp.success) {
         this.dialogVisible = false
         this.$message({
           type: 'success',

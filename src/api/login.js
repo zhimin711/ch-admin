@@ -11,11 +11,18 @@ export function login(data) {
   })
 }
 
-export function getInfo(role) {
+export function getInfo() {
   return request({
-    url: `${namespace}/login/token/user`,
-    method: 'get',
-    params: { role }
+    url: `${namespace}/user/info`,
+    method: 'get'
+  })
+}
+
+export function getPermissions(data) {
+  return request({
+    url: `${namespace}/user/permissions`,
+    method: 'post',
+    data
   })
 }
 
@@ -23,6 +30,6 @@ export function logout(refreshToken) {
   return request({
     url: `${namespace}/logout/token`,
     method: 'post',
-    params: { refreshToken }
+    data: { refreshToken: refreshToken }
   })
 }

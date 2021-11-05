@@ -69,8 +69,8 @@ export default {
     },
     loadData() {
       const tenant = this.$store.getters.tenant
-      if (tenant && tenant.value) {
-        getUserTenantProjects(tenant.value).then((resp) => {
+      if (tenant && tenant.id) {
+        getUserTenantProjects(tenant.id).then((resp) => {
           if (resp.success) {
             this.projects = resp.rows
           }
@@ -94,5 +94,21 @@ export default {
   }
   .tenant-space {
     margin-bottom: 10px;
+  }
+  .el-tree {
+    .el-tree-node {
+      padding: 5px 5px !important;
+    }
+  }
+</style>
+<style>
+  .el-tree-node {
+    padding: 5px 5px;
+  }
+  .el-tree-node__content {
+    padding: 5px 5px;
+  }
+  .is-current {
+    color: #409eff;
   }
 </style>

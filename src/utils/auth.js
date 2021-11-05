@@ -1,4 +1,4 @@
-// import Cookies from 'js-cookie'
+import Cookies from 'js-cookie'
 import timeFormat from './date'
 
 const TOKEN_KEY = 'TOKEN'
@@ -12,13 +12,13 @@ export function getToken() {
 }
 
 export function setToken(token) {
-  // return Cookies.set(TOKEN_KEY, token)
+  Cookies.set(TOKEN_KEY, token)
   return sessionStorage.setItem(TOKEN_KEY, token)
   // return localStorage.setItem(TOKEN_KEY, token)
 }
 
 export function removeToken() {
-  // return Cookies.remove(TOKEN_KEY)
+  Cookies.remove(TOKEN_KEY)
   return sessionStorage.removeItem(TOKEN_KEY)
   // return localStorage.removeItem(TOKEN_KEY)
 }

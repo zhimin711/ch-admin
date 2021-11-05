@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/login'
+import { login, logout, getInfo, getPermissions } from '@/api/login'
 import { getUserTenants } from '@/api/upms/user'
 import { getToken, setToken, removeToken, setExpired, removeExpired, getRefreshToken, setRefreshToken, removeRefreshToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
@@ -13,7 +13,9 @@ const state = {
   roles: [],
   permissions: [],
   tenant: {},
-  tenants: []
+  tenants: [],
+  project: '',
+  namespace: ''
 }
 
 const mutations = {
@@ -46,6 +48,12 @@ const mutations = {
   },
   SET_TENANTS: (state, tenants) => {
     state.tenants = tenants
+  },
+  SET_PROJECT: (state, project) => {
+    state.project = project
+  },
+  SET_NAMESPACE: (state, namespace) => {
+    state.namespace = namespace
   }
 }
 
@@ -73,36 +81,52 @@ const actions = {
   },
 
   // get user info
-  getInfo({ commit, state }, role) {
+  getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      getInfo(role || 0).then(response => {
+      getInfo().then(response => {
         if (!response.success) {
           return reject(response)
         }
-        const { username, token, avatar, introduction, roleList, btnList, menuList } = response.rows[0]
+        const { username, roleId, avatar, introduction, tenantId, tenantName } = response.rows[0]
+
+        // roles must be a non-empty array
+        if (!roleId || roleId <= 0) {
+          return reject('未分配用户角色, 请联系管理员!')
+        }
+        commit('SET_ROLE', { id: roleId })
+
+        commit('SET_NAME', username)
+        commit('SET_AVATAR', avatar || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
+        commit('SET_INTRODUCTION', introduction)
+        commit('SET_TENANT', { id: tenantId, name: tenantName })
+        resolve({ roleId: roleId })
+      }).catch(error => {
+        console.log('store/user.js getInfo error: ', error)
+        reject(error)
+      })
+    })
+  },
+
+  // get user permissions
+  getPermissions({ commit, state }, user) {
+    return new Promise((resolve, reject) => {
+      getPermissions(user).then(response => {
+        if (!response.success) {
+          return reject(response)
+        }
+        const { roleList, btnList, menuList, tenantList } = response.rows[0]
 
         // roles must be a non-empty array
         if (!roleList || roleList.length <= 0) {
           return reject('未分配用户角色!')
         }
-        const currRoles = roleList.filter(item => { return item.id === role })
-        let currRole = roleList[0]
-        if (currRoles.length > 0) {
-          currRole = currRoles[0]
-        }
-        if (token) {
-          commit('SET_TOKEN', token)
-        }
-        commit('SET_ROLE', currRole)
         commit('SET_ROLES', roleList)
         commit('SET_PERMISSIONS', btnList)
 
-        commit('SET_NAME', username)
-        commit('SET_AVATAR', avatar || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
-        commit('SET_INTRODUCTION', introduction)
+        commit('SET_TENANTS', tenantList)
         resolve(menuList)
       }).catch(error => {
-        console.log('store/user.js getInfo error: ', error)
+        console.log('store/user.js getPermissions error: ', error)
         reject(error)
       })
     })
@@ -176,9 +200,9 @@ const actions = {
       // commit('SET_ROLE', currRoles[0])
       accessRoutes = await dispatch('permission/generateRoutes', [], { root: true })
     } else {
-      const menuList = await dispatch('getInfo', role)
+      const menuList = await dispatch('getPermissions', { roleId: role })
 
-      setToken(state.token)
+      // setToken(state.token)
       // const accessRoutes = await dispatch('permission/generateRoutes', roles, { root: true })
       accessRoutes = await dispatch('permission/assemblyRouters', menuList, { root: true })
     }

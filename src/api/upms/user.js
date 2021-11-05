@@ -11,8 +11,7 @@ export function pageUser(query) {
 export function getUser(id) {
   return request({
     url: `${baseUrl}/${id}`,
-    method: 'get',
-    params: { id }
+    method: 'get'
   })
 }
 
