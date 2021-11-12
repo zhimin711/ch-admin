@@ -1,10 +1,12 @@
 <template>
   <el-row>
-    <el-col :span="2" class="title" align="center"><el-tag>空间（环境）</el-tag></el-col>
-    <el-col :span="21" class="tenant-space">
+    <el-col :span="5" class="title" align="center">
+      <span>空间（环境）</span>
+      <el-button size="mini" icon="el-icon-plus">申请</el-button>
+    </el-col>
+    <el-col :span="18" class="tenant-space">
       <el-menu v-if="namespaces.length>0" :default-active="tenant" class="el-menu-namespace" mode="horizontal" @select="selectNamespace">
         <el-menu-item v-for="item in namespaces" :key="item.key" :index="item.key">{{ item.label }}</el-menu-item>
-        <el-button size="mini" icon="el-icon-plus">申请空间</el-button>
       </el-menu>
       <el-tag v-if="projectId===''" type="warning">请先从左侧列表选择项目</el-tag>
     </el-col>

@@ -282,6 +282,7 @@ export default {
   methods: {
     handleSelectProject(val) {
       this.projectSelection = val
+      this.listQuery.appName = val
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
@@ -293,6 +294,10 @@ export default {
     fetchData() {
       this.listLoading = true
       // this.listQuery.tenant = this.$store.getters.tenant
+      this.listQuery.search = 'accurate'
+      if (this.listQuery.dataId || this.listQuery.group) {
+        this.listQuery.search = 'blur'
+      }
       pageNacosConfigs(this.listQuery).then(res => {
         this.list = res.pageItems
         this.count = res.totalCount

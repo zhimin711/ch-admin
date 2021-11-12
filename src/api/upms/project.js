@@ -9,11 +9,10 @@ export function list(query) {
   })
 }
 
-export function get(id) {
+export function getProject(id) {
   return request({
     url: `${namespace}/${id}`,
-    method: 'get',
-    params: { id }
+    method: 'get'
   })
 }
 

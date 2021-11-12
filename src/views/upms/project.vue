@@ -83,13 +83,34 @@
           <el-input v-model="record.name" placeholder="项目名称" />
         </el-form-item>
         <el-form-item label="负责人">
-          <el-input v-model="record.manager" placeholder="负责人" />
+          <el-select v-model="record.manager" filterable :placeholder="$t('input.tips.select')">
+            <el-option
+              v-for="item in options.users"
+              :key="item.username"
+              :label="item.realName"
+              :value="item.username"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="开发用户">
-          <el-input v-model="record.dev" placeholder="开发用户" />
+        <el-form-item label="开发人员">
+          <el-select v-model="recordDevUsers" class="select-w" multiple placeholder="请选择">
+            <el-option
+              v-for="item in options.users"
+              :key="item.username"
+              :label="item.realName"
+              :value="item.username"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="测试用户">
-          <el-input v-model="record.test" placeholder="测试用户" />
+        <el-form-item label="测试人员">
+          <el-select v-model="recordTestUsers" class="select-w" multiple placeholder="请选择">
+            <el-option
+              v-for="item in options.users"
+              :key="item.username"
+              :label="item.realName"
+              :value="item.username"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="排序">
           <el-input v-model="record.sort" placeholder="排序" />
@@ -139,9 +160,10 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { add, del, edit, editProjectNamespaces, getProjectNamespaces, getUsers, list } from '@/api/upms/project'
+import { add, del, edit, getProject, editProjectNamespaces, getProjectNamespaces, getUsers, list } from '@/api/upms/project'
 import { treeDepartment, getDepartmentTenants } from '@/api/upms/department'
 import { getAvailableList } from '@/api/upms/namespace'
+import { findUserList } from '@/api/upms/user'
 
 export default {
   name: 'UpmsProject1',
@@ -169,6 +191,8 @@ export default {
       recordParents: [],
       recordDepartments: [],
       recordUsers: [],
+      recordDevUsers: [],
+      recordTestUsers: [],
       recordNamespaces: [],
       recordTenant: '',
       options: {
@@ -188,6 +212,7 @@ export default {
     this.getTreeDepartments()
     this.getNamespaces()
     // this.getUsers()
+    this.findUsers()
   },
   methods: {
     getTreeDepartments() {
@@ -216,6 +241,13 @@ export default {
       const resp = await getUsers()
       if (resp && resp.success) this.options.users = resp.rows
     },
+    findUsers(s = '') {
+      findUserList(s).then(resp => {
+        if (resp.success) {
+          this.options.users = resp.rows
+        }
+      })
+    },
     getList() {
       this.listLoading = true
       list(this.listQuery).then(response => {
@@ -228,6 +260,8 @@ export default {
       this.record = {}
       this.recordStatus = true
       this.recordParents = []
+      this.recordDevUsers = []
+      this.recordTestUsers = []
       this.dialogType = 'new'
       this.dialogVisible = true
       this.dialogCodeEdit = false
@@ -247,6 +281,13 @@ export default {
         this.recordDepartments = row.department.split(',')
         this.getDepartmentTenants(this.recordDepartments)
       }
+
+      getProject(row.id).then(resp => {
+        if (resp.success) {
+          this.recordDevUsers = resp.rows[0].devUserIds
+          this.recordTestUsers = resp.rows[0].testUserIds
+        }
+      })
       // if (row.tenantId) this.getDepartmentTenants([row.tenantId])
     },
     handleDel(row) {
@@ -276,6 +317,12 @@ export default {
       }
       if (this.recordDepartments.length > 0) {
         this.record.department = this.recordDepartments.join(',')
+      }
+      if (this.recordDevUsers.length > 0) {
+        this.record.devUserIds = this.recordDevUsers
+      }
+      if (this.recordDevUsers.length > 0) {
+        this.record.testUserIds = this.recordTestUsers
       }
       if (this.dialogType === 'new') {
         resp = await add(this.record)
@@ -353,4 +400,9 @@ export default {
   right: 15px;
   top: 10px;
 }
+
+::v-deep .select-w .el-input__inner {
+  width: 360px;
+}
+
 </style>

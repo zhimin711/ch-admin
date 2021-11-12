@@ -73,8 +73,8 @@ service2.interceptors.response.use(
     }
   },
   error => {
+    console.log(JSON.stringify(error))
     const { code, response } = error
-    console.log(JSON.stringify(response))
     if (code === 'ECONNABORTED') {
       Message({
         message: '请求超时，请重试...',
