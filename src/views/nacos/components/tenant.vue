@@ -1,21 +1,38 @@
 <template>
-  <el-row>
-    <el-col :span="5" class="title" align="center">
-      <span>空间（环境）</span>
-      <el-button size="mini" icon="el-icon-plus">申请</el-button>
-    </el-col>
-    <el-col :span="18" class="tenant-space">
-      <el-menu v-if="namespaces.length>0" :default-active="tenant" class="el-menu-namespace" mode="horizontal" @select="selectNamespace">
-        <el-menu-item v-for="item in namespaces" :key="item.key" :index="item.key">{{ item.label }}</el-menu-item>
-      </el-menu>
-      <el-tag v-if="projectId===''" type="warning">请先从左侧列表选择项目</el-tag>
-    </el-col>
-  </el-row>
+  <div class="tenant-container">
+    <el-row>
+      <el-col :span="5" class="title" align="center">
+        <span>空间（环境）</span>
+        <el-button size="mini" icon="el-icon-plus" @click="applyNamespace">申请</el-button>
+      </el-col>
+      <el-col :span="18" class="tenant-space">
+        <el-menu v-if="namespaces.length>0" :default-active="tenant" class="el-menu-namespace" mode="horizontal" @select="selectNamespace">
+          <el-menu-item v-for="item in namespaces" :key="item.key" :index="item.key">{{ item.label }}</el-menu-item>
+        </el-menu>
+        <el-tag v-if="projectId===''" type="warning">请先从左侧列表选择项目</el-tag>
+      </el-col>
+    </el-row>
+    <el-dialog :visible.sync="applyDialogVisible" :append-to-body="true" :title="'申请项目空间'" width="635px" center>
+      <div style="text-align:left;margin-bottom: 20px">
+        <el-checkbox-group v-model="applyList">
+          <el-checkbox v-for="item in projectNamespaces" :key="item.key" :label="item.value">
+            {{ item.label }}
+          </el-checkbox>
+        </el-checkbox-group>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="handleSubmitApply">申请</el-button>
+        <el-button type="danger" @click="applyDialogVisible=false">取消</el-button>
+      </span>
+    </el-dialog>
+  </div>
 </template>
 
 <script>
 import { getNacosNamespaces } from '@/api/nacos/namespace'
 import { getUserProjectNamespaces } from '@/api/upms/user'
+import { getProjectNamespaces } from '@/api/upms/project'
+import { applyNamespaces } from '@/api/upms/namespace'
 export default {
   props: {
     value: {
@@ -29,7 +46,10 @@ export default {
   },
   data() {
     return {
-      namespaces: []
+      namespaces: [],
+      applyDialogVisible: false,
+      applyList: [],
+      projectNamespaces: []
     }
   },
   computed: {
@@ -56,6 +76,31 @@ export default {
       getUserProjectNamespaces(projectId).then((resp) => {
         if (resp.success) {
           this.namespaces = resp.rows
+        }
+      })
+    },
+    applyNamespace() {
+      if (this.projectId === '') {
+        this.$message.warning('Please choose left list of project!')
+        return
+      }
+      this.applyDialogVisible = true
+      this.applyList = []
+      getProjectNamespaces(this.projectId).then(resp => {
+        if (resp.success) {
+          this.projectNamespaces = resp.rows
+        }
+      })
+    },
+    handleSubmitApply() {
+      if (this.applyList.length <= 0) {
+        this.$message.warning('请选择要申请的空间!')
+        return
+      }
+      applyNamespaces(this.projectId, this.applyList).then(resp => {
+        if (resp.success) {
+          this.applyDialogVisible = false
+          this.$message.success('申请成功，请等待管理员审核...')
         }
       })
     },

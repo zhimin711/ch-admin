@@ -173,6 +173,14 @@ const routerMap = {
       title: '命名空间'
     }
   },
+  NacosProjectApply: {
+    path: 'apply',
+    component: () => import('@/views/nacos/tenant/apply'),
+    name: 'NacosProjectApply',
+    meta: {
+      title: '申请审核'
+    }
+  },
   NacosConfigs: {
     path: 'configs',
     redirect: '/nacos/configs/index',

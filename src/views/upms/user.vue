@@ -184,6 +184,44 @@
         <el-button type="danger" @click="dialogVisible2=false">{{ $t('btn.cancel') }}</el-button>
       </span>
     </el-dialog>
+
+    <el-dialog :visible.sync="dialogDeptVisible" title="添加附属部门" width="635px" center>
+      <div style="text-align:left;margin-bottom: 20px">
+        <el-form>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item :label="$t('user.department')">
+                <el-cascader
+                  ref="categoryCascader2"
+                  v-model="recordDepartments2"
+                  :options="options.departments"
+                  :show-all-levels="false"
+                  :props="{ checkStrictly: true }"
+                  clearable
+                  @change="getDepartmentPositions2"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item :label="$t('user.position')">
+                <el-select v-model="recordPositions2" filterable :placeholder="$t('input.tips.select')">
+                  <el-option
+                    v-for="item in options.positions2"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="handleAddDept">{{ $t('btn.save') }}</el-button>
+        <el-button type="danger" @click="dialogDeptVisible=false">{{ $t('btn.cancel') }}</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -217,11 +255,14 @@ export default {
       dialogType: false,
       dialogCodeEdit: false,
       dialogVisible2: false,
+      dialogDeptVisible: false,
       roles: [],
       currDeptList: [],
       recordDepartments: [],
+      recordDepartments2: [],
       recordPositions: undefined,
-      options: { departments: [], positions: [] },
+      recordPositions2: undefined,
+      options: { departments: [], positions: [], positions2: [] },
       departmentName: '',
       tableHeight: window.innerHeight - 270
     }
@@ -232,7 +273,34 @@ export default {
     this.getList()
   },
   methods: {
-    handleAddNode() {},
+    handleAddNode() {
+      this.dialogDeptVisible = true
+    },
+    handleAddDept() {
+      if (this.recordDepartments2.length > 0 && this.recordPositions2) {
+        const deptName = this.getDeptNames()
+        const dutyName = this.options.positions2.find(item => item.id === this.recordPositions2).name
+        this.currDeptList.push({ department: this.recordDepartments2.join(','), departmentName: deptName, duty: this.recordPositions2, dutyName: dutyName })
+        this.dialogDeptVisible = false
+      } else {
+        this.$message.error('请选择部门和职位...')
+      }
+    },
+    getDeptNames() {
+      // return list.find(item => item.id === i)
+      const arr = []
+      const names = []
+      for (let i = 0; i < this.recordDepartments2.length; i++) {
+        let r
+        if (i === 0) r = this.options.departments.find(item => item.value === this.recordDepartments2[i])
+        else {
+          r = arr[i - 1].children.find(item => item.value === this.recordDepartments2[i])
+        }
+        arr.push(r)
+        names.push(r.label)
+      }
+      return names.join(',')
+    },
     handleDelNode() {},
     getTreeDepartments() {
       treeDepartment('0').then(resp => {
@@ -254,6 +322,24 @@ export default {
       searchDepartmentPositions(did).then(resp => {
         if (resp.success) {
           this.options.positions = resp.rows
+        }
+      })
+    },
+    getDepartmentPositions2(val) {
+      if (val === '') {
+        this.options.positions2 = []
+        this.recordPositions = undefined
+        return
+      }
+      let did = val
+      if (did.length > 1) {
+        did = val[val.length - 1]
+      }
+      this.options.positions2 = []
+      this.recordPositions = undefined
+      searchDepartmentPositions(did).then(resp => {
+        if (resp.success) {
+          this.options.positions2 = resp.rows
         }
       })
     },
