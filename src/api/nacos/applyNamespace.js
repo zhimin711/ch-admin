@@ -11,58 +11,9 @@ export function pageApplyNamespaces(query) {
   })
 }
 
-// 查询业务-租户详细
-export function getNamespace(id) {
+export function approveApplyNamespaces(data) {
   return request({
-    url: `${namespace}/${id}`,
-    method: 'get'
-  })
-}
-
-// 新增业务-租户
-export function addNamespace(data) {
-  return request({
-    url: `${namespace}`,
-    method: 'post',
-    data
-  })
-}
-
-// 修改业务-租户
-export function editNamespace(data) {
-  return request({
-    url: `${namespace}/${data.id}`,
-    method: 'put',
-    data
-  })
-}
-
-// 删除业务-租户
-export function delNamespace(id) {
-  return request({
-    url: `${namespace}/${id}`,
-    method: 'delete'
-  })
-}
-
-// 查询业务-租户详细
-export function syncNacosNamespaces() {
-  return request({
-    url: `${namespace}/syncNacos`,
-    method: 'get'
-  })
-}
-
-export function getAvailableList(name) {
-  return request({
-    url: `${namespace}/available?s=${name}`,
-    method: 'get'
-  })
-}
-
-export function applyNamespaces(id, data) {
-  return request({
-    url: `${namespace}/apply/${id}`,
+    url: `${namespace}/${data.id}/approve`,
     method: 'post',
     data
   })

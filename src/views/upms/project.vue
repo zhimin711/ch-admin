@@ -345,6 +345,7 @@ export default {
 
       this.record = deepClone(row)
       this.recordUsers = []
+      this.recordNamespaces = []
       getProjectNamespaces(row.id).then(resp => {
         if (resp.success) {
           resp.rows.forEach(e => {

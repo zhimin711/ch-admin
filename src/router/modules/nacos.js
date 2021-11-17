@@ -291,6 +291,23 @@ const routerMap = {
     component: () => import('@/views/nacos/services/subscribe'),
     name: 'NacosServiceSubscribes',
     meta: { title: '订阅者列表' }
+  },
+  NacosProjectConfigs: {
+    path: 'project',
+    redirect: '/nacos/project/configs/index',
+    component: Blank,
+    name: 'NacosProjectConfigs',
+    alwaysShow: true,
+    meta: {
+      title: '配置管理',
+      icon: 'lock'
+    }
+  },
+  NacosProjectConfigsIndex: {
+    path: 'index',
+    component: () => import('@/views/nacos/app-configs/index'),
+    name: 'NacosProjectConfigsIndex',
+    meta: { title: '配置列表' }
   }
 }
 export function getNacosRouter(code) {
