@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <sticky :z-index="10" :class-name="'sub-navbar2 '">
-      <tenant @change="queryData" />
+      <tenant v-model="namespaceId" @change="queryData" />
     </sticky>
     <div class="query-container">
       <el-form :model="listQuery" :inline="true">
@@ -100,12 +100,12 @@ const defaultRecord = {
   metadata: ''
 }
 export default {
-  name: 'NacosServicesIndex',
+  name: 'NacosServicesIndex1',
   components: { Pagination, Sticky, Tenant, CodeViewer, JsonEditor },
   data() {
     return {
       list: [],
-      listLoading: true,
+      listLoading: false,
       count: 0,
       listQuery: {
         hasIpCount: true,
@@ -115,6 +115,7 @@ export default {
       },
       dialogVisible: false,
       dialogVisible2Code: false,
+      namespaceId: '',
       record: {},
       rules: {
         serviceName: [{ required: true, message: '服务名称不能为空', trigger: 'change' }],
@@ -127,13 +128,13 @@ export default {
       }
     }
   },
-  created() {
+  mounted() {
     this.fetchData()
   },
   methods: {
     fetchData() {
+      // if (this.namespaceId === '') return
       this.listLoading = true
-      this.listQuery.namespaceId = this.$store.getters.tenant
       pageNacosServices(this.listQuery).then(res => {
         this.list = res.serviceList
         this.count = res.count
@@ -141,8 +142,9 @@ export default {
         this.listLoading = false
       })
     },
-    queryData() {
+    queryData(val) {
       this.listQuery.page = 1
+      this.listQuery.namespaceId = val
       this.fetchData()
     },
     handleCreate() {
@@ -223,7 +225,7 @@ export default {
       })
     },
     handleDetail(row) {
-      this.$router.push(`/nacos/services/detail?serviceName=${row.name}&groupName=${row.groupName}`)
+      this.$router.push(`/nacos/services/detail?namespaceId=${this.namespaceId}&serviceName=${row.name}&groupName=${row.groupName}`)
     }
   }
 }

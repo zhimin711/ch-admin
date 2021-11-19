@@ -2,13 +2,10 @@
   <div class="app-container">
     <el-row :gutter="20">
       <!--部门数据-->
-      <el-col :span="4" :xs="24">
-        <project-menu @change="handleSelectProject" />
-      </el-col>
       <!--用户数据-->
-      <el-col :span="20" :xs="24" style="border-left: 1px solid #dedede;">
+      <el-col :span="24" :xs="24">
         <sticky :z-index="10" :class-name="'sub-navbar2 '">
-          <tenant :project-id="projectSelection" @change="handleNamespaceChange" />
+          <tenant v-model="namespaceId" @change="handleNamespaceChange" @finish="loadNamespacesFinish" />
         </sticky>
         <div class="query-container">
           <el-form ref="queryForm" :model="listQuery" :inline="true">
@@ -186,11 +183,9 @@
 <script>
 import { pageNacosConfigs, deleteNacosConfigs, deleteNacosConfig, exportNacosConfigs, cloneNacosConfigs } from '@/api/nacos/configs'
 import SingleFile from '@/components/Upload/SingleFile2'
-import Pagination from '@/components/Pagination'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/tenant' // 粘性header组件
 import CodeViewer from '../components/showCodeConfig' // 粘性header组件
-import projectMenu from '../components/projectMenu' // 粘性header组件
 import { deepClone } from '@/utils'
 
 const opName = {
@@ -199,12 +194,12 @@ const opName = {
 }
 export default {
   name: 'NacosConfigs',
-  components: { Pagination, Sticky, Tenant, SingleFile, CodeViewer, projectMenu },
+  components: { Sticky, Tenant, SingleFile, CodeViewer },
   data() {
     return {
       list: null,
-      projectName: '',
-      projectSelection: '',
+      namespaceId: '',
+      namespaces: [],
       listLoading: false,
       multipleSelection: [],
       count: 0,
@@ -259,8 +254,8 @@ export default {
   },
   computed: {
     namespaceName() {
-      const tmp = this.$store.getters.tenant
-      const tenant = this.$store.getters.tenants.find(tenant => {
+      const tmp = this.namespaceId
+      const tenant = this.namespaces.find(tenant => {
         return tenant.namespace === tmp
       })
       if (tenant) {
@@ -269,31 +264,27 @@ export default {
       return ''
     },
     importUrl() {
-      return '/api/nacos/v1/cs/configs?import=true&namespace=' + this.$store.getters.tenant
-    },
-    namespaces() {
-      return this.$store.getters.tenants
+      return '/api/nacos/v1/cs/configs?import=true&namespace=' + this.namespaceId
     }
   },
   // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
   created() {
-    // this.fetchData()
+    this.fetchData()
   },
   methods: {
-    handleSelectProject(val) {
-      this.projectSelection = val
-      this.listQuery.appName = val
+    loadNamespacesFinish(data) {
+      this.namespaces = data
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
     handleNamespaceChange(val) {
-      this.listQuery.tenant = val
+      // this.listQuery.tenant = val
       this.queryData()
     },
     fetchData() {
+      this.listQuery.tenant = this.namespaceId
       this.listLoading = true
-      // this.listQuery.tenant = this.$store.getters.tenant
       this.listQuery.search = 'accurate'
       if (this.listQuery.dataId || this.listQuery.group) {
         this.listQuery.search = 'blur'
@@ -314,10 +305,10 @@ export default {
       })
     },
     handleCreate() {
-      this.$router.push('/nacos/configs/add')
+      this.$router.push(`/nacos/configs/add?namespaceId=${this.namespaceId}`)
     },
     handleDetail(row) {
-      this.$router.push(`/nacos/configs/detail?namespaceId=${row.namespaceId || ''}&dataId=${row.dataId}&group=${row.group}`)
+      this.$router.push(`/nacos/configs/detail?namespaceId=${row.namespaceId || this.namespaceId}&dataId=${row.dataId}&group=${row.group}`)
     },
     handleCode(row) {
       this.record = Object.assign({}, row)
@@ -325,7 +316,7 @@ export default {
       this.dialogVisible2Code = true
     },
     handleUpdate(row) {
-      this.$router.push(`/nacos/configs/edit?namespaceId=${row.namespaceId || ''}&dataId=${row.dataId}&group=${row.group}`)
+      this.$router.push(`/nacos/configs/edit?namespaceId=${row.namespaceId || this.namespaceId}&dataId=${row.dataId}&group=${row.group}`)
     },
     onDelete(row) {
       const h = this.$createElement
@@ -355,11 +346,13 @@ export default {
     },
     async handleDelete(row) {
       let res
+      const formData = new URLSearchParams()
+      formData.append('namespaceId', this.namespaceId)
       if (row) {
-        res = await deleteNacosConfig(row)
+        res = await deleteNacosConfig(row, formData)
       } else {
         const ids = this.multipleSelection.map(item => item.id)
-        res = await deleteNacosConfigs(ids)
+        res = await deleteNacosConfigs(ids, formData)
         this.dialogVisible2Del = false
       }
       if (res) {
@@ -426,7 +419,7 @@ export default {
     },
     onClone() {
       const params = {}
-      const tenant = this.$store.getters.tenants.find(tenant => {
+      const tenant = this.namespaces.find(tenant => {
         return tenant.namespace === this.toNamespace
       })
       params.tenant = tenant.namespace || tenant.namespaceShowName

@@ -175,6 +175,7 @@ export default {
   components: { JsonEditor },
   data() {
     return {
+      namespaceId: '',
       tempRoute: {},
       detail: {},
       record: {},
@@ -215,7 +216,7 @@ export default {
       this.dialogVisible = true
     },
     loadData(params) {
-      params.namespaceId = this.$store.getters.tenant
+      this.namespaceId = params.namespaceId
       getNacosService(params).then(data => {
         if (data) {
           this.detail = deepClone(data.service)
@@ -235,7 +236,7 @@ export default {
     },
     loadInstances() {
       const params = {}
-      params.namespaceId = this.$store.getters.tenant
+      params.namespaceId = this.namespaceId
       params.serviceName = this.record.name
       params.groupName = this.record.groupName
       params.clusterName = this.cluster.name
@@ -278,7 +279,7 @@ export default {
       formData.append('weight', row.weight)
       formData.append('enabled', row.enabled)
       formData.append('metadata', typeof row.metadata === 'string' ? row.metadata : JSON.stringify(row.metadata))
-      formData.append('namespaceId', this.$store.getters.tenant)
+      formData.append('namespaceId', this.namespaceId)
       return formData
     },
     handleSubmitInstance() {
@@ -305,7 +306,7 @@ export default {
     },
     convertDataCluster(data) {
       const formData = new URLSearchParams()
-      formData.append('namespaceId', this.$store.getters.tenant)
+      formData.append('namespaceId', this.namespaceId)
       formData.append('serviceName', data.serviceName)
       formData.append('clusterName', data.name)
       formData.append('checkPort', data.defaultCheckPort)
@@ -323,7 +324,7 @@ export default {
     },
     convertData(data) {
       const formData = new URLSearchParams()
-      formData.append('namespaceId', this.$store.getters.tenant)
+      formData.append('namespaceId', this.namespaceId)
       formData.append('serviceName', data.name)
       formData.append('groupName', data.groupName)
       formData.append('protectThreshold', data.protectThreshold)
@@ -343,7 +344,7 @@ export default {
     },
     onBack() {
       this.$store.dispatch('tagsView/delView', this.tempRoute).then(() => {
-        this.$router.go(-1)
+        this.$router.push('/nacos/services/publish')
       })
     }
   }

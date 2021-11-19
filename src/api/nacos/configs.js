@@ -39,17 +39,25 @@ export function cloneNacosConfigs(params, data) {
   })
 }
 
-export function deleteNacosConfig(params) {
+export function deleteNacosConfig(params, data) {
   return request({
-    url: `${namespace}?dataId=${params.dataId}&group=${params.group}`,
-    method: 'delete'
+    url: `${namespace}?dataId=${params.dataId}&group=${params.group}&tenant=${params.tenant}`,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    method: 'delete',
+    data
   })
 }
 
-export function deleteNacosConfigs(idStr) {
+export function deleteNacosConfigs(idStr, data) {
   return request({
     url: `${namespace}?delType=ids&ids=${idStr}`,
-    method: 'delete'
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    method: 'delete',
+    data
   })
 }
 

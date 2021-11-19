@@ -86,7 +86,7 @@ export default {
       tempRoute: {},
       record: {},
       content: '',
-      projectNamespace: sessionStorage.getItem('projectNamespace'),
+      namespaceId: '',
       isEdit: false,
       dialogCompareVisible: false,
       releaseLoading: false,
@@ -99,6 +99,7 @@ export default {
   created() {
     this.isEdit = this.mode === 'EDIT'
     if (this.mode === 'ADD') {
+      this.namespaceId = this.$route.query.namespaceId
       this.record = Object.assign({}, defaultRecord)
     } else {
       this.loadConfig(this.$route.query)
@@ -126,8 +127,8 @@ export default {
     },
     loadConfig(params) {
       params.show = 'all'
-      params.namespaceId = this.projectNamespace
-      params.tenant = this.projectNamespace
+      this.namespaceId = params.namespaceId
+      params.tenant = this.namespaceId
       getNacosConfig(params).then(data => {
         if (data) {
           this.record = Object.assign({}, data)
@@ -138,8 +139,8 @@ export default {
     convertData() {
       const formData = new URLSearchParams()
       if (!this.isEdit) {
-        formData.append('namespaceId', this.projectNamespace)
-        formData.append('tenant', this.projectNamespace)
+        formData.append('namespaceId', this.namespaceId)
+        formData.append('tenant', this.namespaceId)
         formData.append('appName', this.record.appName || '')
         formData.append('dataId', this.record.dataId)
         formData.append('group', this.record.group)
@@ -147,7 +148,7 @@ export default {
         formData.append('type', this.record.type)
         formData.append('configTags', this.record.configTags || '')
       } else {
-        this.record.tenant = this.projectNamespace
+        this.record.tenant = this.namespaceId
         for (const p in this.record) {
           if (!isEmpty(this.record[p])) formData.append(p, this.record[p])
         }
@@ -175,8 +176,8 @@ export default {
         params.show = 'all'
         params.dataId = this.record.dataId
         params.group = this.record.group
-        params.tenant = this.projectNamespace
-        params.namespaceId = this.projectNamespace
+        params.tenant = this.namespaceId
+        params.namespaceId = this.namespaceId
         this.releaseLoading = true
         getNacosConfig(params).then(data => {
           if (data) {

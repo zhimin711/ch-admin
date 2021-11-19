@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <sticky :z-index="10" :class-name="'sub-navbar2 '">
-      <tenant @change="queryData" />
+      <tenant v-model="namespaceId" @change="queryData" />
     </sticky>
     <div class="query-container">
       <el-form ref="queryForm" :model="listQuery" :inline="true" :rules="rules">
@@ -25,6 +25,7 @@
       <el-table-column label="地址" min-width="200" prop="addrStr" />
       <el-table-column label="客户端版本" min-width="200" prop="agent" />
       <el-table-column label="应用名" prop="app" />
+      <el-table-column label="服务名" prop="serviceName" />
     </el-table>
     <pagination v-show="count>0" :total="count" :page.sync="listQuery.page" :limit.sync="listQuery.size" @pagination="fetchData()" />
   </div>
@@ -41,6 +42,7 @@ export default {
   components: { Pagination, Sticky, Tenant },
   data() {
     return {
+      namespaceId: null,
       list: null,
       listLoading: false,
       count: 0,
@@ -61,7 +63,7 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-      this.listQuery.namespaceId = this.$store.getters.tenant
+      this.listQuery.namespaceId = this.namespaceId
       getNacosSubscribers(this.listQuery).then(res => {
         this.list = res.subscribers
         this.count = res.count
