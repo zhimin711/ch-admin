@@ -1,7 +1,7 @@
 <template>
   <el-card class="box-card">
     <sticky :z-index="10" :class-name="'sub-navbar2 '">
-      <tenant v-model="namespace" @change="queryData" />
+      <tenant v-model="namespaceId" @change="queryData" />
     </sticky>
     <div slot="header" class="clearfix">
       <span>历史版本(保留30天)</span>
@@ -54,7 +54,7 @@ export default {
   components: { Pagination, Sticky, Tenant },
   data() {
     return {
-      namespace: '',
+      namespaceId: '',
       list: null,
       listLoading: false,
       count: 0,
@@ -78,7 +78,7 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-      this.listQuery.tenant = this.$store.getters.tenant
+      this.listQuery.tenant = this.namespaceId
       getNacosConfigsHistory(this.listQuery).then(res => {
         this.list = res.pageItems
         this.count = res.totalCount

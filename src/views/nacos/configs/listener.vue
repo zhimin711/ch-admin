@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <sticky :z-index="10" :class-name="'sub-navbar2 '">
-      <tenant @change="queryData" />
+      <tenant v-model="namespaceId" @change="queryData" />
     </sticky>
     <div class="query-container">
       <el-form ref="queryForm" :model="listQuery" :inline="true" :rules="rules">
@@ -52,6 +52,7 @@ export default {
   data() {
     return {
       list: null,
+      namespaceId: '',
       listLoading: false,
       queryType: '1',
       count: 0,
@@ -70,7 +71,7 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-      this.listQuery.tenant = this.$store.getters.tenant
+      this.listQuery.tenant = this.namespaceId
       if (this.queryType === '1') {
         getNacosConfigsListener(this.listQuery).then(res => {
           this.list = []
