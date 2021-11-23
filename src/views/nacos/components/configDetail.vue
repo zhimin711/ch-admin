@@ -2,14 +2,21 @@
   <el-card>
     <el-form ref="form" :model="record" label-width="120px" :rules="rules" :disabled="true">
       <div style="padding-left: 10px;padding-top: 20px;">
+        <el-form-item label="归属应用" prop="appName">
+          <el-select v-model="record.appName" placeholder="请选择">
+            <el-option
+              v-for="item in projects"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="Data ID" prop="dataId">
           <el-input v-model="record.dataId" placeholder="请输入Data ID" />
         </el-form-item>
         <el-form-item label="分组" prop="group">
           <el-input v-model="record.group" placeholder="分组名称" />
-        </el-form-item>
-        <el-form-item label="归属应用" prop="appName">
-          <el-input v-model="record.appName" />
         </el-form-item>
         <el-form-item v-if="!isHistory" label="标签">
           <el-input v-model="record.configTags" />
@@ -44,6 +51,7 @@
 <script>
 import { getNacosConfigsHistory } from '@/api/nacos/history'
 import { getNacosConfig, rollbackNacosConfig } from '@/api/nacos/configs'
+import { searchNamespaceProjects } from '@/api/upms/namespace'
 
 export default {
   props: {
@@ -57,6 +65,7 @@ export default {
       namespaceId: '',
       tempRoute: {},
       record: {},
+      projects: [],
       isHistory: false,
       rules: {
         dataId: [{ required: true, message: 'Data ID 不能为空', trigger: 'change' }],
@@ -71,6 +80,14 @@ export default {
   },
   methods: {
     editorInit() {
+    },
+    searchNamespaceProjects() {
+      if (this.namespaceId === '') return
+      searchNamespaceProjects(this.namespaceId, '').then(resp => {
+        if (resp.success) {
+          this.projects = resp.rows
+        }
+      })
     },
     loadConfig(params) {
       this.namespaceId = params.namespaceId
@@ -89,6 +106,7 @@ export default {
           }
         })
       }
+      this.searchNamespaceProjects()
     },
     onRollback() {
       const h = this.$createElement

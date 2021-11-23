@@ -99,7 +99,14 @@
             node-key="value"
             :default-expanded-keys="expList"
             class="permission-tree"
-          />
+          >
+            <span slot-scope="{ node, data }" class="custom-tree-node">
+              <span>{{ node.label }}</span>
+              <span>
+                <el-tag :type="fromPermissionKeyType(data.key)">{{ fromPermissionKeyName(data.key) }}</el-tag>
+              </span>
+            </span>
+          </el-tree>
         </el-form-item>
       </el-form>
       <div style="text-align:center;">
@@ -121,7 +128,13 @@ const defaultRole = {
   description: '',
   routes: []
 }
-
+const PERMISSION_TYPE = {
+  CATALOG: { type: 'warning', name: '目录' },
+  MENU: { type: 'success', name: '菜单' },
+  MENU_HIDE: { type: 'info', name: '隐藏菜单' },
+  BUTTON: { type: 'primary', name: '按钮' },
+  INTERFACE: { type: 'primary', name: '接口' }
+}
 export default {
   name: 'UpmsRole',
   data() {
@@ -165,6 +178,20 @@ export default {
     this.getRoutes()
   },
   methods: {
+    fromPermissionKeyType(key) {
+      const idx = key.lastIndexOf('|')
+      if (idx > 0) {
+        return PERMISSION_TYPE[key.substring(idx + 1)].type
+      }
+      return ''
+    },
+    fromPermissionKeyName(key) {
+      const idx = key.lastIndexOf('|')
+      if (idx > 0) {
+        return PERMISSION_TYPE[key.substring(idx + 1)].name
+      }
+      return '-'
+    },
     async getRoutes() {
       this.treeLoading = true
       this.routes = []
@@ -333,4 +360,14 @@ export default {
     margin-bottom: 30px;
   }
 }
+</style>
+<style>
+  .custom-tree-node {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    padding-right: 15px;
+  }
 </style>

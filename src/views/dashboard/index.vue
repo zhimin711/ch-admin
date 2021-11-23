@@ -23,7 +23,7 @@ export default {
     ])
   },
   created() {
-    if (!this.role.code.includes('SUPER_ADMIN')) {
+    if (this.role.code && !this.role.code.includes('SUPER_ADMIN')) {
       this.currentRole = 'editorDashboard'
     }
   }

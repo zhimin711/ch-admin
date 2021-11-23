@@ -2,6 +2,17 @@
   <el-card>
     <el-form ref="form" :model="record" label-width="120px" :rules="rules">
       <div style="padding: 0px 10px 20px 10px">
+        <el-form-item label="归属应用" prop="appName">
+          <!--          <el-input v-model="record.appName" placeholder="归属应用" />-->
+          <el-select v-model="record.appName" placeholder="请选择" :disabled="isApp">
+            <el-option
+              v-for="item in projects"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="Data ID" prop="dataId">
           <el-input v-model="record.dataId" placeholder="请输入Data ID" :disabled="isEdit" />
         </el-form-item>
@@ -10,9 +21,6 @@
         </el-form-item>
         <el-form-item label="标签">
           <el-input v-model="record.configTags" placeholder="标签" />
-        </el-form-item>
-        <el-form-item label="归属应用" prop="appName">
-          <el-input v-model="record.appName" placeholder="归属应用" />
         </el-form-item>
         <el-form-item label="描述">
           <el-input v-model="record.desc" type="textarea" placeholder="请输入内容" />
@@ -53,6 +61,7 @@
 <script>
 import CodeMirror from '@/components/CodeMirror/ConfigFile'
 import { getNacosConfig, releaseNacosConfig } from '@/api/nacos/configs'
+import { searchNamespaceProjects } from '@/api/upms/namespace'
 import { isEmpty } from '@/utils/validate'
 import CodeDiff from 'vue-code-diff'
 
@@ -87,7 +96,9 @@ export default {
       record: {},
       content: '',
       namespaceId: '',
+      projects: [],
       isEdit: false,
+      isApp: false,
       dialogCompareVisible: false,
       releaseLoading: false,
       rules: {
@@ -97,16 +108,27 @@ export default {
     }
   },
   created() {
-    this.isEdit = this.mode === 'EDIT'
-    if (this.mode === 'ADD') {
-      this.namespaceId = this.$route.query.namespaceId
+    this.isEdit = this.mode === 'EDIT' || this.mode === 'APP_EDIT'
+    this.isApp = this.mode === 'APP_ADD' || this.mode === 'APP_EDIT'
+    this.namespaceId = this.$route.query.namespaceId
+    if (!this.isEdit) {
       this.record = Object.assign({}, defaultRecord)
+      if (this.isApp) this.record.appName = this.$route.query.app
     } else {
       this.loadConfig(this.$route.query)
     }
     this.tempRoute = Object.assign({}, this.$route)
+    this.searchNamespaceProjects()
   },
   methods: {
+    searchNamespaceProjects(val = '') {
+      if (this.namespaceId === '') return
+      searchNamespaceProjects(this.namespaceId, val).then(resp => {
+        if (resp.success) {
+          this.projects = resp.rows
+        }
+      })
+    },
     initCompare(value, orig2) {
       if (value == null) return
       const target = document.getElementById('view')
@@ -232,7 +254,8 @@ export default {
     },
     onBack() {
       this.$store.dispatch('tagsView/delView', this.tempRoute).then(() => {
-        this.$router.go(-1)
+        // this.$router.go(-1)
+        this.$router.push(this.isApp ? '/nacos/project/index' : '/nacos/configs/index')
       })
     }
   }

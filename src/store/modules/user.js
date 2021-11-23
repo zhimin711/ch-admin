@@ -93,7 +93,7 @@ const actions = {
         if (!roleId || roleId <= 0) {
           return reject('未分配用户角色, 请联系管理员!')
         }
-        commit('SET_ROLE', { id: roleId })
+        commit('SET_ROLE', { id: roleId, code: '' })
 
         commit('SET_NAME', username)
         commit('SET_AVATAR', avatar || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')

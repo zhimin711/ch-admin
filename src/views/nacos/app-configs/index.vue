@@ -6,28 +6,20 @@
         <project-menu @change="handleSelectProject" />
       </el-col>
       <!--用户数据-->
-      <el-col :span="20" :xs="24" style="border-left: 1px solid #dedede;">
-        <sticky :z-index="10" :class-name="'sub-navbar2 '">
-          <project-namespace :project-id="projectSelection" @change="handleNamespaceChange" />
+      <el-col :span="20" :xs="24" style="border-left: 1px solid #dedede; min-height: 500px">
+        <sticky :z-index="10"> <!-- :class-name="'sub-navbar2 '"-->
+          <project-namespace v-model="namespaceId" :project-id="projectSelection" @change="handleNamespaceChange" />
         </sticky>
-        <div class="query-container">
-          <el-form ref="queryForm" :model="listQuery" :inline="true">
-            <el-form-item label="Data ID">
-              <el-input v-model="listQuery.dataId" placeholder="请输入Data ID" style="width: 200px;" />
-            </el-form-item>
-            <el-form-item label="Group">
-              <el-input v-model="listQuery.group" placeholder="请输入Group" style="width: 200px;" />
-            </el-form-item>
-          </el-form>
-          <el-button type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
+        <div v-show="showSearch" class="query-container">
           <el-button v-permission="'NacosConfigsIndexAdd'" type="primary" @click="handleCreate()">创建配置</el-button>
           <el-button v-permission="'NacosConfigsIndexDelete'" type="danger" @click="onDelete2()">删除</el-button>
-          <!--<el-button type="primary" @click="handleCreate()">导出查询结果</el-button>-->
           <el-button v-permission="'NacosConfigsIndexExport'" type="success" plain @click="handleExports()">导出配置</el-button>
           <el-button v-permission="'NacosConfigsIndexImport'" type="primary" @click="handleImports()">导入配置</el-button>
           <el-button v-permission="'NacosConfigsIndexClone'" type="primary" plain @click="handleClone()">克隆配置</el-button>
+          <el-button type="primary" icon="el-icon-refresh" plain @click="queryData()">刷新</el-button>
         </div>
         <el-table
+          v-show="showSearch"
           v-loading="listLoading"
           :data="list"
           element-loading-text="Loading"
@@ -53,7 +45,7 @@
             </template>
           </el-table-column>
         </el-table>
-        <pagination v-show="count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
+        <pagination v-show="showSearch&&count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
       </el-col>
     </el-row>
     <el-dialog title="删除配置" :visible.sync="dialogVisible2Del" width="380px">
@@ -197,13 +189,15 @@ const opName = {
   'CLONE': '克隆'
 }
 export default {
-  name: 'NacosConfigs',
+  name: 'NacosProjectConfigsIndex',
   components: { Sticky, ProjectNamespace, SingleFile, CodeViewer, ProjectMenu },
   data() {
     return {
       list: null,
       projectName: '',
       projectSelection: '',
+      namespaceId: '',
+      showSearch: false,
       listLoading: false,
       multipleSelection: [],
       count: 0,
@@ -280,15 +274,26 @@ export default {
   },
   methods: {
     handleSelectProject(val) {
+      if (this.projectSelection === val) {
+        return
+      }
       this.projectSelection = val
       this.listQuery.appName = val
       this.list = []
+      this.namespaceId = ''
       this.listQuery.tenant = ''
+      this.showSearch = false
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
     handleNamespaceChange(val) {
+      if (val === 'apply') {
+        this.listQuery.tenant = ''
+        this.showSearch = false
+        return
+      }
+      this.showSearch = true
       this.listQuery.tenant = val
       this.queryData()
     },
@@ -311,18 +316,14 @@ export default {
       })
     },
     queryData() {
-      this.$refs['queryForm'].validate((valid) => {
-        if (valid) {
-          this.listQuery.pageNo = 1
-          this.fetchData()
-        }
-      })
+      this.listQuery.pageNo = 1
+      this.fetchData()
     },
     handleCreate() {
-      this.$router.push('/nacos/configs/add')
+      this.$router.push(`/nacos/project/configAdd?namespaceId=${this.namespaceId}&app=${this.projectSelection}`)
     },
     handleDetail(row) {
-      this.$router.push(`/nacos/configs/detail?namespaceId=${row.namespaceId || ''}&dataId=${row.dataId}&group=${row.group}`)
+      this.$router.push(`/nacos/project/configDetail?namespaceId=${row.namespaceId || this.namespaceId}&app=${this.projectSelection}&dataId=${row.dataId}&group=${row.group}`)
     },
     handleCode(row) {
       this.record = Object.assign({}, row)
@@ -330,7 +331,7 @@ export default {
       this.dialogVisible2Code = true
     },
     handleUpdate(row) {
-      this.$router.push(`/nacos/configs/edit?namespaceId=${row.namespaceId || ''}&dataId=${row.dataId}&group=${row.group}`)
+      this.$router.push(`/nacos/project/configEdit?namespaceId=${row.namespaceId || this.namespaceId}&app=${this.projectSelection}&dataId=${row.dataId}&group=${row.group}`)
     },
     onDelete(row) {
       const h = this.$createElement

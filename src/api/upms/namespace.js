@@ -67,3 +67,10 @@ export function applyNamespaces(id, data) {
     data
   })
 }
+
+export function searchNamespaceProjects(id, name) {
+  return request({
+    url: `${namespace}/${id}/projects?s=${name}`,
+    method: 'get'
+  })
+}

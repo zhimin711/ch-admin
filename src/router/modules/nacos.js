@@ -307,7 +307,28 @@ const routerMap = {
     path: 'index',
     component: () => import('@/views/nacos/app-configs/index'),
     name: 'NacosProjectConfigsIndex',
-    meta: { title: '配置列表' }
+    meta: { title: '应用配置列表' }
+  },
+  NacosProjectConfigAdd: {
+    path: 'configAdd',
+    component: () => import('@/views/nacos/app-configs/add'),
+    name: 'NacosProjectConfigAdd',
+    hidden: true,
+    meta: { title: '添加应用配置', noCache: true }
+  },
+  NacosProjectConfigDetail: {
+    path: 'configDetail',
+    component: () => import('@/views/nacos/app-configs/detail'),
+    name: 'NacosProjectConfigDetail',
+    hidden: true,
+    meta: { title: '应用配置详情', noCache: true }
+  },
+  NacosProjectConfigEdit: {
+    path: 'configEdit',
+    component: () => import('@/views/nacos/app-configs/edit'),
+    name: 'NacosProjectConfigEdit',
+    hidden: true,
+    meta: { title: '修改应用配置', noCache: true }
   }
 }
 export function getNacosRouter(code) {
