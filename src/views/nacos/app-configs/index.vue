@@ -8,7 +8,7 @@
       <!--用户数据-->
       <el-col :span="20" :xs="24" style="border-left: 1px solid #dedede; min-height: 500px">
         <sticky :z-index="10"> <!-- :class-name="'sub-navbar2 '"-->
-          <project-namespace v-model="namespaceId" :project-id="projectSelection" @change="handleNamespaceChange" />
+          <project-namespace v-model="namespaceId" :project-id="projectId" @change="handleNamespaceChange" @finish="loadNamespacesFinish" />
         </sticky>
         <div v-show="showSearch" class="query-container">
           <el-button v-permission="'NacosConfigsIndexAdd'" type="primary" @click="handleCreate()">创建配置</el-button>
@@ -128,7 +128,7 @@
         </el-form-item>
         <el-form-item label="目标空间" prop="toNamespace">
           <el-select v-model="toNamespace" placeholder="请选择目标空间">
-            <el-option v-for="item in namespaces" :key="item.namespace" :label="item.namespaceShowName" :value="item.namespace" />
+            <el-option v-for="item in namespaces" :key="item.key" :label="item.label" :value="item.key" />
           </el-select>
         </el-form-item>
         <el-form-item label="相同配置">
@@ -194,12 +194,13 @@ export default {
   data() {
     return {
       list: null,
+      projectId: '',
       projectName: '',
-      projectSelection: '',
       namespaceId: '',
       showSearch: false,
       listLoading: false,
       multipleSelection: [],
+      namespaces: [],
       count: 0,
       listQuery: {
         search: 'accurate',
@@ -252,20 +253,17 @@ export default {
   },
   computed: {
     namespaceName() {
-      const tmp = this.$store.getters.tenant
-      const tenant = this.$store.getters.tenants.find(tenant => {
-        return tenant.namespace === tmp
+      const tmp = this.namespaceId
+      const tenant = this.namespaces.find(tenant => {
+        return tenant.key === tmp
       })
       if (tenant) {
-        return tenant.namespaceShowName
+        return tenant.label
       }
       return ''
     },
     importUrl() {
-      return '/api/nacos/v1/cs/configs?import=true&namespace=' + this.$store.getters.tenant
-    },
-    namespaces() {
-      return this.$store.getters.tenants
+      return '/api/nacos/v1/cs/configs?import=true&namespace=' + this.namespaceId
     }
   },
   // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
@@ -274,10 +272,10 @@ export default {
   },
   methods: {
     handleSelectProject(val) {
-      if (this.projectSelection === val) {
+      if (this.projectId === val) {
         return
       }
-      this.projectSelection = val
+      this.projectId = val
       this.listQuery.appName = val
       this.list = []
       this.namespaceId = ''
@@ -286,6 +284,9 @@ export default {
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
+    },
+    loadNamespacesFinish(data) {
+      this.namespaces = data
     },
     handleNamespaceChange(val) {
       if (val === 'apply') {
@@ -320,10 +321,10 @@ export default {
       this.fetchData()
     },
     handleCreate() {
-      this.$router.push(`/nacos/project/configAdd?namespaceId=${this.namespaceId}&app=${this.projectSelection}`)
+      this.$router.push(`/nacos/project/configAdd?namespaceId=${this.namespaceId}&app=${this.projectId}`)
     },
     handleDetail(row) {
-      this.$router.push(`/nacos/project/configDetail?namespaceId=${row.namespaceId || this.namespaceId}&app=${this.projectSelection}&dataId=${row.dataId}&group=${row.group}`)
+      this.$router.push(`/nacos/project/configDetail?namespaceId=${row.namespaceId || this.namespaceId}&app=${this.projectId}&dataId=${row.dataId}&group=${row.group}`)
     },
     handleCode(row) {
       this.record = Object.assign({}, row)
@@ -331,7 +332,7 @@ export default {
       this.dialogVisible2Code = true
     },
     handleUpdate(row) {
-      this.$router.push(`/nacos/project/configEdit?namespaceId=${row.namespaceId || this.namespaceId}&app=${this.projectSelection}&dataId=${row.dataId}&group=${row.group}`)
+      this.$router.push(`/nacos/project/configEdit?namespaceId=${row.namespaceId || this.namespaceId}&app=${this.projectId}&dataId=${row.dataId}&group=${row.group}`)
     },
     onDelete(row) {
       const h = this.$createElement
@@ -383,7 +384,7 @@ export default {
     },
     handleExports() {
       const isSelected = this.multipleSelection.length > 0
-      const msg = isSelected ? '将导出选择配置' : '将导出当前查询到或当前租户的配置'
+      const msg = isSelected ? '将导出选择配置' : '将导出当前查询到或当前项目的配置'
       this.$confirm(msg, '导出配置', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -408,7 +409,7 @@ export default {
           export: 'true',
           tenant: this.listQuery.tenant,
           group: this.listQuery.group || '',
-          appName: this.listQuery.appName || '',
+          appName: this.listQuery.appName || this.projectId,
           dataId: this.listQuery.dataId || '',
           ids: ''
         }
@@ -432,10 +433,10 @@ export default {
     },
     onClone() {
       const params = {}
-      const tenant = this.$store.getters.tenants.find(tenant => {
-        return tenant.namespace === this.toNamespace
+      const tenant = this.namespaces.find(tenant => {
+        return tenant.key === this.toNamespace
       })
-      params.tenant = tenant.namespace || tenant.namespaceShowName
+      params.tenant = tenant.key || tenant.label
       params.policy = this.policy
       params.namespaceId = ''
       const data = this.tables.clone.map(item => {

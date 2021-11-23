@@ -299,7 +299,7 @@ const routerMap = {
     name: 'NacosProjectConfigs',
     alwaysShow: true,
     meta: {
-      title: '配置管理',
+      title: '应用配置管理',
       icon: 'lock'
     }
   },

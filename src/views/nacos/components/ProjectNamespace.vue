@@ -110,6 +110,7 @@ export default {
           this.namespaces = resp.rows
           this.$emit('input', this.namespaces[0].key)
           this.$emit('change', this.namespaces[0].key)
+          this.$emit('finish', this.namespaces)
         }
       })
     },
