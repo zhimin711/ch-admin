@@ -168,7 +168,6 @@ export default {
       } else if (tab.name === 'apply') {
         this.applyNamespace()
       }
-      console.log(tab.name)
       this.$emit('change', tab.name)
     }
   }

@@ -56,6 +56,11 @@ export default {
       'roles'
     ])
   },
+  watch: {
+    role(val) {
+      this.user.role = val
+    }
+  },
   created() {
     this.getUser()
   },

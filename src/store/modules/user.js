@@ -195,9 +195,10 @@ const actions = {
   // dynamically modify permissions
   async changeRoles({ commit, dispatch }, role) {
     let accessRoutes = []
+    const currRole = state.roles.find(item => { return item.id === role })
+    commit('SET_ROLE', currRole)
     if (role === '-1') {
       // const currRoles = state.roles.filter(item => { return item.id === role })
-      // commit('SET_ROLE', currRoles[0])
       accessRoutes = await dispatch('permission/generateRoutes', [], { root: true })
     } else {
       const menuList = await dispatch('getPermissions', { roleId: role })
