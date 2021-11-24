@@ -235,7 +235,7 @@ import { pageUser, addUser, getUser, editUser, delUser, initPwd, getEnableRoles,
 import { treeDepartment, searchDepartmentPositions } from '@/api/upms/department'
 
 export default {
-  name: 'UpmsUser1',
+  name: 'UpmsUser',
   directives: {
     waves
   },

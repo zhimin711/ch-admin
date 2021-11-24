@@ -166,7 +166,7 @@ import { getAvailableList } from '@/api/upms/namespace'
 import { findUserList } from '@/api/upms/user'
 
 export default {
-  name: 'UpmsProject1',
+  name: 'UpmsProject',
   filters: {
     statusFilter(type) {
       return ['待审核', '正常', '远程终端(SSH)', '(FTP)'][type]
@@ -321,7 +321,7 @@ export default {
       if (this.recordDevUsers.length > 0) {
         this.record.devUserIds = this.recordDevUsers
       }
-      if (this.recordDevUsers.length > 0) {
+      if (this.recordTestUsers.length > 0) {
         this.record.testUserIds = this.recordTestUsers
       }
       if (this.dialogType === 'new') {

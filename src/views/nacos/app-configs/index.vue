@@ -11,11 +11,11 @@
           <project-namespace v-model="namespaceId" :project-id="projectId" @change="handleNamespaceChange" @finish="loadNamespacesFinish" />
         </sticky>
         <div v-show="showSearch" class="query-container">
-          <el-button v-permission="'NacosConfigsIndexAdd'" type="primary" @click="handleCreate()">创建配置</el-button>
-          <el-button v-permission="'NacosConfigsIndexDelete'" type="danger" @click="onDelete2()">删除</el-button>
-          <el-button v-permission="'NacosConfigsIndexExport'" type="success" plain @click="handleExports()">导出配置</el-button>
-          <el-button v-permission="'NacosConfigsIndexImport'" type="primary" @click="handleImports()">导入配置</el-button>
-          <el-button v-permission="'NacosConfigsIndexClone'" type="primary" plain @click="handleClone()">克隆配置</el-button>
+          <el-button v-permission="'NACOS_PROJECT_CONFIG_ADD'" type="primary" @click="handleCreate()">创建配置</el-button>
+          <el-button v-permission="'NACOS_PROJECT_CONFIG_DELETE'" type="danger" @click="onDelete2()">删除</el-button>
+          <el-button v-permission="'NACOS_PROJECT_CONFIGS_EXPORT'" type="success" plain @click="handleExports()">导出配置</el-button>
+          <el-button v-permission="'NACOS_PROJECT_CONFIGS_IMPORT'" type="primary" @click="handleImports()">导入配置</el-button>
+          <el-button v-permission="'NACOS_PROJECT_CONFIGS_CLONE'" type="primary" plain @click="handleClone()">克隆配置</el-button>
           <el-button type="primary" icon="el-icon-refresh" plain @click="queryData()">刷新</el-button>
         </div>
         <el-table
@@ -38,10 +38,10 @@
           <!--          <el-table-column label="归属应用" min-width="100" prop="appName" />-->
           <el-table-column align="center" prop="created_at" label="操作" min-width="150">
             <template slot-scope="{row}">
-              <el-button v-permission="'NacosConfigsIndexSearch'" type="text" @click.native="handleDetail(row)">详情</el-button>
+              <el-button v-permission="'NACOS_PROJECT_CONFIGS_SEARCH'" type="text" @click.native="handleDetail(row)">详情</el-button>
               <el-button type="text" @click.native="handleCode(row)">示例代码</el-button>
-              <el-button v-permission="'NacosConfigsIndexEdit'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
-              <el-button v-permission="'NacosConfigsIndexDelete'" type="text" @click.native="onDelete(row)">删除</el-button>
+              <el-button v-permission="'NACOS_PROJECT_CONFIG_EDIT'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
+              <el-button v-permission="'NACOS_PROJECT_CONFIG_DELETE'" type="text" @click.native="onDelete(row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
