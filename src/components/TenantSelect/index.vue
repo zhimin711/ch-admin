@@ -1,10 +1,9 @@
 <template>
-
-  <el-dropdown split-button trigger="click" class="international" style="top: -18px; margin: 0 15px" @command="handleSetTenant">
+  <el-dropdown split-button trigger="click" class="international" @command="handleSetTenant">
     <div>
       租户： {{ tenant.name || '无' }}
     </div>
-    <el-dropdown-menu v-if="tenants.length>0" slot="dropdown">
+    <el-dropdown-menu slot="dropdown">
       <el-dropdown-item v-for="item in tenants" :key="item.id" :disabled="tenant.id===item.id" :command="item.id">
         {{ item.name }}
       </el-dropdown-item>

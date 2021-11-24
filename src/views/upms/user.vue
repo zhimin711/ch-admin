@@ -139,7 +139,7 @@
                 <el-link type="primary" @click="handleAddNode(scope.$index)">
                   添加
                 </el-link>
-                <el-link v-if="scope.$index>0" type="danger" @click="handleDelNode(scope.$index)">
+                <el-link type="danger" @click="handleDelNode(scope.$index)">
                   删除
                 </el-link>
               </template>
@@ -378,19 +378,19 @@ export default {
       this.dialogVisible = true
       this.dialogCodeEdit = true
       this.recordDepartments = []
-      this.recordPositions = undefined
+      this.recordPositions = row.positionId
       getUser(row.id).then(resp => {
         this.currDeptList = []
         if (resp.success) {
           const duties = resp.rows[0].dutyList
           if (duties) {
             duties.forEach(e => {
-              if (row.departmentId !== e.department) {
+              if (row.departmentId !== e.department && this.record.positionId !== e.duty) {
                 this.currDeptList.push(e)
               }
               this.recordDepartments = e.department.split(',')
               this.getDepartmentPositions(this.recordDepartments)
-              this.recordPositions = Number(e.duty)
+              // this.recordPositions = Number(e.duty)
             })
           } else {
             this.$message.error('未获取到组织信息')

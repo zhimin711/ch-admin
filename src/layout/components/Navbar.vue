@@ -6,9 +6,8 @@
 
     <div class="right-menu">
       <template v-if="device!=='mobile'">
+        <tenant-select class="right-menu-item hover-effect" />
         <search id="header-search" class="right-menu-item" />
-
-        <tenant-select />
 
         <error-log class="errLog-container right-menu-item hover-effect" />
 

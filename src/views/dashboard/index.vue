@@ -14,7 +14,7 @@ export default {
   components: { adminDashboard, editorDashboard },
   data() {
     return {
-      currentRole: 'adminDashboard'
+      currentRole: 'editorDashboard'
     }
   },
   computed: {
@@ -23,7 +23,8 @@ export default {
     ])
   },
   created() {
-    if (this.role.code && !this.role.code.includes('SUPER_ADMIN')) {
+    console.log(this.role.code)
+    if (this.role.code && this.role.code.indexOf('WIKI_ADMIN') > 0) {
       this.currentRole = 'editorDashboard'
     }
   }
