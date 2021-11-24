@@ -53,6 +53,14 @@ export function changePwd(data) {
   })
 }
 
+export function changeRole(data) {
+  return request({
+    url: `${baseUrl}/changeRole`,
+    method: 'post',
+    data
+  })
+}
+
 export function getEnableRoles() {
   return request({
     url: `${baseUrl}/roles`,

@@ -69,6 +69,7 @@
 
 <script>
 import PanThumb from '@/components/PanThumb'
+import { changeRole } from '@/api/upms/user'
 
 export default {
   components: { PanThumb },
@@ -93,7 +94,11 @@ export default {
       })
     },
     setDefaultRole() {
-      //
+      changeRole({ id: this.user.roleId }).then(resp => {
+        if (resp.success) {
+          this.$message.success('设置默认角色成功！')
+        }
+      })
     }
   }
 }
