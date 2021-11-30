@@ -78,8 +78,8 @@
             <el-radio-button label="1">{{ $t('label.catalog') }}</el-radio-button>
             <el-radio-button label="2">{{ $t('label.menu') }}</el-radio-button>
             <el-radio-button label="3">{{ $t('label.btn') }}</el-radio-button>
-            <!--<el-radio-button label="4">隐藏菜单</el-radio-button>-->
-            <el-radio-button label="5">{{ $t('label.interface') }}</el-radio-button>
+            <el-radio-button label="4">授权{{ $t('label.interface') }}</el-radio-button>
+            <el-radio-button label="5">开放{{ $t('label.interface') }}</el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item :label="$t('label.parent')">
@@ -96,13 +96,13 @@
           <!--<el-input v-model="record.icon" placeholder="仅支持SVG" />-->
           <icon-selector v-model="record.icon" />
         </el-form-item>
-        <el-form-item v-if="record.type === '3' || record.type === '5'" :label="$t('label.address')">
+        <el-form-item v-if="record.type === '3' || record.type === '4' || record.type === '5'" :label="$t('label.address')">
           <el-input v-model="record.url" placeholder="按钮或接口必填" />
         </el-form-item>
         <!--<el-form-item v-show="recordForm.redirectShow" label="重定向地址">
           <el-input v-model="record.redirect" placeholder="目录与隐藏地址" />
         </el-form-item>-->
-        <el-form-item v-if="record.type === '3' || record.type === '5'" :label="$t('label.method')">
+        <el-form-item v-if="record.type === '3' || record.type === '4' || record.type === '5'" :label="$t('label.method')">
           <el-radio-group v-model="record.method">
             <el-radio-button label="">ALL</el-radio-button>
             <el-radio-button label="GET" />
@@ -111,7 +111,7 @@
             <el-radio-button label="DELETE" />
           </el-radio-group>
         </el-form-item>
-        <el-form-item v-if="record.type === '2' || record.type === '5'" :label="record.type === '2'?'是否隐藏':'是否开放'">
+        <el-form-item v-if="record.type === '2' || record.type === '5'" :label="record.type === '2'?'是否隐藏':'是否需要登录'">
           <el-radio v-model="record.hidden" :label="false">{{ record.type === '2'?'否':'是' }}</el-radio>
           <el-radio v-model="record.hidden" :label="true">{{ record.type === '2'?'是':'否' }}</el-radio>
         </el-form-item>
@@ -150,7 +150,7 @@ const defaultRecord = {
   name: ''
 }
 export default {
-  name: 'UpmsPermission',
+  name: 'UpmsPermission1',
   components: { IconSelector },
   data() {
     return {
@@ -330,7 +330,7 @@ export default {
       let type = value
       this.recordForm.urlDisabled = value <= 1
       this.recordForm.descDisabled = true
-      this.recordForm.redirectShow = (value === '1' || value === '4')
+      this.recordForm.redirectShow = value === '1'
       this.recordParentsProps.checkStrictly = false
       if (value === '4' || value === '5') {
         type = '3'

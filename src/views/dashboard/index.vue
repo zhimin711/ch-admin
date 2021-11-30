@@ -23,7 +23,6 @@ export default {
     ])
   },
   created() {
-    console.log(this.role.code)
     if (this.role.code && this.role.code.indexOf('WIKI_ADMIN') > 0) {
       this.currentRole = 'editorDashboard'
     }

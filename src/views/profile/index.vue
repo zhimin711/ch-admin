@@ -66,11 +66,10 @@ export default {
   },
   methods: {
     getUser() {
-      const role = this.roles.find(item => this.role.id === item.id)
       this.user = {
         name: this.name,
         roles: this.roles,
-        role: role,
+        role: this.role,
         roleId: this.role.id,
         email: 'admin@test.com',
         avatar: this.avatar

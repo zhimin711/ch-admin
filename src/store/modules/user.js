@@ -93,7 +93,6 @@ const actions = {
         if (!roleId || roleId <= 0) {
           return reject('未分配用户角色, 请联系管理员!')
         }
-        commit('SET_ROLE', { id: roleId, code: '' })
 
         commit('SET_NAME', username)
         commit('SET_AVATAR', avatar || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
@@ -120,6 +119,9 @@ const actions = {
         if (!roleList || roleList.length <= 0) {
           return reject('未分配用户角色!')
         }
+        const role = roleList.find(item => item.id === user.roleId)
+
+        commit('SET_ROLE', role)
         commit('SET_ROLES', roleList)
         commit('SET_PERMISSIONS', btnList)
 
@@ -195,10 +197,9 @@ const actions = {
   // dynamically modify permissions
   async changeRoles({ commit, dispatch }, role) {
     let accessRoutes = []
-    const currRole = state.roles.find(item => { return item.id === role })
-    commit('SET_ROLE', currRole)
     if (role === '-1') {
       // const currRoles = state.roles.filter(item => { return item.id === role })
+      commit('SET_ROLE', { id: role, name: '示例角色', code: 'EXAMPLE' })
       accessRoutes = await dispatch('permission/generateRoutes', [], { root: true })
     } else {
       const menuList = await dispatch('getPermissions', { roleId: role })

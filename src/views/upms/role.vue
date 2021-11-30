@@ -43,7 +43,7 @@
       <el-table-column align="center" :label="$t('label.actions')" width="250">
         <template v-if="scope.row.type !== '0'" slot-scope="scope">
           <el-link v-permission="['UPMS_ROLE_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">{{ $t('btn.edit') }}</el-link>
-          <el-link v-permission="['UPMS_ROLE_PERMISSION']" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">{{ $t('role.permissions') }}</el-link>
+          <el-link v-if="scope.row.status === '1'" v-permission="['UPMS_ROLE_PERMISSION']" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">{{ $t('role.permissions') }}</el-link>
           <el-link v-permission="['UPMS_ROLE_DELETE']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
         </template>
       </el-table-column>
