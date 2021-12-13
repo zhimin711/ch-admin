@@ -57,3 +57,11 @@ export function editRolePermissions(id, data) {
   })
 }
 
+export function editRolePermissionsInterface(id, data) {
+  return request({
+    url: `${baseUrl}/${id}/permissions`,
+    method: 'put',
+    data
+  })
+}
+

@@ -40,10 +40,11 @@
           <el-tag v-else-if="scope.row.status === '1'" type="success">{{ $t('label.enable') }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" :label="$t('label.actions')" width="250">
+      <el-table-column align="center" :label="$t('label.actions')" width="300">
         <template v-if="scope.row.type !== '0'" slot-scope="scope">
           <el-link v-permission="['UPMS_ROLE_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">{{ $t('btn.edit') }}</el-link>
-          <el-link v-if="scope.row.status === '1'" v-permission="['UPMS_ROLE_PERMISSION']" type="primary" icon="el-icon-menu" @click="handleAuth(scope.row)">{{ $t('role.permissions') }}</el-link>
+          <el-link v-if="scope.row.status === '1'" v-permission="['UPMS_ROLE_PERMISSION']" type="warning" icon="el-icon-menu" @click="handleAuth(scope.row)">{{ $t('role.permissions') }}</el-link>
+          <el-link v-if="scope.row.status === '1'" v-permission="['UPMS_ROLE_PERMISSION_INTERFACE']" type="info" icon="el-icon-s-grid" @click="handleAuth(scope.row, '4')">接口授权</el-link>
           <el-link v-permission="['UPMS_ROLE_DELETE']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
         </template>
       </el-table-column>
@@ -119,7 +120,7 @@
 
 <script>
 import { deepClone } from '@/utils'
-import { pageRole, addRole, editRole, delRole, getRolePermissions, editRolePermissions } from '@/api/upms/role'
+import { pageRole, addRole, editRole, delRole, getRolePermissions, editRolePermissions, editRolePermissionsInterface } from '@/api/upms/role'
 import { treePermission } from '@/api/upms/permission'
 
 const defaultRole = {
@@ -133,10 +134,11 @@ const PERMISSION_TYPE = {
   MENU: { type: 'success', name: '菜单' },
   MENU_HIDE: { type: 'info', name: '隐藏菜单' },
   BUTTON: { type: 'primary', name: '按钮' },
+  AUTH_INTERFACE: { type: 'info', name: '接口' },
   INTERFACE: { type: 'primary', name: '接口' }
 }
 export default {
-  name: 'UpmsRole',
+  name: 'UpmsRole1',
   data() {
     return {
       tableA: {
@@ -175,7 +177,6 @@ export default {
   created() {
     this.getList()
     // Mock: get all routes and roles list from server
-    this.getRoutes()
   },
   methods: {
     fromPermissionKeyType(key) {
@@ -192,11 +193,11 @@ export default {
       }
       return '-'
     },
-    async getRoutes() {
+    async getRoutes(type = '9') {
       this.treeLoading = true
       this.routes = []
       this.treeTip = '正在加载数据...'
-      const res = await treePermission('9').finally(() => { this.treeLoading = false })
+      const res = await treePermission(type).finally(() => { this.treeLoading = false })
       // this.serviceRoutes = res.rows
       this.routes = res.rows
       if (this.routes.length === 0) this.treeTip = '未加载到数据！'
@@ -314,11 +315,23 @@ export default {
         type: type
       })
     },
-    handleAuth(row) {
+    async handleAuth(row, type) {
+      let types = '2,3,4'
+      this.dialogType = 'AUTH'
+      if (type) {
+        this.dialogType = 'AUTH_INT'
+        types = '4'
+      }
+      await this.getRoutes(type)
       this.dialogVisible2 = true
       this.role = deepClone(row)
-      getRolePermissions(row.id, { types: '2,3,4' }).then(resp => {
+      getRolePermissions(row.id, { types: types }).then(resp => {
         if (resp.success) {
+          if (this.dialogType === 'AUTH_INT') {
+            const authList = resp.rows.map(item => item.id)
+            this.$refs.tree.setCheckedKeys(authList)
+            return
+          }
           const authMap = this.generateMap(resp.rows)
           const authTree = this.generateTree(authMap)
           const authList = this.generateArr(authTree)
@@ -332,7 +345,12 @@ export default {
       const checkedKeys1 = this.$refs.tree.getHalfCheckedKeys()
       checkedKeys = [...checkedKeys, ...checkedKeys1]
       // this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/', checkedKeys)
-      const resp = await editRolePermissions(this.role.id, checkedKeys)
+      let resp
+      if (this.dialogType === 'AUTH') {
+        resp = await editRolePermissions(this.role.id, checkedKeys)
+      } else {
+        resp = await editRolePermissionsInterface(this.role.id, checkedKeys)
+      }
       if (resp && resp.success) {
         this.dialogVisible2 = false
         /* this.$message({

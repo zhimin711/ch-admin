@@ -24,13 +24,13 @@
           {{ scope.row.name }}
         </template>
       </el-table-column>
-      <el-table-column align="center" prop="type" :label="$t('label.type')" width="120">
+      <el-table-column align="center" prop="type" :label="$t('label.type')" width="130">
         <template slot-scope="{row}">
           <el-tag v-if="row.type === '1'" type="warning">{{ $t('label.catalog') }}</el-tag>
           <el-tag v-else-if="row.type === '2'" type="success">{{ row.hidden? '['+$t('label.hidden')+']':'' }}{{ $t('label.menu') }}</el-tag>
           <el-tag v-else-if="row.type === '3'" type="primary">{{ $t('label.btn') }}</el-tag>
-          <!--<el-tag v-else-if="row.type === '4'" type="info">隐藏菜单</el-tag>-->
-          <el-tag v-else-if="row.type === '5'" type="danger">{{ row.hidden? '[私有]':'[开放]' }}{{ $t('label.interface') }}</el-tag>
+          <el-tag v-else-if="row.type === '4'" type="danger">授权{{ $t('label.interface') }}</el-tag>
+          <el-tag v-else-if="row.type === '5'" type="info">开放{{ $t('label.interface') }}{{ row.hidden? '[用户]':'' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column :label="$t('label.code')" prop="code" min-width="280" :show-overflow-tooltip="true">
@@ -40,7 +40,8 @@
       </el-table-column>
       <el-table-column :label="$t('label.address')" min-width="280" :show-overflow-tooltip="true">
         <template slot-scope="{row}">
-          <span v-if="row.type === '3' || row.type === '5'">{{ row.url }}</span>
+          <el-tag v-if="row.type === '3' || row.type === '4' || row.type === '5'">{{ row.method || 'ALL' }}</el-tag>
+          <span v-if="row.type === '3' || row.type === '4' || row.type === '5'">{{ row.url }}</span>
           <span v-else>-</span>
         </template>
       </el-table-column>
@@ -111,9 +112,11 @@
             <el-radio-button label="DELETE" />
           </el-radio-group>
         </el-form-item>
-        <el-form-item v-if="record.type === '2' || record.type === '5'" :label="record.type === '2'?'是否隐藏':'是否需要登录'">
-          <el-radio v-model="record.hidden" :label="false">{{ record.type === '2'?'否':'是' }}</el-radio>
-          <el-radio v-model="record.hidden" :label="true">{{ record.type === '2'?'是':'否' }}</el-radio>
+        <el-form-item v-if="record.type === '2' || record.type === '5'" :label="record.type === '2'?'是否隐藏':'需用户登录'">
+          <!--<el-radio v-model="record.hidden" :label="false">{{ record.type === '2'?'否':'是' }}</el-radio>
+          <el-radio v-model="record.hidden" :label="true">{{ record.type === '2'?'是':'否' }}</el-radio>-->
+          <el-radio v-model="record.hidden" :label="false">否</el-radio>
+          <el-radio v-model="record.hidden" :label="true">是</el-radio>
         </el-form-item>
         <el-form-item :label="$t('label.sort')">
           <el-input-number v-model="record.sort" />
