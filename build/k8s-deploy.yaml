@@ -28,7 +28,7 @@ spec:
             defaultMode: 420
       containers:
         - name: container-jpfbhh
-          image: 'hub.ch.cn/ch/ch-admin:${DATETIME}''
+          image: 'hub.ch.cn/ch/ch-admin:${DATETIME}'
           ports:
             - name: tcp-80
               containerPort: 80
