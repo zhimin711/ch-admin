@@ -51,6 +51,14 @@ router.beforeEach(async(to, from, next) => {
           next({ ...to, replace: true })
         } catch (error) {
           NProgress.done()
+          if (typeof error === 'undefined') {
+            MessageBox.alert('遇到未知错误，请与管理员联系...', '错误', {
+              confirmButtonText: '刷新',
+              callback: () => {
+              }
+            })
+            return
+          }
           console.log('src/permission.js router.beforeEach error ==> ' + JSON.stringify(error))
           if (error.code === 'ECONNABORTED') {
             MessageBox.alert('连接超时，请刷新重试...', '超时', {

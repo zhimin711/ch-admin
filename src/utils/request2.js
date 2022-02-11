@@ -3,6 +3,7 @@ import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
 import router from '@/router'
 import { refreshToken } from '@/utils/request-token'
+import { getToken } from '@/utils/auth'
 
 // create an axios instance
 const service2 = axios.create({
@@ -22,7 +23,7 @@ service2.interceptors.request.use(
       // let each request carry token
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
-      config.headers['X-Token'] = store.getters.token
+      config.headers['X-Token'] = getToken()
       if (process.env.VUE_APP_MOCK_BASE === 'true') config.headers['X-AUTH-USER'] = store.getters.name
     }
     return config

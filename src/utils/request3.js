@@ -1,6 +1,7 @@
 import axios from 'axios'
 import store from '@/store'
 import { refreshToken } from '@/utils/request-token'
+import { getToken } from '@/utils/auth'
 
 // create an axios instance
 const service3 = axios.create({
@@ -20,7 +21,7 @@ service3.interceptors.request.use(
       // let each request carry token
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
-      config.headers['X-Token'] = store.getters.token
+      config.headers['X-Token'] = getToken()
     }
     return config
   },
