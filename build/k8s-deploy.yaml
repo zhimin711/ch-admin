@@ -21,14 +21,14 @@ spec:
       volumes:
         - name: volume-8gce8l
           configMap:
-            name: ch-admin-configuration
+            name: admin-config
             items:
               - key: default.conf
                 path: default.conf
             defaultMode: 420
       containers:
         - name: container-jpfbhh
-          image: 'hub.ch.cn/ch/ch-admin:${DATETIME}'
+          image: '192.168.0.253:8082/ch/ch-admin:${DATETIME}'
           ports:
             - name: tcp-80
               containerPort: 80
@@ -49,5 +49,5 @@ spec:
       serviceAccount: default
       securityContext: {}
       imagePullSecrets:
-        - name: ch-hub
+        - name: ch-nexus
       schedulerName: default-scheduler
