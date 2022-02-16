@@ -52,7 +52,7 @@
           <el-table-column width="180px" :label="$t('user.department')" prop="department">
             <template slot-scope="{row}">
               <el-tag v-if="row.department==='1'">附属部门</el-tag>
-              <el-tag v-else-if="row.department==='0'">{{ row.departmentName }}</el-tag>
+              <span v-else-if="row.department==='0'">{{ row.departmentName }}</span>
             </template>
           </el-table-column>
           <el-table-column width="120px" align="center" :label="$t('user.userId')">
@@ -89,7 +89,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column align="center" :label="$t('table.actions')" width="200">
+          <el-table-column align="center" :label="$t('table.actions')" width="200" fixed="right">
             <template slot-scope="scope">
               <el-link v-permission="['UPMS_USER_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">{{ $t('btn.edit') }}</el-link>
               <el-link v-permission="['UPMS_USER_DELETE']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
@@ -126,26 +126,26 @@
           </el-col>
         </el-row>
         <el-form-item label="附属部门">
-          <el-table
-            :data="currDeptList"
-            border
-            size="mini"
-            style="width: 100%; margin-bottom: 10px;"
-          >
-            <el-table-column prop="departmentName" label="部门" width="180" />
-            <el-table-column prop="dutyName" label="职位" />
-            <el-table-column align="center" label="操作" width="100">
-              <template slot-scope="scope">
-                <el-link type="primary" @click="handleAddNode(scope.$index)">
-                  添加
-                </el-link>
-                <el-link type="danger" @click="handleDelNode(scope.$index)">
-                  删除
-                </el-link>
-              </template>
-            </el-table-column>
-          </el-table>
+          <el-button type="primary" @click="handleAddNode()">
+            添加
+          </el-button>
         </el-form-item>
+        <el-table
+          :data="currDeptList"
+          border
+          size="mini"
+          style="width: 100%; margin-bottom: 20px;"
+        >
+          <el-table-column prop="departmentName" label="部门" />
+          <el-table-column prop="dutyName" label="职位" width="180" />
+          <el-table-column align="center" label="操作" width="100">
+            <template slot-scope="scope">
+              <el-link type="danger" @click="handleDelNode(scope.$index)">
+                删除
+              </el-link>
+            </template>
+          </el-table-column>
+        </el-table>
         <el-form-item :label="$t('user.userId')">
           <el-input v-model="record.userId" :placeholder="$t('user.userId2')" :disabled="true" />
         </el-form-item>
@@ -301,7 +301,9 @@ export default {
       }
       return names.join(',')
     },
-    handleDelNode() {},
+    handleDelNode(index) {
+      this.currDeptList.splice(index, 1)
+    },
     getTreeDepartments() {
       treeDepartment('0').then(resp => {
         if (resp.success) {
@@ -310,7 +312,7 @@ export default {
       })
     },
     getDepartmentPositions(val) {
-      if (val === '') {
+      if (val === '' || val.length === 0) {
         this.options.positions = []
         return
       }
@@ -326,9 +328,9 @@ export default {
       })
     },
     getDepartmentPositions2(val) {
-      if (val === '') {
+      if (val === '' || val.length === 0) {
         this.options.positions2 = []
-        this.recordPositions = undefined
+        this.recordPositions2 = undefined
         return
       }
       let did = val
@@ -336,7 +338,7 @@ export default {
         did = val[val.length - 1]
       }
       this.options.positions2 = []
-      this.recordPositions = undefined
+      this.recordPositions2 = undefined
       searchDepartmentPositions(did).then(resp => {
         if (resp.success) {
           this.options.positions2 = resp.rows
@@ -445,6 +447,7 @@ export default {
       this.record.dutyList = []
       if (this.recordDepartments.length > 0) {
         this.record.departmentId = this.recordDepartments.join(',')
+        this.record.positionId = this.recordPositions
         this.record.dutyList.push({ department: this.recordDepartments.join(','), duty: this.recordPositions })
       }
       if (this.currDeptList.length > 0) {

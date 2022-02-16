@@ -67,6 +67,16 @@ router.beforeEach(async(to, from, next) => {
                 location.reload()
               }
             })
+          } else if (error.code === '301') {
+            // to re-login
+            MessageBox.alert(error.message, '登录失败', {
+              confirmButtonText: '重新登录',
+              callback: () => {
+                store.dispatch('user/removeToken').then(() => {
+                  next(`/login?redirect=${to.path}`)
+                })
+              }
+            })
           } else if (error.code === '307' || error.code === '304' || error.data && error.data.code === '307') {
             // to re-login
             MessageBox.alert('登录已失效,请重新登录', '登录过期', {

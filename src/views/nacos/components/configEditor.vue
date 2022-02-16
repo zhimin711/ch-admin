@@ -127,7 +127,7 @@ export default {
         if (resp.success) {
           this.projects = resp.rows
         }
-      })
+      }).catch(() => {})
     },
     initCompare(value, orig2) {
       if (value == null) return

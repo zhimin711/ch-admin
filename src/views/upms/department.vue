@@ -95,7 +95,7 @@
     <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
       <el-form ref="form" :model="record" :rules="rules" label-width="80px">
         <el-row>
-          <el-col v-if="record.pid !== '0'" :span="24">
+          <el-col v-if="record.parentId !== '0'" :span="24">
             <el-form-item label="上级组织" prop="recordParents">
               <el-cascader ref="parentCascader" v-model="recordParents" :options="options.parents" :show-all-levels="false" :props="recordParentsProps" clearable />
               <!--<treeselect v-model="record.parentId" :options="deptOptions" :normalizer="normalizer" placeholder="选择上级组织" />-->
@@ -183,7 +183,7 @@ import { findUserList } from '@/api/upms/user'
 const defaultRecord = { pid: '0', sort: 1, status: '1' }
 
 export default {
-  name: 'UpmsDepartment',
+  name: 'UpmsDepartment1',
   // components: { Treeselect },
   data() {
     return {
@@ -288,8 +288,8 @@ export default {
       this.reset()
       this.recordParents = []
       if (row) {
-        this.record.pid = (row.pid !== '0' ? (row.pid + ',') : '') + row.id
-        this.recordParents = this.record.pid.split(',')
+        this.record.parentId = (row.parentId !== '0' ? (row.parentId + ',') : '') + row.id
+        this.recordParents = this.record.parentId.split(',')
       }
       this.recordStatus = true
       treeDepartment('0').then(resp => {
