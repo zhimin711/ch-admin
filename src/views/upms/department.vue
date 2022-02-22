@@ -47,6 +47,14 @@
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
       <el-table-column prop="name" :label="$t('label.name')" width="260" />
+      <el-table-column prop="deptType" :label="$t('label.type')" width="80">
+        <template slot-scope="{row}">
+          <el-tag v-if="row.deptType===0">集团</el-tag>
+          <el-tag v-else-if="row.deptType===1">公司</el-tag>
+          <el-tag v-else-if="row.deptType===2">部门</el-tag>
+          <el-tag v-else>团队</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="sort" :label="$t('label.sort')" width="200" />
       <el-table-column :label="$t('label.status')" width="110">
         <template slot-scope="{row}">
@@ -283,6 +291,10 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd(row) {
+      if (row && row.deptType === 3) {
+        this.$message.error('团队不允许添加下级')
+        return
+      }
       this.open = true
       this.title = '添加组织'
       this.reset()

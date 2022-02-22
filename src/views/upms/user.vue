@@ -387,10 +387,11 @@ export default {
           const duties = resp.rows[0].dutyList
           if (duties) {
             duties.forEach(e => {
-              if (row.departmentId !== e.department && this.record.positionId !== e.duty) {
+              const orgId = e.orgId || e.department
+              if (row.departmentId !== orgId && this.record.positionId !== e.duty) {
                 this.currDeptList.push(e)
               }
-              this.recordDepartments = e.department.split(',')
+              this.recordDepartments = orgId.split(',')
               this.getDepartmentPositions(this.recordDepartments)
               // this.recordPositions = Number(e.duty)
             })
