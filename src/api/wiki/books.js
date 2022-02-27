@@ -23,6 +23,13 @@ export function getBook(id) {
   })
 }
 
+export function getBookImages(id) {
+  return request({
+    url: `${namespace}/${id}/images`,
+    method: 'get'
+  })
+}
+
 export function addBook(data) {
   return request({
     url: `${namespace}`,

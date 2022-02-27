@@ -28,7 +28,7 @@ spec:
             defaultMode: 420
       containers:
         - name: container-jpfbhh
-          image: '192.168.0.253:8082/ch/ch-admin:${DATETIME}'
+          image: 'registry.kubeoperator.io:8082/ch/ch-admin:${DATETIME}'
           ports:
             - name: tcp-80
               containerPort: 80

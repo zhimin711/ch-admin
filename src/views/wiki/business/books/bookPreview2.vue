@@ -14,8 +14,7 @@
 
 <script>
 import Sticky from '@/components/Sticky' // 粘性header组件
-import { getToken } from '@/utils/auth'
-import { getBook } from '@/api/wiki/books'
+import { getBookImages } from '@/api/wiki/books'
 
 export default {
   name: 'BookPreview',
@@ -45,13 +44,11 @@ export default {
     getBookPreview() {
       this.loading = true
       this.urls = []
-      getBook(this.id).then((resp) => {
+      getBookImages(this.id).then((resp) => {
         if (resp.success) {
-          //
-          const len = resp.rows[0].latestChapter
-          for (let i = 1; i <= len; i++) {
-            this.urls.push('/api/wiki/admin' + resp.rows[0].latestChapterUrl + '/' + i + '.jpg?token=' + getToken())
-          }
+          resp.rows.forEach(e => {
+            this.urls.push(e)
+          })
         }
       }).finally(() => { this.loading = false })
     },
