@@ -36,7 +36,7 @@
         <el-table-column prop="title" label="标题" min-width="200" />
         <el-table-column prop="image" label="图片" width="260">
           <template slot-scope="scope">
-            <img :src="scope.row.image" width="240" height="100">
+            <img :src="scope.row.image | addToken('wiki')" width="240" height="100">
           </template>
         </el-table-column>
         <el-table-column prop="sort" label="排序" width="60" align="center" />

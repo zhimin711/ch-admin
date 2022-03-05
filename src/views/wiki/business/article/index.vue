@@ -25,12 +25,12 @@
           <el-col :span="24">
             <el-button type="primary" icon="el-icon-search" @click="getList">搜索</el-button>
             <el-button icon="el-icon-refresh" @click="listQuery.params = {}">重置</el-button>
-            <router-link v-if="checkPermission2(['WIKI_ARTICLE_ADD'])" class="query-link-btn" :to="'/wiki/business/article/add'">
+            <router-link v-permission="['WIKI_ARTICLE_ADD']" class="query-link-btn" :to="'/wiki/business/article/add'">
               <el-button type="primary" icon="el-icon-plus">
                 创建文章
               </el-button>
             </router-link>
-            <router-link v-if="checkPermission2(['WikiArticleRecommendEdit'])" class="query-link-btn" :to="'/wiki/business/article/recommend'">
+            <router-link v-permission="['WikiArticleRecommendEdit']" class="query-link-btn" :to="'/wiki/business/article/recommend'">
               <el-button type="success" icon="el-icon-thumb">
                 文章推荐
               </el-button>
@@ -49,7 +49,7 @@
       <el-table-column prop="image" label="图片" width="205" class-name="col-img">
         <template slot-scope="scope">
           <!--<img :src="scope.row.image | imgFilter" width="180" height="100">-->
-          <el-image :src="scope.row.image | imgFilter" class="el-article-list-image" />
+          <el-image :src="scope.row.image | addToken('wiki', imgCloud)" class="el-article-list-image" />
         </template>
       </el-table-column>
       <el-table-column prop="publishAt" label="发布时间" width="160">
@@ -101,10 +101,7 @@
 <script>
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
-// import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { isEmpty } from '@/utils/validate'
-
 import { listArticle } from '@/api/wiki/article'
 
 const imgCloud = require('@/assets/0_images/0_cloud2.jpg') // 裁剪图片的地址
@@ -112,18 +109,11 @@ const imgCloud = require('@/assets/0_images/0_cloud2.jpg') // 裁剪图片的地
 export default {
   name: 'WikiArticle',
   components: { Pagination },
-  filters: {
-    imgFilter(url) {
-      if (isEmpty(url)) {
-        return imgCloud
-      }
-      return url
-    }
-  },
   data() {
     return {
       list: [],
       loading: false,
+      imgCloud: imgCloud,
       listQuery: {
         page: 1,
         limit: 10,
@@ -140,7 +130,6 @@ export default {
     this.getList()
   },
   methods: {
-    checkPermission2,
     getList() {
       this.loading = true
       listArticle(this.listQuery).then(response => {

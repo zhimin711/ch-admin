@@ -2,7 +2,8 @@
  * Created by PanJiaChen on 16/11/18.
  */
 
-import { isMobile } from './validate'
+import { getToken } from '@/utils/auth'
+import { isEmpty, isMobile } from './validate'
 
 /**
  * Parse the time to string
@@ -367,4 +368,14 @@ export function defaultDialogWidth() {
   } else {
     return null
   }
+}
+
+export function addToken(item, module, defaultImg = '') {
+  if (isEmpty(item)) {
+    return defaultImg
+  }
+  const hasProtocol = item.indexOf('//') === 0 || item.indexOf('https://') === 0 || item.indexOf('http://') === 0
+  const apiUrl = process.env.VUE_APP_API + '/' + module + item + '?token=' + getToken()
+
+  return hasProtocol ? item : apiUrl
 }

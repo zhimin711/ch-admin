@@ -449,7 +449,7 @@ export default {
       if (isEmpty(item.image)) {
         return ''
       }
-      return item.image.indexOf('//') === 0 || item.image.indexOf('https://') === 0 || item.image.indexOf('http://') === 0 ? item.image : '/api/wiki/admin' + item.image + '?token=' + getToken()
+      return item.image.indexOf('//') === 0 || item.image.indexOf('https://') === 0 || item.image.indexOf('http://') === 0 ? item.image : 'api/wiki/admin' + item.image + '?token=' + getToken()
     }
   }
 }
