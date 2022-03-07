@@ -78,11 +78,11 @@
         <el-form-item prop="image" style="margin-bottom: 30px;" label-width="100px" label="概要图:">
           <el-row>
             <el-col :span="24">
-              <Upload v-model="postForm.image" title="文章概要图裁剪及上传" :data="{srcType: 'ARTICLE_COVER', action: 'scale'}" />
+              <Upload v-model="postForm.image" dir="wiki" title="文章概要图裁剪及上传" :data="{srcType: 'ARTICLE_COVER', action: 'scale'}" />
             </el-col>
             <el-col :span="24" style="margin-left: 50px; margin-top: 5px;">
               <el-button icon="el-icon-folder-checked" @click="imageSelectVisible = true">图片选择</el-button>
-              <ImageSelector v-model="postForm.image" title="文章概要图选择" :show.sync="imageSelectVisible" type="ARTICLE_COVER" image-height="247px" />
+              <ImageSelector v-model="postForm.image" dir="wiki" title="文章概要图选择" :show.sync="imageSelectVisible" type="ARTICLE_COVER" image-height="247px" />
             </el-col>
           </el-row>
         </el-form-item>

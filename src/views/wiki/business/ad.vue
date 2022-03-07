@@ -101,11 +101,11 @@
         <el-form-item label="广告图">
           <el-row>
             <el-col :span="24">
-              <UploadImageCrop v-model="record.image" title="广告图裁剪及上传" :data="{srcType: 'AD', action: 'scale'}" :aspect-ratio="2.4" width="390px" height="162px" />
+              <UploadImageCrop v-model="record.image" dir="wiki" title="广告图裁剪及上传" :data="{srcType: 'AD', action: 'scale'}" :aspect-ratio="2.4" width="390px" height="162px" />
             </el-col>
             <el-col :span="24" style="margin-left: 50px; margin-top: 5px;">
               <el-button icon="el-icon-folder-checked" @click="imageSelectVisible = true">图片选择</el-button>
-              <ImageSelector v-model="record.image" title="广告图选择" :show.sync="imageSelectVisible" type="ad" />
+              <ImageSelector v-model="record.image" dir="wiki" title="广告图选择" :show.sync="imageSelectVisible" type="ad" />
             </el-col>
           </el-row>
         </el-form-item>

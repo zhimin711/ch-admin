@@ -10,7 +10,7 @@
             <label class="el-image-list__item-status-label">
               <i class="el-icon-upload-success el-icon-check" />
             </label>
-            <el-image :src="image.path" lazy />
+            <el-image :src="image.path | addToken(dir)" lazy />
           </li>
         </ul>
         <p v-if="!noMore" align="center"><el-button type="text" @click="loadImages">加载更多</el-button></p>
@@ -30,6 +30,10 @@ import { searchImage } from '@/api/wiki/image-info'
 export default {
   name: 'ImageSelector',
   props: {
+    dir: {
+      type: String,
+      default: ''
+    },
     title: {
       type: String,
       default: '图片选择'

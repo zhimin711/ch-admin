@@ -2,7 +2,7 @@
   <div class="upload-container">
     <div class="image-preview image-app-preview" :style="{height:height,width:width}">
       <div class="ad-img-uploader">
-        <img v-if="imageUrl && imageUrl.length>1" :src="imageUrl" width="100%" height="100%">
+        <img v-if="imageUrl && imageUrl.length>1" :src="imageUrl | addToken(dir)" width="100%" height="100%">
         <i v-else class="el-icon-plus ad-uploader-icon" :style="{'line-height':height}" @click="openUploadImg" />
         <div v-if="imageUrl && imageUrl.length>1" class="image-preview-action" :style="{'line-height':height}">
           <i class="el-icon-delete" @click="rmImage" />
@@ -19,7 +19,7 @@
               alt="请选择图片！"
               :view-mode="2"
               :aspect-ratio="aspectRatio"
-              :src="cropperOptions.img"
+              :src="cropperOptions.img | addToken(dir)"
               :preview="cropperOptions.preview"
               :img-style="{ 'width': '400px', 'height': '300px' }"
             />
@@ -64,6 +64,10 @@ export default {
   name: 'SingleImageUpload6',
   components: { VueCropper },
   props: {
+    dir: {
+      type: String,
+      default: ''
+    },
     title: {
       type: String,
       default: '图片裁剪'
