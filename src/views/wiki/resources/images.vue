@@ -22,7 +22,7 @@
       </el-button>
       <editor-image class="editor-upload-btn filter-item" color="#1890ff" size="" url="/api/wiki/admin/upload/img" :data="{srcType: 'images', type: 'image'}" @successCBK="imageUploadSuccess" />
 
-      <el-button v-if="checkPermission2(['WIKI_AD_IMAGE_BATCH_EDIT'])" class="filter-item" type="default" icon="el-icon-edit-outline" @click="handleEditBatch">
+      <el-button v-permission="['WIKI_AD_IMAGE_BATCH_EDIT']" class="filter-item" type="default" icon="el-icon-edit-outline" @click="handleEditBatch">
         批量分类
       </el-button>
     </div>
@@ -35,7 +35,7 @@
       </el-table-column>
       <el-table-column label="预览">
         <template slot-scope="scope">
-          <el-image :src="scope.row.path" :fit="'scale-down'" style="width: 100%; height: 180px">
+          <el-image :src="scope.row.path | addToken('wiki')" :fit="'scale-down'" style="width: 100%; height: 180px">
             <div slot="placeholder" class="image-slot">
               加载中<span class="dot">...</span>
             </div>

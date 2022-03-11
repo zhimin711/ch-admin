@@ -153,7 +153,7 @@ const defaultRecord = {
   name: ''
 }
 export default {
-  name: 'UpmsPermission1',
+  name: 'UpmsPermission',
   components: { IconSelector },
   data() {
     return {
