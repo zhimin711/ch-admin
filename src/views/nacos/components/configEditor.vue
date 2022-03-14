@@ -230,6 +230,10 @@ export default {
             message: '发布成功',
             type: 'success'
           })
+          if (!this.isEdit) {
+            this.onBack()
+            return
+          }
 
           this.$confirm(
             '发布成功，请选择继续编辑或返回列表？',

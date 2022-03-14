@@ -165,7 +165,7 @@ export default {
         opName = '修改'
         resp = await editDataSource(this.record.id, this.record)
       }
-      if (resp.success) {
+      if (resp && resp.success) {
         this.dialogVisible = false
         this.$message({
           type: 'success',
