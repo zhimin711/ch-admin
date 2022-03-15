@@ -28,6 +28,9 @@ import Pagination from './components/Pagination'
 import permission from './directive/permission/index.js' // 权限判断指令
 import VueLazyload from 'vue-lazyload'
 
+// 字典数据组件
+import DataDict from '@/components/DataDict'
+
 import VueAMap from 'vue-amap'
 
 Vue.use(VueAMap)
@@ -49,6 +52,7 @@ Vue.use(VueLazyload, {
   attempt: 1
 })
 
+DataDict.install()
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api

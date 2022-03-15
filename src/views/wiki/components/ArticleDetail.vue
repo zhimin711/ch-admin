@@ -12,6 +12,9 @@
         <el-button v-loading="loading" type="warning" @click="draftForm">
           草稿
         </el-button>
+        <el-button v-loading="loading" type="danger" @click="closeEditor">
+          关闭
+        </el-button>
       </sticky>
 
       <div class="createPost-main-container">
@@ -217,6 +220,9 @@ export default {
     fetchData(id) {
       getArticle(id).then(response => {
         this.postForm = response.rows[0]
+        if (!isEmpty(this.postForm.content)) {
+          this.postForm.content = this.postForm.content.replace(/src="\/upload/g, 'src="/api/wiki/upload')
+        }
         this.categoryValues = []
         if (this.postForm.categoryId) {
           this.categoryValues = this.postForm.categoryId.split(',')
@@ -256,6 +262,10 @@ export default {
             this.$message.error('请选择文章分类')
             return false
           }
+
+          if (!isEmpty(this.postForm.content)) {
+            this.postForm.content = this.postForm.content.replace(/src="\/api\/wiki\/upload/g, 'src="/upload')
+          }
           this.loading = true
           let resp
           if (!this.isEdit) {
@@ -288,6 +298,10 @@ export default {
     },
     draftForm() {
       this.submitForm(0)
+    },
+    closeEditor() {
+      this.$store.dispatch('tagsView/delView', this.tempRoute)
+      this.$router.go(-1)
     },
     getRemoteUserList(query) {
       if (isEmpty(query)) return
