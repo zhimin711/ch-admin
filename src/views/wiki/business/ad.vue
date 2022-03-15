@@ -7,8 +7,12 @@
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="listQuery.params.status" clearable placeholder="状态">
-            <el-option key="1" label="启用" value="1" />
-            <el-option key="2" label="禁用" value="0" />
+            <el-option
+              v-for="dict in dict.type.status"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.value"
+            />
           </el-select>
         </el-form-item>
       </el-form>
@@ -175,6 +179,7 @@ const defaultRecord = { sort: 1, status: '1', srcType: 0 }
 
 export default {
   name: 'WikiAd',
+  dictionary: ['status'],
   components: { Pagination, UploadImageCrop, ImageSelector },
   data() {
     return {
