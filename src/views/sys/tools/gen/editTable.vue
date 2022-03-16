@@ -150,7 +150,6 @@
 </template>
 <script>
 import { getGenTable, codegen, previewTable2 } from '@/api/sys/tools/gen'
-import { searchDictList, searchDict } from '@/api/upms/dict'
 import { treePermission } from '@/api/upms/permission'
 import basicInfoForm from './basicInfoForm'
 import genInfoForm from './genInfoForm'
@@ -227,9 +226,9 @@ export default {
       /** 查询菜单下拉列表 */
       this.getMenus('2')
       /** 查询字典下拉列表 */
-      searchDictList().then(resp => {
-        this.dictOptions = resp.rows
-      })
+      // searchDictList().then(resp => {
+      //   this.dictOptions = resp.rows
+      // })
     }
   },
   mounted() {
@@ -312,11 +311,11 @@ export default {
       })
     },
     handleDictChange(row, val) {
-      searchDict(val).then(resp => {
-        if (resp.success) {
-          row.dictData = resp.rows
-        }
-      })
+      // searchDict(val).then(resp => {
+      //   if (resp.success) {
+      //     row.dictData = resp.rows
+      //   }
+      // })
     },
     getFormPromise(form) {
       return new Promise(resolve => {

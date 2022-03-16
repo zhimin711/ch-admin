@@ -177,6 +177,7 @@ export default {
         })
         .catch(error => {
           this.$message.error(`${error.message}!`)
+          this.loading = false
           if (this.$refs.verify.mode === 'fixed') {
             setTimeout(() => {
               this.$refs.verify.refresh()

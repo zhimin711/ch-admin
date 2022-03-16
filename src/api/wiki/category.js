@@ -2,13 +2,13 @@ import request from '@/utils/request2'
 
 const baseUrl = '/wiki/admin/classify'
 
-export function fetchTree(pid) {
+export function fetchClassifyTree(pid) {
   return request({
     url: `${baseUrl}/tree/${pid}`,
     method: 'get'
   })
 }
-export function fetchList(query) {
+export function fetchClassifyList(query) {
   return request({
     url: `${baseUrl}/${query.page}/${query.limit}`,
     method: 'get',
@@ -16,7 +16,7 @@ export function fetchList(query) {
   })
 }
 
-export function get(id) {
+export function getClassify(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'get',
@@ -24,7 +24,7 @@ export function get(id) {
   })
 }
 
-export function add(data) {
+export function addClassify(data) {
   return request({
     url: `${baseUrl}`,
     method: 'post',
@@ -32,7 +32,7 @@ export function add(data) {
   })
 }
 
-export function edit(id, data) {
+export function editClassify(id, data) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'put',
@@ -40,7 +40,7 @@ export function edit(id, data) {
   })
 }
 
-export function del(id) {
+export function delClassify(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'delete'

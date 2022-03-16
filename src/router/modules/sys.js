@@ -37,7 +37,7 @@ const sysRouter = {
           component: () => import('@/views/sys/IaaS/database'),
           name: 'IaaSDatabase',
           meta: {
-            title: 'Database'
+            title: '数据库实例'
           }
         },
         {

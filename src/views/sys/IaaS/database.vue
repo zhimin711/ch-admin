@@ -55,8 +55,8 @@
 
       <el-table-column align="center" label="操作" width="200">
         <template slot-scope="scope">
-          <!--<el-link v-permission="['IAAS_DATABASE_EDIT']" type="primary" icon="el-icon-setting" @click="handleEdit(scope.row, scope.$index)">管理</el-link>-->
-          <router-link v-permission="['IAAS_DATABASE_EDIT']" :to="'/cloud/IaaS/dataSource/'+scope.row.id">
+          <el-link v-permission="['IAAS_DATABASE_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
+          <router-link v-permission="['IAAS_DATABASE_DETAIL']" :to="'/cloud/IaaS/dataSource/'+scope.row.id">
             <el-button type="text" icon="el-icon-setting">管理</el-button>
           </router-link>
           <el-link v-permission="['IAAS_DATABASE_DELETE']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>

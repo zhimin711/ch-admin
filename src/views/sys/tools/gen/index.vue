@@ -35,7 +35,7 @@
         <el-form v-show="showSearch" ref="queryForm" :model="queryParams" :inline="true" label-width="68px">
           <el-form-item label="表名称" prop="tableName">
             <el-input
-              v-model="queryParams.tableName"
+              v-model="queryParams.params.tableName"
               placeholder="请输入表名称"
               clearable
               size="small"
@@ -44,7 +44,7 @@
           </el-form-item>
           <el-form-item label="表描述" prop="tableComment">
             <el-input
-              v-model="queryParams.tableComment"
+              v-model="queryParams.params.tableComment"
               placeholder="请输入表描述"
               clearable
               size="small"
@@ -186,7 +186,7 @@
 
 <script>
 import { listTable, delTable, synchDb } from '@/api/sys/tools/gen'
-import { getCurrentUserTree, getProjectDb } from '@/api/sys/project/index'
+import { getCurrentProjectTree } from '@/api/sys/IaaS/database'
 import { getDbDs } from '@/api/sys/IaaS/data-source'
 import { isEmpty } from '@/utils/validate'
 import importTable from './importTable'
@@ -253,9 +253,10 @@ export default {
   methods: {
     getUserProjects() {
       this.loading = true
-      getCurrentUserTree().then(resp => {
+      getCurrentProjectTree().then(resp => {
         if (resp.success) {
           this.options.projects = resp.rows
+          this.options.projects.forEach(item => { item.key = '2' })
         }
       }).finally(() => { this.loading = false })
     },
@@ -269,13 +270,13 @@ export default {
       if (node.level === 0) {
         return resolve(this.options.projects)
       }
-      if (node.data.key === '1') {
-        getProjectDb(node.data.value).then(resp => {
-          if (resp.success) {
-            resolve(resp.rows)
-          }
-        })
-      }
+      // if (node.data.key === '1') {
+      //   getDbDs(node.data.value).then(resp => {
+      //     if (resp.success) {
+      //       resolve(resp.rows)
+      //     }
+      //   })
+      // }
       if (node.data.key === '2') {
         getDbDs(node.data.value).then(resp => {
           if (resp.success) {

@@ -35,6 +35,7 @@ export default {
     businessManagement: 'Business MG',
     uploadManagement: 'Upload Management',
     imageManagement: 'Images',
+    videoManagement: 'Videos',
     fileManagement: 'Files',
     uploadRecord: 'Upload Records',
     adManagement: 'Ad',

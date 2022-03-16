@@ -34,6 +34,7 @@ const cn = {
     businessManagement: '运营管理',
     uploadRecord: '上传记录',
     imageManagement: '图片管理',
+    videoManagement: '视频管理',
     fileManagement: '文件管理',
     adManagement: '广告管理',
     articleManagement: '文章管理',

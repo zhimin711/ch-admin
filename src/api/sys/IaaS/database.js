@@ -39,3 +39,10 @@ export function delDatabase(id) {
     method: 'delete'
   })
 }
+
+export function getCurrentProjectTree() {
+  return request({
+    url: `${namespace}/tenant`,
+    method: 'get'
+  })
+}

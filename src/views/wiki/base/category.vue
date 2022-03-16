@@ -122,7 +122,7 @@ import ImageSelector from '@/components/ImageSelector'
 
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { fetchTree, fetchList, add, edit, del } from '@/api/wiki/category'
+import { fetchClassifyTree, fetchClassifyList, addClassify, editClassify, delClassify } from '@/api/wiki/category'
 
 export default {
   name: 'WikiCategory',
@@ -174,7 +174,7 @@ export default {
     getTree(type) {
       // this.options.parents = []
       this.dialogLoadingVisible = true
-      fetchTree(type).then(response => {
+      fetchClassifyTree(type).then(response => {
         this.dialogLoadingVisible = false
         this.options.parents = response.rows
 
@@ -190,7 +190,7 @@ export default {
     },
     getList() {
       this.loading = true
-      fetchList(this.listQuery).then(response => {
+      fetchClassifyList(this.listQuery).then(response => {
         this.list = response.rows
         this.listQuery.total = response.total
         this.loading = false
@@ -228,7 +228,7 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          await del(row.id)
+          await delClassify(row.id)
           _this.getList()
           this.$message({
             type: 'success',
@@ -248,11 +248,11 @@ export default {
       let resp = null
       let opName = '添加'
       if (this.dialogType === 'new') {
-        resp = await add(this.record)
+        resp = await addClassify(this.record)
       } else if (this.dialogType === 'edit') {
         opName = '修改'
         this.record.children = []
-        resp = await edit(this.record.id, this.record).catch(() => {})
+        resp = await editClassify(this.record.id, this.record).catch(() => {})
       }
       if (resp && resp.success) {
         this.dialogVisible = false
