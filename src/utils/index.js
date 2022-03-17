@@ -374,10 +374,10 @@ export function addToken(item, module, defaultImg = '') {
   if (isEmpty(item)) {
     return defaultImg
   }
-  const hasProtocol = item.indexOf('//') === 0 || item.indexOf('https://') === 0 || item.indexOf('http://') === 0
+  const toOrigUrl = item.indexOf('//') === 0 || item.indexOf('https://') === 0 || item.indexOf('http://') === 0 || item.indexOf('/assets/') === 0 || item.indexOf('/static/') === 0
   const apiUrl = process.env.VUE_APP_API + '/' + module + item + '?token=' + getToken()
 
-  return hasProtocol ? item : apiUrl
+  return toOrigUrl ? item : apiUrl
 }
 
 // 数据合并

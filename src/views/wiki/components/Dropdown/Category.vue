@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { fetchTree } from '@/api/wiki/category'
+import { fetchClassifyTree } from '@/api/wiki/category'
 export default {
   props: {
     type: {
@@ -40,7 +40,7 @@ export default {
   },
   methods: {
     loadCategories() {
-      fetchTree(this.type).then(response => {
+      fetchClassifyTree(this.type).then(response => {
         this.categories = response.rows
       })
     }

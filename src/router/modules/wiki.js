@@ -282,6 +282,36 @@ const routerMap = {
       code: 'imageManagement'
     }
   },
+  WikiResourcesVideo: {
+    path: 'video',
+    component: () => import('@/views/wiki/business/media'),
+    name: 'WikiResourcesVideo',
+    meta: {
+      code: 'videoManagement'
+    }
+  },
+  WikiVideoAdd: {
+    path: 'video/add',
+    component: () => import('@/views/wiki/business/media/videoAdd'),
+    name: 'WikiVideoAdd',
+    hidden: true,
+    meta: {
+      title: '发布视频',
+      noCache: true,
+      activeMenu: '/wiki/resources/video'
+    }
+  },
+  WikiVideoEdit: {
+    path: 'video/edit/:id(\\d+)',
+    component: () => import('@/views/wiki/business/media/videoEdit'),
+    name: 'WikiVideoEdit',
+    hidden: true,
+    meta: {
+      title: '编辑视频',
+      noCache: true,
+      activeMenu: '/wiki/resources/video'
+    }
+  },
   WikiResourcesFile: {
     path: 'file',
     component: () => import('@/views/wiki/resources/files'),

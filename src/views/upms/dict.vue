@@ -30,10 +30,10 @@
           style="width: 240px"
         >
           <el-option
-            v-for="dict in statusOptions"
-            :key="dict.dictValue"
-            :label="dict.dictLabel"
-            :value="dict.dictValue"
+            v-for="dict in dict.type.status"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
           />
         </el-select>
       </el-form-item>
@@ -243,6 +243,7 @@ const defaultRecordNode = { sort: 1, status: '1' }
 
 export default {
   name: 'UpmsDict', // 用于页面缓存
+  dictionary: ['status'],
   data() {
     return {
       // 查询参数与结果
