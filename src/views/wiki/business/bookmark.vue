@@ -73,7 +73,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" :page-sizes="[15,30,60]" @pagination="getList" />
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'编辑书签':'创建书签'" :close-on-click-modal="false" :width="defaultDialogWidth()">
       <el-form ref="recordForm" :model="record" label-width="100px">
@@ -125,7 +125,6 @@
 </template>
 
 <script>
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone, defaultDialogWidth } from '@/utils'
 import { listBookmark, addBookmark, editBookmark, delBookmark } from '@/api/wiki/bookmark'
 
@@ -133,14 +132,13 @@ const defaultRecord = { type: '2', status: '0', href: '' }
 
 export default {
   name: 'WikiBookmark',
-  components: { Pagination },
   data() {
     return {
       record: Object.assign({}, defaultRecord),
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 20,
+        limit: 15,
         total: 0,
         list: [],
         params: { status: '0', type: '2' }
