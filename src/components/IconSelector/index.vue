@@ -5,7 +5,7 @@
       <svg-icon v-if="type === 'svg'" slot="prepend" :icon-class="value?value:''" />
       <!--<el-button slot="prepend" icon="el-icon-more"></el-button>-->
       <el-button slot="append" v-popover:popover icon="el-icon-search">选择</el-button>
-      <el-button slot="append" icon="el-icon-remove" @click="value = ''">清空</el-button>
+      <el-button slot="append" icon="el-icon-remove" @click="removeIcon">清空</el-button>
     </el-input>
 
     <el-popover
@@ -59,6 +59,10 @@ export default {
     }
   },
   methods: {
+    removeIcon() {
+      this.value = ''
+      this.$emit('input', '')
+    },
     generateIconCode(symbol) {
       return `<svg-icon icon-class="${symbol}" />`
     },
