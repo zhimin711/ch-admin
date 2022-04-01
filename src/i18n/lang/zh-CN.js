@@ -193,6 +193,7 @@ const cn = {
     cancel: '取消',
     _cancel: '取 消',
     _confirm: '确 定',
+    mgr: '管理',
     avatarUpload: '头像上传'
   },
   example: {

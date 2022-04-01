@@ -81,10 +81,21 @@ const routerMap = {
   },
   KafkaCluster: {
     path: 'cluster',
-    component: () => import('@/views/kafka/cluster'),
+    component: () => import('@/views/mq/kafka/cluster'),
     name: 'KafkaCluster',
     meta: {
       code: 'clusterManagement'
+    }
+  },
+  KafkaClusterMGR: {
+    path: '/kafka/cluster/mgr/:id(\\d+)',
+    component: () => import('@/views/mq/kafka/mgr'),
+    name: 'KafkaClusterMgr',
+    hidden: true,
+    meta: {
+      title: 'Kafka集群配置',
+      noCache: true,
+      activeMenu: '/kafka/cluster'
     }
   },
   KafkaContent: {
@@ -95,14 +106,14 @@ const routerMap = {
       code: 'messageSearch'
     }
   },
-  KafkaTopic: {
+  /*  KafkaTopic: {
     path: 'topic',
     component: () => import('@/views/kafka/topic'),
     name: 'KafkaTopic',
     meta: {
       code: 'topicManagement'
     }
-  },
+  },*/
   KafkaMocker: {
     path: 'mock',
     component: () => import('@/views/kafka/mocker'),
