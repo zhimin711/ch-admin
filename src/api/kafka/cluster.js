@@ -1,40 +1,41 @@
 import request from '@/utils/request2'
-const baseUrl = '/kafka/cluster'
-export function list(query) {
+
+const namespace = '/kafka/cluster'
+
+export function pageKafkaCluster(query) {
   return request({
-    url: `${baseUrl}/${query.page}/${query.limit}`,
+    url: `${namespace}/${query.page}/${query.limit}`,
     method: 'get',
     params: query.params
   })
 }
 
-export function get(id) {
+export function getKafkaCluster(id) {
   return request({
-    url: `${baseUrl}/${id}`,
-    method: 'get',
-    params: { id }
+    url: `${namespace}/${id}`,
+    method: 'get'
   })
 }
 
-export function add(data) {
+export function addKafkaCluster(data) {
   return request({
-    url: `${baseUrl}`,
+    url: `${namespace}`,
     method: 'post',
     data
   })
 }
 
-export function edit(id, data) {
+export function editKafkaCluster(id, data) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'put',
     data
   })
 }
 
-export function del(id) {
+export function delKafkaCluster(id) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'delete'
   })
 }

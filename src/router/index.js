@@ -12,9 +12,10 @@ import orgRouter, { getOrgRouter } from './modules/org'
 import logsRouter, { getLogsRouter } from './modules/logs'
 import wikiRouter, { getWikiRouter } from './modules/wiki'
 import sysRouter, { getCloudRouter } from './modules/sys'
-import kafkaRouter, { getKafkaRouter } from './modules/kafka'
 import nacosRouter, { getNacosRouter } from './modules/nacos'
-import rocketMQRouter, { getRocketMQRouter } from './modules/rocket-mq'
+// import { getMQRouter } from './modules/mq'
+import { getKafkaRouter } from './modules/kafka'
+import { getRocketMQRouter } from './modules/rocket-mq'
 import { getCanalRouter } from './modules/canal'
 
 import componentsRouter from './modules/components'
@@ -165,9 +166,7 @@ export const asyncRoutes = [
   logsRouter,
   sysRouter,
   wikiRouter,
-  kafkaRouter,
-  nacosRouter,
-  rocketMQRouter
+  nacosRouter
 ]
 
 const createRouter = () => new Router({

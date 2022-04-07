@@ -195,6 +195,7 @@ export default {
     cancel: 'Cancel',
     _cancel: 'Cancel',
     _confirm: 'Confirm',
+    mgr: 'Manage',
     avatarUpload: 'Avatar Upload'
   },
   example: {
