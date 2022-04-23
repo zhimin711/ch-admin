@@ -1,65 +1,68 @@
 <template>
-  <el-card>
-    <el-form ref="form" :model="record" label-width="120px" :rules="rules">
-      <div style="padding: 0px 10px 20px 10px">
-        <el-form-item label="归属应用" prop="appName">
-          <!--          <el-input v-model="record.appName" placeholder="归属应用" />-->
-          <el-select v-model="record.appName" placeholder="请选择" :disabled="isApp">
-            <el-option
-              v-for="item in projects"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="Data ID" prop="dataId">
-          <el-input v-model="record.dataId" placeholder="请输入Data ID" :disabled="isEdit" />
-        </el-form-item>
-        <el-form-item label="分组" prop="group">
-          <el-input v-model="record.group" placeholder="分组名称" :disabled="isEdit" />
-        </el-form-item>
-        <el-form-item label="标签">
-          <el-input v-model="record.configTags" placeholder="标签" />
-        </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="record.desc" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-        <CodeMirror v-model="record.content" :mode="record.type" @change-mode="changeCodeMode" />
-      </div>
-      <el-form-item>
-        <el-button type="primary" :loading="releaseLoading" @click="submit">发布</el-button>
-        <el-button type="info" @click="onBack">返回</el-button>
-      </el-form-item>
-    </el-form>
-    <el-dialog
-      title="配置内容比较"
-      :visible.sync="dialogCompareVisible"
-      :width="'80%'"
-    >
-      <div>
-        <el-form :inline="true" label-width="120px" label-position="left">
-          <el-row :gutter="10">
-            <el-col :span="12">
-              <el-form-item label="原配置内容：" />
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="新配置内容：" />
-            </el-col>
-          </el-row>
-        </el-form>
-        <code-diff :old-string="content" :new-string="record.content" :context="10" output-format="side-by-side" />
-        <!--<div id="view" />-->
-      </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" :loading="releaseLoading" @click="handleSubmit">确定发布</el-button>
-      </span>
-    </el-dialog>
-  </el-card>
+  <div>
+    <Sticky :z-index="10" :class-name="'sub-navbar published'">
+      <el-button type="success" :loading="releaseLoading" @click="submit">发布</el-button>
+      <el-button type="info" @click="onBack">返回</el-button>
+    </Sticky>
+    <el-card>
+      <el-form ref="form" :model="record" label-width="120px" :rules="rules">
+        <div style="padding: 0px 10px 20px 10px">
+          <el-form-item label="归属应用" prop="appName">
+            <!--          <el-input v-model="record.appName" placeholder="归属应用" />-->
+            <el-select v-model="record.appName" placeholder="请选择" :disabled="isApp">
+              <el-option
+                v-for="item in projects"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="Data ID" prop="dataId">
+            <el-input v-model="record.dataId" placeholder="请输入Data ID" :disabled="isEdit" />
+          </el-form-item>
+          <el-form-item label="分组" prop="group">
+            <el-input v-model="record.group" placeholder="分组名称" :disabled="isEdit" />
+          </el-form-item>
+          <el-form-item label="标签">
+            <el-input v-model="record.configTags" placeholder="标签" />
+          </el-form-item>
+          <el-form-item label="描述">
+            <el-input v-model="record.desc" type="textarea" placeholder="请输入内容" />
+          </el-form-item>
+          <CodeMirror v-model="record.content" :mode="record.type" @change-mode="changeCodeMode" />
+        </div>
+      </el-form>
+      <el-dialog
+        title="配置内容比较"
+        :visible.sync="dialogCompareVisible"
+        :width="'80%'"
+      >
+        <div>
+          <el-form :inline="true" label-width="120px" label-position="left">
+            <el-row :gutter="10">
+              <el-col :span="12">
+                <el-form-item label="原配置内容：" />
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="新配置内容：" />
+              </el-col>
+            </el-row>
+          </el-form>
+          <code-diff :old-string="content" :new-string="record.content" :context="10" output-format="side-by-side" />
+          <!--<div id="view" />-->
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button type="primary" :loading="releaseLoading" @click="handleSubmit">确定发布</el-button>
+        </span>
+      </el-dialog>
+    </el-card>
+  </div>
 </template>
 
 <script>
 import CodeMirror from '@/components/CodeMirror/ConfigFile'
+import Sticky from '@/components/Sticky' // 粘性header组件
 import { getNacosConfig, releaseNacosConfig } from '@/api/nacos/configs'
 import { searchNamespaceProjects } from '@/api/upms/namespace'
 import { isEmpty } from '@/utils/validate'
@@ -83,7 +86,7 @@ const defaultRecord = {
   appName: null
 }
 export default {
-  components: { CodeMirror, CodeDiff },
+  components: { CodeMirror, CodeDiff, Sticky },
   props: {
     mode: {
       type: String,
