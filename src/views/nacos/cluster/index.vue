@@ -1,11 +1,34 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
-      <!--<el-input v-model="listQuery.name" placeholder="Server 名称" style="width: 200px;" class="filter-item" />-->
-      <el-input v-model="listQuery.keyword" placeholder="节点Ip" style="width: 200px;" class="filter-item" />
-      <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="fetchData()">查询</el-button>
-    </div>
+    <el-tabs v-model="clusterView" type="card">
+      <el-tab-pane
+        v-for="(item) in clusters"
+        :key="item.id"
+        :label="item.name"
+        :name="item.id"
+      >
+        {{ item.name }}
+      </el-tab-pane>
+      <el-tab-pane name="0">
+        <span slot="label">添加集群 <i class="el-icon-plus" /></span>
+        <el-form ref="dataForm" :rules="rules" :model="record" label-position="left" label-width="120px" style="margin-left:30px;">
+          <el-form-item label="集群名称">
+            <el-input v-model="record.name" placeholder="集群名称" />
+          </el-form-item>
+          <el-form-item label="集群地址" prop="url">
+            <el-input v-model="record.url" placeholder="localhost:8848" />
+          </el-form-item>
+          <el-form-item label="描述：" prop="description">
+            <el-input v-model="record.description" type="textarea" />
+          </el-form-item>
+          <el-form-item>
+            <el-button v-loading="loading2" type="primary" @click="handleSubmit">提交</el-button>
+          </el-form-item>
+        </el-form>
+      </el-tab-pane>
+    </el-tabs>
     <el-table
+      v-if="list.length>0"
       ref="table"
       v-loading="listLoading"
       :data="list"
@@ -44,10 +67,10 @@
 </template>
 
 <script>
-import { getClusterNodes } from '@/api/nacos/cluster'
+import { pageNacosCluster, getNacosCluster, addNacosCluster, editNacosCluster } from '@/api/upms/nacos/cluster'
 
 export default {
-  name: 'NacosClusterNodes',
+  name: 'NacosClusterNodes1',
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -59,11 +82,17 @@ export default {
   },
   data() {
     return {
+      clusters: [],
+      rules: [],
+      clusterView: '',
+      record: {},
       list: [],
       listLoading: true,
+      loading2: false,
+      isEdit: false,
       listQuery: {
-        name: '',
-        ip: ''
+        page: 1,
+        size: 10
       }
     }
   },
@@ -73,11 +102,16 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-      getClusterNodes(this.listQuery).then(res => {
-        this.list = res.data
+      pageNacosCluster(this.listQuery).then(resp => {
+        if (resp.success) {
+          this.clusters = resp.rows
+        }
       }).finally(() => {
         this.listLoading = false
       })
+    },
+    fetchDetail(id) {
+      getNacosCluster(id).then(resp => {})
     },
     toggleExpand(row) {
       const $table = this.$refs.table
@@ -87,6 +121,18 @@ export default {
         }
       })
       $table.toggleRowExpansion(row)
+    },
+    handleSubmit() {
+      if (this.isEdit) {
+        editNacosCluster(this.record).then(resp => {
+          if (resp.success) {
+            this.fetchData()
+            this.clusterView = resp.rows[0]
+          }
+        })
+      } else {
+        addNacosCluster(this.record)
+      }
     }
   }
 }
