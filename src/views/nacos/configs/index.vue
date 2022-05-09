@@ -181,10 +181,11 @@
 </template>
 
 <script>
-import { pageNacosConfigs, deleteNacosConfigs, deleteNacosConfig, exportNacosConfigs, cloneNacosConfigs } from '@/api/nacos/configs'
+import { deleteNacosConfigs, deleteNacosConfig, exportNacosConfigs, cloneNacosConfigs } from '@/api/nacos/configs'
+import { pageNacosConfigs } from '@/api/devops/nacos/configs'
 import SingleFile from '@/components/Upload/SingleFile2'
 import Sticky from '@/components/Sticky' // 粘性header组件
-import Tenant from '../components/tenant' // 粘性header组件
+import Tenant from '../components/clusterNamespaces' // 粘性header组件
 import CodeViewer from '../components/showCodeConfig' // 粘性header组件
 import { deepClone } from '@/utils'
 
@@ -193,7 +194,7 @@ const opName = {
   'CLONE': '克隆'
 }
 export default {
-  name: 'NacosConfigsIndex',
+  name: 'NacosConfigsIndex1',
   components: { Sticky, Tenant, SingleFile, CodeViewer },
   data() {
     return {
@@ -256,10 +257,10 @@ export default {
     namespaceName() {
       const tmp = this.namespaceId
       const tenant = this.namespaces.find(tenant => {
-        return tenant.namespace === tmp
+        return tenant.id === tmp
       })
       if (tenant) {
-        return tenant.namespaceShowName
+        return tenant.label
       }
       return ''
     },
@@ -269,29 +270,33 @@ export default {
   },
   // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
   created() {
-    this.fetchData()
   },
   methods: {
     loadNamespacesFinish(data) {
       this.namespaces = data
+      if (data.length > 0) this.namespaceId = data[0].value
+      this.fetchData()
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
     handleNamespaceChange(val) {
-      // this.listQuery.tenant = val
+      // this.namespaceId = val
+      console.log(this.namespaceId, val)
       this.queryData()
     },
     fetchData() {
-      this.listQuery.tenant = this.namespaceId
-      this.listLoading = true
+      this.listQuery.namespaceId = this.namespaceId
       this.listQuery.search = 'accurate'
       if (this.listQuery.dataId || this.listQuery.group) {
         this.listQuery.search = 'blur'
       }
-      pageNacosConfigs(this.listQuery).then(res => {
-        this.list = res.pageItems
-        this.count = res.totalCount
+      this.listLoading = true
+      pageNacosConfigs(this.listQuery).then(resp => {
+        if (resp.success) {
+          this.list = resp.rows
+          this.count = resp.total
+        }
       }).finally(() => {
         this.listLoading = false
       })

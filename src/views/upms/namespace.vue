@@ -262,9 +262,6 @@ export default {
           }
         })
       })
-    },
-    handleLog(row) {
-      this.$router.push('nodeServer/log?id=' + row.id)
     }
   }
 }

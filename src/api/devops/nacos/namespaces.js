@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
 
-const namespace = '/upms/nacos/namespaces'
+const namespace = '/devops/nacos/namespaces'
 
 export function pageNacosNamespaces(query) {
   return request({
@@ -10,11 +10,10 @@ export function pageNacosNamespaces(query) {
   })
 }
 
-export function getNacosNamespace(params) {
+export function getNacosNamespace(id) {
   return request({
-    url: `${namespace}`,
-    method: 'get',
-    params: params
+    url: `${namespace}/${id}`,
+    method: 'get'
   })
 }
 
@@ -28,7 +27,7 @@ export function addNacosNamespace(data) {
 
 export function updateNacosNamespace(data) {
   return request({
-    url: `${namespace}`,
+    url: `${namespace}/${data.id}`,
     method: 'put',
     data
   })
@@ -39,5 +38,19 @@ export function deleteNacosNamespace(params) {
     url: `${namespace}`,
     method: 'delete',
     params: params
+  })
+}
+
+export function listNacosNamespaces(params) {
+  return request({
+    url: `${namespace}`,
+    method: 'get'
+  })
+}
+
+export function syncNacosNamespaces(id) {
+  return request({
+    url: `${namespace}/sync/${id}`,
+    method: 'post'
   })
 }

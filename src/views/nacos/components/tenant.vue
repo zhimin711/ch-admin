@@ -1,7 +1,7 @@
 <template>
   <el-row>
-    <el-col :span="1" align="right"><el-tag>空间</el-tag></el-col>
-    <el-col :span="23">
+    <el-col style="min-width: 200px"><el-tag>空间</el-tag></el-col>
+    <el-col>
       <el-menu :default-active="tenant" class="el-menu-namespace" mode="horizontal" @select="selectNamespace">
         <el-menu-item v-for="item in namespaces" :key="item.namespace" :index="item.namespace">{{ item.namespaceShowName }}</el-menu-item>
       </el-menu>
@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { getNacosNamespaces } from '@/api/nacos/namespace'
+import { getNacosNamespaces } from '@/api/devops/nacos/namespaces'
 export default {
   props: {
     value: {
