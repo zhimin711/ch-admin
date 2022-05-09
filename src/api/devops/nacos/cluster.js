@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
 
-const namespace = '/upms/nacos/cluster'
+const namespace = '/devops/nacos/clusters'
 
 // 分页查询nacos集群列表
 export function pageNacosCluster(query) {
@@ -30,7 +30,7 @@ export function addNacosCluster(data) {
 // 修改nacos集群
 export function editNacosCluster(data) {
   return request({
-    url: `${namespace}`,
+    url: `${namespace}/${data.id}`,
     method: 'put',
     data
   })
@@ -41,5 +41,21 @@ export function delNacosCluster(id) {
   return request({
     url: `${namespace}/${id}`,
     method: 'delete'
+  })
+}
+
+// 查询nacos集群列表
+export function listNacosCluster() {
+  return request({
+    url: `${namespace}`,
+    method: 'get'
+  })
+}
+
+// 查询nacos集群 namespace列表
+export function listNacosClusterNamespaces(id) {
+  return request({
+    url: `${namespace}/${id}/namespaces`,
+    method: 'get'
   })
 }

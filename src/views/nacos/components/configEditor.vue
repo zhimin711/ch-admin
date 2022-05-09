@@ -6,7 +6,7 @@
     </Sticky>
     <el-card>
       <el-form ref="form" :model="record" label-width="120px" :rules="rules">
-        <div style="padding: 0px 10px 20px 10px">
+        <div style="padding: 0 10px 20px 10px">
           <el-form-item label="归属应用" prop="appName">
             <!--          <el-input v-model="record.appName" placeholder="归属应用" />-->
             <el-select v-model="record.appName" placeholder="请选择" :disabled="isApp">
@@ -63,7 +63,7 @@
 <script>
 import CodeMirror from '@/components/CodeMirror/ConfigFile'
 import Sticky from '@/components/Sticky' // 粘性header组件
-import { getNacosConfig, releaseNacosConfig } from '@/api/nacos/configs'
+import { getNacosConfig, releaseNacosConfig } from '@/api/devops/nacos/configs'
 import { searchNamespaceProjects } from '@/api/upms/namespace'
 import { isEmpty } from '@/utils/validate'
 import CodeDiff from 'vue-code-diff'
@@ -154,9 +154,9 @@ export default {
       params.show = 'all'
       this.namespaceId = params.namespaceId
       params.tenant = this.namespaceId
-      getNacosConfig(params).then(data => {
-        if (data) {
-          this.record = Object.assign({}, data)
+      getNacosConfig(params).then(resp => {
+        if (resp.success) {
+          this.record = Object.assign({}, resp.rows[0])
           this.content = this.record.content
         }
       })
