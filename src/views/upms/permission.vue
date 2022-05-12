@@ -175,6 +175,7 @@ export default {
         list: [],
         params: {}
       },
+      expandData: {},
       record: {},
       recordType: '',
       recordStatus: true,
@@ -236,6 +237,8 @@ export default {
       // this.getList()
     },
     loadChildren(tree, treeNode, resolve) {
+      this.expandData[tree.id] = {}
+      this.expandData[tree.id].resolve = resolve
       const params = {
         id: tree.id,
         parentId: tree.parentId,
