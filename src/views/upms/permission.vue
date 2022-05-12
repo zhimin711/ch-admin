@@ -176,6 +176,8 @@ export default {
         params: {}
       },
       expandData: {},
+      isRefreshExpand: false,
+      origRecord: null,
       record: {},
       recordType: '',
       recordStatus: true,
@@ -238,6 +240,7 @@ export default {
     },
     loadChildren(tree, treeNode, resolve) {
       this.expandData[tree.id] = {}
+      this.expandData[tree.id].row = tree
       this.expandData[tree.id].resolve = resolve
       const params = {
         id: tree.id,
@@ -257,10 +260,29 @@ export default {
       pagePermission(this.tableA).then(response => {
         this.tableA.list = response.rows
         this.tableA.total = response.total
+        if (this.isRefreshExpand) {
+          this.refreshExpand()
+        }
       }).finally(() => { this.tableA.loading = false })
+    },
+    refreshExpand() {
+      this.isRefreshExpand = false
+      if (this.origRecord) {
+        const pidArr = this.origRecord.parentId.split(',')
+        if (this.expandData[pidArr[pidArr.length - 1]]) {
+          this.loadChildren(this.expandData[pidArr[pidArr.length - 1]].row, null, this.expandData[pidArr[pidArr.length - 1]].resolve)
+        }
+      }
+      if (this.record.parentId) {
+        const pidArr = this.record.parentId.split(',')
+        if (this.expandData[pidArr[pidArr.length - 1]]) {
+          this.loadChildren(this.expandData[pidArr[pidArr.length - 1]].row, null, this.expandData[pidArr[pidArr.length - 1]].resolve)
+        }
+      }
     },
     handleAdd() {
       this.getTree('1')
+      this.origRecord = null
       this.record = Object.assign({}, defaultRecord)
       this.recordStatus = true
       this.recordParents = []
@@ -276,6 +298,7 @@ export default {
       })
     },
     handleEdit(row, index) {
+      this.origRecord = Object.assign({}, row)
       this.record = deepClone(row)
       this.recordType = row.type
       this.recordParents = this.record.parentId.split(',')
@@ -288,6 +311,7 @@ export default {
       this.changeType(row.type)
     },
     handleCopy(row, index) {
+      this.origRecord = null
       this.record = deepClone(row)
       this.record.id = null
       this.record.sort += 1
@@ -309,6 +333,9 @@ export default {
         .then(async() => {
           await delPermission(row.id).then(resp => {
             if (resp.success) {
+              this.origRecord = Object.assign({}, row)
+              this.record = Object.assign({}, defaultRecord)
+              this.isRefreshExpand = true
               _this.getList()
               this.$message({
                 type: 'success',
@@ -329,9 +356,12 @@ export default {
         this.$message.error(`地址格式错误，目录或菜单地址只能是字母数字!`)
         return
       }*/
+      // this.isRefreshExpand = false
       if (this.recordParents.length > 0) {
         this.record.parentId = this.recordParents.join(',')
-      } else this.record.parentId = null
+      } else {
+        this.record.parentId = null
+      }
       this.record.status = '0'
       if (this.recordStatus) {
         this.record.status = '1'
@@ -340,9 +370,11 @@ export default {
       let opName = '添加'
       this.dialogLoading = true
       if (this.dialogType === 'new' || this.dialogType === 'copy') {
+        this.isRefreshExpand = this.expandData[this.recordParents[this.recordParents.length - 1]] !== undefined
         resp = await addPermission(this.record).finally(() => { this.dialogLoading = false })
       } else if (this.dialogType === 'edit') {
         opName = '修改'
+        this.isRefreshExpand = true
         this.record.children = []
         resp = await editPermission(this.record.id, this.record).finally(() => { this.dialogLoading = false })
       }
