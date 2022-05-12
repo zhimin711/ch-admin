@@ -18,7 +18,16 @@
       </el-button>
     </div>
 
-    <el-table v-loading="tableA.loading" :data="tableA.list" style="width: 100%;margin-bottom: 20px;" row-key="id" border :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+    <el-table
+      v-loading="tableA.loading"
+      :data="tableA.list"
+      style="width: 100%;margin-bottom: 20px;"
+      row-key="id"
+      border
+      lazy
+      :load="loadChildren"
+      :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
+    >
       <el-table-column :label="$t('label.name')" prop="name" min-width="220" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           {{ scope.row.name }}
@@ -143,7 +152,7 @@
 import IconSelector from '@/components/IconSelector'
 import { deepClone } from '@/utils'
 import { isEmpty } from '@/utils/validate'
-import { treePermission, pagePermission, addPermission, editPermission, delPermission } from '@/api/upms/permission'
+import { treePermission, pagePermission, addPermission, editPermission, delPermission, getPermissionChildren } from '@/api/upms/permission'
 
 const defaultRecord = {
   type: '1',
@@ -225,6 +234,20 @@ export default {
     handleNodeClick(data) {
       console.log(data)
       // this.getList()
+    },
+    loadChildren(tree, treeNode, resolve) {
+      const params = {
+        id: tree.id,
+        parentId: tree.parentId,
+        code: this.tableA.params.code,
+        name: this.tableA.params.name,
+        status: this.tableA.params.status
+      }
+      getPermissionChildren(params).then(resp => {
+        if (resp.success) {
+          resolve(resp.rows)
+        }
+      })
     },
     getList() {
       this.tableA.loading = true

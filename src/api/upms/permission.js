@@ -1,16 +1,16 @@
 import request from '@/utils/request2'
 
-const baseUrl = '/upms/permission'
+const namespace = '/upms/permission'
 
 export function treePermission(type) {
   return request({
-    url: `${baseUrl}/tree/${type}`,
+    url: `${namespace}/tree/${type}`,
     method: 'get'
   })
 }
 export function pagePermission(query) {
   return request({
-    url: `${baseUrl}/${query.num}/${query.size}`,
+    url: `${namespace}/${query.num}/${query.size}`,
     method: 'get',
     params: query.params
   })
@@ -18,7 +18,7 @@ export function pagePermission(query) {
 
 export function getPermission(id) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'get',
     params: { id }
   })
@@ -26,7 +26,7 @@ export function getPermission(id) {
 
 export function addPermission(data) {
   return request({
-    url: `${baseUrl}`,
+    url: `${namespace}`,
     method: 'post',
     data
   })
@@ -34,7 +34,7 @@ export function addPermission(data) {
 
 export function editPermission(id, data) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'put',
     data
   })
@@ -42,7 +42,15 @@ export function editPermission(id, data) {
 
 export function delPermission(id) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'delete'
+  })
+}
+
+export function getPermissionChildren(params) {
+  return request({
+    url: `${namespace}/${params.id}/children`,
+    method: 'get',
+    params: params
   })
 }
