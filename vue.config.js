@@ -38,27 +38,20 @@ module.exports = {
       errors: true
     },
     proxy: {
-      [process.env.VUE_APP_API + '/nacos']: {
+      /* [process.env.VUE_APP_API + '/nacos']: {
         // target: `http://127.0.0.1:7001`,
         target: 'http://10.206.38.38:1080',
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_API]: ''
         }
-      },
+      }, */
       [process.env.VUE_APP_API]: {
         // target: `http://127.0.0.1:7001`,
-        target: `http://192.168.199.194:7001`,
+        target: `http://api.ch.cn`,
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_API]: ''
-        }
-      },
-      '/upload': {
-        target: `http://192.168.199.194`,
-        changeOrigin: true,
-        pathRewrite: {
-          '^/upload': '/upload'
         }
       }
     },
