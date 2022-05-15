@@ -63,8 +63,8 @@
 <script>
 import CodeMirror from '@/components/CodeMirror/ConfigFile'
 import Sticky from '@/components/Sticky' // 粘性header组件
-import { getNacosConfig, releaseNacosConfig } from '@/api/devops/nacos/configs'
-import { searchNamespaceProjects } from '@/api/upms/namespace'
+import { addNacosConfig, getNacosConfig, updateNacosConfig } from '@/api/devops/nacos/configs'
+import { getNamespaceProjects } from '@/api/devops/nacos/namespaces'
 import { isEmpty } from '@/utils/validate'
 import CodeDiff from 'vue-code-diff'
 
@@ -126,7 +126,7 @@ export default {
   methods: {
     searchNamespaceProjects(val = '') {
       if (this.namespaceId === '') return
-      searchNamespaceProjects(this.namespaceId, val).then(resp => {
+      getNamespaceProjects(this.namespaceId, val).then(resp => {
         if (resp.success) {
           this.projects = resp.rows
         }
@@ -195,17 +195,16 @@ export default {
         })
         return
       }
-
+      this.record.namespaceId = this.namespaceId
       if (!this.isEdit) {
         const params = {}
         params.show = 'all'
         params.dataId = this.record.dataId
         params.group = this.record.group
-        params.tenant = this.namespaceId
         params.namespaceId = this.namespaceId
         this.releaseLoading = true
-        getNacosConfig(params).then(data => {
-          if (data) {
+        getNacosConfig(params).then(resp => {
+          if (resp.success && resp.rows.length > 0) {
             this.$message({
               message: `配置 Data Id: [${this.record.dataId}] Group: [${this.record.group}] 已存在！`,
               type: 'error'
@@ -224,40 +223,42 @@ export default {
         // })
       }
     },
-    handleSubmit() {
+    async handleSubmit() {
       this.releaseLoading = true
-      releaseNacosConfig(this.convertData()).then(resp => {
-        if (resp) {
-          this.dialogCompareVisible = false
-          this.$message({
-            message: '发布成功',
-            type: 'success'
-          })
-          if (!this.isEdit) {
-            this.onBack()
-            return
-          }
-
-          this.$confirm(
-            '发布成功，请选择继续编辑或返回列表？',
-            '发布成功',
-            {
-              confirmButtonText: '返回',
-              cancelButtonText: '继续',
-              type: 'success'
-            }
-          ).then(() => {
-            this.onBack()
-          })
-        } else {
-          this.$message({
-            message: '发布失败',
-            type: 'error'
-          })
+      let resp = null
+      if (!this.isEdit) {
+        resp = await addNacosConfig(this.record)
+      } else {
+        resp = await updateNacosConfig(this.record)
+      }
+      if (resp && resp.success) {
+        this.dialogCompareVisible = false
+        this.$message({
+          message: '发布成功',
+          type: 'success'
+        })
+        if (!this.isEdit) {
+          this.onBack()
+          return
         }
-      }).finally(() => {
-        this.releaseLoading = false
-      })
+        this.$confirm(
+          '发布成功，请选择继续编辑或返回列表？',
+          '发布成功',
+          {
+            confirmButtonText: '返回',
+            cancelButtonText: '继续',
+            type: 'success'
+          }
+        ).then(() => {
+          this.onBack()
+        })
+      } else {
+        this.$message({
+          message: '发布失败',
+          type: 'error'
+        })
+      }
+      this.releaseLoading = false
     },
     onBack() {
       this.$store.dispatch('tagsView/delView', this.tempRoute).then(() => {

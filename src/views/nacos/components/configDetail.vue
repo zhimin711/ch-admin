@@ -50,8 +50,8 @@
 
 <script>
 import { getNacosConfigsHistory } from '@/api/nacos/history'
-import { getNacosConfig, rollbackNacosConfig } from '@/api/nacos/configs'
-import { searchNamespaceProjects } from '@/api/upms/namespace'
+import { getNacosConfig, rollbackNacosConfig } from '@/api/devops/nacos/configs'
+import { getNamespaceProjects } from '@/api/devops/nacos/namespaces'
 
 export default {
   props: {
@@ -83,7 +83,7 @@ export default {
     },
     searchNamespaceProjects() {
       if (this.namespaceId === '') return
-      searchNamespaceProjects(this.namespaceId, '').then(resp => {
+      getNamespaceProjects(this.namespaceId, '').then(resp => {
         if (resp.success) {
           this.projects = resp.rows
         }
@@ -93,16 +93,16 @@ export default {
       this.namespaceId = params.namespaceId
       params.tenant = this.namespaceId
       if (this.isHistory) {
-        getNacosConfigsHistory(params).then(data => {
-          if (data) {
-            this.record = Object.assign({}, data)
+        getNacosConfigsHistory(params).then(resp => {
+          if (resp.success) {
+            this.record = Object.assign({}, resp.rows[0])
           }
         })
       } else {
         params.show = 'all'
-        getNacosConfig(params).then(data => {
-          if (data) {
-            this.record = Object.assign({}, data)
+        getNacosConfig(params).then(resp => {
+          if (resp.success) {
+            this.record = Object.assign({}, resp.rows[0])
           }
         })
       }

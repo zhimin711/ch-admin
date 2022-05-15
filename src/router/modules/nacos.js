@@ -165,12 +165,20 @@ const routerMap = {
       title: '租户管理'
     }
   },
-  NacosTenantNamespace: {
+  NacosClusterNamespace: {
     path: 'namespace',
     component: () => import('@/views/nacos/tenant/namespace'),
     name: 'NacosTenantNamespace',
     meta: {
       title: '命名空间'
+    }
+  },
+  NacosProjectNamespaces: {
+    path: 'projects',
+    component: () => import('@/views/nacos/tenant/project'),
+    name: 'NacosProjectNamespaces',
+    meta: {
+      title: '项目空间'
     }
   },
   NacosProjectApply: {

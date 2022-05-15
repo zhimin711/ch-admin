@@ -181,8 +181,8 @@
 </template>
 
 <script>
-import { deleteNacosConfigs, deleteNacosConfig, exportNacosConfigs, cloneNacosConfigs } from '@/api/nacos/configs'
-import { pageNacosConfigs } from '@/api/devops/nacos/configs'
+import { exportNacosConfigs, cloneNacosConfigs } from '@/api/nacos/configs'
+import { pageNacosConfigs, deleteNacosConfig } from '@/api/devops/nacos/configs'
 import SingleFile from '@/components/Upload/SingleFile2'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/clusterNamespaces' // 粘性header组件
@@ -282,7 +282,7 @@ export default {
     },
     handleNamespaceChange(val) {
       // this.namespaceId = val
-      console.log(this.namespaceId, val)
+      // console.log(this.namespaceId, val)
       this.queryData()
     },
     fetchData() {
@@ -350,17 +350,16 @@ export default {
       this.dialogVisible2Del = true
     },
     async handleDelete(row) {
-      let res
-      const formData = new URLSearchParams()
-      formData.append('namespaceId', this.namespaceId)
+      let params = {}
       if (row) {
-        res = await deleteNacosConfig(row, formData)
+        params = Object.assign({}, row)
       } else {
-        const ids = this.multipleSelection.map(item => item.id)
-        res = await deleteNacosConfigs(ids, formData)
         this.dialogVisible2Del = false
+        params.ids = this.multipleSelection.map(item => item.id).join(',')
       }
-      if (res) {
+      params.namespaceId = this.namespaceId
+      const resp = await deleteNacosConfig(params)
+      if (resp && resp.success && resp.rows[0]) {
         this.fetchData()
         this.$message({
           message: '删除配置成功',

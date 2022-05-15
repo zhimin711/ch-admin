@@ -4,7 +4,7 @@ const namespace = '/devops/nacos/configs'
 
 export function pageNacosConfigs(query) {
   return request({
-    url: `${namespace}`,
+    url: `${namespace}/${query.pageNo}/${query.pageSize}`,
     method: 'get',
     params: query
   })
@@ -12,7 +12,7 @@ export function pageNacosConfigs(query) {
 
 export function getNacosConfig(params) {
   return request({
-    url: `${namespace}/${params.namespaceId}`,
+    url: `${namespace}`,
     method: 'get',
     params
   })
@@ -28,7 +28,7 @@ export function addNacosConfig(data) {
 
 export function updateNacosConfig(data) {
   return request({
-    url: `${namespace}/${data.id}`,
+    url: `${namespace}`,
     method: 'put',
     data
   })
@@ -42,13 +42,10 @@ export function deleteNacosConfig(params) {
   })
 }
 
-export function releaseNacosConfig(data) {
+export function cloneNacosConfigs(params, data) {
   return request({
-    url: `${namespace}`,
+    url: `${namespace}?clone=true&tenant=${params.tenant}&policy=${params.policy}&namespaceId=${params.namespaceId}`,
     method: 'post',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
     data
   })
 }

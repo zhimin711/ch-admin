@@ -127,7 +127,14 @@
 </template>
 
 <script>
-import { pageNacosNamespaces, addNacosNamespace, getNacosNamespace, updateNacosNamespace, deleteNacosNamespaces, syncNacosNamespaces } from '@/api/devops/nacos/namespaces'
+import {
+  pageNacosNamespaces,
+  addNacosNamespace,
+  getNacosNamespace,
+  updateNacosNamespace,
+  deleteNacosNamespace,
+  syncNacosNamespaces
+} from '@/api/devops/nacos/namespaces'
 
 import { listNacosCluster } from '@/api/devops/nacos/cluster'
 
@@ -253,12 +260,12 @@ export default {
       })
     },
     handleDelete(row) {
-      this.$confirm(`确定要删除该命名空间[${row.namespaceShowName}]吗？`, '删除命名空间', {
+      this.$confirm(`确定要删除该命名空间[${row.name}]吗？`, '删除命名空间', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        deleteNacosNamespaces(row.namespace).then((resp) => {
+        deleteNacosNamespace(row.id).then((resp) => {
           if (resp.success) {
             this.fetchData()
             this.$message({

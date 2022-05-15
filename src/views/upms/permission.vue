@@ -22,7 +22,7 @@
       v-loading="tableA.loading"
       :data="tableA.list"
       style="width: 100%;margin-bottom: 20px;"
-      row-key="id"
+      :row-key="tableKey"
       border
       lazy
       :load="loadChildren"
@@ -79,7 +79,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="tableA.total>0" :total="tableA.total" :page.sync="tableA.num" :limit.sync="tableA.size" @pagination="getList" />
+    <pagination v-show="tableA.total>0" :total="tableA.total" :page.sync="tableA.num" :limit.sync="tableA.size" @pagination="getList(0)" />
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?$t('permission.edit'): $t('permission.add')" :close-on-click-modal="false">
       <el-form ref="baseForm" :model="record" :rules="rules" label-width="100px">
@@ -238,10 +238,11 @@ export default {
       console.log(data)
       // this.getList()
     },
-    loadChildren(tree, treeNode, resolve) {
-      this.expandData[tree.id] = {}
-      this.expandData[tree.id].row = tree
-      this.expandData[tree.id].resolve = resolve
+    tableKey(row) {
+      return row.parentId + ',' + row.id
+    },
+    async loadChildren(tree, treeNode, resolve) {
+      // const isExpanded = this.expandData[tree.id] !== undefined
       const params = {
         id: tree.id,
         parentId: tree.parentId,
@@ -249,13 +250,19 @@ export default {
         name: this.tableA.params.name,
         status: this.tableA.params.status
       }
-      getPermissionChildren(params).then(resp => {
+      await getPermissionChildren(params).then(resp => {
         if (resp.success) {
+          // if (isExpanded) debugger
           resolve(resp.rows)
+          this.expandData[tree.id] = {}
+          this.expandData[tree.id].row = tree
+          // this.expandData[tree.id].node = treeNode
+          this.expandData[tree.id].resolve = resolve
         }
       })
     },
-    getList() {
+    getList(op) {
+      if (op === 0) this.expandData = {}
       this.tableA.loading = true
       pagePermission(this.tableA).then(response => {
         this.tableA.list = response.rows
@@ -267,18 +274,22 @@ export default {
     },
     refreshExpand() {
       this.isRefreshExpand = false
+      const pids = new Set()
+      let pidStr = '0'
       if (this.origRecord) {
-        const pidArr = this.origRecord.parentId.split(',')
-        if (this.expandData[pidArr[pidArr.length - 1]]) {
-          this.loadChildren(this.expandData[pidArr[pidArr.length - 1]].row, null, this.expandData[pidArr[pidArr.length - 1]].resolve)
-        }
+        pidStr = this.origRecord.parentId
       }
       if (this.record.parentId) {
-        const pidArr = this.record.parentId.split(',')
-        if (this.expandData[pidArr[pidArr.length - 1]]) {
-          this.loadChildren(this.expandData[pidArr[pidArr.length - 1]].row, null, this.expandData[pidArr[pidArr.length - 1]].resolve)
-        }
+        pidStr += ',' + this.record.parentId
       }
+      const pidArr = pidStr.split(',')
+      // pidArr.reverse()
+      pidArr.forEach(async(pid) => {
+        if (!pids.has(pid) && this.expandData[pid]) {
+          pids.add(pid)
+          await this.loadChildren(this.expandData[pid].row, this.expandData[pid].node, this.expandData[pid].resolve)
+        }
+      })
     },
     handleAdd() {
       this.getTree('1')
@@ -370,11 +381,9 @@ export default {
       let opName = '添加'
       this.dialogLoading = true
       if (this.dialogType === 'new' || this.dialogType === 'copy') {
-        this.isRefreshExpand = this.expandData[this.recordParents[this.recordParents.length - 1]] !== undefined
         resp = await addPermission(this.record).finally(() => { this.dialogLoading = false })
       } else if (this.dialogType === 'edit') {
         opName = '修改'
-        this.isRefreshExpand = true
         this.record.children = []
         resp = await editPermission(this.record.id, this.record).finally(() => { this.dialogLoading = false })
       }
@@ -384,6 +393,7 @@ export default {
           type: 'success',
           message: `${opName} ${this.record.name} 成功!`
         })
+        this.isRefreshExpand = true
         _this.getList()
       }
     },

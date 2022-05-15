@@ -33,24 +33,23 @@ export function updateNacosNamespace(data) {
   })
 }
 
-export function deleteNacosNamespace(params) {
+export function deleteNacosNamespace(id) {
   return request({
-    url: `${namespace}`,
-    method: 'delete',
-    params: params
+    url: `${namespace}/${id}`,
+    method: 'delete'
   })
 }
 
-export function listNacosNamespaces(params) {
+export function syncNacosNamespaces(clusterId) {
   return request({
-    url: `${namespace}`,
-    method: 'get'
-  })
-}
-
-export function syncNacosNamespaces(id) {
-  return request({
-    url: `${namespace}/sync/${id}`,
+    url: `${namespace}/sync/${clusterId}`,
     method: 'post'
+  })
+}
+
+export function getNamespaceProjects(id, name) {
+  return request({
+    url: `${namespace}/${id}/projects?s=${name}`,
+    method: 'get'
   })
 }
