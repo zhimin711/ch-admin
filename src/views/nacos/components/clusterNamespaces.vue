@@ -3,7 +3,7 @@
     <el-row>
       <el-col>
         <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="loadNamespaces">
-          <el-menu-item index="0" disabled><el-tag>集群</el-tag></el-menu-item>
+          <el-menu-item style="opacity: 1" index="0" disabled><el-tag>集群</el-tag></el-menu-item>
           <el-menu-item v-for="item in clusters" :key="item.value" :index="item.value">{{ item.label }}</el-menu-item>
         </el-menu>
       </el-col>

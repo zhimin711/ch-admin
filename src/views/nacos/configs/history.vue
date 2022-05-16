@@ -3,7 +3,7 @@
     <sticky :z-index="10" :class-name="'sub-navbar2 '">
       <tenant v-model="namespaceId" @change="queryData" />
     </sticky>
-    <div slot="header" class="clearfix">
+    <div class="clearfix">
       <span>历史版本(保留30天)</span>
     </div>
     <div class="">
@@ -43,15 +43,15 @@
 </template>
 
 <script>
-import { getNacosConfigsHistory } from '@/api/nacos/history'
-import { parseTime } from '@/utils/index'
-import Pagination from '@/components/Pagination'
+import { pageNacosConfigsHistory } from '@/api/devops/nacos/history'
+import { parseTime } from '@/utils'
+import { isEmpty } from '@/utils/validate'
 import Sticky from '@/components/Sticky' // 粘性header组件
-import Tenant from '../components/tenant' // 粘性header组件
+import Tenant from '../components/clusterNamespaces' // 粘性header组件
 
 export default {
   name: 'NacosConfigsHistory',
-  components: { Pagination, Sticky, Tenant },
+  components: { Sticky, Tenant },
   data() {
     return {
       namespaceId: '',
@@ -77,16 +77,26 @@ export default {
   },
   methods: {
     fetchData() {
+      if (isEmpty(this.namespaceId)) {
+        this.$message.error('请先选择命名空间...')
+        return
+      }
       this.listLoading = true
-      this.listQuery.tenant = this.namespaceId
-      getNacosConfigsHistory(this.listQuery).then(res => {
-        this.list = res.pageItems
-        this.count = res.totalCount
+      this.listQuery.namespaceId = this.namespaceId
+      pageNacosConfigsHistory(this.listQuery).then(resp => {
+        if (resp.success) {
+          this.list = resp.rows
+          this.count = resp.total
+        }
       }).finally(() => {
         this.listLoading = false
       })
     },
     queryData() {
+      if (isEmpty(this.listQuery.dataId) || isEmpty(this.listQuery.group)) {
+        this.list = []
+        return
+      }
       this.$refs['queryForm'].validate((valid) => {
         if (valid) {
           this.listQuery.pageNo = 1

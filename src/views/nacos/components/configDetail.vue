@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import { getNacosConfigsHistory } from '@/api/nacos/history'
+import { getNacosConfigsHistory } from '@/api/devops/nacos/history'
 import { getNacosConfig, rollbackNacosConfig } from '@/api/devops/nacos/configs'
 import { getNamespaceProjects } from '@/api/devops/nacos/namespaces'
 
