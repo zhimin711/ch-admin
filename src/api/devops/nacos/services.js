@@ -10,7 +10,7 @@ export function pageNacosServices(params) {
   })
 }
 
-export function getNacosServices(params) {
+export function getNacosService(params) {
   return request({
     url: `${namespace}`,
     method: 'get',

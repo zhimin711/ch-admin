@@ -167,7 +167,8 @@
 </template>
 
 <script>
-import { getNacosService, updateNacosService, pageNacosServiceInstances, updateNacosServiceInstance, updateNacosServiceCluster } from '@/api/nacos/services'
+import { getNacosService } from '@/api/devops/nacos/services'
+import { updateNacosService, pageNacosServiceInstances, updateNacosServiceInstance, updateNacosServiceCluster } from '@/api/nacos/services'
 import JsonEditor from '@/components/JsonEditor'
 import { deepClone } from '@/utils'
 

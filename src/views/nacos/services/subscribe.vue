@@ -37,7 +37,7 @@ import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/clusterNamespaces' // 粘性header组件
 
 export default {
-  name: 'NacosServiceSubscribe1',
+  name: 'NacosServiceSubscribers',
   components: { Sticky, Tenant },
   data() {
     return {

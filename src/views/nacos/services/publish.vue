@@ -90,7 +90,6 @@
 <script>
 import { addNacosService, deleteNacosService } from '@/api/nacos/services'
 import { pageNacosServices } from '@/api/devops/nacos/services'
-import Pagination from '@/components/Pagination'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/clusterNamespaces' // 粘性header组件
 import CodeViewer from '../components/showCodeService' // 粘性header组件
@@ -102,7 +101,7 @@ const defaultRecord = {
 }
 export default {
   name: 'NacosServicesIndex1',
-  components: { Pagination, Sticky, Tenant, CodeViewer, JsonEditor },
+  components: { Sticky, Tenant, CodeViewer, JsonEditor },
   data() {
     return {
       listLoading: false,
