@@ -19,7 +19,7 @@
           />
         </el-form-item>
       </el-form>
-      <el-button type="info" icon="el-icon-search" plain @click="queryData()">查询</el-button>
+      <el-button type="info" icon="el-icon-search" plain @click="fetchData">查询</el-button>
       <el-button v-permission="'NacosServicesIndexAdd'" type="primary" icon="el-icon-plus" @click="handleCreate()">创建服务</el-button>
     </div>
     <el-table
@@ -88,10 +88,11 @@
 </template>
 
 <script>
-import { pageNacosServices, addNacosService, deleteNacosService } from '@/api/nacos/services'
+import { addNacosService, deleteNacosService } from '@/api/nacos/services'
+import { pageNacosServices } from '@/api/devops/nacos/services'
 import Pagination from '@/components/Pagination'
 import Sticky from '@/components/Sticky' // 粘性header组件
-import Tenant from '../components/tenant' // 粘性header组件
+import Tenant from '../components/clusterNamespaces' // 粘性header组件
 import CodeViewer from '../components/showCodeService' // 粘性header组件
 import JsonEditor from '@/components/JsonEditor'
 
@@ -100,12 +101,12 @@ const defaultRecord = {
   metadata: ''
 }
 export default {
-  name: 'NacosServicesIndex',
+  name: 'NacosServicesIndex1',
   components: { Pagination, Sticky, Tenant, CodeViewer, JsonEditor },
   data() {
     return {
-      list: [],
       listLoading: false,
+      list: [],
       count: 0,
       listQuery: {
         hasIpCount: true,
@@ -133,18 +134,20 @@ export default {
   },
   methods: {
     fetchData() {
-      // if (this.namespaceId === '') return
+      if (this.namespaceId === '') return
+      this.listQuery.namespaceId = this.namespaceId
       this.listLoading = true
-      pageNacosServices(this.listQuery).then(res => {
-        this.list = res.serviceList
-        this.count = res.count
+      pageNacosServices(this.listQuery).then(resp => {
+        if (resp.success) {
+          this.list = resp.rows
+          this.count = resp.total
+        }
       }).finally(() => {
         this.listLoading = false
       })
     },
-    queryData(val) {
-      this.listQuery.page = 1
-      this.listQuery.namespaceId = val
+    queryData() {
+      this.listQuery.pageNo = 1
       this.fetchData()
     },
     handleCreate() {

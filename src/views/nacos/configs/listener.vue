@@ -44,7 +44,7 @@
 import { getNacosConfigsListener, getNacosListener } from '@/api/nacos/listener'
 // import Pagination from '@/components/Pagination'
 import Sticky from '@/components/Sticky' // 粘性header组件
-import Tenant from '../components/tenant' // 粘性header组件
+import Tenant from '../components/clusterNamespaces' // 粘性header组件
 
 export default {
   name: 'NacosConfigsListener',

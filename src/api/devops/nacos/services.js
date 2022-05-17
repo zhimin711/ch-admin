@@ -1,8 +1,8 @@
 import request from '@/utils/request3'
 
-const namespace = '/devops/nacos/history'
+const namespace = '/devops/nacos/services'
 
-export function pageNacosConfigsHistory(params) {
+export function pageNacosServices(params) {
   return request({
     url: `${namespace}/${params.pageNo}/${params.pageSize}`,
     method: 'get',
@@ -10,7 +10,7 @@ export function pageNacosConfigsHistory(params) {
   })
 }
 
-export function getNacosConfigHistory(params) {
+export function getNacosServices(params) {
   return request({
     url: `${namespace}`,
     method: 'get',

@@ -32,14 +32,13 @@
 </template>
 
 <script>
-import { getNacosSubscribers } from '@/api/nacos/services'
-import Pagination from '@/components/Pagination'
+import { pageNacosSubscribes } from '@/api/devops/nacos/subscribers'
 import Sticky from '@/components/Sticky' // 粘性header组件
-import Tenant from '../components/tenant' // 粘性header组件
+import Tenant from '../components/clusterNamespaces' // 粘性header组件
 
 export default {
-  name: 'NacosServiceSubscribe',
-  components: { Pagination, Sticky, Tenant },
+  name: 'NacosServiceSubscribe1',
+  components: { Sticky, Tenant },
   data() {
     return {
       namespaceId: null,
@@ -64,15 +63,21 @@ export default {
     fetchData() {
       this.listLoading = true
       this.listQuery.namespaceId = this.namespaceId
-      getNacosSubscribers(this.listQuery).then(res => {
-        this.list = res.subscribers
-        this.count = res.count
+      pageNacosSubscribes(this.listQuery).then(resp => {
+        if (resp.success) {
+          this.list = resp.rows
+          this.count = resp.total
+        }
       }).finally(() => {
         this.listLoading = false
       })
     },
     queryData() {
-      this.listQuery.page = 1
+      if (this.namespaceId <= 0) {
+        this.$message.error('请选择空间')
+        return
+      }
+      this.listQuery.pageNo = 1
       this.$refs['queryForm'].validate((valid) => {
         if (valid) {
           this.fetchData()

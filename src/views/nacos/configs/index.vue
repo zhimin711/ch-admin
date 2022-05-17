@@ -194,7 +194,7 @@ const opName = {
   'CLONE': '克隆'
 }
 export default {
-  name: 'NacosConfigsIndex1',
+  name: 'NacosConfigsIndex',
   components: { Sticky, Tenant, SingleFile, CodeViewer },
   data() {
     return {

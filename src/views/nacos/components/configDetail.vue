@@ -1,6 +1,6 @@
 <template>
   <el-card>
-    <el-form ref="form" :model="record" label-width="120px" :rules="rules" :disabled="true">
+    <el-form ref="form" :model="record" label-width="120px" :rules="rules" disabled>
       <div style="padding-left: 10px;padding-top: 20px;">
         <el-form-item label="归属应用" prop="appName">
           <el-select v-model="record.appName" placeholder="请选择">
@@ -25,7 +25,14 @@
           <el-input v-model="record.desc" type="textarea" />
         </el-form-item>
         <el-form-item v-if="isHistory" label="操作类型" prop="opType">
-          <el-input v-model="record.opType" placeholder="操作类型" />
+          <el-select v-model="record.opType">
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item v-if="isHistory" label="MD5" prop="md5">
           <el-input v-model="record.md5" />
@@ -33,10 +40,6 @@
         <el-form-item label="内容">
           <el-input v-model="record.content" type="textarea" :autosize="{ minRows: 10, maxRows: 14}" />
         </el-form-item>
-        <!--        <el-form-item>
-          <el-button v-if="mode === 'ROLLBACK'" type="warning" @click="onCancel">回滚配置</el-button>
-          <el-button type="info" @click="onBack">返回</el-button>
-        </el-form-item>-->
       </div>
     </el-form>
     <el-row>
@@ -49,8 +52,8 @@
 </template>
 
 <script>
-import { getNacosConfigsHistory } from '@/api/devops/nacos/history'
-import { getNacosConfig, rollbackNacosConfig } from '@/api/devops/nacos/configs'
+import { getNacosConfigHistory, rollbackNacosConfig } from '@/api/devops/nacos/history'
+import { getNacosConfig } from '@/api/devops/nacos/configs'
 import { getNamespaceProjects } from '@/api/devops/nacos/namespaces'
 
 export default {
@@ -67,6 +70,16 @@ export default {
       record: {},
       projects: [],
       isHistory: false,
+      options: [{
+        value: 'I',
+        label: '新增'
+      }, {
+        value: 'U',
+        label: '更新'
+      }, {
+        value: 'D',
+        label: '删除'
+      }],
       rules: {
         dataId: [{ required: true, message: 'Data ID 不能为空', trigger: 'change' }],
         group: [{ required: true, message: 'Group 不能为空', trigger: 'change' }]
@@ -93,7 +106,7 @@ export default {
       this.namespaceId = params.namespaceId
       params.tenant = this.namespaceId
       if (this.isHistory) {
-        getNacosConfigsHistory(params).then(resp => {
+        getNacosConfigHistory(params).then(resp => {
           if (resp.success) {
             this.record = Object.assign({}, resp.rows[0])
           }
@@ -128,14 +141,8 @@ export default {
       })
     },
     handleSubmit() {
-      const formData = new URLSearchParams()
-      formData.append('namespaceId', this.record.tenant || '')
-      formData.append('appName', this.record.appName)
-      formData.append('dataId', this.record.dataId)
-      formData.append('group', this.record.group)
-      formData.append('content', this.record.content)
-      formData.append('tenant', this.record.tenant)
-      rollbackNacosConfig(formData).then(resp => {
+      this.record.namespaceId = this.namespaceId
+      rollbackNacosConfig(this.record).then(resp => {
         this.$message({
           message: '配置回滚' + (resp ? '成功' : '失败'),
           type: resp ? 'success' : 'error'

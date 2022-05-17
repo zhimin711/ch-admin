@@ -105,10 +105,10 @@ export default {
       })
     },
     handleDetail(row) {
-      this.$router.push(`/nacos/configs/historyDetail?nid=${row.id}&namespaceId=${row.namespaceId || ''}&dataId=${row.dataId}&group=${row.group}`)
+      this.$router.push(`/nacos/configs/historyDetail?nid=${row.id}&namespaceId=${this.namespaceId}&dataId=${row.dataId}&group=${row.group}`)
     },
     handleRollback(row) {
-      this.$router.push(`/nacos/configs/rollback?nid=${row.id}&namespaceId=${row.namespaceId || ''}&dataId=${row.dataId}&group=${row.group}`)
+      this.$router.push(`/nacos/configs/rollback?nid=${row.id}&namespaceId=${this.namespaceId}&dataId=${row.dataId}&group=${row.group}`)
     },
     dateFormat(row, column, cellValue, index) {
       return parseTime(new Date(cellValue))
