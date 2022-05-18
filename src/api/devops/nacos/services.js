@@ -25,3 +25,27 @@ export function addNacosService(data) {
     data
   })
 }
+
+export function updateNacosService(data) {
+  return request({
+    url: `${namespace}`,
+    method: 'put',
+    data
+  })
+}
+
+export function deleteNacosService(params) {
+  return request({
+    url: `${namespace}`,
+    method: 'delete',
+    params: params
+  })
+}
+
+export function updateNacosServiceCluster(data) {
+  return request({
+    url: `${namespace}/cluster`,
+    method: 'put',
+    data
+  })
+}

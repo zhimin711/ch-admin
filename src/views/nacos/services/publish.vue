@@ -88,8 +88,7 @@
 </template>
 
 <script>
-import { deleteNacosService } from '@/api/nacos/services'
-import { pageNacosServices, addNacosService } from '@/api/devops/nacos/services'
+import { pageNacosServices, addNacosService, deleteNacosService } from '@/api/devops/nacos/services'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/clusterNamespaces' // 粘性header组件
 import CodeViewer from '../components/showCodeService' // 粘性header组件
@@ -101,7 +100,7 @@ const defaultRecord = {
   metadata: ''
 }
 export default {
-  name: 'NacosServicesIndex1',
+  name: 'NacosServicesIndex',
   components: { Sticky, Tenant, CodeViewer, JsonEditor },
   data() {
     return {
@@ -180,15 +179,9 @@ export default {
                 this.dialogVisible = false
               }
               this.$message({
-                message: (ok ? '创建服务成功' : '创建服务失败'),
+                message: (ok ? '创建服务成功' : '创建服务失败, ' + resp.message + '已存在'),
                 type: (ok ? 'success' : 'error')
               })
-            }).catch(err => {
-              if (err.data && err.data.indexOf('already exists') >= 0) {
-                this.$message.error(`${(this.record.groupName || 'DEFAULT_GROUP') + '@' + this.record.serviceName} 服务已存在！`)
-              } else {
-                this.$message.error(err)
-              }
             })
           }
         }
@@ -204,8 +197,12 @@ export default {
       })
     },
     async handleDelete(row) {
-      const res = await deleteNacosService(row)
-      if (res === 'ok') {
+      const params = {}
+      params.namespaceId = this.namespaceId
+      params.serviceName = row.name
+      params.groupName = row.groupName
+      const resp = await deleteNacosService(params)
+      if (resp.success && resp.rows[0]) {
         this.fetchData()
         this.$message({
           message: '删除服务成功',

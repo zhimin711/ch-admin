@@ -9,3 +9,12 @@ export function pageNacosInstances(params) {
     params: params
   })
 }
+
+export function updateNacosInstance(data) {
+  return request({
+    url: `${namespace}`,
+    method: 'put',
+    data
+  })
+}
+

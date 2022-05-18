@@ -167,9 +167,8 @@
 </template>
 
 <script>
-import { getNacosService } from '@/api/devops/nacos/services'
-import { pageNacosInstances } from '@/api/devops/nacos/instances'
-import { updateNacosService, updateNacosServiceInstance, updateNacosServiceCluster } from '@/api/nacos/services'
+import { getNacosService, updateNacosService, updateNacosServiceCluster } from '@/api/devops/nacos/services'
+import { pageNacosInstances, updateNacosInstance } from '@/api/devops/nacos/instances'
 import JsonEditor from '@/components/JsonEditor'
 import { deepClone } from '@/utils'
 
@@ -264,8 +263,8 @@ export default {
     },
     handleSwitchInstance(row) {
       row.enabled = !row.enabled
-      updateNacosServiceInstance(this.convertDataInstance(row)).then(res => {
-        if (res === 'ok') {
+      updateNacosInstance(this.convertDataInstance(row)).then(resp => {
+        if (resp.success && resp.rows[0]) {
           this.$message.success(row.enabled ? '上线成功' : '下线成功')
         } else {
           this.$message.error(row.enabled ? '上线失败' : '下线失败')
@@ -274,22 +273,22 @@ export default {
       })
     },
     convertDataInstance(row) {
-      const formData = new URLSearchParams()
-      formData.append('serviceName', this.record.name)
-      formData.append('clusterName', this.cluster.name)
-      formData.append('groupName', this.record.groupName)
-      formData.append('ip', row.ip)
-      formData.append('port', row.port)
-      formData.append('ephemeral', row.ephemeral)
-      formData.append('weight', row.weight)
-      formData.append('enabled', row.enabled)
-      formData.append('metadata', typeof row.metadata === 'string' ? row.metadata : JSON.stringify(row.metadata))
-      formData.append('namespaceId', this.namespaceId)
+      const formData = {}
+      formData.namespaceId = this.namespaceId
+      formData.serviceName = this.record.name
+      formData.clusterName = this.cluster.name
+      formData.groupName = this.record.groupName
+      formData.ip = row.ip
+      formData.port = row.port
+      formData.ephemeral = row.ephemeral
+      formData.weight = row.weight
+      formData.enabled = row.enabled
+      formData.metadata = typeof row.metadata === 'string' ? row.metadata : JSON.stringify(row.metadata)
       return formData
     },
     handleSubmitInstance() {
-      updateNacosServiceInstance(this.convertDataInstance(this.ins)).then(res => {
-        if (res === 'ok') {
+      updateNacosInstance(this.convertDataInstance(this.ins)).then(resp => {
+        if (resp.success && resp.rows[0]) {
           this.$message.success('更新实例成功')
           this.dialogVisible2Instance = false
           this.loadInstances()
@@ -310,41 +309,42 @@ export default {
       })
     },
     convertDataCluster(data) {
-      const formData = new URLSearchParams()
-      formData.append('namespaceId', this.namespaceId)
-      formData.append('serviceName', data.serviceName)
-      formData.append('clusterName', data.name)
-      formData.append('checkPort', data.defaultCheckPort)
-      formData.append('useInstancePort4Check', data.useInstancePort4Check)
-      formData.append('metadata', typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata))
-      formData.append('healthChecker', JSON.stringify(this.healthChecker))
+      const formData = {}
+      formData.namespaceId = this.namespaceId
+      formData.serviceName = data.serviceName
+      formData.clusterName = data.name
+      formData.checkPort = data.defaultCheckPort
+      formData.useInstancePort4Check = data.useInstancePort4Check
+      formData.metadata = typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata)
+      formData.healthChecker = JSON.stringify(this.healthChecker)
       return formData
     },
     handleSubmit() {
-      updateNacosService(this.convertData(this.record)).then(res => {
-        this.handleResult(res)
+      updateNacosService(this.convertData(this.record)).then(resp => {
+        this.handleResult(resp)
       }).catch(err => {
         this.$message.error(err)
       })
     },
     convertData(data) {
-      const formData = new URLSearchParams()
-      formData.append('namespaceId', this.namespaceId)
-      formData.append('serviceName', data.name)
-      formData.append('groupName', data.groupName)
-      formData.append('protectThreshold', data.protectThreshold)
-      formData.append('metadata', typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata))
-      formData.append('selector', JSON.stringify(this.selector))
+      const formData = {}
+      formData.namespaceId = this.namespaceId
+      formData.serviceName = data.name
+      formData.groupName = data.groupName
+      formData.protectThreshold = data.protectThreshold
+      formData.metadata = typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata)
+      formData.selector = JSON.stringify(this.selector)
       return formData
     },
-    handleResult(res) {
-      if (res === 'ok') {
+    handleResult(resp) {
+      const ok = resp.success && resp.rows[0]
+      if (ok) {
         this.loadData(this.tempRoute.query)
         this.dialogVisible = false
       }
       this.$message({
-        message: (res === 'ok' ? '更新服务成功' : '更新服务失败'),
-        type: (res === 'ok' ? 'success' : 'error')
+        message: (ok ? '更新服务成功' : '更新服务失败'),
+        type: (ok ? 'success' : 'error')
       })
     },
     onBack() {
