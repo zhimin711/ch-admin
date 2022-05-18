@@ -168,7 +168,8 @@
 
 <script>
 import { getNacosService } from '@/api/devops/nacos/services'
-import { updateNacosService, pageNacosServiceInstances, updateNacosServiceInstance, updateNacosServiceCluster } from '@/api/nacos/services'
+import { pageNacosInstances } from '@/api/devops/nacos/instances'
+import { updateNacosService, updateNacosServiceInstance, updateNacosServiceCluster } from '@/api/nacos/services'
 import JsonEditor from '@/components/JsonEditor'
 import { deepClone } from '@/utils'
 
@@ -218,8 +219,9 @@ export default {
     },
     loadData(params) {
       this.namespaceId = params.namespaceId
-      getNacosService(params).then(data => {
-        if (data) {
+      getNacosService(params).then(resp => {
+        if (resp.success) {
+          const data = resp.rows[0]
           this.detail = deepClone(data.service)
           this.detail.metadata = JSON.stringify(this.record.metadata)
 
@@ -245,8 +247,10 @@ export default {
       params.pageSize = 10
       this.tables.instanceLoading = true
       this.tables.instances = []
-      pageNacosServiceInstances(params).then(resp => {
-        this.tables.instances = resp.list
+      pageNacosInstances(params).then(resp => {
+        if (resp.success) {
+          this.tables.instances = resp.rows
+        }
       }).finally(() => {
         this.tables.instanceLoading = false
       })

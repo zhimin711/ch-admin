@@ -30,6 +30,10 @@ export default {
     value: {
       type: String,
       default: ''
+    },
+    defaultFirst: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -70,6 +74,7 @@ export default {
       listNacosClusterNamespaces(this.activeIndex).then((resp) => {
         if (resp.success) {
           this.namespaces = resp.rows
+          if (this.defaultFirst && this.namespaces.length > 0) this.tenant = this.namespaces[0].value
           this.$emit('finish', this.namespaces)
         }
         // this.$store.dispatch('user/setTenants', this.namespaces)

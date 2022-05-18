@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <sticky :z-index="10" :class-name="'sub-navbar2 '">
-      <tenant v-model="namespaceId" @change="queryData" />
+      <tenant v-model="namespaceId" :default-first="true" @change="queryData" />
     </sticky>
     <div class="query-container">
       <el-form :model="listQuery" :inline="true">
@@ -88,12 +88,13 @@
 </template>
 
 <script>
-import { addNacosService, deleteNacosService } from '@/api/nacos/services'
-import { pageNacosServices } from '@/api/devops/nacos/services'
+import { deleteNacosService } from '@/api/nacos/services'
+import { pageNacosServices, addNacosService } from '@/api/devops/nacos/services'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/clusterNamespaces' // 粘性header组件
 import CodeViewer from '../components/showCodeService' // 粘性header组件
 import JsonEditor from '@/components/JsonEditor'
+import { isEmpty } from '@/utils/validate'
 
 const defaultRecord = {
   protectThreshold: 1,
@@ -150,6 +151,10 @@ export default {
       this.fetchData()
     },
     handleCreate() {
+      if (this.namespaceId === '0') {
+        this.$message.warning('请选择空间')
+        return
+      }
       this.dialogStatus = 'create'
       this.dialogVisible = true
       this.record = Object.assign({}, defaultRecord)
@@ -166,8 +171,18 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           if (this.dialogStatus === 'create') {
-            addNacosService(this.convertData(this.record)).then(res => {
-              this.handleResult(res)
+            this.record.namespaceId = this.namespaceId
+            if (isEmpty(this.record.groupName)) this.record.groupName = 'DEFAULT_GROUP'
+            addNacosService(this.record).then(resp => {
+              const ok = resp.success && resp.rows[0]
+              if (ok) {
+                this.fetchData()
+                this.dialogVisible = false
+              }
+              this.$message({
+                message: (ok ? '创建服务成功' : '创建服务失败'),
+                type: (ok ? 'success' : 'error')
+              })
             }).catch(err => {
               if (err.data && err.data.indexOf('already exists') >= 0) {
                 this.$message.error(`${(this.record.groupName || 'DEFAULT_GROUP') + '@' + this.record.serviceName} 服务已存在！`)
@@ -175,10 +190,6 @@ export default {
                 this.$message.error(err)
               }
             })
-          } else if (this.dialogStatus === 'update') {
-            // updateNodeServer(this.record).then(res => {
-            //   this.operationRes(res)
-            // })
           }
         }
       })
@@ -215,16 +226,6 @@ export default {
       formData.append('namespaceId', this.$store.getters.tenant)
       formData.append('selector', JSON.stringify(this.selector))
       return formData
-    },
-    handleResult(res) {
-      if (res === 'ok') {
-        this.fetchData()
-        this.dialogVisible = false
-      }
-      this.$message({
-        message: (res === 'ok' ? '创建服务成功' : '创建服务失败'),
-        type: (res === 'ok' ? 'success' : 'error')
-      })
     },
     handleDetail(row) {
       this.$router.push(`/nacos/services/detail?namespaceId=${this.namespaceId}&serviceName=${row.name}&groupName=${row.groupName}`)

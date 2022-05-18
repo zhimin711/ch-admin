@@ -18,10 +18,10 @@ export function getNacosService(params) {
   })
 }
 
-export function rollbackNacosConfig(data) {
+export function addNacosService(data) {
   return request({
-    url: `${namespace}?opType=${data.opType}`,
-    method: 'put',
+    url: `${namespace}`,
+    method: 'post',
     data
   })
 }
