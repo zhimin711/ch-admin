@@ -187,7 +187,7 @@ const opName = {
   'CLONE': '克隆'
 }
 export default {
-  name: 'NacosProjectConfigsIndex1',
+  name: 'NacosProjectConfigsIndex',
   components: { Sticky, ProjectNamespace, SingleFile, CodeViewer, ProjectMenu },
   data() {
     return {
@@ -260,7 +260,7 @@ export default {
       return '-'
     },
     importUrl() {
-      return `/api/devops/nacos/${this.projectId}/configs/import?namespace=${this.namespaceId}`
+      return `/api/devops/nacos/user/${this.projectId}/configs/import?namespaceId=${this.namespaceId}`
     }
   },
   // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
