@@ -38,3 +38,10 @@ export function listNacosProjects(params) {
     params: params
   })
 }
+
+export function listNacosProjectClusters(id) {
+  return request({
+    url: `${namespace}/${id}/clusters`,
+    method: 'get'
+  })
+}

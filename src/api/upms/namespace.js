@@ -60,14 +60,6 @@ export function getAvailableList(name) {
   })
 }
 
-export function applyNamespaces(id, data) {
-  return request({
-    url: `${namespace}/apply/${id}`,
-    method: 'post',
-    data
-  })
-}
-
 export function searchNamespaceProjects(id, name) {
   return request({
     url: `${namespace}/${id}/projects?s=${name}`,

@@ -10,12 +10,25 @@
         <sticky :z-index="10"> <!-- :class-name="'sub-navbar2 '"-->
           <project-namespace v-model="namespaceId" :project-id="projectId" @change="handleNamespaceChange" @finish="loadNamespacesFinish" />
         </sticky>
+        <el-alert
+          v-if="!showSearch && projectId==='' && namespaceId!=='apply'"
+          title="未选择项目或未加载项目的配置集群"
+          type="info"
+          description="若未选择项目请从左侧先选择项目，若未加载到集群请联系管理员..."
+          show-icon
+        />
+        <el-alert
+          v-if="!showSearch && projectId!=='' && namespaceId!=='apply'"
+          title="你未授权当前项目集群的命名空间"
+          type="info"
+          description="请先选择申请空间，后等待管理员审核..."
+          show-icon
+        />
         <div v-show="showSearch" class="query-container">
           <el-button v-permission="'NACOS_PROJECT_CONFIG_ADD'" type="primary" @click="handleCreate()">创建配置</el-button>
-          <el-button v-permission="'NACOS_PROJECT_CONFIG_DELETE'" type="danger" @click="onDelete2()">删除</el-button>
-          <el-button v-permission="'NACOS_PROJECT_CONFIGS_EXPORT'" type="success" plain @click="handleExports()">导出配置</el-button>
-          <el-button v-permission="'NACOS_PROJECT_CONFIGS_IMPORT'" type="primary" @click="handleImports()">导入配置</el-button>
           <el-button v-permission="'NACOS_PROJECT_CONFIGS_CLONE'" type="primary" plain @click="handleClone()">克隆配置</el-button>
+          <el-button v-permission="'NACOS_PROJECT_CONFIGS_IMPORT'" type="primary" plain @click="handleImports()">导入配置</el-button>
+          <el-button v-permission="'NACOS_PROJECT_CONFIGS_EXPORT'" type="warning" plain @click="handleExports()">导出配置</el-button>
           <el-button type="primary" icon="el-icon-refresh" plain @click="queryData()">刷新</el-button>
         </div>
         <el-table
@@ -35,11 +48,9 @@
           />
           <el-table-column label="Data Id" min-width="200" prop="dataId" />
           <el-table-column label="Group" min-width="200" prop="group" />
-          <!--          <el-table-column label="归属应用" min-width="100" prop="appName" />-->
           <el-table-column align="center" prop="created_at" label="操作" min-width="150">
             <template slot-scope="{row}">
               <el-button v-permission="'NACOS_PROJECT_CONFIGS_SEARCH'" type="text" @click.native="handleDetail(row)">详情</el-button>
-              <el-button type="text" @click.native="handleCode(row)">示例代码</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_EDIT'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_DELETE'" type="text" @click.native="onDelete(row)">删除</el-button>
             </template>
@@ -48,23 +59,6 @@
         <pagination v-show="showSearch&&count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
       </el-col>
     </el-row>
-    <el-dialog title="删除配置" :visible.sync="dialogVisible2Del" width="380px">
-      <el-alert
-        title="确定要删除以下配置吗？"
-        type="error"
-        center
-        :closable="false"
-        show-icon
-      />
-      <el-table :data="multipleSelection">
-        <el-table-column property="dataId" label="Data Id" />
-        <el-table-column property="group" label="Group" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button :loading="dialogLoading" @click="dialogVisible2Del = false">关闭</el-button>
-        <el-button type="primary" :loading="dialogLoading" @click="handleDelete()">确定</el-button>
-      </span>
-    </el-dialog>
     <el-dialog title="导入配置" :visible.sync="dialogVisible2Import" width="400px">
       <el-form label-width="100px">
         <el-form-item label="目标空间">
@@ -128,7 +122,7 @@
         </el-form-item>
         <el-form-item label="目标空间" prop="toNamespace">
           <el-select v-model="toNamespace" placeholder="请选择目标空间">
-            <el-option v-for="item in namespaces" :key="item.key" :label="item.label" :value="item.key" />
+            <el-option v-for="item in namespaces" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="相同配置">
@@ -156,7 +150,7 @@
         </el-table-column>
         <el-table-column property="group" label="Group">
           <template slot-scope="{row}">
-            <el-input v-model="row.group" class="edit-input" size="small" />
+            <el-input v-model="row.group" class="edit-input" size="small" disabled />
           </template>
         </el-table-column>
       </el-table>
@@ -176,20 +170,24 @@
 </template>
 
 <script>
-import { pageNacosConfigs, deleteNacosConfigs, deleteNacosConfig, exportNacosConfigs, cloneNacosConfigs } from '@/api/nacos/configs'
 import SingleFile from '@/components/Upload/SingleFile2'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import ProjectNamespace from '../components/ProjectNamespace' // 粘性header组件
 import CodeViewer from '../components/showCodeConfig' // 粘性header组件
 import ProjectMenu from '../components/ProjectMenu' // 粘性header组件
 import { deepClone } from '@/utils'
+import {
+  cloneNacosProjectConfigs,
+  deleteNacosProjectConfig, exportNacosProjectConfigs,
+  pageNacosUserConfigs
+} from '@/api/devops/nacos/user-configs'
 
 const opName = {
   'IMPORT': '导入',
   'CLONE': '克隆'
 }
 export default {
-  name: 'NacosProjectConfigsIndex',
+  name: 'NacosProjectConfigsIndex1',
   components: { Sticky, ProjectNamespace, SingleFile, CodeViewer, ProjectMenu },
   data() {
     return {
@@ -211,7 +209,6 @@ export default {
         pageSize: 10
       },
       dialogLoading: false,
-      dialogVisible2Del: false,
       dialogVisible2Import: false,
       dialogVisible2ImportResult: false,
       dialogVisible2Clone: false,
@@ -255,15 +252,15 @@ export default {
     namespaceName() {
       const tmp = this.namespaceId
       const tenant = this.namespaces.find(tenant => {
-        return tenant.key === tmp
+        return tenant.value === tmp
       })
       if (tenant) {
         return tenant.label
       }
-      return ''
+      return '-'
     },
     importUrl() {
-      return '/api/nacos/v1/cs/configs?import=true&namespace=' + this.namespaceId
+      return `/api/devops/nacos/${this.projectId}/configs/import?namespace=${this.namespaceId}`
     }
   },
   // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
@@ -279,7 +276,7 @@ export default {
       this.listQuery.appName = val
       this.list = []
       this.namespaceId = ''
-      this.listQuery.tenant = ''
+      this.listQuery.namespaceId = ''
       this.showSearch = false
     },
     handleSelectionChange(val) {
@@ -287,20 +284,19 @@ export default {
     },
     loadNamespacesFinish(data) {
       this.namespaces = data
+      this.showSearch = data.length > 0
     },
     handleNamespaceChange(val) {
       if (val === 'apply') {
-        this.listQuery.tenant = ''
+        this.listQuery.namespaceId = ''
         this.showSearch = false
         return
       }
-      this.showSearch = true
-      this.listQuery.tenant = val
+      this.listQuery.namespaceId = val
       this.queryData()
     },
     fetchData() {
-      // this.listQuery.tenant = this.$store.getters.tenant
-      if (!this.listQuery.tenant || this.listQuery.tenant === '') {
+      if (!this.listQuery.namespaceId || this.listQuery.namespaceId === '') {
         this.$message.error('请选择空间...')
         return
       }
@@ -309,9 +305,12 @@ export default {
       if (this.listQuery.dataId || this.listQuery.group) {
         this.listQuery.search = 'blur'
       }
-      pageNacosConfigs(this.listQuery).then(res => {
-        this.list = res.pageItems
-        this.count = res.totalCount
+      this.showSearch = true
+      pageNacosUserConfigs(this.projectId, this.listQuery).then(resp => {
+        if (resp.success) {
+          this.list = resp.rows
+          this.count = resp.total
+        }
       }).finally(() => {
         this.listLoading = false
       })
@@ -321,10 +320,10 @@ export default {
       this.fetchData()
     },
     handleCreate() {
-      this.$router.push(`/nacos/project/configAdd?namespaceId=${this.namespaceId}&app=${this.projectId}`)
+      this.$router.push(`/nacos/project/configAdd?namespaceId=${this.namespaceId}&appName=${this.projectId}`)
     },
     handleDetail(row) {
-      this.$router.push(`/nacos/project/configDetail?namespaceId=${row.namespaceId || this.namespaceId}&app=${this.projectId}&dataId=${row.dataId}&group=${row.group}`)
+      this.$router.push(`/nacos/project/configDetail?namespaceId=${row.namespaceId || this.namespaceId}&appName=${this.projectId}&dataId=${row.dataId}&group=${row.group}`)
     },
     handleCode(row) {
       this.record = Object.assign({}, row)
@@ -332,7 +331,7 @@ export default {
       this.dialogVisible2Code = true
     },
     handleUpdate(row) {
-      this.$router.push(`/nacos/project/configEdit?namespaceId=${row.namespaceId || this.namespaceId}&app=${this.projectId}&dataId=${row.dataId}&group=${row.group}`)
+      this.$router.push(`/nacos/project/configEdit?namespaceId=${row.namespaceId || this.namespaceId}&appName=${this.projectId}&dataId=${row.dataId}&group=${row.group}`)
     },
     onDelete(row) {
       const h = this.$createElement
@@ -353,23 +352,17 @@ export default {
         this.handleDelete(row)
       })
     },
-    onDelete2() {
-      if (this.multipleSelection.length === 0) {
-        this.$message.warning('请选择要删除的配置！')
-        return
-      }
-      this.dialogVisible2Del = true
-    },
     async handleDelete(row) {
-      let res
+      let resp
       if (row) {
-        res = await deleteNacosConfig(row)
-      } else {
-        const ids = this.multipleSelection.map(item => item.id)
-        res = await deleteNacosConfigs(ids)
-        this.dialogVisible2Del = false
+        const params = {}
+        params.namespaceId = this.namespaceId
+        params.id = row.id
+        params.dataId = row.dataId
+        params.group = row.group
+        resp = await deleteNacosProjectConfig(this.projectId, params)
       }
-      if (res) {
+      if (resp && resp.success) {
         this.fetchData()
         this.$message({
           message: '删除配置成功',
@@ -414,7 +407,8 @@ export default {
           ids: ''
         }
       }
-      exportNacosConfigs(params)
+      params.namespaceId = this.namespaceId
+      exportNacosProjectConfigs(this.projectId, params)
     },
     handleImports() {
       this.dialogVisible2Import = true
@@ -434,16 +428,15 @@ export default {
     onClone() {
       const params = {}
       const tenant = this.namespaces.find(tenant => {
-        return tenant.key === this.toNamespace
+        return tenant.value === this.toNamespace
       })
-      params.tenant = tenant.key || tenant.label
       params.policy = this.policy
-      params.namespaceId = ''
+      params.namespaceId = tenant.value || tenant.label
       const data = this.tables.clone.map(item => {
         return { cfgId: item.id, dataId: item.dataId, group: item.group }
       })
       this.dialogLoading = true
-      cloneNacosConfigs(params, data).then(resp => {
+      cloneNacosProjectConfigs(this.projectId, params, data).then(resp => {
         this.dialogVisible2Clone = false
         this.handleResult(resp, 'CLONE')
       }).finally(() => {
@@ -452,7 +445,8 @@ export default {
     },
     handleResult(resp, op) {
       this.dialogVisible2ImportResult = true
-      const { data, message } = resp
+      const { rows, message } = resp
+      const data = rows[0]
       this.titles.importResult = message
       this.tables.importFail = []
       this.tables.importSkip = []

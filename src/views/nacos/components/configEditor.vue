@@ -2,13 +2,13 @@
   <div>
     <Sticky :z-index="10" :class-name="'sub-navbar published'">
       <el-button type="success" :loading="releaseLoading" @click="submit">发布</el-button>
+      <el-button type="warning" @click="refreshLoading">重新加载</el-button>
       <el-button type="info" @click="onBack">返回</el-button>
     </Sticky>
     <el-card>
       <el-form ref="form" :model="record" label-width="120px" :rules="rules">
         <div style="padding: 0 10px 20px 10px">
           <el-form-item label="归属应用" prop="appName">
-            <!--          <el-input v-model="record.appName" placeholder="归属应用" />-->
             <el-select v-model="record.appName" placeholder="请选择" :disabled="isApp">
               <el-option
                 v-for="item in projects"
@@ -22,7 +22,7 @@
             <el-input v-model="record.dataId" placeholder="请输入Data ID" :disabled="isEdit" />
           </el-form-item>
           <el-form-item label="分组" prop="group">
-            <el-input v-model="record.group" placeholder="分组名称" :disabled="isEdit" />
+            <el-input v-model="record.group" placeholder="分组名称" :disabled="true" />
           </el-form-item>
           <el-form-item label="标签">
             <el-input v-model="record.configTags" placeholder="标签" />
@@ -64,8 +64,8 @@
 import CodeMirror from '@/components/CodeMirror/ConfigFile'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { addNacosConfig, getNacosConfig, updateNacosConfig } from '@/api/devops/nacos/configs'
+import { getNacosProjectConfig, addNacosProjectConfig, updateNacosProjectConfig } from '@/api/devops/nacos/user-configs'
 import { getNamespaceProjects } from '@/api/devops/nacos/namespaces'
-import { isEmpty } from '@/utils/validate'
 import CodeDiff from 'vue-code-diff'
 
 import CodeMirror2 from 'codemirror'
@@ -116,7 +116,7 @@ export default {
     this.namespaceId = this.$route.query.namespaceId
     if (!this.isEdit) {
       this.record = Object.assign({}, defaultRecord)
-      if (this.isApp) this.record.appName = this.$route.query.app
+      if (this.isApp) this.record.appName = this.$route.query.appName
     } else {
       this.loadConfig(this.$route.query)
     }
@@ -129,8 +129,18 @@ export default {
       getNamespaceProjects(this.namespaceId, val).then(resp => {
         if (resp.success) {
           this.projects = resp.rows
+          if (this.projects.length > 0 && this.isApp) {
+            this.projects.forEach(item => {
+              if (this.record.appName === item.value) {
+                this.record.group = item.key
+              }
+            })
+          }
         }
       }).catch(() => {})
+    },
+    refreshLoading() {
+      if (this.isEdit) this.loadConfig(this.$route.query)
     },
     initCompare(value, orig2) {
       if (value == null) return
@@ -150,51 +160,34 @@ export default {
     changeCodeMode(val) {
       this.record.type = val
     },
-    loadConfig(params) {
+    async loadConfig(params) {
       params.show = 'all'
       this.namespaceId = params.namespaceId
       params.tenant = this.namespaceId
-      getNacosConfig(params).then(resp => {
-        if (resp.success) {
-          this.record = Object.assign({}, resp.rows[0])
-          this.content = this.record.content
-        }
-      })
-    },
-    convertData() {
-      const formData = new URLSearchParams()
-      if (!this.isEdit) {
-        formData.append('namespaceId', this.namespaceId)
-        formData.append('tenant', this.namespaceId)
-        formData.append('appName', this.record.appName || '')
-        formData.append('dataId', this.record.dataId)
-        formData.append('group', this.record.group)
-        formData.append('content', this.record.content)
-        formData.append('type', this.record.type)
-        formData.append('configTags', this.record.configTags || '')
-      } else {
-        this.record.tenant = this.namespaceId
-        for (const p in this.record) {
-          if (!isEmpty(this.record[p])) formData.append(p, this.record[p])
-        }
+      const resp = this.isApp ? await getNacosProjectConfig(params.appName, params) : await getNacosConfig(params)
+      if (resp && resp.success) {
+        this.record = Object.assign({}, resp.rows[0])
+        this.content = this.record.content
       }
-      return formData
     },
     submit() {
       this.$refs['form'].validate((valid) => {
         if (valid) {
-          this.onSubmit()
+          if (this.record.content === null || this.record.content === '') {
+            this.$message({
+              message: '配置内容不能为空',
+              type: 'error'
+            })
+            return
+          }
+          this.releaseLoading = true
+          this.onSubmit().catch(() => {
+            this.releaseLoading = false
+          })
         }
       })
     },
-    onSubmit() {
-      if (this.record.content === null || this.record.content === '') {
-        this.$message({
-          message: '配置内容不能为空',
-          type: 'error'
-        })
-        return
-      }
+    async onSubmit() {
       this.record.namespaceId = this.namespaceId
       if (!this.isEdit) {
         const params = {}
@@ -202,31 +195,28 @@ export default {
         params.dataId = this.record.dataId
         params.group = this.record.group
         params.namespaceId = this.namespaceId
-        this.releaseLoading = true
-        getNacosConfig(params).then(resp => {
-          if (resp.success && resp.rows.length > 0) {
-            this.$message({
-              message: `配置 Data Id: [${this.record.dataId}] Group: [${this.record.group}] 已存在！`,
-              type: 'error'
-            })
-          } else {
-            this.handleSubmit()
-          }
-        }).finally(() => {
-          this.releaseLoading = false
-        })
+        const resp = this.isApp ? await getNacosProjectConfig(this.record.appName, params) : await getNacosConfig(params)
+
+        if (resp.success && resp.rows.length > 0) {
+          this.$message({
+            message: `配置 Data Id: [${this.record.dataId}] Group: [${this.record.group}] 已存在！`,
+            type: 'error'
+          })
+        } else {
+          await this.handleSubmit()
+        }
       } else {
         this.dialogCompareVisible = true
-        // use CodeMirror Merge
-        // this.$nextTick(() => {
-        //   this.initCompare(this.content, this.record.content)
-        // })
       }
     },
     async handleSubmit() {
       this.releaseLoading = true
       let resp = null
-      if (!this.isEdit) {
+      if (this.isApp && this.isEdit) {
+        resp = await updateNacosProjectConfig(this.record.appName, this.record)
+      } else if (this.isApp && !this.isEdit) {
+        resp = await addNacosProjectConfig(this.record.appName, this.record)
+      } else if (!this.isEdit) {
         resp = await addNacosConfig(this.record)
       } else {
         resp = await updateNacosConfig(this.record)

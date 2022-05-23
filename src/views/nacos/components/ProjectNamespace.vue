@@ -1,19 +1,26 @@
 <template>
   <div class="tenant-container">
-    <el-row>
-      <!--<el-col :span="5" class="title" align="center">
-        <span>空间（环境）</span>
-        <el-button size="mini" icon="el-icon-plus" @click="applyNamespace">申请</el-button>
-      </el-col>
-      <el-col :span="24" class="tenant-space">
-        <el-menu v-if="namespaces.length>0" :default-active="tenant" class="el-menu-namespace" mode="horizontal" @select="selectNamespace">
-          <el-menu-item v-for="item in namespaces" :key="item.key" :index="item.key">{{ item.label }}</el-menu-item>
+    <el-row style="margin-bottom: 15px">
+      <el-col>
+        <el-menu :default-active="activeCluster" class="el-menu-demo" mode="horizontal" @select="loadNamespaces">
+          <el-menu-item style="opacity: 1" index="0" disabled><el-tag>集群</el-tag></el-menu-item>
+          <el-menu-item v-for="item in clusters" :key="item.value" :index="item.value">{{ item.label }}</el-menu-item>
         </el-menu>
-        <el-tag v-if="projectId===''" type="warning">请先从左侧列表选择项目</el-tag>
-      </el-col>-->
+      </el-col>
+    </el-row>
+    <el-row v-show="activeCluster!=='0'">
       <el-col :span="24">
         <el-tabs v-model="tenant" type="card" @tab-click="selectNamespace2">
-          <el-tab-pane v-for="item in namespaces" :key="item.key" :label="item.label" :name="item.key" />
+          <el-tab-pane v-for="item in namespaces" :key="item.value" :label="item.label" :name="item.value">
+            <el-alert
+              :title="item.key"
+              type="info"
+              style="margin: 10px"
+              description="Nacos空间ID(配置文件使用)"
+              :closable="false"
+              show-icon
+            />
+          </el-tab-pane>
           <el-tab-pane name="apply">
             <span slot="label">申请空间 <i class="el-icon-plus" /></span>
             <el-alert
@@ -57,9 +64,8 @@
 
 <script>
 import { getNacosNamespaces } from '@/api/nacos/namespace'
-import { getUserProjectNamespaces } from '@/api/upms/user'
-import { getProjectNamespaces } from '@/api/upms/project'
-import { applyNamespaces } from '@/api/upms/namespace'
+import { applyNacosUserNamespaces, listNacosUserNamespaces } from '@/api/devops/nacos/userApp'
+import { listNacosProjectClusters, getProjectNamespaces } from '@/api/devops/nacos/projects'
 export default {
   props: {
     value: {
@@ -73,7 +79,9 @@ export default {
   },
   data() {
     return {
+      clusters: [],
       namespaces: [],
+      activeCluster: '',
       applyDialogVisible: false,
       applyList: [],
       record: {},
@@ -100,16 +108,34 @@ export default {
   },
   methods: {
     fetchData(projectId) {
+      this.clusters = []
+      if (projectId === '') {
+        return
+      }
+      // this.namespaces = []
+      listNacosProjectClusters(projectId).then((resp) => {
+        if (resp.success && resp.rows.length > 0) {
+          this.clusters = resp.rows
+          if (this.clusters.length > 0) {
+            this.activeCluster = this.clusters[0].value
+            this.loadNamespaces(projectId)
+          }
+        }
+      })
+    },
+    loadNamespaces(projectId) {
       this.namespaces = []
       if (projectId === '') {
         return
       }
       // this.namespaces = []
-      getUserProjectNamespaces(projectId).then((resp) => {
+      listNacosUserNamespaces(projectId).then((resp) => {
         if (resp.success && resp.rows.length > 0) {
           this.namespaces = resp.rows
-          this.$emit('input', this.namespaces[0].key)
-          this.$emit('change', this.namespaces[0].key)
+          if (this.namespaces.length > 0) {
+            this.$emit('input', this.namespaces[0].value)
+            this.$emit('change', this.namespaces[0].value)
+          }
           this.$emit('finish', this.namespaces)
         }
       })
@@ -137,7 +163,7 @@ export default {
         this.$message.warning('请选择要申请的空间!')
         return
       }
-      applyNamespaces(this.projectId, this.applyList).then(resp => {
+      applyNacosUserNamespaces(this.projectId, this.applyList).then(resp => {
         if (resp.success) {
           this.applyDialogVisible = false
           this.$message.success('申请成功，请等待管理员审核...')

@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
 
-const namespace = '/upms/apply/nacos'
+const namespace = '/devops/nacos/apply'
 
 // 分页查询业务-租户列表
 export function pageApplyNamespaces(query) {

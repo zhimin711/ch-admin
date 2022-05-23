@@ -30,15 +30,15 @@
       </el-table-column>
       <el-table-column prop="createAt" label="状态" width="100">
         <template slot-scope="{row}">
-          <el-tag v-if="row.status===0">待审核</el-tag>
-          <el-tag v-if="row.status===1" type="success">已通过</el-tag>
-          <el-tag v-if="row.status===2" type="danger">已拒绝</el-tag>
+          <el-tag v-if="row.status==='0'">待审核</el-tag>
+          <el-tag v-if="row.status==='1'" type="success">已通过</el-tag>
+          <el-tag v-if="row.status==='2'" type="danger">已拒绝</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="120">
         <template slot-scope="{row}">
           <el-button
-            v-if="row.status===0"
+            v-if="row.status==='0'"
             v-permission="'NACOS_PROJECT_APPLY_APPROVE'"
             size="mini"
             type="text"
@@ -81,10 +81,10 @@
 </template>
 
 <script>
-import { pageApplyNamespaces, approveApplyNamespaces } from '@/api/nacos/applyNamespace'
+import { pageApplyNamespaces, approveApplyNamespaces } from '@/api/devops/nacos/namespace-apply'
 
 export default {
-  name: 'NacosProjectApply',
+  name: 'NacosProjectApply1',
   data() {
     return {
       list: null,
