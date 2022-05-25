@@ -66,14 +66,6 @@ const routerMap = {
     meta: {
       code: 'tenantManagement'
     }
-  },
-  UpmsNamespace: {
-    path: 'namespace',
-    component: () => import('@/views/upms/namespace'),
-    name: 'UpmsNamespaceManagement',
-    meta: {
-      code: 'namespaceManagement'
-    }
   }
 }
 

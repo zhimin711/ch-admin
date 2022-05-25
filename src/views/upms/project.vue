@@ -6,7 +6,7 @@
         <el-option label="启用" value="1">启用</el-option>
         <el-option label="禁用" value="0">禁用</el-option>
       </el-select>
-      <el-button v-permission="['UPMS_PROJECT_PAGE_SEARCH']" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-permission="['UPMS_PROJECT_PAGE']" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
@@ -40,7 +40,6 @@
 
       <el-table-column align="center" label="操作" width="200">
         <template slot-scope="scope">
-          <el-link v-permission="['UPMS_PROJECT_NAMESPACES_EDIT']" type="primary" icon="el-icon-menu" @click="handleProjectNamespaces(scope.row)">分配空间</el-link>
           <el-link v-permission="['UPMS_PROJECT_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
           <el-link v-permission="['UPMS_PROJECT_DEL']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
@@ -138,31 +137,13 @@
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
       </div>
     </el-dialog>
-    <el-dialog :visible.sync="dialogVisible2" :title="'分配空间'" width="635px">
-      <div style="text-align:left;margin-bottom: 20px">
-        <el-transfer
-          v-model="recordNamespaces"
-          filterable
-          :filter-method="filterNamespacesMethod"
-          filter-placeholder="请输入空间"
-          :data="options.namespaces"
-          :titles="['未分配空间', '已分配空间']"
-          :props="{ key: 'value', label: 'label' }"
-        />
-      </div>
-      <div style="text-align:left;padding-left:220px">
-        <el-button type="primary" @click="handleSubmitNamespaces">保存</el-button>
-        <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script>
 import { deepClone } from '@/utils'
-import { add, del, edit, getProject, editProjectNamespaces, getProjectNamespaces, getUsers, list } from '@/api/upms/project'
+import { addUpmsProject, delUpmsProject, editUpmsProject, getUpmsProject, pageUpmsProject } from '@/api/upms/project'
 import { treeDepartment, getDepartmentTenants } from '@/api/upms/department'
-import { getAvailableList } from '@/api/upms/namespace'
 import { findUserList } from '@/api/upms/user'
 
 export default {
@@ -193,7 +174,6 @@ export default {
       recordUsers: [],
       recordDevUsers: [],
       recordTestUsers: [],
-      recordNamespaces: [],
       recordTenant: '',
       options: {
         tenants: [],
@@ -210,7 +190,6 @@ export default {
   created() {
     this.getList()
     this.getTreeDepartments()
-    this.getNamespaces()
     // this.getUsers()
     this.findUsers()
   },
@@ -233,14 +212,6 @@ export default {
         }
       })
     },
-    async getNamespaces(s) {
-      const resp = await getAvailableList(s || '')
-      if (resp && resp.success) this.options.namespaces = resp.rows
-    },
-    async getUsers() {
-      const resp = await getUsers()
-      if (resp && resp.success) this.options.users = resp.rows
-    },
     findUsers(s = '') {
       findUserList(s).then(resp => {
         if (resp.success) {
@@ -250,7 +221,7 @@ export default {
     },
     getList() {
       this.listLoading = true
-      list(this.listQuery).then(response => {
+      pageUpmsProject(this.listQuery).then(response => {
         this.listQuery.list = response.rows
         this.listQuery.total = response.total
         this.listLoading = false
@@ -282,7 +253,7 @@ export default {
         this.getDepartmentTenants(this.recordDepartments)
       }
 
-      getProject(row.id).then(resp => {
+      getUpmsProject(row.id).then(resp => {
         if (resp.success) {
           this.recordDevUsers = resp.rows[0].devUserIds
           this.recordTestUsers = resp.rows[0].testUserIds
@@ -298,7 +269,7 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          await del(row.id)
+          await delUpmsProject(row.id)
           _this.getList()
           this.$message({
             type: 'success',
@@ -325,10 +296,10 @@ export default {
         this.record.testUserIds = this.recordTestUsers
       }
       if (this.dialogType === 'new') {
-        resp = await add(this.record)
+        resp = await addUpmsProject(this.record)
       } else if (this.dialogType === 'edit') {
         opName = '修改'
-        resp = await edit(this.record.id, this.record)
+        resp = await editUpmsProject(this.record.id, this.record)
       }
       if (resp && resp.success) {
         this.dialogVisible = false
@@ -338,37 +309,6 @@ export default {
         })
         _this.getList()
       }
-    },
-    handleProjectNamespaces(row) {
-      //
-      this.dialogVisible2 = true
-
-      this.record = deepClone(row)
-      this.recordUsers = []
-      this.recordNamespaces = []
-      getProjectNamespaces(row.id).then(resp => {
-        if (resp.success) {
-          resp.rows.forEach(e => {
-            this.recordNamespaces.push(e.value)
-          })
-        }
-      })
-    },
-    async handleSubmitNamespaces() {
-      const resp = await editProjectNamespaces(this.record.id, this.recordNamespaces)
-      if (resp && resp.success) {
-        this.dialogVisible2 = false
-      }
-      this.$notify({
-        title: '授权空间',
-        dangerouslyUseHTMLString: true,
-        message: `授权空间 ` + (resp && resp.success ? 'success!' : 'error...'),
-        type: resp && resp.success ? 'success' : 'error'
-      })
-    },
-    filterNamespacesMethod(query, item) {
-      if (query === '') return true
-      return item.label.indexOf(query) > -1
     },
     changeParent(val) {
       this.record.parentCode = ''
