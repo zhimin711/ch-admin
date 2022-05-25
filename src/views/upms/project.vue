@@ -2,10 +2,10 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
+      <!--      <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
         <el-option label="启用" value="1">启用</el-option>
         <el-option label="禁用" value="0">禁用</el-option>
-      </el-select>
+      </el-select>-->
       <el-button v-permission="['UPMS_PROJECT_PAGE']" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
@@ -30,13 +30,7 @@
           <span>{{ scope.row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column class-name="status-col" label="状态" width="110">
-        <template slot-scope="{row}">
-          <el-tag :type="row.status | statusFilter">
-            {{ row.status }}
-          </el-tag>
-        </template>
-      </el-table-column>
+      <el-table-column label="负责人" prop="manager" />
 
       <el-table-column align="center" label="操作" width="200">
         <template slot-scope="scope">
