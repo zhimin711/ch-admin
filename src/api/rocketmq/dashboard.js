@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
 
-const namespace = '/kafka/rocketmq/dashboard'
+const namespace = '/devops/rocketmq/dashboard'
 
 export function listRocketDashboardBroker(params) {
   return request({

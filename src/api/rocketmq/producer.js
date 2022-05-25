@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
 
-const namespace = '/kafka/rocketmq/producer'
+const namespace = '/devops/rocketmq/producer'
 
 export function listRocketMQProducer(params) {
   return request({

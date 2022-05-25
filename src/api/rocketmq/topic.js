@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
 
-const namespace = '/kafka/rocketmq/topic'
+const namespace = '/devops/rocketmq/topic'
 
 export function listRocketMQTopic() {
   return request({

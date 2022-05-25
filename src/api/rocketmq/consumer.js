@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
 
-const namespace = '/kafka/rocketmq/consumer'
+const namespace = '/devops/rocketmq/consumer'
 
 export function listRocketMQConsumerGroups() {
   return request({

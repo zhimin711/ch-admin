@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
 
-const namespace = '/kafka/rocketmq/message'
+const namespace = '/devops/rocketmq/message'
 
 export function listRocketMQMessage(params) {
   return request({
