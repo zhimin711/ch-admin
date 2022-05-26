@@ -181,8 +181,7 @@
 </template>
 
 <script>
-import { exportNacosConfigs, cloneNacosConfigs } from '@/api/nacos/configs'
-import { pageNacosConfigs, deleteNacosConfig } from '@/api/devops/nacos/configs'
+import { pageNacosConfigs, deleteNacosConfig, exportNacosConfigs, cloneNacosConfigs } from '@/api/devops/nacos/configs'
 import SingleFile from '@/components/Upload/SingleFile2'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import Tenant from '../components/clusterNamespaces' // 粘性header组件
@@ -265,7 +264,7 @@ export default {
       return ''
     },
     importUrl() {
-      return '/api/nacos/v1/cs/configs?import=true&namespace=' + this.namespaceId
+      return '/api/devops/nacos/configs/import?namespace=' + this.namespaceId
     }
   },
   // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
@@ -404,6 +403,7 @@ export default {
           ids: ''
         }
       }
+      params.namespaceId = this.namespaceId
       exportNacosConfigs(params)
     },
     handleImports() {

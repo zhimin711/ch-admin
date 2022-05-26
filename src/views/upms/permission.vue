@@ -127,6 +127,10 @@
           <el-radio v-model="record.hidden" :label="false">否</el-radio>
           <el-radio v-model="record.hidden" :label="true">是</el-radio>
         </el-form-item>
+        <el-form-item v-if="record.type === '3'" label="Cookie访问">
+          <el-radio v-model="record.enableCookie" :label="false">否</el-radio>
+          <el-radio v-model="record.enableCookie" :label="true">是</el-radio>
+        </el-form-item>
         <el-form-item :label="$t('label.sort')">
           <el-input-number v-model="record.sort" />
         </el-form-item>
