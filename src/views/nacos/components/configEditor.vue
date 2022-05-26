@@ -223,11 +223,11 @@ export default {
       }
       if (resp && resp.success) {
         this.dialogCompareVisible = false
-        this.$message({
-          message: '发布成功',
-          type: 'success'
-        })
         if (!this.isEdit) {
+          this.$message({
+            message: '发布成功',
+            type: 'success'
+          })
           this.onBack()
           return
         }
