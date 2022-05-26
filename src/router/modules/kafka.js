@@ -81,7 +81,7 @@ const routerMap = {
   },
   KafkaCluster: {
     path: 'cluster',
-    component: () => import('@/views/mq/kafka/cluster'),
+    component: () => import('@/views/devops/kafka/cluster'),
     name: 'KafkaCluster',
     meta: {
       code: 'clusterManagement'
@@ -89,7 +89,7 @@ const routerMap = {
   },
   KafkaClusterMGR: {
     path: '/kafka/cluster/mgr/:id(\\d+)',
-    component: () => import('@/views/mq/kafka/mgr'),
+    component: () => import('@/views/devops/kafka/mgr'),
     name: 'KafkaClusterMgr',
     hidden: true,
     meta: {
