@@ -28,10 +28,10 @@
           <span>{{ scope.row.brokers }}</span>
         </template>
       </el-table-column>-->
-      <el-table-column label="Brokers">
-        <template slot-scope="{row}">
-          <span>{{ row.brokerCount }}</span>
-        </template>
+      <el-table-column label="Brokers" prop="brokerCount">
+        <!-- <template slot-scope="scope">
+          <span>{{ scope.row.brokerCount }}</span>
+        </template>-->
       </el-table-column>
       <el-table-column label="Topics">
         <template slot-scope="{row}">
@@ -129,12 +129,12 @@ export default {
         this.listQuery.list = response.rows
         this.listQuery.total = response.total
         this.listLoading = false
-        this.fetchSyncInfo(this.listQuery.list)
+        this.fetchSyncInfo(response.rows)
       }).catch(() => { this.loading = false })
     },
-    fetchSyncInfo(rows) {
-      rows.forEach(item => {
-        getKafkaCluster(item.id).then(resp => {
+    async fetchSyncInfo(rows) {
+      for (const item of rows) {
+        await getKafkaCluster(item.id).then(resp => {
           if (resp.success) {
             const obj = resp.rows[0]
             item.brokerCount = obj.brokerCount
@@ -142,7 +142,9 @@ export default {
             item.consumerCount = obj.consumerCount
           }
         })
-      })
+      }
+      console.log(rows)
+      this.listQuery.list = rows
     },
     handleAdd() {
       this.record = {}

@@ -181,7 +181,7 @@ export default {
             return
           }
           this.releaseLoading = true
-          this.onSubmit().catch(() => {
+          this.onSubmit().finally(() => {
             this.releaseLoading = false
           })
         }
