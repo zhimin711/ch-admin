@@ -1,7 +1,7 @@
 {
-  "name": "zhao-hua-admin",
+  "name": "chao-hua-admin",
   "version": "1.1.0",
-  "description": "A magical vue admin. An out-of-box UI solution for enterprise applications. Newest development stack of vue. Lots of awesome features",
+  "description": "Chao Hua admin System. An Element UI solution for devops applications.",
   "author": "zhimin711 <zhimin711@sina.com>",
   "scripts": {
     "dev": "vue-cli-service serve",
@@ -96,8 +96,7 @@
     "admin",
     "dashboard",
     "element-ui",
-    "boilerplate",
-    "admin-template",
+    "ch-admin",
     "management-system"
   ],
   "license": "MIT",
