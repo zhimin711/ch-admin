@@ -139,7 +139,7 @@ import {
 import { listNacosCluster } from '@/api/devops/nacos/cluster'
 
 export default {
-  name: 'NacosClusterNamespace1',
+  name: 'NacosClusterNamespace',
   data() {
     return {
       list: null,
@@ -295,6 +295,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
+        this.listLoading2 = true
         syncNacosNamespaces(this.record.clusterId).then((resp) => {
           if (resp) {
             this.dialogSyncVisible = false
@@ -309,6 +310,8 @@ export default {
               type: 'error'
             })
           }
+        }).finally(() => {
+          this.listLoading2 = false
         })
       })
     }

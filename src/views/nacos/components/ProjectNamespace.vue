@@ -136,6 +136,9 @@ export default {
             this.$emit('input', this.namespaces[0].value)
             this.$emit('change', this.namespaces[0].value)
           }
+          if (this.tenant === 'apply') {
+            this.applyNamespace()
+          }
           this.$emit('finish', this.namespaces)
         }
       })
@@ -143,6 +146,10 @@ export default {
     applyNamespace() {
       if (this.projectId === '') {
         this.$message.warning('Please choose left list of project!')
+        return
+      }
+      if (this.activeCluster === '') {
+        this.$message.warning('Please choose nacos cluster!')
         return
       }
       this.applyList = []

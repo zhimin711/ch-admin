@@ -92,7 +92,7 @@
 import { pageNacosCluster, getNacosCluster, addNacosCluster, editNacosCluster } from '@/api/devops/nacos/cluster'
 
 export default {
-  name: 'NacosClusterNodes1',
+  name: 'NacosClusterNodes',
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -147,7 +147,10 @@ export default {
       this.fetchDetail(this.cardId)
     },
     fetchDetail(id) {
-      if (id === '0') return
+      if (id === '0') {
+        this.record = {}
+        return
+      }
       getNacosCluster(id).then(resp => {
         if (resp.success) {
           this.record = resp.rows[0]

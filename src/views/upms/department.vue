@@ -109,6 +109,17 @@
               <!--<treeselect v-model="record.parentId" :options="deptOptions" :normalizer="normalizer" placeholder="选择上级组织" />-->
             </el-form-item>
           </el-col>
+          <el-col :span="24">
+            <el-form-item label="组织类型">
+              <el-radio-group v-model="record.deptType">
+                <el-radio-button label="0">集团</el-radio-button>
+                <el-radio-button label="1">公司</el-radio-button>
+                <el-radio-button label="2">部门</el-radio-button>
+                <el-radio-button label="3">团队</el-radio-button>
+                <el-radio-button label="4">小组</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
           <el-col :span="12">
             <el-form-item label="组织名称" prop="name">
               <el-input v-model="record.name" placeholder="请输入组织名称" />
@@ -191,7 +202,7 @@ import { findUserList } from '@/api/upms/user'
 const defaultRecord = { pid: '0', sort: 1, status: '1' }
 
 export default {
-  name: 'UpmsDepartment1',
+  name: 'UpmsDepartment',
   // components: { Treeselect },
   data() {
     return {
@@ -349,7 +360,7 @@ export default {
       this.title = '修改组织'
       this.record = deepClone(row)
       this.recordParents = []
-      if (this.record.pid && this.record.pid !== '0') this.recordParents = this.record.pid.split(',')
+      if (this.record.pid && this.record.parentId !== '0') this.recordParents = this.record.parentId.split(',')
       this.recordStatus = (this.record.status === '1')
       treeDepartment('0').then(resp => {
         if (resp.success) {
@@ -361,7 +372,7 @@ export default {
     submitForm: function() {
       this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.record.pid !== '0' && this.recordParents.length === 0) {
+          if (this.record.pid !== 0 && this.recordParents.length === 0) {
             this.$message.error('上级组织不能为空')
             return false
           } else if (this.recordParents.length > 0) {
