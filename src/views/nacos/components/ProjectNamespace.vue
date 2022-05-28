@@ -64,8 +64,12 @@
 
 <script>
 import { getNacosNamespaces } from '@/api/nacos/namespace'
-import { applyNacosUserNamespaces, listNacosUserNamespaces } from '@/api/devops/nacos/userApp'
-import { listNacosProjectClusters, getProjectNamespaces } from '@/api/devops/nacos/projects'
+import {
+  applyNacosUserNamespaces,
+  getNacosUserApplyNamespaces,
+  listNacosUserNamespaces
+} from '@/api/devops/nacos/userApp'
+import { listNacosProjectClusters } from '@/api/devops/nacos/projects'
 export default {
   props: {
     value: {
@@ -109,6 +113,7 @@ export default {
   methods: {
     fetchData(projectId) {
       this.clusters = []
+      this.namespaces = []
       if (projectId === '') {
         return
       }
@@ -118,42 +123,45 @@ export default {
           this.clusters = resp.rows
           if (this.clusters.length > 0) {
             this.activeCluster = this.clusters[0].value
-            this.loadNamespaces(projectId)
+            this.loadNamespaces(this.activeCluster)
           }
         }
       })
     },
-    loadNamespaces(projectId) {
+    loadNamespaces(clusterId) {
+      this.activeCluster = clusterId
+      this.tenant = ''
       this.namespaces = []
-      if (projectId === '') {
+      if (clusterId === '') {
         return
       }
       // this.namespaces = []
-      listNacosUserNamespaces(projectId).then((resp) => {
-        if (resp.success && resp.rows.length > 0) {
+      listNacosUserNamespaces(this.projectId, clusterId).then((resp) => {
+        if (resp.success) {
           this.namespaces = resp.rows
           if (this.namespaces.length > 0) {
             this.$emit('input', this.namespaces[0].value)
             this.$emit('change', this.namespaces[0].value)
-          }
-          if (this.tenant === 'apply') {
-            this.applyNamespace()
+          } else {
+            this.$emit('input', this.tenant)
+            // this.$emit('change', this.tenant)
           }
           this.$emit('finish', this.namespaces)
         }
       })
     },
-    applyNamespace() {
+    applyNamespace(clusterId) {
       if (this.projectId === '') {
         this.$message.warning('Please choose left list of project!')
         return
       }
-      if (this.activeCluster === '') {
+      if (clusterId === '') {
         this.$message.warning('Please choose nacos cluster!')
         return
       }
       this.applyList = []
-      getProjectNamespaces(this.projectId).then(resp => {
+      this.projectNamespaces = []
+      getNacosUserApplyNamespaces(this.projectId, clusterId).then(resp => {
         if (resp.success) {
           const values = this.namespaces.map(item => item.value)
           this.projectNamespaces = resp.rows.filter(e => !values.includes(e.value))
@@ -189,7 +197,6 @@ export default {
       })
     },
     selectNamespace(val) {
-      // console.log(val)
       this.$emit('change', val)
       sessionStorage.setItem('projectNamespace', val)
       // this.$store.dispatch('user/setTenant', val).then(() => {
@@ -199,7 +206,7 @@ export default {
       if (tab.name === '') {
         return
       } else if (tab.name === 'apply') {
-        this.applyNamespace()
+        this.applyNamespace(this.activeCluster)
       }
       this.$emit('change', tab.name)
     }

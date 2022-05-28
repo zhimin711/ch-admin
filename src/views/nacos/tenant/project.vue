@@ -37,7 +37,7 @@
 
     <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :visible.sync="dialogVisible2" :title="'分配项目['+record.name+']空间'" width="635px">
+    <el-dialog :visible.sync="dialogVisible2" :title="'项目['+record.name+']分配空间'" width="635px">
       <el-alert
         title="请选择集群"
         type="info"
@@ -57,7 +57,27 @@
           :data="namespaces"
           :titles="['未分配空间', '已分配空间']"
           :props="{ key: 'value', label: 'label' }"
+          @change="changeNamespaces"
         />
+        <el-alert
+          v-if="namespaceList.length>0"
+          title="修改 GroupId (可选操作, 默认为项目代码)"
+          type="warning"
+          :closable="false"
+          show-icon
+        />
+        <el-table :data="namespaceList">
+          <el-table-column property="id" label="空间名称">
+            <template slot-scope="{row}">
+              <el-input v-model="row.namespaceName" class="edit-input" size="small" disabled />
+            </template>
+          </el-table-column>
+          <el-table-column property="groupId" label="Nacos分组">
+            <template slot-scope="{row}">
+              <el-input v-model="row.groupId" class="edit-input" size="small" />
+            </template>
+          </el-table-column>
+        </el-table>
       </div>
       <div style="text-align:left;padding-left:220px">
         <el-button type="primary" @click="handleSubmitNamespaces">保存</el-button>
@@ -72,7 +92,7 @@ import { pageProjects, getProjectNamespaces, editProjectNamespaces } from '@/api
 import { listNacosCluster, listNacosClusterNamespaces } from '@/api/devops/nacos/cluster'
 
 export default {
-  name: 'NacosProjectNamespaces1',
+  name: 'NacosProjectNamespaces',
   data() {
     return {
       listLoading: true,
@@ -86,8 +106,10 @@ export default {
       record: {},
       dialogVisible2: false,
       activeCluster: '',
+      group: '',
       clusters: [],
       namespaces: [],
+      namespaceList: [],
       recordNamespaces: []
     }
   },
@@ -115,11 +137,13 @@ export default {
           this.namespaces = resp.rows
         }
       })
-      getProjectNamespaces(this.record.id).then(resp => {
+      this.recordNamespaces = []
+      getProjectNamespaces(this.record.id, this.activeCluster).then(resp => {
         if (resp.success) {
           resp.rows.forEach(e => {
-            this.recordNamespaces.push(e.value)
+            this.recordNamespaces.push(e.namespaceId + '')
           })
+          this.namespaceList = resp.rows
         }
       })
     },
@@ -137,10 +161,11 @@ export default {
       this.record = Object.assign({}, row)
       this.activeCluster = ''
       this.namespaces = []
+      this.namespaceList = []
       this.recordNamespaces = []
     },
     async handleSubmitNamespaces() {
-      const resp = await editProjectNamespaces(this.record.id, this.recordNamespaces)
+      const resp = await editProjectNamespaces(this.record.id, this.activeCluster, this.namespaceList)
       if (resp && resp.success) {
         this.dialogVisible2 = false
       }
@@ -154,6 +179,23 @@ export default {
     filterNamespacesMethod(query, item) {
       if (query === '') return true
       return item.label.indexOf(query) > -1
+    },
+    changeNamespaces(val) {
+      if (val.length < this.namespaceList.length) {
+        this.namespaceList = this.namespaceList.filter((item) => val.includes(item.namespaceId + ''))
+      } else {
+        const select_ids = this.namespaceList.map((item) => item.namespaceId + '')
+        const new_ids = val.filter((id) => !select_ids.includes(id))
+        this.namespaces.forEach((item) => {
+          if (new_ids.includes(item.value)) {
+            this.namespaceList.push({
+              'namespaceId': item.value,
+              'namespaceName': item.label,
+              'groupId': ''
+            })
+          }
+        })
+      }
     },
     changeParent(val) {
       this.record.parentCode = ''

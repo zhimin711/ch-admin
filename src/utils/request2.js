@@ -53,24 +53,23 @@ service2.interceptors.response.use(
    * You can also judge the status by HTTP Status Code
    */
   response => {
-    const res = response.data
-
+    const resp = response.data
     // if the custom code is not 000, it is judged as an error.
-    if (res.success || res.code === 20000) {
-      return res
+    if (resp.success || resp.code === 20000) {
+      return resp
     } else {
       // 200: Illegal token; 50012: Other clients logged in; 307: Token expired;
-      if (res.code === '200' || res.code === '307') {
+      if (resp.code === '200' || resp.code === '307') {
         toLogin()
-      } else if (res.code && res.code !== 50000 && res.code !== '-1') {
+      } else if (resp.code && resp.code !== 50000 && resp.code !== '-1') {
         Message({
-          message: res.message || `Unknown Error: ${res.code}`,
+          message: resp.message || `Unknown Error: ${resp.code}`,
           type: 'error',
           duration: 5 * 1000
         })
         // return Promise.reject(res)
       }
-      return res
+      return resp
     }
   },
   error => {

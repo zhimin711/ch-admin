@@ -1,4 +1,4 @@
-import request from '@/utils/request3'
+import request from '@/utils/request2'
 
 const namespace = '/devops/nacos/instances'
 

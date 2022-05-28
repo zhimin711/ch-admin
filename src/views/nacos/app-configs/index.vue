@@ -19,9 +19,9 @@
         />
         <el-alert
           v-if="!showSearch && projectId!=='' && namespaceId!=='apply'"
-          title="你未授权当前项目集群的命名空间"
+          title="未授权当前项目集群或命名空间"
           type="info"
-          description="请先选择申请空间，后等待管理员审核..."
+          description="若项目集群为空请直接联系管理员；若存在集群可选择后点击选择申请空间，提交申请后等待管理员审核..."
           show-icon
         />
         <div v-show="showSearch" class="query-container">
@@ -30,6 +30,7 @@
           <el-button v-permission="'NACOS_PROJECT_CONFIGS_IMPORT'" type="primary" plain @click="handleImports()">导入配置</el-button>
           <el-button v-permission="'NACOS_PROJECT_CONFIGS_EXPORT'" type="warning" plain @click="handleExports()">导出配置</el-button>
           <el-button type="primary" icon="el-icon-refresh" plain @click="queryData()">刷新</el-button>
+          <el-button type="primary" icon="el-icon-s-platform" plain @click="queryData()">服务实例</el-button>
         </div>
         <el-table
           v-show="showSearch"
@@ -50,8 +51,9 @@
           <el-table-column label="Group" min-width="200" prop="group" />
           <el-table-column align="center" prop="created_at" label="操作" min-width="150">
             <template slot-scope="{row}">
-              <el-button v-permission="'NACOS_PROJECT_CONFIGS_SEARCH'" type="text" @click.native="handleDetail(row)">详情</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_EDIT'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
+              <el-button v-permission="'NACOS_PROJECT_CONFIG_DETAIL'" type="text" @click.native="handleDetail(row)">详情</el-button>
+              <el-button v-permission="'NACOS_PROJECT_CONFIG_EDIT'" type="text" @click.native="handleUpdate(row)">变更历史</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_DELETE'" type="text" @click.native="onDelete(row)">删除</el-button>
             </template>
           </el-table-column>
@@ -187,7 +189,7 @@ const opName = {
   'CLONE': '克隆'
 }
 export default {
-  name: 'NacosProjectConfigsIndex',
+  name: 'NacosProjectConfigsIndex1',
   components: { Sticky, ProjectNamespace, SingleFile, CodeViewer, ProjectMenu },
   data() {
     return {
@@ -277,6 +279,7 @@ export default {
       this.list = []
       this.namespaceId = ''
       this.listQuery.namespaceId = ''
+      this.namespaces = []
       this.showSearch = false
     },
     handleSelectionChange(val) {
@@ -287,7 +290,7 @@ export default {
       this.showSearch = data.length > 0
     },
     handleNamespaceChange(val) {
-      if (val === 'apply') {
+      if (val === 'apply' || val === '') {
         this.listQuery.namespaceId = ''
         this.showSearch = false
         return

@@ -16,16 +16,16 @@ export function getProject(id) {
   })
 }
 
-export function getProjectNamespaces(id) {
+export function getProjectNamespaces(id, clusterId) {
   return request({
-    url: `${namespace}/${id}/namespaces`,
+    url: `${namespace}/${id}/${clusterId}/namespaces`,
     method: 'get'
   })
 }
 
-export function editProjectNamespaces(id, data) {
+export function editProjectNamespaces(id, clusterId, data) {
   return request({
-    url: `${namespace}/${id}/namespaces`,
+    url: `${namespace}/${id}/${clusterId}/namespaces`,
     method: 'post',
     data
   })
