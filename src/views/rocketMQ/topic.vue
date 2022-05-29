@@ -347,7 +347,7 @@ import {
   sendRocketMQTopicMessage,
   deleteRocketMQTopic
 } from '@/api/rocketmq/topic'
-import { getTopics, syncAll, refresh2 } from '@/api/kafka/topic'
+import { getTopics, syncAll, refresh2 } from '@/api/devops/kafka/topic'
 
 const defaultRecord = {
   'writeQueueNums': 16,

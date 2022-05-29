@@ -6,7 +6,7 @@
         <el-option label="启用" value="1">启用</el-option>
         <el-option label="禁用" value="0">禁用</el-option>
       </el-select>
-      <el-button v-permission="['KAFKA_CLUSTER_SEARCH']" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-permission="['KAFKA_CLUSTER_PAGE']" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         {{ $t('btn.search') }}
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
@@ -85,10 +85,10 @@
 <script>
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { pageKafkaCluster, addKafkaCluster, editKafkaCluster, delKafkaCluster, getKafkaCluster } from '@/api/kafka/cluster'
+import { pageKafkaCluster, addKafkaCluster, editKafkaCluster, delKafkaCluster, getKafkaCluster } from '@/api/devops/kafka/cluster'
 
 export default {
-  name: 'KafkaCluster',
+  name: 'KafkaCluster1',
   data() {
     return {
       listLoading: true,

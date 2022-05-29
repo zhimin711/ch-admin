@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
 
-const namespace = '/kafka/cluster'
+const namespace = '/devops/kafka/cluster'
 
 export function pageKafkaCluster(query) {
   return request({

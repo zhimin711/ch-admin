@@ -1,6 +1,6 @@
 import request from '@/utils/request2'
-const baseUrl = '/kafka/topic'
-export function list(query) {
+const baseUrl = '/devops/kafka/topic'
+export function pageKafkaTopics(query) {
   return request({
     url: `${baseUrl}/${query.page}/${query.limit}`,
     method: 'get',
@@ -8,7 +8,7 @@ export function list(query) {
   })
 }
 
-export function get(id) {
+export function getKafkaTopic(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'get',
@@ -16,7 +16,7 @@ export function get(id) {
   })
 }
 
-export function add(data) {
+export function addKafkaTopic(data) {
   return request({
     url: `${baseUrl}`,
     method: 'post',
@@ -24,7 +24,7 @@ export function add(data) {
   })
 }
 
-export function edit(id, data) {
+export function editKafkaTopic(id, data) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'put',
@@ -32,7 +32,7 @@ export function edit(id, data) {
   })
 }
 
-export function del(id) {
+export function delKafkaTopic(id) {
   return request({
     url: `${baseUrl}/${id}`,
     method: 'delete'

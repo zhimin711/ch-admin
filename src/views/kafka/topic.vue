@@ -154,7 +154,16 @@ import { Loading } from 'element-ui'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del, getClusters, getTopics, syncAll, refresh2 } from '@/api/kafka/topic'
+import {
+  pageKafkaTopics,
+  addKafkaTopic,
+  editKafkaTopic,
+  delKafkaTopic,
+  getClusters,
+  getTopics,
+  syncAll,
+  refresh2
+} from '@/api/devops/kafka/topic'
 
 export default {
   name: 'KafkaTopic',
@@ -193,7 +202,7 @@ export default {
     },
     getList() {
       this.listLoading = true
-      list(this.listQuery).then(response => {
+      pageKafkaTopics(this.listQuery).then(response => {
         this.listQuery.list = response.rows
         this.listQuery.total = response.total
         this.listLoading = false
@@ -219,7 +228,7 @@ export default {
         type: 'warning'
       })
         .then(async() => {
-          await del(row.id)
+          await delKafkaTopic(row.id)
           _this.getList()
           this.$message.success('删除成功!')
         })
@@ -242,12 +251,12 @@ export default {
       let resp = null
       let opName = '添加'
       if (this.dialogType === 'new') {
-        resp = await add(this.record)
+        resp = await addKafkaTopic(this.record)
       } else if (this.dialogType === 'edit') {
         opName = '修改'
-        resp = await edit(this.record.id, this.record)
+        resp = await editKafkaTopic(this.record.id, this.record)
       }
-      if (resp.success) {
+      if (resp && resp.success) {
         this.dialogVisible = false
         this.$notify({
           title: `${opName}集群名称 Success!`,

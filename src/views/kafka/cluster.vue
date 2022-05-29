@@ -67,7 +67,7 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { list, add, edit, del } from '@/api/kafka/cluster'
+import { list, add, edit, del } from '@/api/devops/kafka/cluster'
 
 export default {
   name: 'KafkaCluster',
