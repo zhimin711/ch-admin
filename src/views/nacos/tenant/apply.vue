@@ -84,7 +84,7 @@
 import { pageApplyNamespaces, approveApplyNamespaces } from '@/api/devops/nacos/namespace-apply'
 
 export default {
-  name: 'NacosProjectApply1',
+  name: 'NacosProjectApply',
   data() {
     return {
       list: null,

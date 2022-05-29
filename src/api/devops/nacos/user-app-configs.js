@@ -24,3 +24,26 @@ export function applyNacosUserNamespaces(id, data) {
   })
 }
 
+export function getNacosUserProjectInstances(projectId, params) {
+  return request({
+    url: `${namespace}/${projectId}/instances`,
+    method: 'get',
+    params: params
+  })
+}
+
+export function getNacosUserProjectHistory(projectId, params) {
+  return request({
+    url: `${namespace}/${projectId}/history`,
+    method: 'get',
+    params: params
+  })
+}
+
+export function getNacosUserProjectHistoryDetail(projectId, params) {
+  return request({
+    url: `${namespace}/${projectId}/history/detail`,
+    method: 'get',
+    params: params
+  })
+}

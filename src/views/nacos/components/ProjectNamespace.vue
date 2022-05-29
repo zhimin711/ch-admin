@@ -68,7 +68,7 @@ import {
   applyNacosUserNamespaces,
   getNacosUserApplyNamespaces,
   listNacosUserNamespaces
-} from '@/api/devops/nacos/userApp'
+} from '@/api/devops/nacos/user-app-configs'
 import { listNacosProjectClusters } from '@/api/devops/nacos/projects'
 export default {
   props: {

@@ -73,7 +73,7 @@ import {
 } from '@/api/rocketmq/dashboard'
 
 export default {
-  name: 'RocketMQDashboard1',
+  name: 'RocketMQDashboard',
   components: {
     LineChart,
     LineChartTopic,

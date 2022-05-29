@@ -30,7 +30,7 @@
           <el-button v-permission="'NACOS_PROJECT_CONFIGS_IMPORT'" type="primary" plain @click="handleImports()">导入配置</el-button>
           <el-button v-permission="'NACOS_PROJECT_CONFIGS_EXPORT'" type="warning" plain @click="handleExports()">导出配置</el-button>
           <el-button type="primary" icon="el-icon-refresh" plain @click="queryData()">刷新</el-button>
-          <el-button type="primary" icon="el-icon-s-platform" plain @click="queryData()">服务实例</el-button>
+          <el-button v-permission="'NACOS_PROJECT_INSTANCES'" type="primary" icon="el-icon-s-platform" plain @click="handleInstances">服务实例</el-button>
         </div>
         <el-table
           v-show="showSearch"
@@ -53,7 +53,7 @@
             <template slot-scope="{row}">
               <el-button v-permission="'NACOS_PROJECT_CONFIG_EDIT'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_DETAIL'" type="text" @click.native="handleDetail(row)">详情</el-button>
-              <el-button v-permission="'NACOS_PROJECT_CONFIG_EDIT'" type="text" @click.native="handleUpdate(row)">变更历史</el-button>
+              <el-button v-permission="'NACOS_PROJECT_CONFIG_HISTORY'" type="text" @click.native="handleHistory(row)">变更历史</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_DELETE'" type="text" @click.native="onDelete(row)">删除</el-button>
             </template>
           </el-table-column>
@@ -162,10 +162,69 @@
       </span>
     </el-dialog>
 
-    <el-dialog title="示例代码" :visible.sync="dialogVisible2Code" width="80%">
-      <code-viewer v-model="record" />
+    <el-dialog title="更新记录" :visible.sync="dialogVisible2History" width="80%">
+      <el-table
+        v-if="!showHistoryContent"
+        v-loading="historyLoading"
+        :data="tables.history"
+        element-loading-text="Loading"
+        border
+        fit
+        highlight-current-row
+      >
+        <el-table-column label="更新人" min-width="100" prop="srcUser" />
+        <el-table-column label="更新类型" min-width="80" prop="opType">
+          <template slot-scope="{row}">
+            <el-tag v-if="row.opType === 'I'">新增</el-tag>
+            <el-tag v-else-if="row.opType === 'D'">删除</el-tag>
+            <el-tag v-else>更新</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="更新时间" prop="lastModifiedTime" :formatter="dateFormat" />
+        <el-table-column align="center" label="操作" width="180">
+          <template slot-scope="{row}">
+            <el-button v-permission="'NACOS_PROJECT_CONFIG_HISTORY_DETAIL'" type="text" icon="el-icon-view" @click.native="handleHistoryDetail(row)">详情</el-button>
+            <el-button v-permission="'NACOS_PROJECT_CONFIGS_ROLLBACK'" type="text" icon="el-icon-refresh-left" @click.native="handleHistoryDetail(row)">回滚</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-card v-if="showHistoryContent" class="box-card">
+        <div slot="header" class="clearfix">
+          <span>历史配置 {{ dateFormat2(historyRecord.lastModifiedTime) }}</span>
+          <el-button v-permission="'NACOS_PROJECT_CONFIGS_ROLLBACK'" style="float: right; padding: 3px 0" type="text" @click="handleHistoryRollback">回滚</el-button>
+        </div>
+        <div class="text item">
+          <el-input v-model="historyRecord.content" type="textarea" :autosize="{ minRows: 10, maxRows: 14}" />
+        </div>
+      </el-card>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible2Code = false">关闭</el-button>
+        <el-button v-if="showHistoryContent" @click="showHistoryContent = false">返回</el-button>
+        <el-button @click="dialogVisible2History = false">关闭</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog title="服务实例" :visible.sync="dialogVisible2Instances" width="80%">
+      <el-table v-loading="tables.instancesLoading" :data="tables.instances" border>
+        <el-table-column label="IP" width="150" prop="ip" />
+        <el-table-column label="端口" width="60" prop="port" />
+        <el-table-column label="临时实例" width="100" align="center" prop="ephemeral">
+          <template slot-scope="{row}">
+            {{ row.ephemeral }}
+          </template>
+        </el-table-column>
+        <el-table-column label="权重" width="60" align="center" prop="weight" />
+        <el-table-column label="健康状态" width="100" align="center" prop="healthy">
+          <template slot-scope="{row}">
+            {{ row.healthy }}
+          </template>
+        </el-table-column>
+        <el-table-column label="元数据" min-width="100">
+          <template slot-scope="{row}">
+            {{ JSON.stringify(row.metadata) }}
+          </template>
+        </el-table-column>
+      </el-table>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2Instances = false">关闭</el-button>
       </span>
     </el-dialog>
   </div>
@@ -175,22 +234,26 @@
 import SingleFile from '@/components/Upload/SingleFile2'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import ProjectNamespace from '../components/ProjectNamespace' // 粘性header组件
-import CodeViewer from '../components/showCodeConfig' // 粘性header组件
 import ProjectMenu from '../components/ProjectMenu' // 粘性header组件
-import { deepClone } from '@/utils'
+import { deepClone, parseTime } from '@/utils'
 import {
   cloneNacosProjectConfigs,
   deleteNacosProjectConfig, exportNacosProjectConfigs,
-  pageNacosUserConfigs
+  pageNacosUserConfigs, rollbackNacosProjectConfigs
 } from '@/api/devops/nacos/user-configs'
+import {
+  getNacosUserProjectHistory,
+  getNacosUserProjectHistoryDetail,
+  getNacosUserProjectInstances
+} from '@/api/devops/nacos/user-app-configs'
 
 const opName = {
   'IMPORT': '导入',
   'CLONE': '克隆'
 }
 export default {
-  name: 'NacosProjectConfigsIndex1',
-  components: { Sticky, ProjectNamespace, SingleFile, CodeViewer, ProjectMenu },
+  name: 'NacosProjectConfigsIndex',
+  components: { Sticky, ProjectNamespace, SingleFile, ProjectMenu },
   data() {
     return {
       list: null,
@@ -214,19 +277,26 @@ export default {
       dialogVisible2Import: false,
       dialogVisible2ImportResult: false,
       dialogVisible2Clone: false,
-      dialogVisible2Code: false,
+      dialogVisible2Instances: false,
+      dialogVisible2History: false,
+      historyLoading: false,
+      showHistoryContent: false,
       importMessage: '',
       record: {},
       toNamespace: '',
+      historyRecord: {},
       titles: {
         importResult: '',
         fail: '',
         skip: ''
       },
       tables: {
+        instancesLoading: false,
         importSuccess: [],
         importFail: [],
         importSkip: [],
+        instances: [],
+        history: [],
         clone: []
       },
       policy: 'ABORT',
@@ -328,6 +398,24 @@ export default {
     handleDetail(row) {
       this.$router.push(`/nacos/project/configDetail?namespaceId=${row.namespaceId || this.namespaceId}&appName=${this.projectId}&dataId=${row.dataId}&group=${row.group}`)
     },
+    handleHistory(row) {
+      this.dialogVisible2History = true
+      this.historyLoading = true
+      this.showHistoryContent = false
+      this.tables.history = []
+      const params = {}
+      params.search = 'accurate'
+      params.namespaceId = this.namespaceId
+      params.dataId = row.dataId
+      params.group = row.group
+      getNacosUserProjectHistory(this.projectId, params).then(resp => {
+        if (resp.success) {
+          this.tables.history = resp.rows
+        }
+      }).finally(() => {
+        this.historyLoading = false
+      })
+    },
     handleCode(row) {
       this.record = Object.assign({}, row)
       this.record.content = undefined
@@ -416,6 +504,22 @@ export default {
     handleImports() {
       this.dialogVisible2Import = true
     },
+    handleInstances() {
+      this.dialogVisible2Instances = true
+      this.tables.instancesLoading = true
+      this.tables.instances = []
+      const params = {}
+      params.namespaceId = this.namespaceId
+      params.pageNo = 1
+      params.pageSize = 100
+      getNacosUserProjectInstances(this.projectId, params).then(resp => {
+        if (resp.success) {
+          this.tables.instances = resp.rows
+        }
+      }).finally(() => {
+        this.tables.instancesLoading = false
+      })
+    },
     importSuccess(resp) {
       this.dialogVisible2Import = false
       this.handleResult(resp, 'IMPORT')
@@ -427,6 +531,51 @@ export default {
       }
       this.dialogVisible2Clone = true
       this.tables.clone = deepClone(this.multipleSelection)
+    },
+    handleHistoryDetail(row) {
+      const params = {}
+      params.namespaceId = this.namespaceId
+      params.opType = row.opType
+      params.nid = row.id
+      params.dataId = row.dataId
+      params.group = row.group
+      this.showHistoryContent = true
+      getNacosUserProjectHistoryDetail(this.projectId, params).then((resp) => {
+        if (resp.success) {
+          this.historyRecord = resp.rows[0]
+        }
+      })
+    },
+    handleHistoryRollback(row) {
+      const h = this.$createElement
+      this.$msgbox({
+        title: '回滚配置',
+        message: h('div', { style: 'margin-left: 20px' }, [
+          h('p', null, '确定要 以下配置吗？ '),
+          h('span', null, `Data Id: `),
+          h('i', { style: 'color: teal' }, this.historyRecord.dataId),
+          h('br', null, null),
+          h('span', null, `Group: `),
+          h('i', { style: 'color: teal' }, this.historyRecord.group)
+        ]),
+        showCancelButton: true,
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      }).then(action => {
+        this.onHistoryRollback()
+      })
+    },
+    onHistoryRollback() {
+      this.historyRecord.namespaceId = this.namespaceId
+      rollbackNacosProjectConfigs(this.projectId, this.historyRecord).then(resp => {
+        this.$message({
+          message: '配置回滚' + (resp ? '成功' : '失败'),
+          type: resp ? 'success' : 'error'
+        })
+        if (resp.success) {
+          this.dialogVisible2History = false
+        }
+      })
     },
     onClone() {
       const params = {}
@@ -468,6 +617,12 @@ export default {
         this.importMessage = `${opName[op]}成功,${opName[op]}了 ${data.succCount} 项配置`
         this.fetchData()
       }
+    },
+    dateFormat(row, column, cellValue, index) {
+      return parseTime(new Date(cellValue))
+    },
+    dateFormat2(value) {
+      return parseTime(new Date(value))
     }
   }
 }

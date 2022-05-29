@@ -53,6 +53,14 @@ export function cloneNacosProjectConfigs(projectId, params, data) {
   })
 }
 
+export function rollbackNacosProjectConfigs(projectId, data) {
+  return request({
+    url: `${namespace}/${projectId}/configs/rollback?opType=${data.opType}`,
+    method: 'put',
+    data
+  })
+}
+
 export function exportNacosProjectConfigs(projectId, params) {
   window.open(
     [

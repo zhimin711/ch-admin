@@ -82,7 +82,7 @@ import { generateBrokerMap } from '@/api/rocketmq/tools'
 import { listRocketMQ, getRocketMQ } from '@/api/rocketmq/cluster'
 
 export default {
-  name: 'RocketMQCluster1',
+  name: 'RocketMQCluster',
   data() {
     return {
       listLoading: true,
