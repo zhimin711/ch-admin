@@ -151,7 +151,6 @@
 
 <script>
 import { Loading } from 'element-ui'
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import {
@@ -167,7 +166,6 @@ import {
 
 export default {
   name: 'KafkaTopic',
-  components: { Pagination },
   data() {
     return {
       listLoading: true,
