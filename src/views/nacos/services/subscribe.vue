@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <sticky :z-index="10" :class-name="'sub-navbar2 '">
+    <sticky :z-index="10" :class-name="'sub-navbar3 '">
       <tenant v-model="namespaceId" @change="queryData" />
     </sticky>
     <div class="query-container">

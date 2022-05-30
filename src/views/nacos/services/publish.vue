@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
-    <sticky :z-index="10" :class-name="'sub-navbar2 '">
-      <tenant v-model="namespaceId" :default-first="true" @change="queryData" />
+    <sticky :z-index="10" :class-name="'sub-navbar3 '">
+      <tenant v-model="namespaceId" :default-first="true" @change="queryData" @finish="loadNamespacesFinish" />
     </sticky>
     <div class="query-container">
       <el-form :model="listQuery" :inline="true">
@@ -129,9 +129,12 @@ export default {
     }
   },
   mounted() {
-    this.fetchData()
   },
   methods: {
+    loadNamespacesFinish(data) {
+      if (data.length > 0) this.namespaceId = data[0].value
+      this.fetchData()
+    },
     fetchData() {
       if (this.namespaceId === '') return
       this.listQuery.namespaceId = this.namespaceId

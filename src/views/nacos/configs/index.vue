@@ -4,7 +4,7 @@
       <!--部门数据-->
       <!--用户数据-->
       <el-col :span="24" :xs="24">
-        <sticky :z-index="10" :class-name="'sub-navbar2 '">
+        <sticky :z-index="10" :class-name="'sub-navbar3 '">
           <tenant v-model="namespaceId" @change="handleNamespaceChange" @finish="loadNamespacesFinish" />
         </sticky>
         <div class="query-container">

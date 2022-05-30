@@ -71,7 +71,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="table.main.total>0" :total="table.main.total" :page.sync="table.main.page" :limit.sync="table.main.limit" @pagination="handlePageChange" />
+    <pagination v-show="table.main.total>0" :total="table.main.data.filter(item => filterData(item)).length" :page.sync="table.main.page" :limit.sync="table.main.limit" @pagination="handlePageChange" />
 
     <el-dialog :visible.sync="dialog.visible.addOrEdit" :title="dialog.type==='edit'?'修改主题信息':'创建主题'">
       <el-form :model="record" label-width="100px" label-position="left">
@@ -334,6 +334,7 @@
 import { Loading } from 'element-ui'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { parseTime } from '@/utils'
+import { isEmpty } from '@/utils/validate'
 import { listRocketMQ } from '@/api/rocketmq/cluster'
 import {
   listRocketMQTopic,
@@ -652,6 +653,7 @@ export default {
     },
     filterData(item) {
       if (this.checkList.length === 0) return false
+      if (!isEmpty(this.table.main.params.topicName) && item.topicName.indexOf(this.table.main.params.topicName) < 0) return false
       if (this.checkList.includes('重试') && item.topicName.startsWith('%R')) { return true }
       if (this.checkList.includes('死信') && item.topicName.startsWith('%D')) { return true }
       return this.checkList.includes('普通') && item.topicName.startsWith('%') === false

@@ -31,6 +31,7 @@
         </template>
       </el-table-column>
       <el-table-column label="负责人" prop="manager" />
+      <el-table-column label="排序" prop="sort" />
 
       <el-table-column align="center" label="操作" width="200">
         <template slot-scope="scope">
