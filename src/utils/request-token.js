@@ -1,6 +1,6 @@
 import axios from 'axios'
 import store from '@/store'
-import { isExpired } from '@/utils/auth'
+import { getRefreshToken, getToken, isExpired } from '@/utils/auth'
 
 // create an axios instance
 const instance = axios.create({
@@ -14,8 +14,8 @@ export async function refreshToken() {
   // const resp = await instance.get(`/auth/login/token/refresh?token=${store.getters.token}&refreshToken=${store.getters.refreshToken}`, {
   const resp = await instance.get(`/auth/login/token/refresh`, {
     headers: {
-      'X-TOKEN': `${store.getters.token}`,
-      'X-REFRESH-TOKEN': `${store.getters.refreshToken}`
+      'X-TOKEN': getToken(),
+      'X-REFRESH-TOKEN': getRefreshToken()
     }
   })
   const { data } = resp

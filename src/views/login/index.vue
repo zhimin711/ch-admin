@@ -86,6 +86,8 @@ import { validUsername } from '@/utils/validate'
 import SocialSign from './components/SocialSignin'
 import defaultSettings from '@/settings'
 import Verify from '@/components/Verification/Verify'
+import { getRefreshToken } from '@/utils/auth'
+import { isEmpty } from '@/utils/validate'
 
 export default {
   name: 'Login',
@@ -150,6 +152,7 @@ export default {
   },
   created() {
     // window.addEventListener('storage', this.afterQRScan)
+    this.try2Dashboard()
     window.addEventListener('keyup', this.enterKey)
   },
   mounted() {
@@ -166,6 +169,17 @@ export default {
     window.removeEventListener('keyup', this.enterKey)
   },
   methods: {
+    try2Dashboard() {
+      const refreshToken = getRefreshToken()
+      if (!isEmpty(refreshToken)) {
+        // this.$router.push({ path: '/dashboard' })
+        this.$nextTick(() => {
+          this.$router.push({
+            path: '/dashboard'
+          })
+        })
+      }
+    },
     login({ captchaVerification }) {
       this.loading = true
       this.loginForm.captchaCode = captchaVerification

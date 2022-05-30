@@ -7,8 +7,10 @@ const REFRESH_TOKEN_KEY = 'REFRESH-TOKEN'
 
 export function getToken() {
   // return Cookies.get(TOKEN_KEY)
-  return sessionStorage.getItem(TOKEN_KEY)
+  const token = sessionStorage.getItem(TOKEN_KEY)
+  if (token === null || token === 'undefined') return ''
   // return localStorage.getItem(TOKEN_KEY)
+  return token
 }
 
 export function setToken(token) {
@@ -38,6 +40,7 @@ export function setExpired(expireAt) {
 
 export function isExpired() {
   const d1 = sessionStorage.getItem(EXPIRED_KEY)
+  if (d1 === null || d1 === 'undefined') return true
   const d2 = timeFormat(new Date(), 'yyyymmddhhMMss')
   return d1 < d2
 }
