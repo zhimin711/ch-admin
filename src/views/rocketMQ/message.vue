@@ -14,7 +14,7 @@
     <div class="filter-container">
       <el-form :model="params" :inline="true" label-width="180px" label-position="left">
         <el-form-item label="主题">
-          <el-select v-model="params.topicName" placeholder="请选择" class="filter-item" @change="handleClusterChange">
+          <el-select v-model="params.topicName" filterable placeholder="请选择" class="filter-item" @change="handleClusterChange">
             <el-option
               v-for="item in options.topics"
               :key="item.value"

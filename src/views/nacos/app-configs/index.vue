@@ -7,9 +7,7 @@
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24" style="border-left: 1px solid #dedede; min-height: 500px">
-        <sticky :z-index="10"> <!-- :class-name="'sub-navbar2 '"-->
-          <project-namespace v-model="namespaceId" :project-id="projectId" @change="handleNamespaceChange" @finish="loadNamespacesFinish" />
-        </sticky>
+        <project-namespace v-model="namespaceId" :project-id="projectId" @change="handleNamespaceChange" @finish="loadNamespacesFinish" />
         <el-alert
           v-if="!showSearch && projectId==='' && namespaceId!=='apply'"
           title="未选择项目或未加载项目的配置集群"
@@ -232,7 +230,6 @@
 
 <script>
 import SingleFile from '@/components/Upload/SingleFile2'
-import Sticky from '@/components/Sticky' // 粘性header组件
 import ProjectNamespace from '../components/ProjectNamespace' // 粘性header组件
 import ProjectMenu from '../components/ProjectMenu' // 粘性header组件
 import { deepClone, parseTime } from '@/utils'
@@ -253,7 +250,7 @@ const opName = {
 }
 export default {
   name: 'NacosProjectConfigsIndex',
-  components: { Sticky, ProjectNamespace, SingleFile, ProjectMenu },
+  components: { ProjectNamespace, SingleFile, ProjectMenu },
   data() {
     return {
       list: null,
