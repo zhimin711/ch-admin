@@ -1,5 +1,5 @@
 import { login, logout, getInfo, getPermissions } from '@/api/login'
-import { getUserTenants } from '@/api/upms/user'
+import { getUserTenants, changeTenant } from '@/api/upms/user'
 import { getToken, setToken, removeToken, setExpired, removeExpired, getRefreshToken, setRefreshToken, removeRefreshToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
 
@@ -223,13 +223,20 @@ const actions = {
 
   // set user tenant
   setTenant({ commit, dispatch }, tenant) {
-    return new Promise(resolve => {
-      commit('SET_TENANT', tenant)
-      resetRouter()
+    return new Promise((resolve, reject) => {
+      changeTenant({ id: tenant }).then(resp => {
+        if (resp.success) {
+          commit('SET_TENANT', resp.rows[0])
 
-      // reset visited views and cached views
-      dispatch('tagsView/delAllViews', null, { root: true })
-      resolve()
+          // reset visited views and cached views
+          dispatch('tagsView/delAllViews', null, { root: true })
+          resolve()
+        } else {
+          reject(resp)
+        }
+      }).catch(error => {
+        reject(error)
+      })
     })
   },
 

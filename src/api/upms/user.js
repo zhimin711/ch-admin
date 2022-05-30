@@ -60,6 +60,13 @@ export function changeRole(data) {
     data
   })
 }
+export function changeTenant(data) {
+  return request({
+    url: `${baseUrl}/changeTenant`,
+    method: 'post',
+    data
+  })
+}
 
 export function getEnableRoles() {
   return request({
@@ -101,13 +108,6 @@ export function getUserTenants() {
 export function getUserTenantProjects(tenant) {
   return request({
     url: `${baseUrl}/tenant/${tenant}/projects`,
-    method: 'get'
-  })
-}
-
-export function getUserProjectNamespaces(projectId) {
-  return request({
-    url: `${baseUrl}/project/${projectId}/namespaces`,
     method: 'get'
   })
 }

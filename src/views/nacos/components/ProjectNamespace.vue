@@ -193,14 +193,11 @@ export default {
       }
       getNacosNamespaces().then((res) => {
         this.namespaces = res.data
-        // this.$store.dispatch('user/setTenants', this.namespaces)
       })
     },
     selectNamespace(val) {
       this.$emit('change', val)
       sessionStorage.setItem('projectNamespace', val)
-      // this.$store.dispatch('user/setTenant', val).then(() => {
-      // })
     },
     selectNamespace2(tab) {
       if (tab.name === '') {

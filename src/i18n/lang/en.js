@@ -1,6 +1,7 @@
 export default {
   message: {
     'switchLanguage': 'switch English Language Success！',
+    'switchTenant': 'switch Tenant Success！',
     deleteTip: 'Confirm to remove the selected data?',
     deleteSuccess: 'Delete success!'
   },

@@ -77,20 +77,15 @@ export default {
           if (this.defaultFirst && this.namespaces.length > 0) this.tenant = this.namespaces[0].value
           this.$emit('finish', this.namespaces)
         }
-        // this.$store.dispatch('user/setTenants', this.namespaces)
       })
     },
     handleSelect(val) {
       this.$emit('input', val)
       // this.$emit('change', val)
-      // this.$store.dispatch('user/setTenant', val).then(() => {
-      // })
     },
     selectNamespace() {
       // this.$emit('input', this.value)
       this.$emit('change', this.tenant)
-      // this.$store.dispatch('user/setTenant', val).then(() => {
-      // })
     }
   }
 }

@@ -44,14 +44,11 @@ export default {
       getNacosNamespaces().then((resp) => {
         this.namespaces = resp.data
         this.$emit('finish', this.namespaces)
-        // this.$store.dispatch('user/setTenants', this.namespaces)
       })
     },
     selectNamespace(val) {
       this.$emit('input', val)
       this.$emit('change', val)
-      // this.$store.dispatch('user/setTenant', val).then(() => {
-      // })
     }
   }
 }

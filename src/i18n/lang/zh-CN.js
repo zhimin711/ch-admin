@@ -1,6 +1,7 @@
 const cn = {
   message: {
     'switchLanguage': '切换中文语言成功！',
+    'switchTenant': '切换租户成功！',
     deleteTip: '确认删除选择数据码?操作不可回退。',
     deleteSuccess: '删除成功!'
   },

@@ -74,14 +74,10 @@ export default {
           if (resp.success) {
             this.projects = resp.rows
           }
-          // this.$store.dispatch('user/setTenants', this.namespaces)
         })
       }
     },
     selectNamespace(val) {
-      // this.$store.dispatch('user/setTenant', val).then(() => {
-      //   this.$emit('change', val)
-      // })
     }
   }
 }

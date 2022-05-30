@@ -12,6 +12,7 @@
 </template>
 
 <script>
+
 export default {
   computed: {
     tenant() {
@@ -23,17 +24,18 @@ export default {
   },
   methods: {
     handleSetTenant(val) {
-      this.$confirm('切换租户将当前关闭所有标签页?', 'Warning', {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
+      this.$confirm('切换租户将当前关闭所有标签页?', '' + this.$t('label.tip'), {
+        confirmButtonText: this.$t('btn._confirm'),
+        cancelButtonText: this.$t('btn._cancel'),
         type: 'warning'
       })
         .then(async() => {
-          this.$store.dispatch('user/setTenant', val)
+          await this.$store.dispatch('user/setTenant', val)
           this.$message({
-            message: this.$t('message.switchLanguage'),
+            message: this.$t('message.switchTenant'),
             type: 'success'
           })
+          this.$router.push({ path: '/' })
         })
         .catch(err => { console.error(err) })
     }
