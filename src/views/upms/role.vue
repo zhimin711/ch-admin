@@ -138,7 +138,7 @@ const PERMISSION_TYPE = {
   INTERFACE: { type: 'primary', name: '接口' }
 }
 export default {
-  name: 'UpmsRole1',
+  name: 'UpmsRole',
   data() {
     return {
       tableA: {

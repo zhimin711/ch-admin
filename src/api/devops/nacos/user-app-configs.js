@@ -16,9 +16,9 @@ export function getNacosUserApplyNamespaces(projectId, clusterId) {
   })
 }
 
-export function applyNacosUserNamespaces(id, data) {
+export function applyNacosUserNamespaces(id, clusterId, data) {
   return request({
-    url: `${namespace}/apply/${id}/namespaces`,
+    url: `${namespace}/apply/${id}/${clusterId}/namespaces`,
     method: 'post',
     data
   })

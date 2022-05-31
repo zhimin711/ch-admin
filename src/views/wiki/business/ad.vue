@@ -164,8 +164,6 @@
 
 <script>
 
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-
 import UploadImageCrop from '@/components/Upload/SingleImageCrop'
 import ImageSelector from '@/components/ImageSelector'
 
@@ -180,7 +178,7 @@ const defaultRecord = { sort: 1, status: '1', srcType: 0 }
 export default {
   name: 'WikiAd',
   dictionary: ['status'],
-  components: { Pagination, UploadImageCrop, ImageSelector },
+  components: { UploadImageCrop, ImageSelector },
   data() {
     return {
       record: Object.assign({}, defaultRecord),

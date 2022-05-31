@@ -1,8 +1,21 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <!--<el-input v-model="listQuery.namespaceShowName" placeholder="命名空间名称" style="width: 200px;" class="filter-item" />-->
-      <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
+      <el-form ref="queryForm" :model="listQuery.params" :inline="true" label-width="68px">
+        <el-form-item label="审核状态" prop="status">
+          <el-select v-model="listQuery.params.status" placeholder="审核状态" clearable size="small">
+            <el-option
+              v-for="dict in dict.type.approveStatus1"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button class="filter-item" type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
+        </el-form-item>
+      </el-form>
     </div>
     <el-table
       v-loading="listLoading"
@@ -15,6 +28,11 @@
       <el-table-column label="申请项目" width="180" prop="namespaceShowName">
         <template slot-scope="{row}">
           {{ parseProjectName(row) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="申请集群" width="120">
+        <template slot-scope="{row}">
+          {{ parseClusterName(row) }}
         </template>
       </el-table-column>
       <el-table-column label="申请空间" prop="namespace">
@@ -88,6 +106,7 @@ import { pageApplyNamespaces, approveApplyNamespaces } from '@/api/devops/nacos/
 
 export default {
   name: 'NacosProjectApply',
+  dictionary: ['approveStatus1'],
   data() {
     return {
       list: null,
@@ -95,8 +114,9 @@ export default {
       listLoading2: false,
       count: 0,
       listQuery: {
+        params: {},
         page: 1,
-        size: 20
+        size: 10
       },
       dialogApproveVisible: false,
       loadingApprove: false,
@@ -119,6 +139,10 @@ export default {
     parseProjectName(row) {
       const obj = JSON.parse(row.content)
       return obj.projectName
+    },
+    parseClusterName(row) {
+      const obj = JSON.parse(row.content)
+      return obj.clusterName
     },
     parseProjectNamespace(row) {
       const obj = JSON.parse(row.content)

@@ -13,10 +13,10 @@
       <el-form-item :label="$t('label.status')">
         <el-select v-model="tableA.params.status" :placeholder="$t('label.status')" clearable size="small">
           <el-option
-            v-for="dict in statusOptions"
-            :key="dict.dictValue"
-            :label="dict.dictLabel"
-            :value="dict.dictValue"
+            v-for="dict in dict.type.status"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
           />
         </el-select>
       </el-form-item>
@@ -205,6 +205,7 @@ const defaultRecord = { pid: '0', sort: 1, status: '1' }
 export default {
   name: 'UpmsDepartment',
   // components: { Treeselect },
+  dictionary: ['status'],
   data() {
     return {
       // 查询参数与结果

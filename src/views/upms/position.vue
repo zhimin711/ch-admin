@@ -22,10 +22,10 @@
       <el-form-item label="状态" prop="status">
         <el-select v-model="recordPage.params.status" placeholder="职位状态" clearable size="small">
           <el-option
-            v-for="dict in statusOptions"
-            :key="dict.dictValue"
-            :label="dict.dictLabel"
-            :value="dict.dictValue"
+            v-for="dict in dict.type.status"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
           />
         </el-select>
       </el-form-item>
@@ -156,6 +156,7 @@ const defaultRecord = { pid: '0', sort: 1, status: '1' }
 
 export default {
   name: 'UmpsPosition',
+  dictionary: ['status'],
   data() {
     return {
       // 查询参数与结果
@@ -189,8 +190,6 @@ export default {
       title: '',
       // 是否显示弹出层
       open: false,
-      // 状态数据字典
-      statusOptions: [],
       // 表单校验
       rules: {
         name: [

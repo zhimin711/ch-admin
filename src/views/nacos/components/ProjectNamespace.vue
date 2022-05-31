@@ -180,7 +180,7 @@ export default {
         return
       }
       this.loadingApprove = true
-      applyNacosUserNamespaces(this.projectId, this.applyList).then(resp => {
+      applyNacosUserNamespaces(this.projectId, this.activeCluster, this.applyList).then(resp => {
         if (resp.success) {
           this.applyDialogVisible = false
           this.$message.success('申请成功，请等待管理员审核...')
