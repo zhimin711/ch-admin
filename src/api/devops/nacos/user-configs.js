@@ -30,7 +30,7 @@ export function addNacosProjectConfig(projectId, data) {
 
 export function updateNacosProjectConfig(projectId, data) {
   return request({
-    url: `${namespace}//${projectId}/configs`,
+    url: `${namespace}/${projectId}/configs`,
     method: 'put',
     data
   })

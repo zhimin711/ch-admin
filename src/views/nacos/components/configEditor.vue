@@ -66,6 +66,7 @@ import Sticky from '@/components/Sticky' // 粘性header组件
 import { addNacosConfig, getNacosConfig, updateNacosConfig } from '@/api/devops/nacos/configs'
 import { getNacosProjectConfig, addNacosProjectConfig, updateNacosProjectConfig } from '@/api/devops/nacos/user-configs'
 import { getNamespaceProjects } from '@/api/devops/nacos/namespaces'
+import { isEmpty } from '@/utils/validate'
 import CodeDiff from 'vue-code-diff'
 
 import CodeMirror2 from 'codemirror'
@@ -167,6 +168,9 @@ export default {
       const resp = this.isApp ? await getNacosProjectConfig(params.appName, params) : await getNacosConfig(params)
       if (resp && resp.success) {
         this.record = Object.assign({}, resp.rows[0])
+        if (this.isApp && isEmpty(this.record.appName)) {
+          this.record.appName = params.appName
+        }
         this.content = this.record.content
       }
     },

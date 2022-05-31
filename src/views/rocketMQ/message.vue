@@ -236,6 +236,8 @@ export default {
         if (resp.success) {
           this.$message.success('resend success!')
         }
+      }).catch(error => {
+        this.$message.error(error.message)
       })
     },
     handleDetail2(row) {
