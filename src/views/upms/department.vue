@@ -77,6 +77,7 @@
             @click="handleUpdate(scope.row)"
           >{{ $t('btn.edit') }}</el-button>
           <el-button
+            v-if="scope.row.deptType === 0 || scope.row.deptType === 1 || scope.row.deptType === 2"
             v-permission="['UPMS_DEPARTMENT_ADD']"
             type="text"
             icon="el-icon-plus"
@@ -116,7 +117,7 @@
                 <el-radio-button label="1">公司</el-radio-button>
                 <el-radio-button label="2">部门</el-radio-button>
                 <el-radio-button label="3">团队</el-radio-button>
-                <el-radio-button label="4">小组</el-radio-button>
+                <!--                <el-radio-button label="4">小组</el-radio-button>-->
               </el-radio-group>
             </el-form-item>
           </el-col>

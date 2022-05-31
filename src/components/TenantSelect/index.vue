@@ -59,7 +59,7 @@ export default {
           changeTenant(params).then(resp => {
             if (resp.success) {
               this.$message({
-                message: this.$t('message.switchTenant'),
+                message: '设置默认租户成功',
                 type: 'success'
               })
             }
