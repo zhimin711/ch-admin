@@ -55,7 +55,7 @@
         </el-checkbox-group>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleSubmitApply">申请</el-button>
+        <el-button type="primary" :loading="loadingApprove" @click="handleSubmitApply">申请</el-button>
         <el-button type="danger" @click="applyDialogVisible=false">取消</el-button>
       </span>
     </el-dialog>
@@ -87,6 +87,7 @@ export default {
       namespaces: [],
       activeCluster: '',
       applyDialogVisible: false,
+      loadingApprove: false,
       applyList: [],
       record: {},
       projectNamespaces: []
@@ -178,11 +179,14 @@ export default {
         this.$message.warning('请选择要申请的空间!')
         return
       }
+      this.loadingApprove = true
       applyNacosUserNamespaces(this.projectId, this.applyList).then(resp => {
         if (resp.success) {
           this.applyDialogVisible = false
           this.$message.success('申请成功，请等待管理员审核...')
         }
+      }).finally(() => {
+        this.loadingApprove = false
       })
     },
     loadData() {

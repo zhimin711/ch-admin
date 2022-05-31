@@ -12,7 +12,7 @@
       fit
       highlight-current-row
     >
-      <el-table-column label="申请项目" min-width="200" prop="namespaceShowName">
+      <el-table-column label="申请项目" width="180" prop="namespaceShowName">
         <template slot-scope="{row}">
           {{ parseProjectName(row) }}
         </template>
@@ -59,6 +59,9 @@
           <el-form-item label="申请项目:">
             {{ recordContent.projectName }}
           </el-form-item>
+          <el-form-item label="申请集群:">
+            {{ recordContent.clusterName }}
+          </el-form-item>
           <el-form-item label="申请空间:">
             {{ recordContent.namespaceNames }}
           </el-form-item>
@@ -71,8 +74,8 @@
         </el-form>
       </el-card>
       <span slot="footer" class="dialog-footer">
-        <el-button type="success" @click="submitApprove(1)">通 过</el-button>
-        <el-button type="danger" @click="submitApprove(4)">拒 绝</el-button>
+        <el-button type="success" :loading="loadingApprove" @click="submitApprove(1)">通 过</el-button>
+        <el-button type="danger" :loading="loadingApprove" @click="submitApprove(4)">拒 绝</el-button>
         <el-button type="primary" @click="dialogApproveVisible = false">关 闭</el-button>
       </span>
     </el-dialog>
@@ -96,6 +99,7 @@ export default {
         size: 20
       },
       dialogApproveVisible: false,
+      loadingApprove: false,
       textMap: {
         approve: '空间申请审核'
       },
@@ -140,12 +144,15 @@ export default {
     },
     submitApprove(status) {
       this.record.status = status
+      this.loadingApprove = true
       approveApplyNamespaces(this.record).then(resp => {
         if (resp.success) {
           this.dialogApproveVisible = false
           this.$message.success('操作成功！')
           this.fetchData()
         }
+      }).finally(() => {
+        this.loadingApprove = false
       })
     },
     handleApprove(row) {
