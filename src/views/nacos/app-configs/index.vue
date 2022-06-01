@@ -186,6 +186,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <pagination v-show="!showHistoryContent&&historyCount>0" :total="historyCount" :page.sync="historyQuery.pageNo" :limit.sync="historyQuery.pageSize" @pagination="pageHistory()" />
       <el-card v-if="showHistoryContent" class="box-card">
         <div slot="header" class="clearfix">
           <span>历史配置 {{ dateFormat2(historyRecord.lastModifiedTime) }}</span>
@@ -270,6 +271,15 @@ export default {
         pageNo: 1,
         pageSize: 10
       },
+      historyQuery: {
+        search: 'accurate',
+        namespaceId: '',
+        dataId: '',
+        group: '',
+        pageNo: 1,
+        pageSize: 10
+      },
+      historyCount: 0,
       dialogLoading: false,
       dialogVisible2Import: false,
       dialogVisible2ImportResult: false,
@@ -395,23 +405,29 @@ export default {
     handleDetail(row) {
       this.$router.push(`/nacos/project/configDetail?namespaceId=${row.namespaceId || this.namespaceId}&appName=${this.projectId}&dataId=${row.dataId}&group=${row.group}`)
     },
-    handleHistory(row) {
-      this.dialogVisible2History = true
+    pageHistory() {
       this.historyLoading = true
-      this.showHistoryContent = false
-      this.tables.history = []
-      const params = {}
-      params.search = 'accurate'
-      params.namespaceId = this.namespaceId
-      params.dataId = row.dataId
-      params.group = row.group
-      getNacosUserProjectHistory(this.projectId, params).then(resp => {
+      getNacosUserProjectHistory(this.projectId, this.historyQuery).then(resp => {
         if (resp.success) {
           this.tables.history = resp.rows
+          this.historyCount = resp.total
         }
       }).finally(() => {
         this.historyLoading = false
       })
+    },
+    handleHistory(row) {
+      this.dialogVisible2History = true
+      this.showHistoryContent = false
+      // this.historyQuery.search = 'accurate'
+      this.historyQuery.namespaceId = this.namespaceId
+      this.historyQuery.dataId = row.dataId
+      this.historyQuery.group = row.group
+      this.historyQuery.pageNo = 1
+      this.historyQuery.pageSize = 10
+      this.historyCount = 0
+      this.tables.history = []
+      this.pageHistory()
     },
     handleCode(row) {
       this.record = Object.assign({}, row)
