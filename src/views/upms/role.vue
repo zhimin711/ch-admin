@@ -289,6 +289,7 @@ export default {
     async confirmRole() {
       const isEdit = this.dialogType === 'edit'
       let resp = null
+      this.role.status = this.recordStatus ? '1' : '0'
       if (isEdit) {
         resp = await editRole(this.role.id, this.role)
       } else {

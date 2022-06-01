@@ -74,13 +74,13 @@
           </el-table-column>
           <el-table-column property="groupId" label="Nacos分组">
             <template slot-scope="{row}">
-              <el-input v-model="row.groupId" class="edit-input" size="small" />
+              <el-input v-model="row.groupId" class="edit-input" size="small" placeholder="默认为项目代码" />
             </template>
           </el-table-column>
         </el-table>
       </div>
       <div style="text-align:left;padding-left:220px">
-        <el-button type="primary" @click="handleSubmitNamespaces">保存</el-button>
+        <el-button :loading="loadingSave" type="primary" @click="handleSubmitNamespaces">保存</el-button>
         <el-button type="danger" @click="dialogVisible2=false">取消</el-button>
       </div>
     </el-dialog>
@@ -95,6 +95,7 @@ export default {
   name: 'NacosProjectNamespaces',
   data() {
     return {
+      loadingSave: false,
       listLoading: true,
       listQuery: {
         page: 1,
@@ -165,7 +166,11 @@ export default {
       this.recordNamespaces = []
     },
     async handleSubmitNamespaces() {
+      this.loadingSave = true
       const resp = await editProjectNamespaces(this.record.id, this.activeCluster, this.namespaceList)
+        .finally(() => {
+          this.loadingSave = false
+        })
       if (resp && resp.success) {
         this.dialogVisible2 = false
       }
