@@ -171,7 +171,7 @@
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="danger" @click="dialogVisible=false">{{ $t('btn.cancel') }}</el-button>
+        <el-button :loading="loadingSave" type="danger" @click="dialogVisible=false">{{ $t('btn.cancel') }}</el-button>
         <el-button type="primary" @click="handleSubmit">{{ $t('btn.save') }}</el-button>
       </div>
     </el-dialog>
@@ -180,7 +180,7 @@
         <el-transfer v-model="recordRoles" :data="roles" :titles="[$t('user.roles0'), $t('user.roles1')]" :props="{ key: 'id', label: 'name' }" />
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleSubmitAuth">{{ $t('btn.save') }}</el-button>
+        <el-button :loading="loadingSave" type="primary" @click="handleSubmitAuth">{{ $t('btn.save') }}</el-button>
         <el-button type="danger" @click="dialogVisible2=false">{{ $t('btn.cancel') }}</el-button>
       </span>
     </el-dialog>
@@ -251,6 +251,7 @@ export default {
       },
       record: {},
       recordRoles: [],
+      loadingSave: false,
       dialogVisible: false,
       dialogType: false,
       dialogCodeEdit: false,
@@ -456,11 +457,12 @@ export default {
           this.record.dutyList.push(item)
         })
       }
+      this.loadingSave = true
       if (this.dialogType === 'new') {
-        resp = await addUser(this.record)
+        resp = await addUser(this.record).finally(() => { this.loadingSave = false })
       } else if (this.dialogType === 'edit') {
         opName = '修改'
-        resp = await editUser(this.record.id, this.record)
+        resp = await editUser(this.record.id, this.record).finally(() => { this.loadingSave = false })
       }
       if (resp && resp.success) {
         this.dialogVisible = false
@@ -487,7 +489,8 @@ export default {
     },
     async handleSubmitAuth() {
       //
-      const resp = await editRoles(this.record.id, this.recordRoles)
+      this.loadingSave = true
+      const resp = await editRoles(this.record.id, this.recordRoles).finally(() => { this.loadingSave = false })
       if (resp && resp.success) {
         this.dialogVisible2 = false
       }
