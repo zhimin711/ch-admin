@@ -128,7 +128,7 @@
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="primary" @click="handleSubmit">保存</el-button>
+        <el-button :loading="loadingSave" type="primary" @click="handleSubmit">保存</el-button>
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
       </div>
     </el-dialog>
@@ -160,6 +160,7 @@ export default {
       },
       record: {},
       recordStatus: true,
+      loadingSave: false,
       dialogVisible: false,
       dialogType: false,
       dialogCodeEdit: false,
@@ -290,11 +291,12 @@ export default {
       if (this.recordTestUsers.length > 0) {
         this.record.testUserIds = this.recordTestUsers
       }
+      this.loadingSave = true
       if (this.dialogType === 'new') {
-        resp = await addUpmsProject(this.record)
+        resp = await addUpmsProject(this.record).finally(() => { this.loadingSave = false })
       } else if (this.dialogType === 'edit') {
         opName = '修改'
-        resp = await editUpmsProject(this.record.id, this.record)
+        resp = await editUpmsProject(this.record.id, this.record).finally(() => { this.loadingSave = false })
       }
       if (resp && resp.success) {
         this.dialogVisible = false
