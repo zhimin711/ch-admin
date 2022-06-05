@@ -40,7 +40,7 @@
     </el-form>
 
     <el-table
-      v-loading="tableA.loading"
+      :loading="tableA.loading"
       :data="tableA.list"
       row-key="id"
       default-expand-all

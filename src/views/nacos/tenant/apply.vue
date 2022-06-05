@@ -50,7 +50,7 @@
         <template slot-scope="{row}">
           <el-tag v-if="row.status==='0'">待审核</el-tag>
           <el-tag v-if="row.status==='1'" type="success">已通过</el-tag>
-          <el-tag v-if="row.status==='2'" type="danger">已拒绝</el-tag>
+          <el-tag v-else type="danger">已拒绝</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width" width="120">

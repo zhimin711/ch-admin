@@ -1,47 +1,33 @@
 <template>
   <div class="app-container">
 
-    <el-tabs v-model="activeName" style="margin-bottom: 15px">
-      <el-tab-pane label="Kafka Brokers" name="brokers">
-        Broker Info
-      </el-tab-pane>
+    <el-tabs v-model="activeName" style="margin-bottom: 15px" @tab-click="handleChangeInfo">
       <el-tab-pane label="Kafka Topics" name="topics">
         Topic Info
       </el-tab-pane>
+      <el-tab-pane label="Kafka Brokers" name="brokers">
+        Broker Info
+      </el-tab-pane>
       <el-tab-pane label="Consumer Groups" name="consumerGroups">
-        topic can't be empty if you producer client version>=v3.5.8
+        Consumer Group
       </el-tab-pane>
     </el-tabs>
-    <div class="filter-container">
-      <!--<el-input v-model="listQuery.params.clusterName" placeholder="集群名称" style="width: 200px;" class="filter-item" />-->
-      <el-select v-model="listQuery.params.clusterName" placeholder="请选择" class="filter-item">
-        <el-option
-          v-for="item in options.clusters"
-          :key="item.clusterName"
-          :label="item.clusterName"
-          :value="item.clusterName"
-        />
-      </el-select>
+    <div v-show="activeName === 'topics'" class="filter-container">
       <el-input v-model="listQuery.params.topicName" placeholder="主题名称" style="width: 200px;" class="filter-item" />
-      <el-button v-permission="'KAFKA_TOPIC_SEARCH'" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+      <el-button v-permission="'KAFKA_TOPIC_PAGE'" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         查询
       </el-button>
       <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
         重置
       </el-button>
-      <el-button v-permission="'KAFKA_TOPIC_SYNC'" class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-refresh" @click="handleSync">
-        同步集群主题
-      </el-button>
       <el-button v-permission="'KAFKA_TOPIC_ADD'" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
         创建主题
       </el-button>
+      <el-button v-permission="'KAFKA_TOPIC_SYNC'" class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-refresh" @click="handleSync">
+        同步集群主题
+      </el-button>
     </div>
-    <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="133px" label="集群名称">
-        <template slot-scope="scope">
-          <span>{{ scope.row.clusterName }}</span>
-        </template>
-      </el-table-column>
+    <el-table v-show="activeName === 'topics'" :loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
       <el-table-column label="主题名称">
         <template slot-scope="scope">
           <span>{{ scope.row.topicName }}</span>
@@ -65,46 +51,55 @@
       <el-table-column align="center" label="操作" width="180">
         <template slot-scope="scope">
           <el-link v-permission="'KAFKA_TOPIC_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
-          <el-link v-permission="'KAFKA_TOPIC_REFRESH'" type="warning" icon="el-icon-refresh" @click="handleMgr(scope.row)">重建</el-link>
+          <el-link v-permission="'KAFKA_TOPIC_EDIT'" type="primary" icon="el-icon-chat-line-round" @click="handleTopicDetail(scope.row, scope.$index)">详情</el-link>
+          <!--          <el-link v-permission="'KAFKA_TOPIC_REFRESH'" type="warning" icon="el-icon-refresh" @click="handleMgr(scope.row)">重建</el-link>-->
           <el-link v-permission="'KAFKA_TOPIC_DELETE'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>
         </template>
       </el-table-column>
     </el-table>
-
-    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-
+    <pagination v-show="activeName === 'topics' && listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <el-table v-show="activeName === 'brokers'" :loading="listLoading" :data="list.brokers">
+      <el-table-column label="ID" prop="id" width="50" />
+      <el-table-column label="Host" prop="host" />
+      <el-table-column label="Port" prop="port" width="80" />
+      <el-table-column label="Partitions as Leader" prop="leaderPartitions" width="160">
+        <template slot-scope="{row}">
+          {{ row.leaderPartitions.length }}
+        </template>
+      </el-table-column>
+      <el-table-column label="Partitions as Follower" prop="followerPartitions" width="180">
+        <template slot-scope="{row}">
+          {{ row.followerPartitions.length }}
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-table v-show="activeName === 'consumerGroups'" :loading="listLoading" :data="list.consumerGroups">
+      <!--      <el-table-column label="序号" prop="id" width="50" />-->
+      <el-table-column label="名称" prop="groupId" />
+      <el-table-column label="主题数量" prop="topics" width="160">
+        <template slot-scope="{row}">
+          {{ row.topics.length }}
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" prop="lag" width="150">
+        <template slot-scope="scope">
+          <el-link
+            v-permission="'KAFKA_CONSUMER_GROUPS_DESCRIBE'"
+            type="primary"
+            icon="el-icon-view"
+            @click="handleConsumerGroupsDetail(scope.row, scope.$index)"
+          >订阅列表
+          </el-link>
+          <el-link v-permission="'KAFKA_CONSUMER_GROUPS_DEL'" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">
+            删除
+          </el-link>
+        </template>
+      </el-table-column>
+    </el-table>
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?'修改主题信息':'创建主题'">
       <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="集群名称">
-          <!--<el-input v-model="record.clusterName" placeholder="集群名称" :disabled="dialogCodeEdit" />-->
-          <el-select v-model="record.clusterName" placeholder="请选择" :disabled="propDisabled">
-            <el-option
-              v-for="item in options.clusters"
-              :key="item.clusterName"
-              :label="item.clusterName"
-              :value="item.clusterName"
-            />
-          </el-select>
-        </el-form-item>
         <el-form-item label="主题名称">
           <el-input v-model="record.topicName" placeholder="主题名称" :disabled="propDisabled" />
-          <!--<el-select
-            v-model="record.topicName"
-            filterable
-            remote
-            reserve-keyword
-            placeholder="请输入关键词"
-            :remote-method="remoteMethod"
-            :loading="loading"
-            style="width:100%"
-          >
-            <el-option
-              v-for="item in options.topics"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>-->
         </el-form-item>
         <el-form-item label="分区数">
           <el-input-number v-model="record.partitionSize" :min="1" :max="50" :step="2" :disabled="propDisabled" />
@@ -140,22 +135,21 @@
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
       </div>
     </el-dialog>
-    <el-dialog :visible.sync="dialogVisible2" :title="'同步Kafka集群主题'" width="400px">
-      <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="集群名称">
-          <el-select v-model="record.clusterName" placeholder="请选择">
-            <el-option
-              v-for="item in options.clusters"
-              :key="item.clusterName"
-              :label="item.clusterName"
-              :value="item.clusterName"
-            />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <div style="text-align:right;">
-        <el-button type="primary" @click="handleSyncSubmit">提交</el-button>
-        <el-button type="danger" @click="dialogVisible2=false">关闭</el-button>
+    <el-dialog :visible.sync="dialogConsumer" :title="'已订阅的主题'" width="90%">
+      <div>
+        <el-table :data="list.describe" max-height="500">
+          <el-table-column label="TOPIC" prop="topic" />
+          <el-table-column label="PARTITION" prop="partition" width="100" />
+          <el-table-column label="END-OFFSET" prop="logEndOffset" width="120" align="center" />
+          <el-table-column label="CURRENT-OFFSET" prop="currentOffset" width="130" align="center" />
+          <el-table-column label="Lag" prop="lag" width="100" align="center" />
+          <el-table-column label="CONSUMER-ID" prop="consumerId" width="100" align="center" />
+          <el-table-column label="HOST" prop="host" width="100" align="center" />
+          <el-table-column label="CLIENT-ID" prop="clientId" width="100" align="center" />
+        </el-table>
+      </div>
+      <div slot="footer" style="text-align:right;">
+        <el-button @click="dialogConsumer=false">{{ $t('btn.close') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -165,17 +159,17 @@
 import { Loading } from 'element-ui'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import {
   pageKafkaTopics,
   addKafkaTopic,
   editKafkaTopic,
   delKafkaTopic,
-  getClusters,
   getTopics,
   syncAll,
   refresh2
 } from '@/api/devops/kafka/topic'
+import { getKafkaClusterBrokers } from '@/api/devops/kafka/cluster'
+import { getKafkaConsumerGroupDescribe, getKafkaConsumerGroups } from '@/api/devops/kafka/consumerGroups'
 
 export default {
   name: 'KafkaClusterMGR1',
@@ -183,7 +177,9 @@ export default {
   data() {
     return {
       listLoading: true,
-      activeName: 'brokers',
+      clusterId: -1,
+      activeName: 'topics',
+      groupId: '',
       listQuery: {
         page: 1,
         limit: 10,
@@ -191,11 +187,19 @@ export default {
         list: [],
         params: {}
       },
+      list: {
+        brokers: [],
+        describe: [],
+        consumerGroups: []
+      },
+      dialogTopic: false,
+      topic: {},
       record: {},
       dialogVisible: false,
       dialogType: false,
       propDisabled: false,
       dialogVisible2: false,
+      dialogConsumer: false,
       loading: false,
       options: {
         clusters: [],
@@ -204,22 +208,56 @@ export default {
     }
   },
   created() {
+    this.clusterId = this.$route.params && this.$route.params.id
     this.getList()
-    this.getClusters()
   },
   methods: {
-    checkPermission2,
-    async getClusters() {
-      const resp = await getClusters()
-      if (resp && resp.success) this.options.clusters = resp.rows
-    },
     getList() {
       this.listLoading = true
+      this.listQuery.params.clusterId = this.clusterId
       pageKafkaTopics(this.listQuery).then(response => {
         this.listQuery.list = response.rows
         this.listQuery.total = response.total
         this.listLoading = false
       }).catch(() => { this.loading = false })
+    },
+    handleChangeInfo(tab) {
+      if (tab.name === 'brokers' && this.list.brokers.length === 0) {
+        this.getBrokerList()
+      } else if (tab.name === 'consumerGroups' && this.list.consumerGroups.length === 0) {
+        this.getConsumerGroupList()
+      }
+    },
+    getBrokerList() {
+      this.listLoading = true
+      getKafkaClusterBrokers(this.clusterId).then(resp => {
+        if (resp.success) {
+          this.list.brokers = resp.rows
+        }
+      }).finally(() => {
+        this.listLoading = false
+      })
+    },
+    getConsumerGroupList() {
+      this.listLoading = true
+      getKafkaConsumerGroups(this.clusterId, this.groupId).then(resp => {
+        if (resp.success) {
+          this.list.consumerGroups = resp.rows
+        }
+      }).finally(() => {
+        this.listLoading = false
+      })
+    },
+    handleConsumerGroupsDetail(row) {
+      this.dialogConsumer = true
+      this.loading = true
+      getKafkaConsumerGroupDescribe(this.clusterId, row.groupId).then(resp => {
+        if (resp.success) {
+          this.list.describe = resp.rows
+        }
+      }).finally(() => {
+        this.loading = false
+      })
     },
     handleAdd() {
       this.record = { partitionSize: 4, replicaSize: 3, type: 'JSON' }
@@ -232,6 +270,9 @@ export default {
       this.dialogType = 'edit'
       this.dialogVisible = true
       this.propDisabled = true
+    },
+    handleTopicDetail(row) {
+      this.dialogTopic = true
     },
     handleDel(row) {
       const _this = this
@@ -269,7 +310,7 @@ export default {
         opName = '修改'
         resp = await editKafkaTopic(this.record.id, this.record)
       }
-      if (resp.success) {
+      if (resp && resp.success) {
         this.dialogVisible = false
         this.$notify({
           title: `${opName}集群名称 Success!`,
@@ -283,15 +324,23 @@ export default {
       }
     },
     handleSync() {
-      this.record = {}
-      this.dialogType = 'new'
-      this.dialogVisible2 = true
+      this.$confirm('请确认是否同步当前集群主题?', '同步主题', {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async() => {
+          const data = { clusterId: this.clusterId }
+          await this.handleSyncSubmit(data)
+          this.$message.success('同步主题成功!')
+        })
+        .catch(err => { console.error(err) })
     },
-    async handleSyncSubmit() {
+    async handleSyncSubmit(data) {
       this.dialogVisible2 = false
-      const loadingS = Loading.service({ target: document.querySelector('.app-container'), text: `正在同步${this.record.clusterName}主题，请稍后......`, fullscreen: false })
+      const loadingS = Loading.service({ target: document.querySelector('.app-container'), text: `正在同步主题，请稍后......`, fullscreen: false })
       const _this = this
-      const resp = await syncAll(_this.record).catch(() => { loadingS.close() })
+      const resp = await syncAll(data).catch(() => { loadingS.close() })
       loadingS.close()
       if (resp && resp.success) {
         this.$notify({

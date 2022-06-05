@@ -40,3 +40,10 @@ export function delKafkaCluster(id) {
   })
 }
 
+export function getKafkaClusterBrokers(id) {
+  return request({
+    url: `${namespace}/${id}/brokers`,
+    method: 'get'
+  })
+}
+
