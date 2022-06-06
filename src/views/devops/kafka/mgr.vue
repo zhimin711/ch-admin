@@ -154,16 +154,16 @@
     </el-dialog>
 
     <el-dialog :visible.sync="dialogTopicDetail" :title="'主题详情'" width="80%">
-      <el-descriptions :title="topic.name">
-        <el-descriptions-item label="分区数量">{{ topic.partitions.length }}</el-descriptions-item>
-        <el-descriptions-item label="副本数量">{{ topic.replicaCount }}</el-descriptions-item>
+      <el-descriptions :title="'名称: '+topic.name">
+        <el-descriptions-item label="分区数量">{{ topic.partitions ? topic.partitions.length : 0 }}</el-descriptions-item>
+        <el-descriptions-item label="副本数量">{{ topic.replicaSize }}</el-descriptions-item>
         <el-descriptions-item label="数据大小">{{ topic.totalLogSize }}</el-descriptions-item>
       </el-descriptions>
       <el-card class="box-card">
         <div slot="header" class="clearfix">
-          <span>状态</span>
+          <span>详细信息</span>
         </div>
-        <el-tabs type="border-card" @tab-click="changeTopicInfo">
+        <el-tabs v-model="activeTopicInfo" @tab-click="changeTopicInfo">
           <el-tab-pane label="分区" name="partitions">
             <el-table :data="topicDetail.partitions" max-height="500">
               <el-table-column label="Partition" prop="partition" />
@@ -247,6 +247,7 @@ export default {
         consumerGroups: []
       },
       dialogTopic: false,
+      activeTopicInfo: 'partitions',
       topic: {},
       topicDetail: {
         brokers: [],
@@ -333,7 +334,7 @@ export default {
       this.propDisabled = true
     },
     handleTopicDetail(row) {
-      this.dialogTopic = true
+      this.dialogTopicDetail = true
       this.topic = Object.assign({}, row)
       getKafkaTopic(row.id).then(resp => {
         if (resp.success) {
@@ -346,20 +347,20 @@ export default {
         }
       })
     },
-    changeTopicInfo(val) {
-      if (val === 'brokers' && this.topicDetail.brokers.length === 0) {
+    changeTopicInfo(tab) {
+      if (tab.name === 'brokers' && this.topicDetail.brokers.length === 0) {
         getKafkaTopicBrokers(this.topic.id).then(resp => {
           if (resp.success) {
             this.topicDetail.brokers = resp.rows
           }
         })
-      } else if (val === 'consumerGroups' && this.topicDetail.configs.length === 0) {
+      } else if (tab.name === 'consumerGroups' && this.topicDetail.consumerGroups.length === 0) {
         getKafkaTopicConsumerGroups(this.topic.id).then(resp => {
           if (resp.success) {
             this.topicDetail.configs = resp.rows
           }
         })
-      } else if (val === 'configs' && this.topicDetail.configs.length === 0) {
+      } else if (tab.name === 'configs' && this.topicDetail.configs.length === 0) {
         getKafkaTopicConfigs(this.topic.id).then(resp => {
           if (resp.success) {
             this.topicDetail.configs = resp.rows
