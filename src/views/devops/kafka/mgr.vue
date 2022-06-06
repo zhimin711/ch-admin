@@ -152,18 +152,73 @@
         <el-button @click="dialogConsumer=false">{{ $t('btn.close') }}</el-button>
       </div>
     </el-dialog>
+
+    <el-dialog :visible.sync="dialogTopicDetail" :title="'主题详情'" width="80%">
+      <el-descriptions :title="topic.name">
+        <el-descriptions-item label="分区数量">{{ topic.partitions.length }}</el-descriptions-item>
+        <el-descriptions-item label="副本数量">{{ topic.replicaCount }}</el-descriptions-item>
+        <el-descriptions-item label="数据大小">{{ topic.totalLogSize }}</el-descriptions-item>
+      </el-descriptions>
+      <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span>状态</span>
+        </div>
+        <el-tabs type="border-card" @tab-click="changeTopicInfo">
+          <el-tab-pane label="分区" name="partitions">
+            <el-table :data="topicDetail.partitions" max-height="500">
+              <el-table-column label="Partition" prop="partition" />
+              <el-table-column label="Leader" prop="leader.id" />
+              <el-table-column label="Beginning Offset" prop="beginningOffset" />
+              <el-table-column label="End Offset" prop="endOffset" />
+              <el-table-column label="Log Size" prop="leader.logSize" />
+              <el-table-column label="Replicas" prop="replicas.id" />
+              <el-table-column label="ISR" prop="isr.id" />
+              <el-table-column label="Sync" prop="sync" />
+            </el-table>
+          </el-tab-pane>
+          <el-tab-pane label="Brokers" name="brokers">
+            <el-table :data="topicDetail.brokers" max-height="500">
+              <el-table-column label="ID" prop="id" />
+              <el-table-column label="Host" prop="host" />
+              <el-table-column label="Port" prop="port" />
+              <el-table-column label="Partitions as Leader" prop="leaderPartitions" />
+              <el-table-column label="Partitions as Follower" prop="followerPartitions" />
+            </el-table>
+          </el-tab-pane>
+          <el-tab-pane label="消费组列表" name="consumerGroups">
+            <el-table :data="topicDetail.consumerGroups" max-height="500">
+              <el-table-column label="Group ID" prop="groupId" />
+              <el-table-column label="Lag" prop="lag" />
+            </el-table>
+          </el-tab-pane>
+          <el-tab-pane label="主题配置" name="configs">
+            <el-table :data="topicDetail.configs" max-height="500">
+              <el-table-column label="Name" prop="name" />
+              <el-table-column label="Value" prop="value" />
+            </el-table>
+          </el-tab-pane>
+        </el-tabs>
+      </el-card>
+      <div slot="footer" style="text-align:right;">
+        <el-button @click="dialogTopicDetail=false">{{ $t('btn.close') }}</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { Loading } from 'element-ui'
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { deepClone } from '@/utils'
 import {
   pageKafkaTopics,
   addKafkaTopic,
   editKafkaTopic,
   delKafkaTopic,
+  getKafkaTopic,
+  getKafkaTopicPartitions,
+  getKafkaTopicBrokers,
+  getKafkaTopicConsumerGroups,
+  getKafkaTopicConfigs,
   getTopics,
   syncAll,
   refresh2
@@ -173,7 +228,6 @@ import { getKafkaConsumerGroupDescribe, getKafkaConsumerGroups } from '@/api/dev
 
 export default {
   name: 'KafkaClusterMGR1',
-  components: { Pagination },
   data() {
     return {
       listLoading: true,
@@ -194,12 +248,19 @@ export default {
       },
       dialogTopic: false,
       topic: {},
+      topicDetail: {
+        brokers: [],
+        consumerGroups: [],
+        configs: [],
+        partitions: []
+      },
       record: {},
       dialogVisible: false,
       dialogType: false,
       propDisabled: false,
       dialogVisible2: false,
       dialogConsumer: false,
+      dialogTopicDetail: false,
       loading: false,
       options: {
         clusters: [],
@@ -273,6 +334,38 @@ export default {
     },
     handleTopicDetail(row) {
       this.dialogTopic = true
+      this.topic = Object.assign({}, row)
+      getKafkaTopic(row.id).then(resp => {
+        if (resp.success) {
+          this.topic = Object.assign(row, resp.rows[0])
+        }
+      })
+      getKafkaTopicPartitions(row.id).then(resp => {
+        if (resp.success) {
+          this.topicDetail.partitions = resp.rows
+        }
+      })
+    },
+    changeTopicInfo(val) {
+      if (val === 'brokers' && this.topicDetail.brokers.length === 0) {
+        getKafkaTopicBrokers(this.topic.id).then(resp => {
+          if (resp.success) {
+            this.topicDetail.brokers = resp.rows
+          }
+        })
+      } else if (val === 'consumerGroups' && this.topicDetail.configs.length === 0) {
+        getKafkaTopicConsumerGroups(this.topic.id).then(resp => {
+          if (resp.success) {
+            this.topicDetail.configs = resp.rows
+          }
+        })
+      } else if (val === 'configs' && this.topicDetail.configs.length === 0) {
+        getKafkaTopicConfigs(this.topic.id).then(resp => {
+          if (resp.success) {
+            this.topicDetail.configs = resp.rows
+          }
+        })
+      }
     },
     handleDel(row) {
       const _this = this

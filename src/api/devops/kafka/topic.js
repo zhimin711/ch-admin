@@ -1,24 +1,17 @@
 import request from '@/utils/request2'
-const baseUrl = '/devops/kafka/topic'
+const namespace = '/devops/kafka/topic'
+
 export function pageKafkaTopics(query) {
   return request({
-    url: `${baseUrl}/${query.page}/${query.limit}`,
+    url: `${namespace}/${query.page}/${query.limit}`,
     method: 'get',
     params: query.params
   })
 }
 
-export function getKafkaTopic(id) {
-  return request({
-    url: `${baseUrl}/${id}`,
-    method: 'get',
-    params: { id }
-  })
-}
-
 export function addKafkaTopic(data) {
   return request({
-    url: `${baseUrl}`,
+    url: `${namespace}`,
     method: 'post',
     data
   })
@@ -26,7 +19,7 @@ export function addKafkaTopic(data) {
 
 export function editKafkaTopic(id, data) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'put',
     data
   })
@@ -34,21 +27,61 @@ export function editKafkaTopic(id, data) {
 
 export function delKafkaTopic(id) {
   return request({
-    url: `${baseUrl}/${id}`,
+    url: `${namespace}/${id}`,
     method: 'delete'
+  })
+}
+
+export function getKafkaTopic(id) {
+  return request({
+    url: `${namespace}/${id}`,
+    method: 'get',
+    params: { id }
+  })
+}
+
+export function getKafkaTopicBrokers(id) {
+  return request({
+    url: `${namespace}/${id}/brokers`,
+    method: 'get',
+    params: { id }
+  })
+}
+
+export function getKafkaTopicPartitions(id) {
+  return request({
+    url: `${namespace}/${id}/partitions`,
+    method: 'get',
+    params: { id }
+  })
+}
+
+export function getKafkaTopicConsumerGroups(id) {
+  return request({
+    url: `${namespace}/${id}/consumerGroups`,
+    method: 'get',
+    params: { id }
+  })
+}
+
+export function getKafkaTopicConfigs(id) {
+  return request({
+    url: `${namespace}/${id}/configs`,
+    method: 'get',
+    params: { id }
   })
 }
 
 export function getClusters() {
   return request({
-    url: `${baseUrl}/clusters`,
+    url: `${namespace}/clusters`,
     method: 'get'
   })
 }
 
 export function getTopics(clusterName, topicName) {
   return request({
-    url: `${baseUrl}/topics`,
+    url: `${namespace}/topics`,
     method: 'get',
     params: { clusterName, topicName }
   })
@@ -56,7 +89,7 @@ export function getTopics(clusterName, topicName) {
 
 export function syncAll(data) {
   return request({
-    url: `${baseUrl}/sync`,
+    url: `${namespace}/sync`,
     method: 'post',
     timeout: 360000,
     data
@@ -65,7 +98,7 @@ export function syncAll(data) {
 
 export function refresh2(data) {
   return request({
-    url: `${baseUrl}/refresh`,
+    url: `${namespace}/refresh`,
     method: 'post',
     data
   })
