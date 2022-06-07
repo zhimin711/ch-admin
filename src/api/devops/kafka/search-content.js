@@ -38,18 +38,3 @@ export function resend(id, data) {
     data
   })
 }
-
-export function getClusters() {
-  return request({
-    url: `${namespace}/clusters`,
-    method: 'get'
-  })
-}
-
-export function getTopics(clusterName, topicName) {
-  return request({
-    url: `${namespace}/topics`,
-    method: 'get',
-    params: { clusterName, topicName }
-  })
-}

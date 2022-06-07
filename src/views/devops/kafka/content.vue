@@ -142,7 +142,8 @@
 <script>
 import { Loading } from 'element-ui'
 import { deepClone } from '@/utils'
-import { searchKafkaContent, getStatus, list, send, resend, getClusters, getTopics } from '@/api/devops/kafka/search-content'
+import { searchKafkaContent, getStatus, list, send, resend } from '@/api/devops/kafka/search-content'
+import { availableKafkaClusters, listKafkaClusterTopics } from '@/api/devops/kafka/cluster'
 
 export default {
   name: 'KafkaContent1',
@@ -180,7 +181,7 @@ export default {
   },
   methods: {
     async getClusters() {
-      const resp = await getClusters()
+      const resp = await availableKafkaClusters()
       if (resp && resp.success) this.options.clusters = resp.rows
     },
     getList() {
@@ -274,7 +275,7 @@ export default {
       }
       if (query !== '') {
         this.loading = true
-        getTopics(this.listQuery.params.cluster, query).then(response => {
+        listKafkaClusterTopics(this.listQuery.params.cluster, query).then(response => {
           this.loading = false
           if (response.success) {
             this.options.topics = response.rows.map(item => {
@@ -296,7 +297,7 @@ export default {
       }
       if (query !== '') {
         this.loading = true
-        getTopics(this.record.cluster, query).then(response => {
+        listKafkaClusterTopics(this.record.cluster, query).then(response => {
           this.loading = false
           if (response.success) {
             this.options.topics = response.rows.map(item => {

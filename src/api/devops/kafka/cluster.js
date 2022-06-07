@@ -47,3 +47,23 @@ export function getKafkaClusterBrokers(id) {
   })
 }
 
+export function availableKafkaClusters() {
+  return request({
+    url: `${namespace}/clusters`,
+    method: 'get'
+  })
+}
+
+export function listKafkaClusterTopics(id, topicName) {
+  return request({
+    url: `${namespace}/clusters/${id}/topics?topicName=${topicName}`,
+    method: 'get'
+  })
+}
+
+export function getKafkaClusterTopicDetail(id, topicId) {
+  return request({
+    url: `${namespace}/clusters/${id}/topic/${topicId}`,
+    method: 'get'
+  })
+}
