@@ -75,7 +75,7 @@
         </el-form-item>
 
         <el-form-item prop="content" style="margin-bottom: 30px;">
-          <Tinymce ref="editor" v-model="postForm.content" :height="400" upload-url="/api/wiki/admin/upload/img" />
+          <Tinymce ref="editor" v-model="postForm.content" :height="600" upload-url="/api/wiki/admin/upload/img" />
         </el-form-item>
 
         <el-form-item prop="image" style="margin-bottom: 30px;" label-width="100px" label="概要图:">
@@ -96,7 +96,7 @@
 </template>
 
 <script>
-import Tinymce from '@/components/Tinymce'
+import Tinymce from '@/components/Tinymce/local'
 import Upload from '@/components/Upload/SingleImageCrop'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
