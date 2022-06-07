@@ -1,9 +1,9 @@
 import request from '@/utils/request2'
-const baseUrl = '/kafka/content'
+const namespace = '/devops/kafka/content'
 
-export function search(query) {
+export function searchKafkaContent(query) {
   return request({
-    url: `${baseUrl}/search`,
+    url: `${namespace}/search`,
     method: 'get',
     params: query.params
   })
@@ -11,21 +11,21 @@ export function search(query) {
 
 export function getStatus(sid) {
   return request({
-    url: `${baseUrl}/search/${sid}/status`,
+    url: `${namespace}/search/${sid}/status`,
     method: 'get'
   })
 }
 
 export function list(sid) {
   return request({
-    url: `${baseUrl}/search/${sid}/records`,
+    url: `${namespace}/search/${sid}/records`,
     method: 'get'
   })
 }
 
 export function send(data) {
   return request({
-    url: `${baseUrl}/send`,
+    url: `${namespace}/send`,
     method: 'post',
     data
   })
@@ -33,7 +33,7 @@ export function send(data) {
 
 export function resend(id, data) {
   return request({
-    url: `${baseUrl}/resend/${id}`,
+    url: `${namespace}/resend/${id}`,
     method: 'put',
     data
   })
@@ -41,14 +41,14 @@ export function resend(id, data) {
 
 export function getClusters() {
   return request({
-    url: `${baseUrl}/clusters`,
+    url: `${namespace}/clusters`,
     method: 'get'
   })
 }
 
 export function getTopics(clusterName, topicName) {
   return request({
-    url: `${baseUrl}/topics`,
+    url: `${namespace}/topics`,
     method: 'get',
     params: { clusterName, topicName }
   })

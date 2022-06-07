@@ -34,7 +34,7 @@ const kafkaRouter = {
     },
     {
       path: 'content',
-      component: () => import('@/views/kafka/content'),
+      component: () => import('@/views/devops/kafka/content'),
       name: 'KafkaContent',
       meta: {
         code: 'messageSearch'
@@ -100,7 +100,7 @@ const routerMap = {
   },
   KafkaContent: {
     path: 'content',
-    component: () => import('@/views/kafka/content'),
+    component: () => import('@/views/devops/kafka/content'),
     name: 'KafkaContent',
     meta: {
       code: 'messageSearch'

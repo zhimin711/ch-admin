@@ -142,11 +142,10 @@
 <script>
 import { Loading } from 'element-ui'
 import { deepClone } from '@/utils'
-import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { search, getStatus, list, send, resend, getClusters, getTopics } from '@/api/kafka/content'
+import { searchKafkaContent, getStatus, list, send, resend, getClusters, getTopics } from '@/api/devops/kafka/search-content'
 
 export default {
-  name: 'KafkaContent',
+  name: 'KafkaContent1',
   data() {
     return {
       listLoading: false,
@@ -180,7 +179,6 @@ export default {
     this.getClusters()
   },
   methods: {
-    checkPermission2,
     async getClusters() {
       const resp = await getClusters()
       if (resp && resp.success) this.options.clusters = resp.rows
@@ -203,7 +201,7 @@ export default {
       this.loadingIns = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
 
       // this.listLoading = true
-      search(this.listQuery).then(response => {
+      searchKafkaContent(this.listQuery).then(response => {
         this.contentType = 'STRING'
         if (response.extra) this.contentType = response.extra.contentType
         if (response.extra && response.extra.searchAsync) {

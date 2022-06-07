@@ -206,7 +206,7 @@
 
 <script>
 import { Loading } from 'element-ui'
-import { getClusters, getTopics } from '@/api/kafka/content'
+import { getClusters, getTopics } from '@/api/devops/kafka/search-content'
 import { searchMock, saveMock, doMock, loadMock, deleteMock } from '@/api/kafka/mocker'
 
 const rules2 = [
