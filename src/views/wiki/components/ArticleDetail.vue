@@ -30,7 +30,7 @@
 
             <div class="postInfo-container">
               <el-row>
-                <el-col :span="8">
+                <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="8">
                   <el-form-item label-width="100px" label="作者:" class="postInfo-container-item">
                     <el-select v-model="postForm.author" :remote-method="getRemoteUserList" filterable default-first-option remote placeholder="用户">
                       <el-option v-for="(item) in userListOptions" :key="item.userId" :label="item.nickname" :value="item.userId" />
@@ -38,14 +38,14 @@
                   </el-form-item>
                 </el-col>
 
-                <el-col :span="6">
+                <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="8">
                   <el-form-item label-width="120px" label="发布时间:" class="postInfo-container-item">
                     <el-date-picker v-model="postForm.publishAt" type="datetime" format="yyyy-MM-dd HH:mm:ss" value-format="timestamp" placeholder="默认当前时间（定时发布）" :disabled="!isReleased" />
                   </el-form-item>
                 </el-col>
 
-                <el-col :span="8">
-                  <el-form-item label-width="90px" label="文章标签:" class="postInfo-container-item__block">
+                <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="8">
+                  <el-form-item label-width="100px" label="文章标签:" class="postInfo-container-item__block">
                     <el-select
                       v-model="tags.values"
                       multiple
