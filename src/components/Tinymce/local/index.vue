@@ -16,6 +16,7 @@
 import editorImage from '@/components/Upload/MultiImage'
 import plugins from './pluginsLocal'
 import toolbar from './toolbarLocal'
+import cn from './zh_CN'
 
 import 'tinymce/skins/ui/oxide/skin.css'
 import 'tinymce/skins/ui/oxide/content.css'
@@ -143,6 +144,11 @@ export default {
       }
     }
   },
+  created() {
+    if (window.tinymce) {
+      this.initIl8n()
+    }
+  },
   mounted() {
     this.initTinymce()
   },
@@ -158,11 +164,14 @@ export default {
     this.destroyTinymce()
   },
   methods: {
+    initIl8n() {
+      window.tinymce.addI18n('zh_CN', cn)
+    },
     initTinymce() {
       const _this = this
       window.tinymce.init({
         selector: `#${this.tinymceId}`,
-        language: this.languageTypeList['en'],
+        language: this.languageTypeList['zh'],
         height: this.height,
         body_class: 'panel-body ',
         object_resizing: false,
