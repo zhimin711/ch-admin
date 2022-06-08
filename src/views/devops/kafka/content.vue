@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
 
-      <el-form :model="listQuery.params" :inline="true" label-width="100px" label-position="left">
+      <el-form :model="listQuery.params" :inline="true" label-width="80px" label-position="left">
         <el-form-item label="集群名称">
           <el-select
             v-model="listQuery.params.clusterId"
@@ -50,7 +50,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="搜索类型">
+        <el-form-item label="搜索范围">
           <el-input v-model="listQuery.params.size" placeholder="请输入范围" class="input-with-select">
             <el-select slot="prepend" v-model="listQuery.params.type" placeholder="请选择" @change="handleTypeChange">
               <el-option label="最新" value="LATEST" />
@@ -59,6 +59,13 @@
             </el-select>
             <template slot="append">条</template>
           </el-input>
+        </el-form-item>
+        <el-form-item label="搜索量">
+          <el-select v-model="listQuery.params.limit">
+            <el-option label="50条" value="50" />
+            <el-option label="100条" value="100" />
+            <el-option label="200条" value="200" />
+          </el-select>
         </el-form-item>
         <el-row>
           <el-col :span="24">
@@ -75,9 +82,6 @@
             查询
           </el-button>
         </el-badge>
-        <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {type: '0', limit: 12}">
-          重置
-        </el-button>
         <el-button
           v-permission="['KAFKA_CONTENT_SEND']"
           class="filter-item"
@@ -173,7 +177,7 @@ import { searchKafkaContent, sendKafkaContent } from '@/api/devops/kafka/search-
 import { availableKafkaClusters, getKafkaClusterTopicInfo, listKafkaClusterTopics } from '@/api/devops/kafka/cluster'
 
 export default {
-  name: 'KafkaContent1',
+  name: 'KafkaContent',
   data() {
     return {
       listLoading: false,
@@ -183,7 +187,7 @@ export default {
         total: 0,
         list: [],
         params: {
-          type: 'LATEST', partition: -1, size: 1000, limit: 50
+          type: 'LATEST', partition: -1, size: 1000, limit: '50'
         }
       },
       limitDisabled: false,
@@ -237,10 +241,12 @@ export default {
 
       // this.listLoading = true
       searchKafkaContent(this.listQuery).then(resp => {
-        this.contentType = 'STRING'
-        if (resp.extra) this.contentType = resp.extra.contentType
-        this.fillPartitionData(resp.rows[0].partitionMessages)
-        this.partitionOffset = resp.rows[0].partitionOffset
+        if (resp.success) {
+          this.contentType = 'STRING'
+          if (resp.extra) this.contentType = resp.extra.contentType
+          this.fillPartitionData(resp.rows[0].partitionMessages)
+          this.partitionOffset = resp.rows[0].partitionOffset
+        }
         // this.listLoading = false
       }).finally(() => {
         this.loadingIns.close()
@@ -248,7 +254,9 @@ export default {
     },
     fillPartitionData(messages) {
       this.partitionMessages = []
+      this.listQuery.total = 0
       this.topicPartitions.forEach(item => {
+        this.listQuery.total += messages[item.partition].length
         this.partitionMessages.push(messages[item.partition])
       })
     },
