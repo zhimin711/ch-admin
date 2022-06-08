@@ -9,14 +9,7 @@ export function searchKafkaContent(query) {
   })
 }
 
-export function list(sid) {
-  return request({
-    url: `${namespace}/search/${sid}/records`,
-    method: 'get'
-  })
-}
-
-export function send(data) {
+export function sendKafkaContent(data) {
   return request({
     url: `${namespace}/send`,
     method: 'post',
@@ -24,10 +17,3 @@ export function send(data) {
   })
 }
 
-export function resend(id, data) {
-  return request({
-    url: `${namespace}/resend/${id}`,
-    method: 'put',
-    data
-  })
-}

@@ -78,7 +78,15 @@
         <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {type: '0', limit: 12}">
           重置
         </el-button>
-        <el-button v-permission="['KAFKA_CONTENT_SEND']" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handlePush">
+        <el-button
+          v-permission="['KAFKA_CONTENT_SEND']"
+          class="filter-item"
+          style="margin-left: 10px;"
+          type="primary"
+          con="el-icon-plus"
+          :disabled="topicPartitions.length === 0"
+          @click="handlePush"
+        >
           推送消息
         </el-button>
       </el-form>
@@ -101,10 +109,15 @@
               <span>{{ scope.row.value }}</span>
             </template>
           </el-table-column>
+          <el-table-column width="180px" align="center" label="发送时间">
+            <template slot-scope="scope">
+              <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+            </template>
+          </el-table-column>
           <el-table-column align="center" label="操作" width="120">
             <template slot-scope="scope">
               <el-link v-if="contentType!=='STRING'" type="primary" icon="el-icon-view" @click="handleView(scope.row)">JSON视图</el-link>
-              <el-link v-permission="['KAFKA_CONTENT_SEND']" type="primary" icon="el-icon-position" @click="handleResend(scope.row)">重发</el-link>
+              <el-link v-permission="['KAFKA_CONTENT_SEND']" type="primary" icon="el-icon-position" @click="handlePush(scope.row)">重发</el-link>
             </template>
           </el-table-column>
         </el-table>
@@ -120,38 +133,25 @@
     </el-dialog>
     <el-dialog :visible.sync="dialogVisible2" :title="'推送主题消息'">
       <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="集群名称">
-          <el-select v-model="record.cluster" placeholder="请选择">
+        <el-form-item label="主题分区">
+          <el-select
+            v-model="record.partition"
+            clearable
+          >
             <el-option
-              v-for="item in options.clusters"
-              :key="item.clusterName"
-              :label="item.clusterName"
-              :value="item.clusterName"
+              v-for="item in topicPartitions"
+              :key="item.partition"
+              :label="item.partition"
+              :value="item.partition"
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="主题名称">
-          <el-select
-            v-model="record.topic"
-            filterable
-            remote
-            reserve-keyword
-            placeholder="请输入关键词"
-            :remote-method="remoteMethodSend"
-            :loading="loading"
-            style="width:100%"
-          >
-            <el-option
-              v-for="item in options.topics"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+        <el-form-item label="消息KEY">
+          <el-input v-model="record.key" placeholder="消息KEY" />
         </el-form-item>
         <el-form-item label="发送消息">
           <el-input
-            v-model="record.content"
+            v-model="record.value"
             :autosize="{ minRows: 5, maxRows: 15}"
             type="textarea"
             placeholder="发送Kafka 消息"
@@ -169,7 +169,7 @@
 <script>
 import { Loading } from 'element-ui'
 import { deepClone } from '@/utils'
-import { searchKafkaContent, send, resend } from '@/api/devops/kafka/search-content'
+import { searchKafkaContent, sendKafkaContent } from '@/api/devops/kafka/search-content'
 import { availableKafkaClusters, getKafkaClusterTopicInfo, listKafkaClusterTopics } from '@/api/devops/kafka/cluster'
 
 export default {
@@ -239,46 +239,36 @@ export default {
       searchKafkaContent(this.listQuery).then(resp => {
         this.contentType = 'STRING'
         if (resp.extra) this.contentType = resp.extra.contentType
-        this.loadingIns.close()
-        this.partitionMessages = resp.rows[0].partitionMessages
+        this.fillPartitionData(resp.rows[0].partitionMessages)
         this.partitionOffset = resp.rows[0].partitionOffset
         // this.listLoading = false
-      }).catch(() => {
+      }).finally(() => {
         this.loadingIns.close()
+      })
+    },
+    fillPartitionData(messages) {
+      this.partitionMessages = []
+      this.topicPartitions.forEach(item => {
+        this.partitionMessages.push(messages[item.partition])
       })
     },
     handleView(row) {
-      this.content = JSON.parse(row.content)
+      this.content = JSON.parse(row.value)
       this.dialogVisible = true
     },
-    handlePush() {
-      // this.record = {}
+    handlePush(row) {
       this.dialogVisible2 = true
-      // this.record.content = undefined
-    },
-    handleResend(row) {
-      this.record = deepClone(row)
-      this.$confirm('请确认重新发送消息到原主题?', 'Warning', {
-        confirmButtonText: '发送',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(async() => {
-          this.loadingIns = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
-          await resend(row.sid, row.content).finally(() => {
-            this.loadingIns.close()
-          })
-          this.$message({
-            type: 'success',
-            message: '发送 success!'
-          })
-        })
-        .catch(err => { console.error(err) })
+      this.record = {}
+      if (row) {
+        this.record = deepClone(row)
+      }
     },
     async handleSend() {
+      this.record.clusterId = this.listQuery.params.clusterId
+      this.record.topic = this.topic.name
       let resp = null
       this.dialogLoading = true
-      resp = await send(this.record).catch(() => {}).finally(() => {
+      resp = await sendKafkaContent(this.record).catch(() => {}).finally(() => {
         this.dialogLoading = false
       })
       if (resp && resp.success) {
@@ -287,7 +277,7 @@ export default {
           title: `推送消息 Success!`,
           dangerouslyUseHTMLString: true,
           message: `
-            <div>集群名称: ${this.record.cluster}</div>
+            <div>集群名称: ${this.record.clusterId}</div>
           `,
           type: 'success'
         })
@@ -320,26 +310,6 @@ export default {
           this.topicPartitions = this.topic.partitions
         }
       })
-    },
-    async remoteMethodSend(query) {
-      if (!this.record.cluster || this.record.cluster === '') {
-        this.$message({
-          type: 'warn',
-          message: '请先选择集群...'
-        })
-        return
-      }
-      if (query !== '') {
-        this.loading = true
-        listKafkaClusterTopics(this.record.cluster, query).then(resp => {
-          this.loading = false
-          if (resp.success) {
-            this.options.topics = resp.rows
-          }
-        })
-      } else {
-        this.options.topics = []
-      }
     },
     handleTypeChange(val) {
       this.limitDisabled = val === '0'
