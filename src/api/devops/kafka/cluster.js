@@ -49,21 +49,21 @@ export function getKafkaClusterBrokers(id) {
 
 export function availableKafkaClusters() {
   return request({
-    url: `${namespace}/clusters`,
+    url: `${namespace}/available`,
     method: 'get'
   })
 }
 
 export function listKafkaClusterTopics(id, topicName) {
   return request({
-    url: `${namespace}/clusters/${id}/topics?topicName=${topicName}`,
+    url: `${namespace}/${id}/topics?topicName=${topicName}`,
     method: 'get'
   })
 }
 
-export function getKafkaClusterTopicDetail(id, topicId) {
+export function getKafkaClusterTopicInfo(id, topicId) {
   return request({
-    url: `${namespace}/clusters/${id}/topic/${topicId}`,
+    url: `${namespace}/${id}/topic/${topicId}`,
     method: 'get'
   })
 }

@@ -9,13 +9,6 @@ export function searchKafkaContent(query) {
   })
 }
 
-export function getStatus(sid) {
-  return request({
-    url: `${namespace}/search/${sid}/status`,
-    method: 'get'
-  })
-}
-
 export function list(sid) {
   return request({
     url: `${namespace}/search/${sid}/records`,

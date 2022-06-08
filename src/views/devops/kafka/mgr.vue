@@ -227,7 +227,7 @@ import { getKafkaClusterBrokers } from '@/api/devops/kafka/cluster'
 import { getKafkaConsumerGroupDescribe, getKafkaConsumerGroups } from '@/api/devops/kafka/consumerGroups'
 
 export default {
-  name: 'KafkaClusterMGR1',
+  name: 'KafkaClusterMGR',
   data() {
     return {
       listLoading: true,

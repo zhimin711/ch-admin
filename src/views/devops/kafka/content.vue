@@ -4,12 +4,17 @@
 
       <el-form :model="listQuery.params" :inline="true" label-width="100px" label-position="left">
         <el-form-item label="集群名称">
-          <el-select v-model="listQuery.params.cluster" placeholder="请选择" class="filter-item" @change="handleClusterChange">
+          <el-select
+            v-model="listQuery.params.cluster"
+            placeholder="请选择"
+            class="filter-item"
+            @change="handleClusterChange"
+          >
             <el-option
               v-for="item in options.clusters"
               :key="item.clusterName"
               :label="item.clusterName"
-              :value="item.clusterName"
+              :value="item.id"
             />
           </el-select>
         </el-form-item>
@@ -22,6 +27,7 @@
             placeholder="请输入关键词"
             :remote-method="remoteMethod"
             :loading="loading"
+            @change="selectTopic"
           >
             <el-option
               v-for="item in options.topics"
@@ -31,19 +37,39 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="分区号">
+          <el-select
+            v-model="listQuery.params.partition"
+          >
+            <el-option :value="-1" label="全部" />
+            <el-option
+              v-for="item in topicPartitions"
+              :key="item.partition"
+              :label="item.partition"
+              :value="item.partition"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="搜索类型">
-          <el-radio-group v-model="listQuery.params.type" @change="handleTypeChange">
-            <el-radio-button label="0">全量</el-radio-button>
-            <el-radio-button label="1">最新</el-radio-button>
-            <el-radio-button label="2">最早</el-radio-button>
-          </el-radio-group>
+          <el-input v-model="listQuery.params.size" placeholder="请输入范围" class="input-with-select">
+            <el-select slot="prepend" v-model="listQuery.params.type" placeholder="请选择" @change="handleTypeChange">
+              <el-option label="最新" value="LATEST" />
+              <el-option label="最早" value="EARLIEST" />
+              <el-option label="全量" value="ALL" />
+            </el-select>
+            <template slot="append">条</template>
+          </el-input>
         </el-form-item>
-        <el-form-item label="搜索量">
-          <el-input-number v-model="listQuery.params.limit" :min="12" :max="1000" :step="4" :disabled="limitDisabled" />
-        </el-form-item>
-        <el-form-item label="搜索内容">
-          <el-input v-model="listQuery.params.content" placeholder="搜索内容(关键信息)" />
-        </el-form-item>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="搜索内容">
+              <el-input v-model="listQuery.params.content" placeholder="搜索内容(包含信息)" />
+            </el-form-item>
+            <el-form-item label="消息KEY">
+              <el-input v-model="listQuery.params.key" placeholder="消息KEY" />
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-badge v-permission="'KAFKA_CONTENT_SEARCH'" :value="listQuery.total" :max="99" class="item">
           <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getList">
             查询
@@ -57,12 +83,16 @@
         </el-button>
       </el-form>
     </div>
-    <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="70px" align="center" label="分区ID">
-        <template slot-scope="scope">
-          <span>{{ scope.row.partitionId }}</span>
-        </template>
-      </el-table-column>
+    <el-tabs v-model="activePartition" type="card">
+      <el-tab-pane v-for="item in topicPartitions" :key="item.partition" :label="'分区'+item.partition" :name="item.partition+''">
+        <el-descriptions class="margin-top" :column="3" border>
+          <el-descriptions-item label="起始位置"><el-tag>{{ item.beginningOffset }}</el-tag></el-descriptions-item>
+          <el-descriptions-item label="结束位置"><el-tag>{{ item.endOffset }}</el-tag></el-descriptions-item>
+          <el-descriptions-item label="可搜索量"><el-tag>{{ item.endOffset - item.beginningOffset }}</el-tag></el-descriptions-item>
+        </el-descriptions>
+      </el-tab-pane>
+    </el-tabs>
+    <el-table :loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
       <el-table-column width="77px" align="center" label="索引">
         <template slot-scope="scope">
           <span>{{ scope.row.messageOffset }}</span>
@@ -142,8 +172,8 @@
 <script>
 import { Loading } from 'element-ui'
 import { deepClone } from '@/utils'
-import { searchKafkaContent, getStatus, list, send, resend } from '@/api/devops/kafka/search-content'
-import { availableKafkaClusters, listKafkaClusterTopics } from '@/api/devops/kafka/cluster'
+import { searchKafkaContent, send, resend } from '@/api/devops/kafka/search-content'
+import { availableKafkaClusters, getKafkaClusterTopicInfo, listKafkaClusterTopics } from '@/api/devops/kafka/cluster'
 
 export default {
   name: 'KafkaContent1',
@@ -156,12 +186,15 @@ export default {
         total: 0,
         list: [],
         params: {
-          type: '1', limit: 12
+          type: 'LATEST', partition: -1, size: 1000, limit: 50
         }
       },
       limitDisabled: false,
       record: {},
       content: '',
+      activePartition: '',
+      topic: {},
+      topicPartitions: [],
       dialogLoading: false,
       dialogVisible: false,
       dialogVisible2: false,
@@ -171,7 +204,6 @@ export default {
         clusters: [],
         topics: []
       },
-      timer: '',
       loadingIns: null
     }
   },
@@ -180,9 +212,12 @@ export default {
     this.getClusters()
   },
   methods: {
-    async getClusters() {
-      const resp = await availableKafkaClusters()
-      if (resp && resp.success) this.options.clusters = resp.rows
+    getClusters() {
+      availableKafkaClusters().then(resp => {
+        if (resp.success) {
+          this.options.clusters = resp.rows
+        }
+      })
     },
     getList() {
       if (!this.listQuery.params.cluster || this.listQuery.params.cluster === '') {
@@ -202,17 +237,12 @@ export default {
       this.loadingIns = Loading.service({ target: document.querySelector('.app-container'), fullscreen: false })
 
       // this.listLoading = true
-      searchKafkaContent(this.listQuery).then(response => {
+      searchKafkaContent(this.listQuery).then(resp => {
         this.contentType = 'STRING'
-        if (response.extra) this.contentType = response.extra.contentType
-        if (response.extra && response.extra.searchAsync) {
-          this.sid = response.response.extra.searchId
-          this.timer = setInterval(this.getStatus, 2000)
-        } else {
-          this.loadingIns.close()
-          this.listQuery.list = response.rows
-          this.listQuery.total = response.rows.length
-        }
+        if (resp.extra) this.contentType = resp.extra.contentType
+        this.loadingIns.close()
+        this.listQuery.list = resp.rows
+        this.listQuery.total = resp.rows.length
         // this.listLoading = false
       }).catch(() => {
         this.loadingIns.close()
@@ -262,7 +292,6 @@ export default {
           `,
           type: 'success'
         })
-        // _this.getList()
       }
     },
     async remoteMethod(query) {
@@ -275,17 +304,23 @@ export default {
       }
       if (query !== '') {
         this.loading = true
-        listKafkaClusterTopics(this.listQuery.params.cluster, query).then(response => {
+        listKafkaClusterTopics(this.listQuery.params.cluster, query).then(resp => {
           this.loading = false
-          if (response.success) {
-            this.options.topics = response.rows.map(item => {
-              return { value: item.topicName, label: item.topicName }
-            })
+          if (resp.success) {
+            this.options.topics = resp.rows
           }
         })
       } else {
         this.options.topics = []
       }
+    },
+    selectTopic(val) {
+      getKafkaClusterTopicInfo(this.listQuery.params.cluster, val).then(resp => {
+        if (resp.success) {
+          this.topic = resp.rows[0]
+          this.topicPartitions = this.topic.partitions
+        }
+      })
     },
     async remoteMethodSend(query) {
       if (!this.record.cluster || this.record.cluster === '') {
@@ -297,12 +332,10 @@ export default {
       }
       if (query !== '') {
         this.loading = true
-        listKafkaClusterTopics(this.record.cluster, query).then(response => {
+        listKafkaClusterTopics(this.record.cluster, query).then(resp => {
           this.loading = false
-          if (response.success) {
-            this.options.topics = response.rows.map(item => {
-              return { value: item.topicName, label: item.topicName }
-            })
+          if (resp.success) {
+            this.options.topics = resp.rows
           }
         })
       } else {
@@ -312,28 +345,22 @@ export default {
     handleTypeChange(val) {
       this.limitDisabled = val === '0'
     },
-    getStatus() {
-      getStatus(this.sid).then(resp => {
-        if (resp.success && resp.rows[0] !== '1') {
-          clearTimeout(this.timer)
-          this.loadingIns.close()
-          this.getAsyncList(this.sid)
-        }
-      })
-    },
-    handleClusterChange(val) { this.options.topics = [] },
-    getAsyncList(sid) {
-      this.listLoading = true
-      list(sid).then(response => {
-        this.listQuery.list = response.rows
-        this.listQuery.total = response.rows.length
-        this.listLoading = false
-      })
+    handleClusterChange(val) {
+      this.options.topics = []
+      this.topicPartitions = []
     }
   }
 }
 </script>
+<style>
+.input-with-select .el-select .el-input {
+  width: 130px;
+}
 
+.input-with-select .el-input-group__prepend {
+  background-color: #fff;
+}
+</style>
 <style scoped>
   .edit-input {
     padding-right: 100px;
@@ -346,6 +373,10 @@ export default {
   }
 
   .el-select .el-input__inner {
-    width: 360px;
+    /*width: 360px;*/
   }
+  .margin-top {
+    margin-bottom: 15px;
+  }
+
 </style>
