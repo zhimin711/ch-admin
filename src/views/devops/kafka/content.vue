@@ -5,7 +5,7 @@
       <el-form :model="listQuery.params" :inline="true" label-width="100px" label-position="left">
         <el-form-item label="集群名称">
           <el-select
-            v-model="listQuery.params.cluster"
+            v-model="listQuery.params.clusterId"
             placeholder="请选择"
             class="filter-item"
             @change="handleClusterChange"
@@ -20,7 +20,7 @@
         </el-form-item>
         <el-form-item label="主题名称">
           <el-select
-            v-model="listQuery.params.topic"
+            v-model="listQuery.params.topicId"
             filterable
             remote
             reserve-keyword
@@ -220,14 +220,14 @@ export default {
       })
     },
     getList() {
-      if (!this.listQuery.params.cluster || this.listQuery.params.cluster === '') {
+      if (!this.listQuery.params.clusterId || this.listQuery.params.clusterId === '') {
         this.$message({
           type: 'warn',
           message: '请先选择集群...'
         })
         return
       }
-      if (!this.listQuery.params.topic || this.listQuery.params.topic === '') {
+      if (!this.listQuery.params.topicId || this.listQuery.params.topicId === '') {
         this.$message({
           type: 'warn',
           message: '请先选择主题...'
@@ -295,7 +295,7 @@ export default {
       }
     },
     async remoteMethod(query) {
-      if (!this.listQuery.params.cluster || this.listQuery.params.cluster === '') {
+      if (!this.listQuery.params.clusterId || this.listQuery.params.clusterId === '') {
         this.$message({
           type: 'warn',
           message: '请先选择集群...'
@@ -304,7 +304,7 @@ export default {
       }
       if (query !== '') {
         this.loading = true
-        listKafkaClusterTopics(this.listQuery.params.cluster, query).then(resp => {
+        listKafkaClusterTopics(this.listQuery.params.clusterId, query).then(resp => {
           this.loading = false
           if (resp.success) {
             this.options.topics = resp.rows
@@ -315,7 +315,7 @@ export default {
       }
     },
     selectTopic(val) {
-      getKafkaClusterTopicInfo(this.listQuery.params.cluster, val).then(resp => {
+      getKafkaClusterTopicInfo(this.listQuery.params.clusterId, val).then(resp => {
         if (resp.success) {
           this.topic = resp.rows[0]
           this.topicPartitions = this.topic.partitions
