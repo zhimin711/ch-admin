@@ -84,35 +84,32 @@
       </el-form>
     </div>
     <el-tabs v-model="activePartition" type="card">
-      <el-tab-pane v-for="item in topicPartitions" :key="item.partition" :label="'分区'+item.partition" :name="item.partition+''">
+      <el-tab-pane v-for="(item, index) in topicPartitions" :key="item.partition" :label="'分区'+item.partition" :name="item.partition+''">
         <el-descriptions class="margin-top" :column="3" border>
           <el-descriptions-item label="起始位置"><el-tag>{{ item.beginningOffset }}</el-tag></el-descriptions-item>
           <el-descriptions-item label="结束位置"><el-tag>{{ item.endOffset }}</el-tag></el-descriptions-item>
           <el-descriptions-item label="可搜索量"><el-tag>{{ item.endOffset - item.beginningOffset }}</el-tag></el-descriptions-item>
         </el-descriptions>
+        <el-table v-if="partitionMessages.length>0" :data="partitionMessages[index]" border fit highlight-current-row style="width: 100%">
+          <el-table-column width="77px" align="center" label="索引">
+            <template slot-scope="scope">
+              <span>{{ scope.row.offset }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="内容">
+            <template slot-scope="scope">
+              <span>{{ scope.row.value }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" label="操作" width="120">
+            <template slot-scope="scope">
+              <el-link v-if="contentType!=='STRING'" type="primary" icon="el-icon-view" @click="handleView(scope.row)">JSON视图</el-link>
+              <el-link v-permission="['KAFKA_CONTENT_SEND']" type="primary" icon="el-icon-position" @click="handleResend(scope.row)">重发</el-link>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-tab-pane>
     </el-tabs>
-    <el-table :loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="77px" align="center" label="索引">
-        <template slot-scope="scope">
-          <span>{{ scope.row.messageOffset }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="内容">
-        <template slot-scope="scope">
-          <span>{{ scope.row.content }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="操作" width="120">
-        <template slot-scope="scope">
-          <el-link v-if="contentType!=='STRING'" type="primary" icon="el-icon-view" @click="handleView(scope.row)">JSON视图</el-link>
-          <el-link v-permission="['KAFKA_CONTENT_RESEND']" type="primary" icon="el-icon-position" @click="handleResend(scope.row)">重发</el-link>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <!--<pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />-->
-
     <el-dialog :visible.sync="dialogVisible" :title="'消息JSON'" width="80%">
       <!--<span v-html="content"></span>-->
       <pre>{{ content }}</pre>
@@ -195,6 +192,8 @@ export default {
       activePartition: '',
       topic: {},
       topicPartitions: [],
+      partitionOffset: {},
+      partitionMessages: {},
       dialogLoading: false,
       dialogVisible: false,
       dialogVisible2: false,
@@ -241,8 +240,8 @@ export default {
         this.contentType = 'STRING'
         if (resp.extra) this.contentType = resp.extra.contentType
         this.loadingIns.close()
-        this.listQuery.list = resp.rows
-        this.listQuery.total = resp.rows.length
+        this.partitionMessages = resp.rows[0].partitionMessages
+        this.partitionOffset = resp.rows[0].partitionOffset
         // this.listLoading = false
       }).catch(() => {
         this.loadingIns.close()
