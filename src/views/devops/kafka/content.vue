@@ -90,7 +90,7 @@
           <el-descriptions-item label="结束位置"><el-tag>{{ item.endOffset }}</el-tag></el-descriptions-item>
           <el-descriptions-item label="可搜索量"><el-tag>{{ item.endOffset - item.beginningOffset }}</el-tag></el-descriptions-item>
         </el-descriptions>
-        <el-table v-if="partitionMessages.length>0" :data="partitionMessages[index]" border fit highlight-current-row style="width: 100%">
+        <el-table v-show="partitionMessages.length>0" :data="partitionMessages[index]" border fit highlight-current-row style="width: 100%">
           <el-table-column width="77px" align="center" label="索引">
             <template slot-scope="scope">
               <span>{{ scope.row.offset }}</span>
