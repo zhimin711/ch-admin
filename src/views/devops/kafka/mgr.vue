@@ -59,7 +59,7 @@
     </el-table>
     <pagination v-show="activeName === 'topics' && listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
     <el-table v-show="activeName === 'brokers'" :loading="listLoading" :data="list.brokers">
-      <el-table-column label="ID" prop="id" width="50" />
+      <el-table-column label="ID" prop="id" width="70" />
       <el-table-column label="Host" prop="host" />
       <el-table-column label="Port" prop="port" width="80" />
       <el-table-column label="Partitions as Leader" prop="leaderPartitions" width="160">
