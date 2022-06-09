@@ -16,7 +16,7 @@ const kafkaRouter = {
   children: [
     {
       path: 'cluster',
-      component: () => import('@/views/kafka/cluster'),
+      component: () => import('@/views/devops/kafka/cluster'),
       name: 'KafkaCluster',
       meta: {
         code: 'clusterManagement',
@@ -25,7 +25,7 @@ const kafkaRouter = {
     },
     {
       path: 'topic',
-      component: () => import('@/views/kafka/topic'),
+      component: () => import('@/views/devops/kafka/mgr'),
       name: 'KafkaTopic',
       meta: {
         code: 'topicManagement',
@@ -42,7 +42,7 @@ const kafkaRouter = {
     },
     {
       path: 'mock',
-      component: () => import('@/views/kafka/mocker'),
+      component: () => import('@/views/devops/mocker'),
       name: 'KafkaMock',
       meta: {
         code: 'mockData'
@@ -50,7 +50,7 @@ const kafkaRouter = {
     },
     {
       path: 'mockGPS',
-      component: () => import('@/views/kafka/mockGPS'),
+      component: () => import('@/views/devops/mockGPS'),
       name: 'KafkaGPSMock',
       meta: {
         title: 'Mock GPS'
@@ -58,7 +58,7 @@ const kafkaRouter = {
     },
     {
       path: 'dubbo',
-      component: () => import('@/views/kafka/dubboCall'),
+      component: () => import('@/views/devops/dubboCall'),
       name: 'DubboCall',
       meta: {
         code: 'dubboCall'
@@ -106,17 +106,9 @@ const routerMap = {
       code: 'messageSearch'
     }
   },
-  /*  KafkaTopic: {
-    path: 'topic',
-    component: () => import('@/views/kafka/topic'),
-    name: 'KafkaTopic',
-    meta: {
-      code: 'topicManagement'
-    }
-  },*/
   KafkaMocker: {
     path: 'mock',
-    component: () => import('@/views/kafka/mocker'),
+    component: () => import('@/views/devops/mocker'),
     name: 'KafkaMocker',
     meta: {
       code: 'mockData'
@@ -124,15 +116,15 @@ const routerMap = {
   },
   DubboCall: {
     path: 'dubbo',
-    component: () => import('@/views/kafka/dubboCall'),
+    component: () => import('@/views/devops/dubboCall'),
     name: 'DubboCall',
     meta: {
       code: 'dubboCall'
     }
   },
   MockGPS: {
-    path: 'MockGPS',
-    component: () => import('@/views/kafka/mockGPS'),
+    path: 'mockGPS',
+    component: () => import('@/views/devops/mockGPS'),
     name: 'MockGPS',
     meta: {
       title: 'MockGPS'

@@ -34,7 +34,7 @@
     </div>
     <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column prop="type" label="类型" width="80">
+      <el-table-column prop="type" label="类型" width="80" align="center">
         <template slot-scope="scope">
           <span v-if="scope.row.type === '1'">小说</span>
           <span v-if="scope.row.type === '2'">漫画</span>
@@ -51,12 +51,12 @@
           <el-tag v-else type="default">{{ scope.row.mark }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="markAt" label="标签日期" width="160">
+      <el-table-column prop="markAt" label="标签日期" width="180">
         <template slot-scope="scope">
           <span>{{ scope.row.markAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="status" label="状态" width="80">
+      <el-table-column prop="status" label="状态" width="80" align="center">
         <template slot-scope="scope">
           <span v-if="scope.row.status === '0'">连载中</span>
           <span v-if="scope.row.status === '1'">已完结</span>

@@ -218,7 +218,7 @@ import { Loading } from 'element-ui'
 import { lazyAMapApiLoaderInstance } from 'vue-amap'
 
 import { getClusters, getTopics } from '@/api/devops/kafka/search-content'
-import { searchMock, saveMock, doMockGPS, loadMock, deleteMock } from '@/api/kafka/mocker'
+import { searchMock, saveMock, doMockGPS, loadMock, deleteMock } from '@/api/devops/mocker'
 
 const objs = [
   {

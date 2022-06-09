@@ -77,7 +77,7 @@
 
 <script>
 import { Loading } from 'element-ui'
-import { call } from '@/api/kafka/dubboCall'
+import { call } from '@/api/devops/dubboCall'
 
 export default {
   name: 'DubboCall',

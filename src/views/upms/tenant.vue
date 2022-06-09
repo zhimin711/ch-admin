@@ -35,15 +35,21 @@
     >
       <el-table-column label="所属部门" prop="departmentName" />
       <el-table-column label="名称" prop="name" />
-      <el-table-column label="负责人" prop="manager" />
-      <el-table-column label="排序" prop="sort" />
-      <el-table-column label="状态" prop="status" />
-      <el-table-column label="创建时间" align="center" prop="createAt" width="180">
+      <el-table-column label="负责人" prop="manager" width="100" />
+      <el-table-column label="排序" prop="sort" width="80" align="center" />
+      <el-table-column label="状态" prop="status" width="80" align="center">
+        <template slot-scope="{row}">
+          <el-tag :type="row.status | statusFilter">
+            {{ row.status | enableStatusNameFilter }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" align="center" prop="createAt" width="170">
         <template slot-scope="scope">
           <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" min-width="150">
+      <el-table-column align="center" label="操作" width="120">
         <template slot-scope="{row}">
           <el-button v-permission="'UPMS_TENANT_EDIT'" type="text" @click.native="handleEdit(row)">{{ $t('btn.edit') }}</el-button>
           <el-button v-permission="'UPMS_TENANT_DELETE'" type="text" @click.native="handleDel(row)">{{ $t('btn.delete') }}</el-button>

@@ -207,7 +207,7 @@
 <script>
 import { Loading } from 'element-ui'
 import { getClusters, getTopics } from '@/api/devops/kafka/search-content'
-import { searchMock, saveMock, doMock, loadMock, deleteMock } from '@/api/kafka/mocker'
+import { searchMock, saveMock, doMock, loadMock, deleteMock } from '@/api/devops/mocker'
 
 const rules2 = [
   { value: 'RANDOM', label: '随机', types: [], filterTypes: [] },

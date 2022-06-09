@@ -16,7 +16,7 @@
         添加项目
       </el-button>
     </div>
-    <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
+    <el-table :loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
       <el-table-column label="所属部门" prop="departmentName" />
       <el-table-column label="租户" prop="tenantName" />
       <el-table-column label="项目代码">
@@ -30,10 +30,9 @@
           <span>{{ scope.row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="负责人" prop="manager" />
-      <el-table-column label="排序" prop="sort" />
-
-      <el-table-column align="center" label="操作" width="200">
+      <el-table-column label="负责人" prop="manager" width="120" />
+      <el-table-column label="排序" prop="sort" width="80" align="center" />
+      <el-table-column align="center" label="操作" width="100">
         <template slot-scope="scope">
           <el-link v-permission="['UPMS_PROJECT_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
           <el-link v-permission="['UPMS_PROJECT_DEL']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">删除</el-link>

@@ -38,7 +38,7 @@
                 </el-checkbox-group>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="handleSubmitApply('ruleForm')">提交申请</el-button>
+                <el-button :loading="loadingApprove" type="primary" @click="handleSubmitApply('ruleForm')">提交申请</el-button>
                 <!--                <el-button @click="resetForm('ruleForm')">重置</el-button>-->
               </el-form-item>
             </el-form>
@@ -46,19 +46,6 @@
         </el-tabs>
       </el-col>
     </el-row>
-    <el-dialog :visible.sync="applyDialogVisible" :append-to-body="true" :title="'申请项目空间'" width="635px" center>
-      <div style="text-align:left;margin-bottom: 20px">
-        <el-checkbox-group v-model="applyList">
-          <el-checkbox v-for="item in projectNamespaces" :key="item.key" :label="item.value">
-            {{ item.label }}
-          </el-checkbox>
-        </el-checkbox-group>
-      </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" :loading="loadingApprove" @click="handleSubmitApply">申请</el-button>
-        <el-button type="danger" @click="applyDialogVisible=false">取消</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
@@ -86,7 +73,6 @@ export default {
       clusters: [],
       namespaces: [],
       activeCluster: '',
-      applyDialogVisible: false,
       loadingApprove: false,
       applyList: [],
       record: {},
@@ -182,7 +168,6 @@ export default {
       this.loadingApprove = true
       applyNacosUserNamespaces(this.projectId, this.activeCluster, this.applyList).then(resp => {
         if (resp.success) {
-          this.applyDialogVisible = false
           this.$message.success('申请成功，请等待管理员审核...')
         }
       }).finally(() => {
