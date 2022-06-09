@@ -7,7 +7,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            当天用户访问量
+            用户访问量
           </div>
           <count-to :start-val="0" :end-val="newVisits" :duration="2600" class="card-panel-num" />
         </div>
@@ -20,7 +20,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            当天文章发布量
+            文章发布量
           </div>
           <count-to :start-val="0" :end-val="newArticles" :duration="3000" class="card-panel-num" />
         </div>
@@ -33,7 +33,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            当天资源共享量
+            资源共享量
           </div>
           <count-to :start-val="0" :end-val="newResources" :duration="3200" class="card-panel-num" />
         </div>
@@ -46,7 +46,7 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            当天点赞量
+            点赞量
           </div>
           <count-to :start-val="0" :end-val="newRecommend" :duration="3600" class="card-panel-num" />
         </div>
