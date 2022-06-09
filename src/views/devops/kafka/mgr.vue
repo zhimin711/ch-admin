@@ -313,6 +313,7 @@ export default {
     handleConsumerGroupsDetail(row) {
       this.dialogConsumer = true
       this.loading = true
+      this.list.describe = []
       getKafkaConsumerGroupDescribe(this.clusterId, row.groupId).then(resp => {
         if (resp.success) {
           this.list.describe = resp.rows
@@ -335,6 +336,7 @@ export default {
     },
     handleTopicDetail(row) {
       this.dialogTopicDetail = true
+      this.activeTopicInfo = 'partitions'
       this.topic = Object.assign({}, row)
       getKafkaTopic(row.id).then(resp => {
         if (resp.success) {
@@ -357,7 +359,7 @@ export default {
       } else if (tab.name === 'consumerGroups' && this.topicDetail.consumerGroups.length === 0) {
         getKafkaTopicConsumerGroups(this.topic.id).then(resp => {
           if (resp.success) {
-            this.topicDetail.configs = resp.rows
+            this.topicDetail.consumerGroups = resp.rows
           }
         })
       } else if (tab.name === 'configs' && this.topicDetail.configs.length === 0) {
