@@ -49,7 +49,7 @@
       <el-table-column prop="createAt" label="状态" width="100">
         <template slot-scope="{row}">
           <el-tag v-if="row.status==='0'">待审核</el-tag>
-          <el-tag v-if="row.status==='1'" type="success">已通过</el-tag>
+          <el-tag v-else-if="row.status==='1'" type="success">已通过</el-tag>
           <el-tag v-else type="danger">已拒绝</el-tag>
         </template>
       </el-table-column>
