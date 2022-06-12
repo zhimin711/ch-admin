@@ -29,7 +29,7 @@ const routerMap = {
   },
   UpmsDepartment: {
     path: 'department',
-    component: () => import('@/views/upms/department'),
+    component: () => import('@/views/upms/department/index'),
     name: 'UpmsDepartmentManagement',
     meta: {
       code: 'departmentManagement'
