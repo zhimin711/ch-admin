@@ -188,6 +188,7 @@ export default {
     delete: 'Delete',
     copy: 'Copy',
     reset: 'Reset',
+    refresh: 'Refresh',
     publish: 'Publish',
     draft: 'Draft',
     confirm: 'Confirm',

@@ -186,6 +186,7 @@ const cn = {
     delete: '删除',
     copy: '复制',
     reset: '重置',
+    refresh: '刷新',
     publish: '发布',
     draft: '草稿',
     save: '保存',
