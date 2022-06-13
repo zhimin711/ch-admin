@@ -145,7 +145,7 @@ const defaultRecord = {
   status: '1'
 }
 export default {
-  name: 'UpmsDepartment1',
+  name: 'UpmsDepartment',
   components: {
     OrgView,
     ZoomController
