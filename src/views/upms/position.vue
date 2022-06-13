@@ -155,7 +155,7 @@ import { deepClone } from '@/utils'
 const defaultRecord = { pid: '0', sort: 1, status: '1' }
 
 export default {
-  name: 'UmpsPosition',
+  name: 'UpmsPosition',
   dictionary: ['status'],
   data() {
     return {
