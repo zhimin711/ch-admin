@@ -62,6 +62,7 @@
         </el-form-item>
         <el-form-item label="搜索量">
           <el-select v-model="listQuery.params.limit">
+            <el-option label="10条" value="10" />
             <el-option label="50条" value="50" />
             <el-option label="100条" value="100" />
             <el-option label="200条" value="200" />
