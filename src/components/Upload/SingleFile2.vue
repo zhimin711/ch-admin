@@ -9,6 +9,8 @@
       :show-file-list="false"
       :on-success="uploadSuccess"
       :on-error="uploadError"
+      :on-progress="uploadProgress"
+      :disabled="loading"
       class="image-uploader"
       drag
       :action="url"
@@ -38,6 +40,7 @@ export default {
   },
   data() {
     return {
+      loading: false,
       tempUrl: ''
     }
   },
@@ -53,13 +56,18 @@ export default {
     setValue(val) {
       this.$emit('input', val)
     },
+    uploadProgress() {
+      this.loading = true
+    },
     uploadSuccess(resp, file, fileList) {
+      this.loading = false
       if (resp) {
         this.$refs.uploader.clearFiles()
         this.$emit('success', resp)
       }
     },
     uploadError(resp) {
+      this.loading = false
       this.$emit('error', resp)
     }
   }

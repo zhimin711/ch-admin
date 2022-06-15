@@ -504,7 +504,7 @@ export default {
       } else {
         params = {
           export: 'true',
-          tenant: this.listQuery.tenant,
+          tenant: '',
           group: this.listQuery.group || '',
           appName: this.listQuery.appName || this.projectId,
           dataId: this.listQuery.dataId || '',
@@ -609,12 +609,19 @@ export default {
       })
     },
     handleResult(resp, op) {
-      this.dialogVisible2ImportResult = true
       const { rows, message } = resp
+      if (!resp.success) {
+        this.$message.error(`${opName[op]}失败！${message}`)
+        return
+      }
+      this.dialogVisible2ImportResult = true
       const data = rows[0]
-      this.titles.importResult = message
+      this.titles.importResult = opName[op]
       this.tables.importFail = []
       this.tables.importSkip = []
+      this.importMessage = ''
+      this.titles.skip = ''
+      this.titles.fail = ''
       if (data.failData) {
         this.titles.importResult = `${opName[op]}终止`
         this.titles.fail = '失败的条目: ' + data.failData.length

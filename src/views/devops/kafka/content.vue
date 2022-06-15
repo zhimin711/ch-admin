@@ -188,7 +188,7 @@ export default {
         total: 0,
         list: [],
         params: {
-          type: 'LATEST', partition: -1, size: 1000, limit: '50'
+          type: 'LATEST', partition: -1, size: 1000, limit: '10'
         }
       },
       limitDisabled: false,
