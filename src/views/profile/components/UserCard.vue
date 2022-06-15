@@ -24,7 +24,6 @@
               :label="item.name"
               :value="item.id"
             />
-            <el-option value="-1" label="示例页面" />
           </el-select>
           <el-divider />
           <el-button type="primary" @click="setDefaultRole">设置为默认角色</el-button>

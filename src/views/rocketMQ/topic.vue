@@ -273,10 +273,10 @@
           <el-input v-model="record.topic" placeholder="主题名称" :disabled="dataForm.disable.topicName" />
         </el-form-item>
         <el-form-item label="标签">
-          <el-input v-model="record.key" placeholder="标签" />
+          <el-input v-model="record.tag" placeholder="标签" />
         </el-form-item>
         <el-form-item label="值">
-          <el-input v-model="record.tag" placeholder="值" />
+          <el-input v-model="record.key" placeholder="值" />
         </el-form-item>
         <el-form-item label="发送消息">
           <el-input
