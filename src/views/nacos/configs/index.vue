@@ -256,15 +256,15 @@ export default {
     namespaceName() {
       const tmp = this.namespaceId
       const tenant = this.namespaces.find(tenant => {
-        return tenant.id === tmp
+        return tenant.value === tmp
       })
       if (tenant) {
         return tenant.label
       }
-      return ''
+      return '-'
     },
     importUrl() {
-      return '/api/devops/nacos/configs/import?namespace=' + this.namespaceId
+      return '/api/devops/nacos/configs/import?namespaceId=' + this.namespaceId
     }
   },
   // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
@@ -396,7 +396,7 @@ export default {
       } else {
         params = {
           export: 'true',
-          tenant: this.listQuery.tenant,
+          tenant: '',
           group: this.listQuery.group || '',
           appName: this.listQuery.appName || '',
           dataId: this.listQuery.dataId || '',
@@ -441,11 +441,19 @@ export default {
       })
     },
     handleResult(resp, op) {
+      const { rows, message } = resp
+      if (!resp.success) {
+        this.$message.error(`${opName[op]}失败！${message}`)
+        return
+      }
       this.dialogVisible2ImportResult = true
-      const { data, message } = resp
-      this.titles.importResult = message
+      const data = rows[0]
+      this.titles.importResult = opName[op]
       this.tables.importFail = []
       this.tables.importSkip = []
+      this.importMessage = ''
+      this.titles.skip = ''
+      this.titles.fail = ''
       if (data.failData) {
         this.titles.importResult = `${opName[op]}终止`
         this.titles.fail = '失败的条目: ' + data.failData.length

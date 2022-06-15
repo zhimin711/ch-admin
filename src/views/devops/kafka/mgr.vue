@@ -220,7 +220,7 @@ import {
   getKafkaTopicConsumerGroups,
   getKafkaTopicConfigs,
   getTopics,
-  syncAll,
+  syncKafkaClusterTopics,
   refresh2
 } from '@/api/devops/kafka/topic'
 import { getKafkaClusterBrokers } from '@/api/devops/kafka/cluster'
@@ -436,7 +436,7 @@ export default {
       this.dialogVisible2 = false
       const loadingS = Loading.service({ target: document.querySelector('.app-container'), text: `正在同步主题，请稍后......`, fullscreen: false })
       const _this = this
-      const resp = await syncAll(data).catch(() => { loadingS.close() })
+      const resp = await syncKafkaClusterTopics(data).catch(() => { loadingS.close() })
       loadingS.close()
       if (resp && resp.success) {
         this.$notify({

@@ -87,11 +87,11 @@ export function getTopics(clusterName, topicName) {
   })
 }
 
-export function syncAll(data) {
+export function syncKafkaClusterTopics(data) {
   return request({
     url: `${namespace}/sync`,
     method: 'post',
-    timeout: 360000,
+    timeout: 300000,
     data
   })
 }
