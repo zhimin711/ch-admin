@@ -46,7 +46,7 @@
       <el-table-column align="center" :label="$t('table.actions')" width="120">
         <template slot-scope="scope">
           <el-link v-permission="'KAFKA_CLUSTER_EDIT'" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">{{ $t('btn.edit') }}</el-link>
-          <router-link v-if="checkOperation('KAFKA_CLUSTER_EDIT', scope.row)" :to="'/kafka/cluster/mgr/'+scope.row.id">
+          <router-link v-if="checkOperation('KAFKA_CLUSTER_BROKERS', scope.row)" :to="'/kafka/cluster/mgr/'+scope.row.id">
             <el-button type="text" icon="el-icon-setting">{{ $t('btn.mgr') }}</el-button>
           </router-link>
           <!--          <el-link v-permission="'KAFKA_CLUSTER_EDIT'" type="success" icon="el-icon-setting" @click="handleEdit(scope.row, scope.$index)">{{ $t('btn.mgr') }}</el-link>-->
