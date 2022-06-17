@@ -18,10 +18,6 @@ import plugins from './pluginsLocal'
 import toolbar from './toolbarLocal'
 import cn from './zh_CN'
 
-import 'tinymce/skins/ui/oxide/skin.css'
-import 'tinymce/skins/ui/oxide/content.css'
-// import 'tinymce/skins/content/default/content.css'
-
 import 'tinymce/tinymce'
 import 'tinymce/icons/default/icons'
 import 'tinymce/themes/silver'
@@ -172,6 +168,7 @@ export default {
       window.tinymce.init({
         selector: `#${this.tinymceId}`,
         language: this.languageTypeList['zh'],
+        skin_url: 'http://114.116.46.92/assets/plugins/tinymce/skins/ui/oxide',
         height: this.height,
         body_class: 'panel-body ',
         object_resizing: false,
@@ -184,7 +181,7 @@ export default {
         code_dialog_width: 1000,
         advlist_bullet_styles: 'square',
         advlist_number_styles: 'default',
-        imagetools_cors_hosts: ['www.tinymce.com', 'codepen.io'],
+        imagetools_cors_hosts: ['www.tinymce.com', 'codepen.io', '114.116.46.92'],
         default_link_target: '_blank',
         link_title: false,
         convert_urls: false,
@@ -252,7 +249,7 @@ export default {
   position: absolute;
   right: 4px;
   top: 4px;
-  /*z-index: 2005;*/
+  z-index: 205;
 }
 .fullscreen .editor-custom-btn-container {
   z-index: 10000;
