@@ -35,7 +35,7 @@
             <el-option :label="$t('label.enable')" value="1">{{ $t('label.enable') }}</el-option>
             <el-option :label="$t('label.disable')" value="0">{{ $t('label.disable') }}</el-option>
           </el-select>
-          <el-button v-loading="tableA.loading" v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
+          <el-button v-waves :loading="tableA.loading" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
             {{ $t('btn.search') }}
           </el-button>
           <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="tableA.params = {}">
@@ -48,7 +48,7 @@
         初始化用户密码
       </el-button>-->
         </div>
-        <el-table v-loading="tableA.loading" :data="tableA.list" border fit highlight-current-row style="width: 100%">
+        <el-table :loading="tableA.loading" :data="tableA.list" border fit highlight-current-row style="width: 100%">
           <el-table-column width="180px" :label="$t('user.department')" prop="department">
             <template slot-scope="{row}">
               <el-tag v-if="row.department==='1'">附属部门</el-tag>
@@ -266,6 +266,11 @@ export default {
       options: { departments: [], positions: [], positions2: [] },
       departmentName: '',
       tableHeight: window.innerHeight - 270
+    }
+  },
+  watch: {
+    departmentName(val) {
+      this.$refs.tree.filter(val)
     }
   },
   created() {

@@ -1,5 +1,5 @@
 <template>
-  <el-row>
+  <el-row class="project-tree">
     <div class="head-container">
       <el-input
         v-model="projectName"
@@ -51,6 +51,9 @@ export default {
   watch: {
     tenant(nv, ov) {
       console.log(nv, ov)
+    },
+    projectName(val) {
+      this.$refs.tree.filter(val)
     }
   },
   mounted() {
@@ -98,13 +101,13 @@ export default {
   }
 </style>
 <style>
-  .el-tree-node {
+  .project-tree .el-tree-node {
     padding: 5px 5px;
   }
-  .el-tree-node__content {
+  .project-tree .el-tree-node__content {
     padding: 5px 5px;
   }
-  .is-current {
+  .project-tree .is-current {
     color: #409eff;
   }
 </style>
