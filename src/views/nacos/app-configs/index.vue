@@ -2,11 +2,11 @@
   <div class="app-container">
     <el-row :gutter="20">
       <!--部门数据-->
-      <el-col :span="4" :xs="24">
+      <el-col :span="5" :xs="24">
         <project-menu @change="handleSelectProject" />
       </el-col>
       <!--用户数据-->
-      <el-col :span="20" :xs="24" style="border-left: 1px solid #dedede; min-height: 500px">
+      <el-col :span="19" :xs="24" style="border-left: 1px solid #dedede; min-height: 500px">
         <project-namespace v-model="namespaceId" :project-id="projectId" @change="handleNamespaceChange" @finish="loadNamespacesFinish" />
         <el-alert
           v-if="!showSearch && projectId==='' && namespaceId!=='apply'"

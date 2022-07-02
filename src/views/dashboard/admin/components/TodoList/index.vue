@@ -2,7 +2,7 @@
   <section class="todoapp">
     <!-- header -->
     <header class="header">
-      <input class="new-todo" autocomplete="off" placeholder="Todo List" @keyup.enter="addTodo">
+      <input class="new-todo" autocomplete="off" placeholder="今日计划" @keyup.enter="addTodo">
     </header>
     <!-- main section -->
     <section v-show="todos.length" class="main">
@@ -39,6 +39,7 @@
 
 <script>
 import Todo from './Todo.vue'
+import { listWikiUserPlan } from '@/api/wiki/user-plan'
 
 const STORAGE_KEY = 'todos'
 const filters = {
@@ -46,7 +47,7 @@ const filters = {
   active: todos => todos.filter(todo => !todo.done),
   completed: todos => todos.filter(todo => todo.done)
 }
-const defalutList = [
+const defaultList = [
   { text: 'star this repository', done: false },
   { text: 'fork this repository', done: false },
   { text: 'follow author', done: false },
@@ -67,7 +68,7 @@ export default {
       visibility: 'all',
       filters,
       // todos: JSON.parse(window.localStorage.getItem(STORAGE_KEY)) || defalutList
-      todos: defalutList
+      todos: defaultList
     }
   },
   computed: {
@@ -81,9 +82,22 @@ export default {
       return this.todos.filter(todo => !todo.done).length
     }
   },
+  created() {
+    this.loadData()
+  },
   methods: {
     setLocalStorage() {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(this.todos))
+    },
+    loadData() {
+      this.todos = []
+      listWikiUserPlan(1).then(resp => {
+        if (resp.success && resp.rows.length > 0) {
+          this.todos = resp.rows.map(item => {
+            return { text: item.title, done: true }
+          })
+        }
+      })
     },
     addTodo(e) {
       const text = e.target.value

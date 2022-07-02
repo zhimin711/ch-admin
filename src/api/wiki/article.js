@@ -8,7 +8,7 @@ export function fetchTree(pid) {
     method: 'get'
   })
 }
-export function listArticle(query) {
+export function pageWikiArticle(query) {
   return request({
     url: `${baseUrl}/${query.page}/${query.limit}`,
     method: 'get',

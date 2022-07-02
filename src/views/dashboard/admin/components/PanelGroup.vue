@@ -1,5 +1,10 @@
 <template>
   <el-row :gutter="40" class="panel-group">
+    <el-col :span="24">
+      <el-card shadow="hover" style="margin-bottom: 20px">
+        今日趋势
+      </el-card>
+    </el-col>
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
       <div class="card-panel" @click="handleSetLineChartData('newVisitis')">
         <div class="card-panel-icon-wrapper icon-people">

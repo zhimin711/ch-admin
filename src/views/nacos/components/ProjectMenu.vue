@@ -103,11 +103,22 @@ export default {
 <style>
   .project-tree .el-tree-node {
     padding: 5px 5px;
+    border: 1px solid;
+    margin: 5px;
+    border-radius: 5px;
   }
   .project-tree .el-tree-node__content {
     padding: 5px 5px;
   }
   .project-tree .is-current {
     color: #409eff;
+  }
+  .project-tree .el-tree-node__label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /*width:200px;*/
+    margin: 0px 0px;
+    text-align: left;
   }
 </style>

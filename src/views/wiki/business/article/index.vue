@@ -102,7 +102,7 @@
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 import { checkPermission2 } from '@/utils/permission' // 权限判断函数
-import { listArticle } from '@/api/wiki/article'
+import { pageWikiArticle } from '@/api/wiki/article'
 
 const imgCloud = require('@/assets/0_images/0_cloud2.jpg') // 裁剪图片的地址
 
@@ -132,7 +132,7 @@ export default {
   methods: {
     getList() {
       this.loading = true
-      listArticle(this.listQuery).then(response => {
+      pageWikiArticle(this.listQuery).then(response => {
         this.list = response.rows
         this.listQuery.total = response.total
       }).finally(() => { this.loading = false })

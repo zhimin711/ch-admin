@@ -180,7 +180,6 @@
 </template>
 
 <script>
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import UploadSingleFile from '@/components/Upload/SingleFile' // Secondary package based on el-pagination
 import { CategoryDropdown } from '../../components/Dropdown'
 
@@ -200,7 +199,7 @@ const defaultRecord = {
 
 export default {
   name: 'WikiBooks',
-  components: { Pagination, CategoryDropdown, UploadSingleFile },
+  components: { CategoryDropdown, UploadSingleFile },
   data() {
     return {
       list: [],

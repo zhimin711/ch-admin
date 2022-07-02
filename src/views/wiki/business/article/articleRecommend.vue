@@ -44,7 +44,7 @@
 import Kanban from '@/components/Kanban/recommend'
 import { CategoryDropdown } from '../../components/Dropdown'
 import Pagination from '@/components/Pagination'
-import { listArticle, getArticleRecommends, editArticleRecommends } from '@/api/wiki/article'
+import { pageWikiArticle, getArticleRecommends, editArticleRecommends } from '@/api/wiki/article'
 
 export default {
   name: 'ArticleRecommend',
@@ -140,7 +140,7 @@ export default {
       if (this.listQuery.categoryValues.length > 0) {
         this.listQuery.params.categoryId = this.listQuery.categoryValues.join(',')
       }
-      listArticle(this.listQuery).then(response => {
+      pageWikiArticle(this.listQuery).then(response => {
         this.listQuery.data = response.rows
         this.listQuery.total = response.total
       }).finally(() => { this.listLoading = false })
