@@ -400,6 +400,7 @@ export default {
       const _this = this
       let resp = null
       let opName = '添加'
+      this.record.clusterId = this.clusterId
       if (this.dialogType === 'new') {
         resp = await addKafkaTopic(this.record)
       } else if (this.dialogType === 'edit') {
