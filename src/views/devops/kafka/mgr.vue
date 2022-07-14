@@ -102,10 +102,10 @@
           <el-input v-model="record.topicName" placeholder="主题名称" :disabled="propDisabled" />
         </el-form-item>
         <el-form-item label="分区数">
-          <el-input-number v-model="record.partitionSize" :min="1" :max="50" :step="2" :disabled="propDisabled" />
+          <el-input-number v-model="record.partitionSize" :min="1" :max="50" :step="1" :disabled="propDisabled" />
         </el-form-item>
         <el-form-item label="复制数">
-          <el-input-number v-model="record.replicaSize" :min="0" :max="10" :disabled="propDisabled" />
+          <el-input-number v-model="record.replicaSize" :min="1" :max="10" :disabled="propDisabled" />
         </el-form-item>
         <el-form-item label="存储类型">
           <!--<el-input v-model="record.type" placeholder="存储类型" />-->
@@ -410,14 +410,16 @@ export default {
       if (resp && resp.success) {
         this.dialogVisible = false
         this.$notify({
-          title: `${opName}集群名称 Success!`,
+          title: `${opName}主题成功!`,
           dangerouslyUseHTMLString: true,
           message: `
-            <div>集群名称: ${this.record.clusterName}</div>
+            <div>主题: ${this.record.topicName}</div>
           `,
           type: 'success'
         })
         _this.getList()
+      } else if (resp && resp.message) {
+        this.$message.error(resp.message)
       }
     },
     handleSync() {
