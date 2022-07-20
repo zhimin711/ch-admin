@@ -205,6 +205,7 @@
       <div v-for="(item2,index) in tables.instances" :key="'instances'+index">
         <el-card v-for="(item, k) in item2.clusterMap" :key="'consumeGroup'+k" class="box-card route-broker">
           <div slot="header" class="clearfix">
+            <span>分组	:	<el-tag>{{ item2.groupName }}</el-tag></span>
             <span>集群	:	<el-tag>{{ k }}</el-tag></span>
           </div>
           <el-table :data="item.hosts" border>
