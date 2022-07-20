@@ -202,26 +202,33 @@
       </span>
     </el-dialog>
     <el-dialog title="服务实例" :visible.sync="dialogVisible2Instances" width="80%">
-      <el-table v-loading="tables.instancesLoading" :data="tables.instances" border>
-        <el-table-column label="IP" width="150" prop="ip" />
-        <el-table-column label="端口" width="60" prop="port" />
-        <el-table-column label="临时实例" width="100" align="center" prop="ephemeral">
-          <template slot-scope="{row}">
-            {{ row.ephemeral }}
-          </template>
-        </el-table-column>
-        <el-table-column label="权重" width="60" align="center" prop="weight" />
-        <el-table-column label="健康状态" width="100" align="center" prop="healthy">
-          <template slot-scope="{row}">
-            {{ row.healthy }}
-          </template>
-        </el-table-column>
-        <el-table-column label="元数据" min-width="100">
-          <template slot-scope="{row}">
-            {{ JSON.stringify(row.metadata) }}
-          </template>
-        </el-table-column>
-      </el-table>
+      <div v-for="(item2,index) in tables.instances" :key="'instances'+index">
+        <el-card v-for="(item, k) in item2.clusterMap" :key="'consumeGroup'+k" class="box-card route-broker">
+          <div slot="header" class="clearfix">
+            <span>集群	:	<el-tag>{{ k }}</el-tag></span>
+          </div>
+          <el-table :data="item.hosts" border>
+            <el-table-column label="IP" width="150" prop="ip" />
+            <el-table-column label="端口" width="60" prop="port" />
+            <el-table-column label="上线" width="100" align="center" prop="enabled">
+              <template slot-scope="{row}">
+                {{ row.enabled }}
+              </template>
+            </el-table-column>
+            <el-table-column label="权重" width="60" align="center" prop="weight" />
+            <el-table-column label="健康状态" width="100" align="center" prop="valid">
+              <template slot-scope="{row}">
+                {{ row.valid }}
+              </template>
+            </el-table-column>
+            <el-table-column label="元数据" min-width="100">
+              <template slot-scope="{row}">
+                {{ JSON.stringify(row.metadata) }}
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+      </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible2Instances = false">关闭</el-button>
       </span>
