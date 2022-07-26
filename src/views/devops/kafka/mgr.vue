@@ -104,8 +104,8 @@
         <el-form-item label="分区数">
           <el-input-number v-model="record.partitionSize" :min="1" :max="50" :step="1" :disabled="propDisabled" />
         </el-form-item>
-        <el-form-item label="复制数">
-          <el-input-number v-model="record.replicaSize" :min="1" :max="10" :disabled="propDisabled" />
+        <el-form-item label="副本数">
+          <el-input-number v-model="record.replicaSize" :min="1" :max="list.brokers.length" :disabled="propDisabled" />
         </el-form-item>
         <el-form-item label="存储类型">
           <!--<el-input v-model="record.type" placeholder="存储类型" />-->
@@ -272,6 +272,7 @@ export default {
   created() {
     this.clusterId = this.$route.params && this.$route.params.id
     this.getList()
+    this.getBrokerList()
   },
   methods: {
     getList() {
@@ -324,6 +325,9 @@ export default {
     },
     handleAdd() {
       this.record = { partitionSize: 4, replicaSize: 3, type: 'JSON' }
+      if (this.list.brokers.length < 3) {
+        this.record.replicaSize = this.list.brokers.length
+      }
       this.dialogType = 'new'
       this.dialogVisible = true
       this.propDisabled = false

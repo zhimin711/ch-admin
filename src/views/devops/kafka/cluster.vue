@@ -83,7 +83,7 @@ import { checkPermission2 } from '@/utils/permission' // 权限判断函数
 import { pageKafkaCluster, addKafkaCluster, editKafkaCluster, delKafkaCluster, getKafkaCluster } from '@/api/devops/kafka/cluster'
 
 export default {
-  name: 'KafkaCluster1',
+  name: 'KafkaCluster',
   data() {
     return {
       listLoading: true,
