@@ -317,7 +317,7 @@ export default {
       })
     },
     async handleAuth(row, type) {
-      let types = '2,3,4'
+      let types = '2,3'
       this.dialogType = 'AUTH'
       if (type) {
         this.dialogType = 'AUTH_INT'
