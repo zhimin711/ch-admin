@@ -51,8 +51,7 @@
         <el-table :loading="tableA.loading" :data="tableA.list" border fit highlight-current-row style="width: 100%">
           <el-table-column width="180px" :label="$t('user.department')" prop="department">
             <template slot-scope="{row}">
-              <el-tag v-if="row.department==='1'">附属部门</el-tag>
-              <span v-else-if="row.department==='0'">{{ row.departmentName }}</span>
+              <span><el-tag v-if="row.department==='1'">附属部门</el-tag>{{ row.departmentName }}</span>
             </template>
           </el-table-column>
           <el-table-column width="120px" align="center" :label="$t('user.userId')">
