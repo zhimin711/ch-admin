@@ -111,7 +111,7 @@
         </el-form-item>
       </el-form>
       <div style="text-align:center;">
-        <el-button v-loading="treeLoading" type="primary" @click="confirmAuth">{{ $t('btn.save') }}</el-button>
+        <el-button :loading="treeLoading" type="primary" @click="confirmAuth">{{ $t('btn.save') }}</el-button>
         <el-button type="danger" @click="dialogVisible2=false">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
@@ -342,15 +342,16 @@ export default {
       })
     },
     async confirmAuth() {
+      this.treeLoading = true
       let checkedKeys = this.$refs.tree.getCheckedKeys()
       const checkedKeys1 = this.$refs.tree.getHalfCheckedKeys()
       checkedKeys = [...checkedKeys, ...checkedKeys1]
       // this.role.routes = this.generateTree(deepClone(this.serviceRoutes), '/', checkedKeys)
       let resp
       if (this.dialogType === 'AUTH') {
-        resp = await editRolePermissions(this.role.id, checkedKeys)
+        resp = await editRolePermissions(this.role.id, checkedKeys).finally(() => { this.treeLoading = false })
       } else {
-        resp = await editRolePermissionsInterface(this.role.id, checkedKeys)
+        resp = await editRolePermissionsInterface(this.role.id, checkedKeys).finally(() => { this.treeLoading = false })
       }
       if (resp && resp.success) {
         this.dialogVisible2 = false
