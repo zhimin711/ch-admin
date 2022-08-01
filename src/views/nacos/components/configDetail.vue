@@ -55,6 +55,7 @@
 import { getNacosConfigHistory, rollbackNacosConfig } from '@/api/devops/nacos/history'
 import { getNacosConfig } from '@/api/devops/nacos/configs'
 import { getNamespaceProjects } from '@/api/devops/nacos/namespaces'
+import { getNacosProjectConfig } from '@/api/devops/nacos/user-configs'
 
 export default {
   props: {
@@ -70,6 +71,7 @@ export default {
       record: {},
       projects: [],
       isHistory: false,
+      isApp: false,
       options: [{
         value: 'I',
         label: '新增'
@@ -88,6 +90,7 @@ export default {
   },
   created() {
     this.isHistory = this.mode === 'HISTORY' || this.mode === 'ROLLBACK'
+    this.isApp = this.mode === 'APP_DETAIL'
     this.loadConfig(this.$route.query)
     this.tempRoute = Object.assign({}, this.$route)
   },
@@ -107,6 +110,13 @@ export default {
       params.tenant = this.namespaceId
       if (this.isHistory) {
         getNacosConfigHistory(params).then(resp => {
+          if (resp.success) {
+            this.record = Object.assign({}, resp.rows[0])
+          }
+        })
+      } else if (this.isApp) {
+        params.show = 'all'
+        getNacosProjectConfig(params.appName, params).then(resp => {
           if (resp.success) {
             this.record = Object.assign({}, resp.rows[0])
           }
