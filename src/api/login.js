@@ -1,4 +1,5 @@
 import request from '@/utils/request3'
+import request2 from '@/utils/request2'
 
 // const namespace = '/vue-element-admin'
 const namespace = '/auth'
@@ -19,7 +20,7 @@ export function getInfo() {
 }
 
 export function getPermissions(data) {
-  return request({
+  return request2({
     url: `${namespace}/user/permissions`,
     method: 'post',
     data

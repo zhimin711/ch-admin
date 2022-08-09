@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import CodeMirror from 'codemirror'
+import _CodeMirror from 'codemirror'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/addon/lint/lint.css'
 import 'codemirror/addon/hint/show-hint.css'
@@ -31,7 +31,7 @@ const nodejsCode = 'TODO'
 const cppCode = 'TODO'
 const shellCode = 'TODO'
 const pythonCode = 'TODO'
-
+const CodeMirror = window.CodeMirror || _CodeMirror
 export default {
   name: 'CodeView',
   /* eslint-disable vue/require-prop-types */
