@@ -109,6 +109,11 @@
               <span>{{ scope.row.offset }}</span>
             </template>
           </el-table-column>
+          <el-table-column width="100px" align="center" label="key">
+            <template slot-scope="scope">
+              <span>{{ scope.row.key }}</span>
+            </template>
+          </el-table-column>
           <el-table-column label="内容">
             <template slot-scope="scope">
               <span>{{ scope.row.value }}</span>
@@ -247,6 +252,10 @@ export default {
           if (resp.extra) this.contentType = resp.extra.contentType
           this.fillPartitionData(resp.rows[0].partitionMessages)
           this.partitionOffset = resp.rows[0].partitionOffset
+          for (const k in this.partitionOffset) {
+            console.log(k)
+            this.activePartition = k
+          }
         }
         // this.listLoading = false
       }).finally(() => {
@@ -257,8 +266,12 @@ export default {
       this.partitionMessages = []
       this.listQuery.total = 0
       this.topicPartitions.forEach(item => {
-        this.listQuery.total += messages[item.partition].length
-        this.partitionMessages.push(messages[item.partition])
+        if (messages[item.partition]) {
+          this.listQuery.total += messages[item.partition].length
+          this.partitionMessages.push(messages[item.partition])
+        } else {
+          this.partitionMessages.push([])
+        }
       })
     },
     handleView(row) {
