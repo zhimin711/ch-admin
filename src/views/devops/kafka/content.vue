@@ -19,23 +19,26 @@
           </el-select>
         </el-form-item>
         <el-form-item label="主题名称">
-          <el-select
-            v-model="listQuery.params.topicId"
-            filterable
-            remote
-            reserve-keyword
-            placeholder="请输入关键词"
-            :remote-method="remoteMethod"
-            :loading="loading"
-            @change="selectTopic"
-          >
-            <el-option
-              v-for="item in options.topics"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+          <el-button-group>
+            <el-select
+              v-model="listQuery.params.topicId"
+              filterable
+              remote
+              reserve-keyword
+              placeholder="请输入关键词"
+              :remote-method="remoteMethod"
+              :loading="loading"
+              @change="selectTopic"
+            >
+              <el-option
+                v-for="item in options.topics"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+            <el-button class="el-btn-group--append" icon="el-icon-refresh" @click="refreshTopicPartition" />
+          </el-button-group>
         </el-form-item>
         <el-form-item label="分区号">
           <el-select
@@ -228,6 +231,9 @@ export default {
         }
       })
     },
+    refreshTopicPartition() {
+      this.selectTopic(this.listQuery.params.topicId)
+    },
     getList() {
       if (!this.listQuery.params.clusterId || this.listQuery.params.clusterId === '') {
         this.$message({
@@ -350,6 +356,10 @@ export default {
 
 .input-with-select .el-input-group__prepend {
   background-color: #fff;
+}
+.el-btn-group--append {
+  float: none !important;
+  margin-left: -2px;
 }
 </style>
 <style scoped>
