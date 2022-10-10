@@ -118,3 +118,20 @@ export function isArray(arg) {
 export function isMobile() {
   return !!(navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i))
 }
+
+/**
+ * 判断是否包含特殊字符
+ * @param {string} str
+ * @returns {Boolean}
+ */
+export function containtSpecial(str) {
+  // let specialKey = "[`~!#$^&*()=|{}':;'\\[\\].<>/?~！#￥……&*（）——|{}【】‘；：”“'。，、？]‘'";
+  // for (let i = 0; i < str.length; i++) {
+  //   if (specialKey.indexOf(str.substr(i, 1)) != -1) {
+  //     return false;
+  //   }
+  // }
+  // return true;
+  var regEn = /[`~!@#$%^&*()_+<>?:"{},.\/;'[\]]/im; var regCn = /[·！#￥（——）：；“”‘、，|《。》？、【】[\]]/im
+  return regEn.test(str) || regCn.test(str)
+}
