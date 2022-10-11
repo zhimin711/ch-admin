@@ -391,6 +391,7 @@ export default {
       this.recordDepartments = []
       this.options.positions = []
       this.recordPositions = undefined
+      this.currDeptList = []
     },
     handleEdit(row) {
       this.record = deepClone(row)
