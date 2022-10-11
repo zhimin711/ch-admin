@@ -132,6 +132,6 @@ export function containtSpecial(str) {
   //   }
   // }
   // return true;
-  var regEn = /[`~!@#$%^&*()_+<>?:"{},.\/;'[\]]/im; var regCn = /[·！#￥（——）：；“”‘、，|《。》？、【】[\]]/im
+  var regEn = /[ `~!@#$%^&*()_+<>?:"{},.\/;'[\]]/im; var regCn = /[·！#￥（——）：；“”‘、，|《。》？、【】[\]]/im
   return regEn.test(str) || regCn.test(str)
 }

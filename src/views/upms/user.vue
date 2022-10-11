@@ -103,7 +103,7 @@
     </el-row>
 
     <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?$t('user.edit'): $t('user.add')">
-      <el-form :model="record" label-width="110px" label-position="left">
+      <el-form :model="record" :rules="rules" label-width="110px" label-position="left">
 
         <el-row>
           <el-col :span="12">
@@ -148,7 +148,7 @@
         <el-form-item :label="$t('user.userId')">
           <el-input v-model="record.userId" :placeholder="$t('user.userId2')" :disabled="true" />
         </el-form-item>
-        <el-form-item :label="$t('user.username')">
+        <el-form-item :label="$t('user.username')" prop="username">
           <el-input v-model="record.username" :placeholder="$t('input.tips.username')" :disabled="dialogCodeEdit" />
         </el-form-item>
         <el-form-item :label="$t('user.realName')">
@@ -226,6 +226,7 @@
 
 <script>
 import { deepClone } from '@/utils'
+import { containtSpecial } from '@/utils/validate'
 import waves from '@/directive/waves/index' // 水波纹指令
 
 import { handleClipboard2 } from '@/utils/clipboard' // use clipboard directly
@@ -239,6 +240,13 @@ export default {
     waves
   },
   data() {
+    const validateSpecial = (rule, value, callback) => {
+      if (containtSpecial(value)) {
+        callback(new Error('不能含有特殊字符'))
+      } else {
+        callback()
+      }
+    }
     return {
       tableA: {
         loading: true,
@@ -264,6 +272,11 @@ export default {
       recordPositions2: undefined,
       options: { departments: [], positions: [], positions2: [] },
       departmentName: '',
+      rules: {
+        username: [
+          { required: true, validator: validateSpecial, trigger: 'blur' }
+        ]
+      },
       tableHeight: window.innerHeight - 270
     }
   },
