@@ -133,7 +133,7 @@
         </el-form-item>
         <el-form-item label="目标空间" prop="toNamespace">
           <el-select v-model="toNamespace" placeholder="请选择目标空间">
-            <el-option v-for="item in namespaces" :key="item.namespace" :label="item.namespaceShowName" :value="item.namespace" />
+            <el-option v-for="item in namespaces" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="相同配置">
