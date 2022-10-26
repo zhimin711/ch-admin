@@ -12,6 +12,14 @@ export function pageNacosUserConfigs(projectId, query) {
   })
 }
 
+export function listNacosUserCompareConfigs(projectId, query) {
+  return request({
+    url: `${namespace}/${projectId}/configs/listCompare`,
+    method: 'get',
+    params: query
+  })
+}
+
 export function getNacosProjectConfig(projectId, params) {
   return request({
     url: `${namespace}/${projectId}/configs`,

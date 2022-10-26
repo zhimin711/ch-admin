@@ -50,6 +50,7 @@
           <el-table-column align="center" prop="created_at" label="操作" min-width="150">
             <template slot-scope="{row}">
               <el-button v-permission="'NACOS_PROJECT_CONFIG_EDIT'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
+              <el-button v-permission="'NACOS_PROJECT_CONFIG_COMPARE'" type="text" @click.native="handleCompare(row)">比较配置</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_DETAIL'" type="text" @click.native="handleDetail(row)">详情</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_HISTORY'" type="text" @click.native="handleHistory(row)">变更历史</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_DELETE'" type="text" @click.native="onDelete(row)">删除</el-button>
@@ -234,6 +235,49 @@
         <el-button @click="dialogVisible2Instances = false">关闭</el-button>
       </span>
     </el-dialog>
+
+    <el-dialog title="可比较配置列表" :visible.sync="dialogCompareListVisible" width="60%">
+      <el-table
+        :data="compareData.list"
+        element-loading-text="Loading"
+        border
+        fit
+        highlight-current-row
+      >
+        <el-table-column label="集群环境" min-width="100" prop="appName" />
+        <el-table-column label="空间" prop="tenant" />
+        <el-table-column align="center" label="操作" width="180">
+          <template slot-scope="{row}">
+            <el-button type="text" icon="el-icon-view" @click.native="doCompare(row)">比较</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogCompareListVisible = false">关闭</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog
+      title="配置内容比较"
+      :visible.sync="dialogCompareVisible"
+      :width="'80%'"
+    >
+      <div>
+        <el-form :inline="true" label-width="120px" label-position="left">
+          <el-row :gutter="10">
+            <el-col :span="12">
+              <el-form-item label="当前配置内容：" />
+            </el-col>
+            <el-col :span="12">
+              <el-form-item :label="'比较配置内容：'+compareData.rightEnv" />
+            </el-col>
+          </el-row>
+        </el-form>
+        <code-diff :old-string="compareData.left.content" :new-string="compareData.right.content" :context="10" output-format="side-by-side" />
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogCompareVisible = false">关闭</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -241,11 +285,14 @@
 import SingleFile from '@/components/Upload/SingleFile2'
 import ProjectNamespace from '../components/ProjectNamespace' // 粘性header组件
 import ProjectMenu from '../components/ProjectMenu' // 粘性header组件
+import CodeDiff from 'vue-code-diff'
+
 import { deepClone, parseTime } from '@/utils'
 import {
   cloneNacosProjectConfigs,
   deleteNacosProjectConfig, exportNacosProjectConfigs,
-  pageNacosUserConfigs, rollbackNacosProjectConfigs
+  pageNacosUserConfigs, rollbackNacosProjectConfigs,
+  listNacosUserCompareConfigs
 } from '@/api/devops/nacos/user-configs'
 import {
   getNacosUserProjectHistory,
@@ -259,7 +306,7 @@ const opName = {
 }
 export default {
   name: 'NacosProjectConfigsIndex',
-  components: { ProjectNamespace, SingleFile, ProjectMenu },
+  components: { ProjectNamespace, SingleFile, ProjectMenu, CodeDiff },
   data() {
     return {
       list: null,
@@ -296,8 +343,16 @@ export default {
       dialogVisible2History: false,
       historyLoading: false,
       showHistoryContent: false,
+      dialogCompareListVisible: false,
+      dialogCompareVisible: false,
       importMessage: '',
       record: {},
+      compareData: {
+        list: [],
+        left: {},
+        right: {},
+        rightEnv: ''
+      },
       toNamespace: '',
       historyRecord: {},
       titles: {
@@ -566,6 +621,31 @@ export default {
           this.historyRecord = resp.rows[0]
         }
       })
+    },
+    handleCompare(row) {
+      const params = {}
+      params.namespaceId = this.namespaceId
+      params.dataId = row.dataId
+      params.group = row.group
+      this.dialogCompareListVisible = true
+      listNacosUserCompareConfigs(this.projectId, params).then((resp) => {
+        if (resp.success) {
+          this.compareData.left = row
+          this.compareData.list = resp.rows
+        }
+      })
+    },
+    doCompare(row) {
+      this.dialogCompareListVisible = false
+      this.dialogCompareVisible = true
+      this.compareData.right = row
+      this.compareData.rightEnv = row.appName + row.tenant
+    },
+    backCompareList() {
+      this.dialogCompareListVisible = true
+      this.dialogCompareVisible = false
+      this.compareData.right = {}
+      this.compareData.rightEnv = ''
     },
     handleHistoryRollback(row) {
       const h = this.$createElement
