@@ -262,7 +262,7 @@
       :width="'80%'"
     >
       <div>
-        <el-form :inline="true" label-width="120px" label-position="left">
+        <el-form :inline="false" label-width="120px" label-position="left">
           <el-row :gutter="10">
             <el-col :span="12">
               <el-form-item label="当前配置内容：" />
@@ -281,6 +281,7 @@
         <code-diff :old-string="compareData.left.content" :new-string="compareData.right.content" :context="10" output-format="side-by-side" />
       </div>
       <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="backCompareList">返回比较列表</el-button>
         <el-button @click="dialogCompareVisible = false">关闭</el-button>
       </span>
     </el-dialog>
