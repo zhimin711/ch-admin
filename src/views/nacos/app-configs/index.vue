@@ -47,7 +47,7 @@
           />
           <el-table-column label="Data Id" min-width="200" prop="dataId" />
           <el-table-column label="Group" min-width="200" prop="group" />
-          <el-table-column align="center" prop="created_at" label="操作" min-width="150">
+          <el-table-column align="center" prop="created_at" label="操作" min-width="180">
             <template slot-scope="{row}">
               <el-button v-permission="'NACOS_PROJECT_CONFIG_EDIT'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_COMPARE'" type="text" @click.native="handleCompare(row)">比较配置</el-button>
@@ -268,7 +268,13 @@
               <el-form-item label="当前配置内容：" />
             </el-col>
             <el-col :span="12">
-              <el-form-item :label="'比较配置内容：'+compareData.rightEnv" />
+              <el-form-item label="比较配置内容：">
+                <el-input
+                  v-model="compareData.rightEnv"
+                  placeholder="请输入内容"
+                  :disabled="true"
+                />
+              </el-form-item>
             </el-col>
           </el-row>
         </el-form>
