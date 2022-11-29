@@ -80,3 +80,12 @@ export function deleteRocketMQConsumer(data) {
     data
   })
 }
+
+export function resetRocketMQConsumerOffset(data) {
+  return request({
+    url: `${namespace}/resetOffset`,
+    method: 'post',
+    data
+  })
+}
+

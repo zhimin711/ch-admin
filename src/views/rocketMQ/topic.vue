@@ -150,24 +150,6 @@
         <el-button type="danger" @click="dialog.visible.addOrEdit=false">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
-    <el-dialog :visible.sync="dialog.visible.sync" :title="'同步Kafka集群主题'" width="400px">
-      <el-form :model="record" label-width="100px" label-position="left">
-        <el-form-item label="集群名称">
-          <el-select v-model="record.clusterName" placeholder="请选择">
-            <el-option
-              v-for="item in options.clusters"
-              :key="item.clusterName"
-              :label="item.clusterName"
-              :value="item.clusterName"
-            />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <div style="text-align:right;">
-        <el-button type="primary" @click="handleSyncSubmit">{{ $t('btn.save') }}</el-button>
-        <el-button type="danger" @click="dialog.visible.sync=false">{{ $t('btn.close') }}</el-button>
-      </div>
-    </el-dialog>
 
     <el-dialog :visible.sync="dialog.visible.status" :title="dialog.title">
       <el-table :data="table.stats.data" max-height="500">
@@ -223,19 +205,19 @@
         <el-form-item label="订阅组">
           <el-select v-model="record.consumerGroup" placeholder="请选择">
             <el-option
-              v-for="item in options.consumerGroupList"
-              :key="item.clusterName"
-              :label="item.clusterName"
-              :value="item.clusterName"
+              v-for="item in list.consumeGroup"
+              :key="item"
+              :label="item"
+              :value="item"
             />
           </el-select>
         </el-form-item>
         <el-form-item label="时间点">
-          <el-date-picker v-model="record.currMarkAt" type="datetime" placeholder="选择时间" value-format="timestamp" />
+          <el-date-picker v-model="record.offset" type="datetime" placeholder="选择时间" value-format="timestamp" />
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button type="primary" @click="handleSyncSubmit">{{ $t('btn.reset') }}</el-button>
+        <el-button v-permission="'ROCKET_MQ_CONSUMER_RESET_OFFSET'" type="primary" @click="handleResetSubmit">{{ $t('btn.reset') }}</el-button>
         <el-button type="danger" @click="dialog.visible.offset=false">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
@@ -331,7 +313,6 @@
 </template>
 
 <script>
-import { Loading } from 'element-ui'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { parseTime } from '@/utils'
 import { isEmpty } from '@/utils/validate'
@@ -348,7 +329,8 @@ import {
   sendRocketMQTopicMessage,
   deleteRocketMQTopic
 } from '@/api/rocketmq/topic'
-import { getTopics, syncAll, refresh2 } from '@/api/devops/kafka/topic'
+import { resetRocketMQConsumerOffset } from '@/api/rocketmq/consumer'
+import { getTopics, refresh2 } from '@/api/devops/kafka/topic'
 
 const defaultRecord = {
   'writeQueueNums': 16,
@@ -547,9 +529,13 @@ export default {
     handleOffset(row) {
       getRocketMQTopicConsumerInfo({ topic: row.topicName }).then(resp => {
         if (resp.success) {
+          this.record = Object.assign({}, defaultRecord)
+          this.dialog.record = row
           const { groupList } = resp.rows[0]
           this.list.consumeGroup = groupList
           this.dialog.visible.offset = true
+        } else {
+          this.$message.error('not found topic consumer info:' + row.topic)
         }
       })
     },
@@ -611,26 +597,16 @@ export default {
       this.dialogType = 'new'
       this.dialogVisible2 = true
     },
-    async handleSyncSubmit() {
+    async handleResetSubmit() {
       this.dialogVisible2 = false
-      const loadingS = Loading.service({ target: document.querySelector('.app-container'), text: `正在同步${this.record.clusterName}主题，请稍后......`, fullscreen: false })
-      const _this = this
-      const resp = await syncAll(_this.record).catch(() => { loadingS.close() })
-      loadingS.close()
-      if (resp && resp.success) {
-        this.$notify({
-          title: `Kafka集群主题同步成功!`,
-          dangerouslyUseHTMLString: true,
-          message: `
-            <div>集群名称: ${this.record.clusterName}</div>
-          `,
-          type: 'success'
-        })
-        _this.getList()
-      } else {
-        // _this.dialogVisible2 = true
-        _this.$message.error('同步失败！')
-      }
+      const param = { 'resetTime': this.record.offset, 'consumerGroupList': [], 'topic': this.dialog.record.topic, 'force': true }
+      param.consumerGroupList.push(this.record.consumerGroup)
+      resetRocketMQConsumerOffset(param).then(resp => {
+        if (resp.success) {
+          // const data = resp.rows[0]
+          this.$message.success('reset success')
+        }
+      })
     },
     async remoteMethod(query) {
       if (!this.record.clusterName || this.record.clusterName === '') {
