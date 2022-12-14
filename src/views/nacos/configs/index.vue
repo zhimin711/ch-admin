@@ -423,12 +423,8 @@ export default {
     },
     onClone() {
       const params = {}
-      const tenant = this.namespaces.find(tenant => {
-        return tenant.namespace === this.toNamespace
-      })
-      params.tenant = tenant.namespace || tenant.namespaceShowName
       params.policy = this.policy
-      params.namespaceId = ''
+      params.namespaceId = this.toNamespace
       const data = this.tables.clone.map(item => {
         return { cfgId: item.id, dataId: item.dataId, group: item.group }
       })

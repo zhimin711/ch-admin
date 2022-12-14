@@ -46,7 +46,7 @@ export function deleteNacosConfig(params) {
 
 export function cloneNacosConfigs(params, data) {
   return request({
-    url: `${namespace}?clone=true&tenant=${params.tenant}&policy=${params.policy}&namespaceId=${params.namespaceId}`,
+    url: `${namespace}/clone?policy=${params.policy}&namespaceId=${params.namespaceId}`,
     method: 'post',
     data
   })
