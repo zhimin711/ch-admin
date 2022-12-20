@@ -419,6 +419,7 @@ export default {
         return
       }
       this.dialogVisible2Clone = true
+      this.toNamespace = ''
       this.tables.clone = deepClone(this.multipleSelection)
     },
     onClone() {
