@@ -167,7 +167,7 @@
       </el-table>
       <span slot="footer" class="dialog-footer">
         <el-button :loading="dialogLoading" @click="dialogVisible2Clone = false">关闭</el-button>
-        <el-button type="primary" :loading="dialogLoading" @click="onClone">开始克隆</el-button>
+        <el-button type="primary" :disabled="toNamespace===''" :loading="dialogLoading" @click="onClone">开始克隆</el-button>
       </span>
     </el-dialog>
 
