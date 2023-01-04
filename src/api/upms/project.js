@@ -67,3 +67,11 @@ export function getCurrentUserTree() {
     method: 'get'
   })
 }
+
+export function saveUpmsProjectUsers(data) {
+  return request({
+    url: `${namespace}/users`,
+    method: 'post',
+    data
+  })
+}

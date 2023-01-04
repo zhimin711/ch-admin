@@ -1,22 +1,58 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <!--      <el-select v-model="listQuery.params.status" placeholder="状态" class="filter-item" clearable>
-        <el-option label="启用" value="1">启用</el-option>
-        <el-option label="禁用" value="0">禁用</el-option>
-      </el-select>-->
-      <el-button v-permission="['UPMS_PROJECT_PAGE']" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        查询
-      </el-button>
-      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
-        重置
-      </el-button>
-      <el-button v-permission="'UPMS_PROJECT_ADD'" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
-        添加项目
-      </el-button>
+      <el-form ref="queryForm" :model="listQuery.params" :inline="true" label-width="68px">
+        <el-form-item label="租户" prop="tenantId">
+          <el-select
+            v-model="listQuery.params.tenantId"
+            filterable
+            :placeholder="$t('input.tips.select')"
+            @change="changeTenant"
+          >
+            <el-option v-for="item in options.tenants" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="项目名称" prop="name">
+          <el-input v-model="listQuery.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />
+        </el-form-item>
+        <el-form-item>
+          <el-button
+            v-permission="['UPMS_PROJECT_PAGE']"
+            class="filter-item"
+            type="primary"
+            icon="el-icon-search"
+            @click="getList"
+          >
+            查询
+          </el-button>
+          <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
+            重置
+          </el-button>
+          <el-button
+            v-permission="'UPMS_PROJECT_ADD'"
+            class="filter-item"
+            style="margin-left: 10px;"
+            type="primary"
+            icon="el-icon-plus"
+            @click="handleAdd"
+          >
+            添加项目
+          </el-button>
+          <el-button
+            v-permission="'UPMS_PROJECT_ADD'"
+            class="filter-item"
+            style="margin-left: 10px;"
+            type="primary"
+            icon="el-icon-plus"
+            @click="handleMembers"
+          >
+            批量添加成员
+          </el-button>
+        </el-form-item>
+      </el-form>
     </div>
-    <el-table :loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
+    <el-table :loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="所属部门" prop="departmentName" />
       <el-table-column label="租户" prop="tenantName" />
       <el-table-column label="项目代码">
@@ -131,12 +167,41 @@
         <el-button type="danger" @click="dialogVisible=false">取消</el-button>
       </div>
     </el-dialog>
+
+    <el-dialog :visible.sync="dialogMemberVisible" title="批量添加项目成员">
+      <el-form :model="record" :rules="rules" label-width="80px" label-position="left">
+        <el-form-item label="开发人员">
+          <el-select v-model="recordDevUsers" class="select-w" multiple placeholder="请选择">
+            <el-option
+              v-for="item in options.users"
+              :key="item.username"
+              :label="item.realName"
+              :value="item.username"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="测试人员">
+          <el-select v-model="recordTestUsers" class="select-w" multiple placeholder="请选择">
+            <el-option
+              v-for="item in options.users"
+              :key="item.username"
+              :label="item.realName"
+              :value="item.username"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div style="text-align:right;">
+        <el-button :loading="loadingSave" type="primary" @click="handleSubmitUsers">保存</el-button>
+        <el-button type="danger" @click="dialogMemberVisible=false">取消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { deepClone } from '@/utils'
-import { addUpmsProject, delUpmsProject, editUpmsProject, getUpmsProject, pageUpmsProject } from '@/api/upms/project'
+import { addUpmsProject, delUpmsProject, editUpmsProject, getUpmsProject, pageUpmsProject, saveUpmsProjectUsers } from '@/api/upms/project'
 import { treeDepartment, getDepartmentTenants } from '@/api/upms/department'
 import { findUserList } from '@/api/upms/user'
 
@@ -164,11 +229,13 @@ export default {
       dialogType: false,
       dialogCodeEdit: false,
       dialogVisible2: false,
+      dialogMemberVisible: false,
       recordParents: [],
       recordDepartments: [],
       recordUsers: [],
       recordDevUsers: [],
       recordTestUsers: [],
+      multipleSelection: [],
       recordTenant: '',
       options: {
         tenants: [],
@@ -213,6 +280,9 @@ export default {
           this.options.users = resp.rows
         }
       })
+    },
+    handleSelectionChange(val) {
+      this.multipleSelection = val
     },
     getList() {
       this.listLoading = true
@@ -272,6 +342,31 @@ export default {
           })
         })
         .catch(err => { console.error(err) })
+    },
+    handleMembers() {
+      if (this.multipleSelection.length === 0) {
+        this.$message.warning('请选择项目，至少选择一个')
+        return
+      }
+      this.recordDevUsers = []
+      this.recordTestUsers = []
+      this.dialogMemberVisible = true
+    },
+    handleSubmitUsers() {
+      this.loadingSave = true
+      const record = {}
+      record.projectIds = this.multipleSelection.map(item => item.id)
+      if (this.recordDevUsers.length > 0) {
+        record.devUserIds = this.recordDevUsers
+      }
+      if (this.recordTestUsers.length > 0) {
+        record.testUserIds = this.recordTestUsers
+      }
+      saveUpmsProjectUsers(record).then(resp => {
+        if (resp.success) {
+          this.$message.success('批量添加成功！')
+        }
+      }).finally(() => { this.loadingSave = false })
     },
     async handleSubmit() {
       const _this = this
