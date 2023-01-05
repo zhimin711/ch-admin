@@ -6,10 +6,11 @@
           <el-select
             v-model="listQuery.params.tenantId"
             filterable
+            clearable
             :placeholder="$t('input.tips.select')"
             @change="changeTenant"
           >
-            <el-option v-for="item in options.tenants" :key="item.id" :label="item.name" :value="item.id" />
+            <el-option v-for="item in options.tenants2" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
         <el-form-item label="项目名称" prop="name">
@@ -53,21 +54,21 @@
     </div>
     <el-table :loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="所属部门" prop="departmentName" />
       <el-table-column label="租户" prop="tenantName" />
+      <el-table-column label="项目名称">
+        <template slot-scope="scope">
+          <span>{{ scope.row.name }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="项目代码">
         <template slot-scope="scope">
           <span v-if="scope.row.parentCode">{{ scope.row.parentCode + ':' + scope.row.code }}</span>
           <span v-else>{{ scope.row.code }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="项目名称">
-        <template slot-scope="scope">
-          <span>{{ scope.row.name }}</span>
-        </template>
-      </el-table-column>
       <el-table-column label="负责人" prop="manager" width="120" />
       <el-table-column label="排序" prop="sort" width="80" align="center" />
+      <el-table-column label="所属部门" prop="departmentName" />
       <el-table-column align="center" label="操作" width="100">
         <template slot-scope="scope">
           <el-link v-permission="['UPMS_PROJECT_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">编辑</el-link>
@@ -204,6 +205,7 @@ import { deepClone } from '@/utils'
 import { addUpmsProject, delUpmsProject, editUpmsProject, getUpmsProject, pageUpmsProject, saveUpmsProjectUsers } from '@/api/upms/project'
 import { treeDepartment, getDepartmentTenants } from '@/api/upms/department'
 import { findUserList } from '@/api/upms/user'
+import { listUpmsTenantAvailable } from '@/api/upms/tenant'
 
 export default {
   name: 'UpmsProject',
@@ -239,6 +241,7 @@ export default {
       recordTenant: '',
       options: {
         tenants: [],
+        tenants2: [],
         parents: [],
         departments: [],
         users: []
@@ -252,7 +255,7 @@ export default {
   created() {
     this.getList()
     this.getTreeDepartments()
-    // this.getUsers()
+    this.listTenantAvailable()
     this.findUsers()
   },
   methods: {
@@ -260,6 +263,13 @@ export default {
       treeDepartment('0').then(resp => {
         if (resp.success) {
           this.options.departments = resp.rows
+        }
+      })
+    },
+    listTenantAvailable() {
+      listUpmsTenantAvailable().then(resp => {
+        if (resp.success) {
+          this.options.tenants2 = resp.rows
         }
       })
     },

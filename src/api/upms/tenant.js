@@ -44,3 +44,11 @@ export function delTenant(id) {
     method: 'delete'
   })
 }
+
+// 删除业务-租户
+export function listUpmsTenantAvailable() {
+  return request({
+    url: `${namespace}/available`,
+    method: 'get'
+  })
+}
