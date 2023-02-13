@@ -170,8 +170,8 @@
         </el-form-item>
       </el-form>
       <div style="text-align:right;">
-        <el-button :loading="loadingSave" type="danger" @click="dialogVisible=false">{{ $t('btn.cancel') }}</el-button>
-        <el-button type="primary" @click="handleSubmit">{{ $t('btn.save') }}</el-button>
+        <el-button type="danger" @click="dialogVisible=false">{{ $t('btn.cancel') }}</el-button>
+        <el-button :loading="loadingSave" type="primary" @click="handleSubmit">{{ $t('btn.save') }}</el-button>
       </div>
     </el-dialog>
     <el-dialog :visible.sync="dialogVisible2" :title="$t('user.roles')" width="635px" center>
