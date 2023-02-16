@@ -291,7 +291,10 @@ export default {
         if (resp.success && resp.rows[0]) {
           this.$message.success('更新实例成功')
           this.dialogVisible2Instance = false
-          this.loadInstances()
+          const _this = this
+          setTimeout(() => {
+            _this.loadInstances()
+          }, 1000)
         } else {
           this.$message.error('更新实例失败')
         }
