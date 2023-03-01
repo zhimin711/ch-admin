@@ -21,6 +21,12 @@
           <el-form-item label="描述：" prop="description">
             <el-input v-model="record.description" type="textarea" />
           </el-form-item>
+          <el-form-item label="管理员账号" prop="username">
+            <el-input v-model="record.username" placeholder="管理员账号" />
+          </el-form-item>
+          <el-form-item label="管理员密码" prop="password">
+            <el-input v-model="record.password" placeholder="管理员密码" />
+          </el-form-item>
           <el-form-item>
             <el-button v-loading="loading2" type="primary" @click="handleSubmit">提交</el-button>
           </el-form-item>
@@ -79,6 +85,12 @@
         </el-form-item>
         <el-form-item label="描述：" prop="description">
           <el-input v-model="record.description" type="textarea" />
+        </el-form-item>
+        <el-form-item label="管理员账号" prop="username">
+          <el-input v-model="record.username" placeholder="管理员账号" />
+        </el-form-item>
+        <el-form-item label="管理员密码" prop="password">
+          <el-input v-model="record.password" placeholder="管理员密码" />
         </el-form-item>
         <el-form-item>
           <el-button v-loading="loading2" type="primary" @click="handleSubmit">提交</el-button>
