@@ -23,14 +23,18 @@ import './utils/error-log' // error log
 
 import * as filters from './filters' // global filters
 
+import { isEmpty } from './utils/validate' //global method
+
 import Pagination from './components/Pagination'
 
 import permission from './directive/permission/index.js' // 权限判断指令
 import VueLazyload from 'vue-lazyload'
 // 字典数据组件
 import DataDict from '@/components/DataDict'
-
+// department dependency
 import * as vClickOutside from 'v-click-outside-x'
+
+Vue.prototype.$isEmpty = isEmpty
 
 Vue.use(vClickOutside)
 

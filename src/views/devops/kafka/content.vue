@@ -235,14 +235,14 @@ export default {
       this.selectTopic(this.listQuery.params.topicId)
     },
     getList() {
-      if (!this.listQuery.params.clusterId || this.listQuery.params.clusterId === '') {
+      if (this.$isEmpty(this.listQuery.params.clusterId)) {
         this.$message({
           type: 'warn',
           message: '请先选择集群...'
         })
         return
       }
-      if (!this.listQuery.params.topicId || this.listQuery.params.topicId === '') {
+      if (this.$isEmpty(this.listQuery.params.topicId)) {
         this.$message({
           type: 'warn',
           message: '请先选择主题...'
