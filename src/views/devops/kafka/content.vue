@@ -258,10 +258,6 @@ export default {
           if (resp.extra) this.contentType = resp.extra.contentType
           this.fillPartitionData(resp.rows[0].partitionMessages)
           this.partitionOffset = resp.rows[0].partitionOffset
-          for (const k in this.partitionOffset) {
-            console.log(k)
-            this.activePartition = k
-          }
         }
         // this.listLoading = false
       }).finally(() => {
@@ -271,10 +267,14 @@ export default {
     fillPartitionData(messages) {
       this.partitionMessages = []
       this.listQuery.total = 0
+      this.activePartition = ''
       this.topicPartitions.forEach(item => {
         if (messages[item.partition]) {
           this.listQuery.total += messages[item.partition].length
           this.partitionMessages.push(messages[item.partition])
+          if (this.activePartition === '' && this.listQuery.total > 0) {
+            this.activePartition = item.partition + ''
+          }
         } else {
           this.partitionMessages.push([])
         }
