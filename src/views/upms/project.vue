@@ -40,7 +40,7 @@
             添加项目
           </el-button>
           <el-button
-            v-permission="'UPMS_PROJECT_MEMBERS'"
+            v-permission="'UPMS_PROJECTS_ADD_MEMBERS'"
             class="filter-item"
             style="margin-left: 10px;"
             type="primary"
