@@ -580,7 +580,8 @@ export default {
         return
       }
       if (resp.success) {
-        this.dialog.visible = false
+        this.dialog.visible.addOrEdit = false
+        // this.dialog.visible = false
         this.$notify({
           title: `${opName}集群名称 Success!`,
           dangerouslyUseHTMLString: true,
