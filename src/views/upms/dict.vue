@@ -306,12 +306,12 @@ export default {
     getList() {
       this.recordPage.loading = true
       this.recordPage.list = []
-      this.recordPage.total = 0
+      // this.recordPage.total = 0
       pageDict(this.recordPage).then(resp => {
         if (resp.success) {
           this.recordPage.list = resp.rows
           this.recordPage.total = resp.total
-          if (this.recordPage.total > 0) {
+          if (resp.rows.length > 0) {
             this.recordPage.list.forEach(row => {
               row.hasChildren = true
             })
