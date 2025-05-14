@@ -1,5 +1,24 @@
 <template>
   <div class="dashboard-editor-container">
+    <el-row :gutter="32">
+      <el-form label-width="100px" :inline="true">
+        <el-col :span="24">
+          <el-form-item label="集群选择">
+            <el-select v-model="clusterAddr" placeholder="请选择" class="filter-item">
+              <el-option
+                v-for="item in options.clusters"
+                :key="item.clusterAddr"
+                :label="item.clusterName + ' - ' + item.clusterAddr"
+                :value="item.clusterAddr"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" icon="el-icon-s-home" @click="changeCluster">切换集群</el-button>
+          </el-form-item>
+        </el-col>
+      </el-form>
+    </el-row>
 
     <el-row :gutter="32">
       <el-col :xs="24" :sm="24" :lg="12">
@@ -66,6 +85,7 @@ import { parseTime } from '@/utils'
 import { isEmpty } from '@/utils/validate'
 import { generateBrokerMap } from '@/api/rocketmq/tools'
 import { listRocketMQ } from '@/api/rocketmq/cluster'
+import { listRocketMQAddr, configRocketMQAddr } from '@/api/rocketmq/ops'
 import {
   listRocketDashboardBroker,
   listRocketDashboardTopic,
@@ -83,6 +103,8 @@ export default {
   data() {
     return {
       params: {},
+      clusterAddr: '',
+      origClusterAddr: '',
       lineChartData: {},
       barChartData: {
         broker: {},
@@ -100,10 +122,14 @@ export default {
           }
         }
       },
-      options: { topics: [] }
+      options: { topics: [], clusters: [
+        { clusterAddr: '192.168.20.244:9876', clusterName: '内网' },
+        { clusterAddr: '10.53.0.5:9876', clusterName: 'DEV' }
+      ] }
     }
   },
   created() {
+    this.fetchRocketMQAddr()
     this.getReportCluster()
     this.getReportTopic()
     this.getBrokerTrend()
@@ -122,6 +148,30 @@ export default {
     handleDateChange(time) {
       this.refreshTrend()
     },
+    fetchRocketMQAddr() {
+      listRocketMQAddr().then(resp => {
+        if (resp.success) {
+          const { namesvrAddrList } = resp.rows[0]
+          this.clusterAddr = namesvrAddrList[0]
+          this.origClusterAddr = namesvrAddrList[0]
+        }
+      })
+    },
+    changeCluster() {
+      console.log(this.clusterAddr)
+      if (this.clusterAddr === this.origClusterAddr) {
+        return
+      }
+      configRocketMQAddr({ nameSvrAddrList: this.clusterAddr }).then(resp => {
+        if (resp.success) {
+          this.fetchRocketMQAddr()
+          this.getReportCluster()
+          this.getReportTopic()
+          this.getBrokerTrend()
+        }
+      })
+    },
+
     handleTopicChange(val) {
       this.getTopicTrend(val)
     },
