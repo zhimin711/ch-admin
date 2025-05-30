@@ -44,7 +44,7 @@
             class="filter-item"
             style="margin-left: 10px;"
             type="primary"
-            icon="el-icon-plus"
+            icon="el-icon-user"
             @click="handleMembers"
           >
             批量添加成员
@@ -375,6 +375,7 @@ export default {
       saveUpmsProjectUsers(record).then(resp => {
         if (resp.success) {
           this.$message.success('批量添加成功！')
+          this.dialogMemberVisible = false
         }
       }).finally(() => { this.loadingSave = false })
     },

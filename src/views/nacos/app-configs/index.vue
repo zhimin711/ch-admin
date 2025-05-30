@@ -23,9 +23,9 @@
           show-icon
         />
         <div v-show="showSearch" class="query-container">
-          <el-button v-permission="'NACOS_PROJECT_CONFIG_ADD'" type="primary" @click="handleCreate()">创建配置</el-button>
-          <el-button v-permission="'NACOS_PROJECT_CONFIGS_CLONE'" type="primary" plain @click="handleClone()">克隆配置</el-button>
-          <el-button v-permission="'NACOS_PROJECT_CONFIGS_IMPORT'" type="primary" plain @click="handleImports()">导入配置</el-button>
+          <el-button v-if="canWrite" v-permission="'NACOS_PROJECT_CONFIG_ADD'" type="primary" @click="handleCreate()">创建配置</el-button>
+          <el-button v-if="canWrite" v-permission="'NACOS_PROJECT_CONFIGS_CLONE'" type="primary" plain @click="handleClone()">克隆配置</el-button>
+          <el-button v-if="canWrite" v-permission="'NACOS_PROJECT_CONFIGS_IMPORT'" type="primary" plain @click="handleImports()">导入配置</el-button>
           <el-button v-permission="'NACOS_PROJECT_CONFIGS_EXPORT'" type="warning" plain @click="handleExports()">导出配置</el-button>
           <el-button type="primary" icon="el-icon-refresh" plain @click="queryData()">刷新</el-button>
           <el-button v-permission="'NACOS_PROJECT_INSTANCES'" type="primary" icon="el-icon-s-platform" plain @click="handleInstances">服务实例</el-button>
@@ -49,11 +49,11 @@
           <el-table-column label="Group" min-width="200" prop="group" />
           <el-table-column align="center" prop="created_at" label="操作" min-width="180">
             <template slot-scope="{row}">
-              <el-button v-permission="'NACOS_PROJECT_CONFIG_EDIT'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
+              <el-button v-if="canWrite" v-permission="'NACOS_PROJECT_CONFIG_EDIT'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_COMPARE'" type="text" @click.native="handleCompare(row)">比较配置</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_DETAIL'" type="text" @click.native="handleDetail(row)">详情</el-button>
               <el-button v-permission="'NACOS_PROJECT_CONFIG_HISTORY'" type="text" @click.native="handleHistory(row)">变更历史</el-button>
-              <el-button v-permission="'NACOS_PROJECT_CONFIG_DELETE'" type="text" @click.native="onDelete(row)">删除</el-button>
+              <el-button v-if="canWrite" v-permission="'NACOS_PROJECT_CONFIG_DELETE'" type="text" @click.native="onDelete(row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -183,7 +183,7 @@
         <el-table-column align="center" label="操作" width="180">
           <template slot-scope="{row}">
             <el-button v-permission="'NACOS_PROJECT_CONFIG_HISTORY_DETAIL'" type="text" icon="el-icon-view" @click.native="handleHistoryDetail(row)">详情</el-button>
-            <el-button v-permission="'NACOS_PROJECT_CONFIGS_ROLLBACK'" type="text" icon="el-icon-refresh-left" @click.native="handleHistoryDetail(row)">回滚</el-button>
+            <el-button v-if="canWrite" v-permission="'NACOS_PROJECT_CONFIGS_ROLLBACK'" type="text" icon="el-icon-refresh-left" @click.native="handleHistoryDetail(row)">回滚</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -352,6 +352,7 @@ export default {
       showHistoryContent: false,
       dialogCompareListVisible: false,
       dialogCompareVisible: false,
+      canWrite: false,
       importMessage: '',
       record: {},
       compareData: {
@@ -441,6 +442,12 @@ export default {
         this.listQuery.namespaceId = ''
         this.showSearch = false
         return
+      }
+      const namespace = this.namespaces.find(tenant => {
+        return tenant.namespaceId === val
+      })
+      if (namespace) {
+        this.canWrite = namespace.permission.includes('w')
       }
       this.listQuery.namespaceId = val
       this.queryData()

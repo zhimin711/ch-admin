@@ -45,3 +45,27 @@ export function listNacosProjectClusters(id) {
     method: 'get'
   })
 }
+
+export function listNacosProjectUsers(id) {
+  return request({
+    url: `${namespace}/${id}/users`,
+    method: 'get'
+  })
+}
+
+export function listNacosProjectUserPermission(projectId, userId) {
+  return request({
+    url: `${namespace}/${projectId}/user-permission`,
+    method: 'get',
+    params: {
+      username: userId
+    }
+  })
+}
+export function updateNacosProjectUserPermission(projectId, data) {
+  return request({
+    url: `${namespace}/${projectId}/user-permission`,
+    method: 'post',
+    data
+  })
+}

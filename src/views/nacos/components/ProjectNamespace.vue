@@ -10,10 +10,10 @@
     </el-row>
     <el-row v-show="activeCluster!=='0'">
       <el-col :span="24">
-        <el-tabs v-model="tenant" type="card" @tab-click="selectNamespace2">
-          <el-tab-pane v-for="item in namespaces" :key="item.value" :label="item.label" :name="item.value">
+        <el-tabs v-model="tenant" type="card" class="el-tabs-tenant" @tab-click="selectNamespace2">
+          <el-tab-pane v-for="item in namespaces" :key="item.namespaceId" :label="item.namespaceName" :name="item.namespaceId">
             <el-alert
-              :title="item.key"
+              :title="item.nacosNamespaceId"
               type="info"
               style="margin: 10px"
               description="Nacos空间ID(配置文件使用)"
@@ -29,19 +29,39 @@
               type="info"
               close-text="知道了"
             />
-            <el-form v-if="projectNamespaces.length>0" label-width="180px" :model="record">
-              <el-form-item label="可申请空间">
-                <el-checkbox-group v-model="applyList">
-                  <el-checkbox v-for="item in projectNamespaces" :key="item.key" :label="item.value">
-                    {{ item.label }}
-                  </el-checkbox>
-                </el-checkbox-group>
-              </el-form-item>
-              <el-form-item>
+            <el-row v-if="projectNamespaces.length>0">
+              <el-col :span="24">
+                <el-table
+                  :data="projectNamespaces"
+                  border
+                  style="width: 100%;"
+                >
+                  <el-table-column
+                    prop="namespaceName"
+                    label="空间名称"
+                  />
+                  <el-table-column
+                    prop="permission"
+                    label="只读"
+                  >
+                    <template slot-scope="{row}">
+                      <el-checkbox :checked="row.read" :disabled="row.readOnly" @change="row.read=!row.read" />
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    prop="permission"
+                    label="修改"
+                  >
+                    <template slot-scope="{row}">
+                      <el-checkbox :checked="row.write" :disabled="row.writeOnly" @change="row.write=!row.write" />
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </el-col>
+              <el-col :span="24" style="margin-top: 10px">
                 <el-button :loading="loadingApprove" type="primary" @click="handleSubmitApply('ruleForm')">提交申请</el-button>
-                <!--                <el-button @click="resetForm('ruleForm')">重置</el-button>-->
-              </el-form-item>
-            </el-form>
+              </el-col>
+            </el-row>
           </el-tab-pane>
         </el-tabs>
       </el-col>
@@ -127,8 +147,8 @@ export default {
         if (resp.success) {
           this.namespaces = resp.rows
           if (this.namespaces.length > 0) {
-            this.$emit('input', this.namespaces[0].value)
-            this.$emit('change', this.namespaces[0].value)
+            this.$emit('input', this.namespaces[0].namespaceId)
+            this.$emit('change', this.namespaces[0].namespaceId)
           } else {
             this.$emit('input', this.tenant)
             // this.$emit('change', this.tenant)
@@ -150,23 +170,43 @@ export default {
       this.projectNamespaces = []
       getNacosUserApplyNamespaces(this.projectId, clusterId).then(resp => {
         if (resp.success) {
-          const values = this.namespaces.map(item => item.value)
-          this.projectNamespaces = resp.rows.filter(e => !values.includes(e.value))
-          if (this.projectNamespaces.length > 0) {
-            // this.applyDialogVisible = true
-          } else {
-            // this.$message.warning('该项目没有空间或已申请所有的空间...')
-          }
+          this.projectNamespaces = resp.rows.filter(e => e.permission !== 'rw')
+          this.projectNamespaces.forEach(row => {
+            // row.permission 包含R标记为只读
+            if (row.permission && row.permission.includes('r')) {
+              row.read = true
+              row.readOnly = true
+            } else {
+              row.read = false
+            }
+            // row.permission 包含W标记为修改
+            if (row.permission && row.permission.includes('w')) {
+              row.write = true
+              row.writeOnly = true
+            } else {
+              row.write = false
+            }
+          })
         }
       })
     },
     handleSubmitApply() {
-      if (this.applyList.length <= 0) {
+      const applyList = this.projectNamespaces.filter(e => (e.read && !e.readOnly) || (e.write && !e.writeOnly)).map(row => {
+        var permission = ''
+        if(row.read && !row.readOnly){
+          permission = 'R'
+        }
+        if(row.write && !row.writeOnly){
+          permission += 'W'
+        }
+        return { namespaceId: row.namespaceId, permission: permission}
+      })
+      if (applyList.length <= 0) {
         this.$message.warning('请选择要申请的空间!')
         return
       }
       this.loadingApprove = true
-      applyNacosUserNamespaces(this.projectId, this.activeCluster, this.applyList).then(resp => {
+      applyNacosUserNamespaces(this.projectId, this.activeCluster, applyList).then(resp => {
         if (resp.success) {
           this.$message.success('申请成功，请等待管理员审核...')
         }
@@ -216,4 +256,15 @@ export default {
   /*::v-deep .el-tabs__content {*/
   /*  display: none;*/
   /*}*/
+  .el-tabs-tenant {
+    ::v-deep .el-tabs__nav-next, ::v-deep .el-tabs__nav-prev {
+      font-size: 18px;
+    }
+    ::v-deep .el-tabs__nav-prev {
+      margin-right: 15px;
+    }
+    ::v-deep .el-tabs__nav-next {
+      margin-left: 15px;
+    }
+  }
 </style>
