@@ -3,6 +3,16 @@
     <div class="filter-container">
       <el-input v-model="listQuery.params.url" :placeholder="$t('label.address')" style="width: 200px;" class="filter-item" />
       <el-input v-model="listQuery.params.authCode" :placeholder="$t('label.code')" style="width: 200px;" class="filter-item" />
+      <!-- 添加时间范围查询框 -->
+      <el-date-picker
+        v-model="listQuery.params.dateRange"
+        type="daterange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期"
+        style="width: 270px;"
+        class="filter-item"
+      />
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         {{ $t('btn.search') }}
       </el-button>
@@ -66,6 +76,10 @@ export default {
   name: 'LogsOperate',
   components: { Pagination },
   data() {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
     return {
       listLoading: true,
       listQuery: {
@@ -73,7 +87,10 @@ export default {
         limit: 10,
         total: 0,
         list: [],
-        params: {}
+        params: {
+          // 初始化时间范围参数为今天
+          dateRange: [startOfDay, endOfDay]
+        }
       },
       record: {}
     }
