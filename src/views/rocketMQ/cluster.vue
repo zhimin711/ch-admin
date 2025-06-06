@@ -1,8 +1,23 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-form :model="params" label-width="180px" label-position="left">
-        <el-form-item label="集群名称">
+      <el-form :inline="true" :model="params" label-width="180px" label-position="left">
+        <el-row>
+          <el-form-item label="集群选择">
+            <el-select v-model="nameSrvAddr" placeholder="请选择" class="filter-item" style="width: 230px;">
+              <el-option
+                v-for="item in options.nameSvrList"
+                :key="item.addr"
+                :label="item.name + ' - ' + item.addr"
+                :value="item.addr"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" icon="el-icon-s-home" @click="changeNameSvr">切换集群</el-button>
+          </el-form-item>
+        </el-row>
+        <el-form-item label="broker集群">
           <el-select v-model="params.clusterName" placeholder="请选择" class="filter-item" @change="handleClusterChange">
             <el-option
               v-for="item in options.clusters"
@@ -80,6 +95,8 @@
 <script>
 import { generateBrokerMap } from '@/api/rocketmq/tools'
 import { listRocketMQ, getRocketMQ } from '@/api/rocketmq/cluster'
+import { listRocketMQNameSvr } from '@/api/rocketmq/name-svr'
+import Cookies from 'js-cookie'
 
 export default {
   name: 'RocketMQCluster',
@@ -95,15 +112,37 @@ export default {
       tableB: [],
       dialogVisible: false,
       dialogTitle: '',
+      nameSrvAddr: '',
       options: {
+        nameSvrList: [],
         clusters: []
       }
     }
   },
   created() {
-    this.getList()
+    this.listNameSvr()
+    // this.getList()
   },
   methods: {
+    listNameSvr() {
+      this.nameSrvAddr = Cookies.get('nameSrvAddr')
+      listRocketMQNameSvr().then(resp => {
+        if (resp.success) {
+          this.options.nameSvrList = resp.rows
+          if (this.options.nameSvrList.length > 0) {
+            if (!this.nameSrvAddr) {
+              this.nameSrvAddr = this.options.nameSvrList[0].addr
+              Cookies.set('nameSrvAddr', this.nameSrvAddr)
+            }
+            this.getList()
+          }
+        }
+      })
+    },
+    changeNameSvr() {
+      Cookies.set('nameSrvAddr', this.nameSrvAddr)
+      this.getList()
+    },
     getList() {
       this.listLoading = true
       listRocketMQ().then(resp => {
