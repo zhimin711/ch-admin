@@ -1,5 +1,24 @@
 <template>
   <div class="app-container">
+    <div class="filter-container">
+      <el-form :inline="true" :model="params" label-width="80px" label-position="left">
+        <el-row>
+          <el-form-item label="集群选择" style="margin-bottom: 0;">
+            <el-select v-model="nameSrvAddr" placeholder="请选择" class="filter-item" style="width: 230px;">
+              <el-option
+                v-for="item in options.nameSrvList"
+                :key="item.addr"
+                :label="item.name + ' - ' + item.addr"
+                :value="item.addr"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item style="margin-bottom: 0;">
+            <el-button type="primary" icon="el-icon-s-home" @click="changeNameSvr">切换集群</el-button>
+          </el-form-item>
+        </el-row>
+      </el-form>
+    </div>
     <el-tabs v-model="activeName" style="margin-bottom: 15px">
       <el-tab-pane label="Topic" name="name1">
         Only Return 2000 Messages
@@ -113,6 +132,8 @@ import {
 } from '@/api/rocketmq/topic'
 import { listRocketMQMessage, listRocketMQMessage2, detailRocketMQMessage, resendRocketMQMessage } from '@/api/rocketmq/message'
 import { isEmpty } from '@/utils/validate'
+import { listRocketMQNameSrv } from '@/api/rocketmq/name-srv'
+import Cookies from 'js-cookie'
 
 export default {
   name: 'RocketMQMessage',
@@ -182,16 +203,37 @@ export default {
         data: []
       },
       activeName: 'name1',
+      nameSrvAddr: '',
       options: {
+        nameSrvList: [],
         topics: []
       }
     }
   },
   created() {
+    this.listNameSvr()
     this.getTopics()
     this.initParams()
   },
   methods: {
+    listNameSvr() {
+      this.nameSrvAddr = Cookies.get('nameSrvAddr')
+      listRocketMQNameSrv().then(resp => {
+        if (resp.success) {
+          this.options.nameSrvList = resp.rows
+          if (this.options.nameSrvList.length > 0) {
+            if (!this.nameSrvAddr) {
+              this.nameSrvAddr = this.options.nameSrvList[0].addr
+              Cookies.set('nameSrvAddr', this.nameSrvAddr)
+            }
+          }
+        }
+      })
+    },
+    changeNameSvr() {
+      Cookies.set('nameSrvAddr', this.nameSrvAddr)
+      this.getTopics()
+    },
     getTopics() {
       listRocketMQTopic().then(resp => {
         if (resp.success) {

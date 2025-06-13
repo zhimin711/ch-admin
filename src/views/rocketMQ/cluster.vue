@@ -6,7 +6,7 @@
           <el-form-item label="集群选择">
             <el-select v-model="nameSrvAddr" placeholder="请选择" class="filter-item" style="width: 230px;">
               <el-option
-                v-for="item in options.nameSvrList"
+                v-for="item in options.nameSrvList"
                 :key="item.addr"
                 :label="item.name + ' - ' + item.addr"
                 :value="item.addr"
@@ -95,7 +95,7 @@
 <script>
 import { generateBrokerMap } from '@/api/rocketmq/tools'
 import { listRocketMQ, getRocketMQ } from '@/api/rocketmq/cluster'
-import { listRocketMQNameSvr } from '@/api/rocketmq/name-svr'
+import { listRocketMQNameSrv } from '@/api/rocketmq/name-srv'
 import Cookies from 'js-cookie'
 
 export default {
@@ -114,7 +114,7 @@ export default {
       dialogTitle: '',
       nameSrvAddr: '',
       options: {
-        nameSvrList: [],
+        nameSrvList: [],
         clusters: []
       }
     }
@@ -126,12 +126,12 @@ export default {
   methods: {
     listNameSvr() {
       this.nameSrvAddr = Cookies.get('nameSrvAddr')
-      listRocketMQNameSvr().then(resp => {
+      listRocketMQNameSrv().then(resp => {
         if (resp.success) {
-          this.options.nameSvrList = resp.rows
-          if (this.options.nameSvrList.length > 0) {
+          this.options.nameSrvList = resp.rows
+          if (this.options.nameSrvList.length > 0) {
             if (!this.nameSrvAddr) {
-              this.nameSrvAddr = this.options.nameSvrList[0].addr
+              this.nameSrvAddr = this.options.nameSrvList[0].addr
               Cookies.set('nameSrvAddr', this.nameSrvAddr)
             }
             this.getList()

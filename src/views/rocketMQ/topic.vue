@@ -1,14 +1,14 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <!--<el-select v-model="table.main.params.clusterName" :placeholder="$t('input.tips.select')" class="filter-item">
+      <el-select v-model="nameSrvAddr" placeholder="请选择" class="filter-item" style="width: 230px;" @change="changeNameSvr">
         <el-option
-          v-for="item in options.clusters"
-          :key="item.clusterName"
-          :label="item.clusterName"
-          :value="item.clusterName"
+          v-for="item in options.nameSrvList"
+          :key="item.addr"
+          :label="item.name + ' - ' + item.addr"
+          :value="item.addr"
         />
-      </el-select>-->
+      </el-select>
       <el-input v-model="table.main.params.topicName" placeholder="主题名称" style="width: 200px;" class="filter-item" />
       <el-button v-permission="'ROCKET_MQ_TOPIC_SEARCH'" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         {{ $t('btn.search') }}
@@ -331,6 +331,8 @@ import {
 } from '@/api/rocketmq/topic'
 import { resetRocketMQConsumerOffset } from '@/api/rocketmq/consumer'
 import { getTopics, refresh2 } from '@/api/devops/kafka/topic'
+import { listRocketMQNameSrv } from '@/api/rocketmq/name-srv'
+import Cookies from 'js-cookie'
 
 const defaultRecord = {
   'writeQueueNums': 16,
@@ -399,16 +401,36 @@ export default {
       options: {
         clusters: [],
         brokers: [],
-        topics: []
+        topics: [],
+        nameSrvList: []
       },
+      nameSrvAddr: '',
       loading: false
     }
   },
   created() {
+    this.listNameSvr()
     this.getList()
     // this.getClusters()
   },
   methods: {
+    listNameSvr() {
+      this.nameSrvAddr = Cookies.get('nameSrvAddr')
+      listRocketMQNameSrv().then(resp => {
+        if (resp.success) {
+          this.options.nameSrvList = resp.rows
+          if (this.options.nameSrvList.length > 0) {
+            if (!this.nameSrvAddr) {
+              this.nameSrvAddr = this.options.nameSrvList[0].addr
+            }
+          }
+        }
+      })
+    },
+    changeNameSvr() {
+      Cookies.set('nameSrvAddr', this.nameSrvAddr)
+      this.getList()
+    },
     async getClusters() {
       await listRocketMQ().then(resp => {
         if (resp.success) {
