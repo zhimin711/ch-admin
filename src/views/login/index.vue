@@ -190,6 +190,17 @@ export default {
           this.loading = false
         })
         .catch(error => {
+          // 添加 shake 动画
+          const formEl = this.$refs.loginForm && this.$refs.loginForm.$el
+          if (formEl) {
+            formEl.classList.remove('shake') // 防止多次叠加
+            // 触发重绘，保证动画能重复触发
+            void formEl.offsetWidth
+            formEl.classList.add('shake')
+            setTimeout(() => {
+              formEl.classList.remove('shake')
+            }, 500)
+          }
           this.$message.error(`${error.message}!`)
           this.loading = false
           if (this.$refs.verify.mode === 'fixed') {
