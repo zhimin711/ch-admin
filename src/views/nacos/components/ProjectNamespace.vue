@@ -193,13 +193,13 @@ export default {
     handleSubmitApply() {
       const applyList = this.projectNamespaces.filter(e => (e.read && !e.readOnly) || (e.write && !e.writeOnly)).map(row => {
         var permission = ''
-        if(row.read && !row.readOnly){
+        if (row.read && !row.readOnly) {
           permission = 'R'
         }
-        if(row.write && !row.writeOnly){
+        if (row.write && !row.writeOnly) {
           permission += 'W'
         }
-        return { namespaceId: row.namespaceId, permission: permission}
+        return { namespaceId: row.namespaceId, permission: permission }
       })
       if (applyList.length <= 0) {
         this.$message.warning('请选择要申请的空间!')

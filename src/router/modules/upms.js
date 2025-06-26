@@ -38,14 +38,6 @@ const umpsRouter = {
       }
     },
     {
-      path: 'swagger',
-      component: () => import('@/views/swagger/index'),
-      name: 'Swagger',
-      meta: {
-        title: 'Swagger'
-      }
-    },
-    {
       path: 'tenant',
       component: () => import('@/views/upms/tenant'),
       name: 'Tenant',
