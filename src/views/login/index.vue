@@ -1,89 +1,74 @@
 <template>
-  <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" autocomplete="on" label-position="left">
-
-      <div class="title-container">
-        <h3 class="title">欢迎登录 {{ defaultSettings.title }}</h3>
+  <div class="login-bg-simple">
+    <div class="login-illustration-bg">
+      <!-- 免费SVG插画，unDraw风格，可替换 -->
+      <svg width="340" height="220" viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="650" cy="480" rx="120" ry="40" fill="#a5b4fc" opacity="0.18" />
+        <rect x="540" y="320" width="180" height="120" rx="24" fill="#fff" />
+        <rect x="570" y="350" width="120" height="20" rx="8" fill="#a5b4fc" />
+        <rect x="570" y="380" width="80" height="16" rx="8" fill="#c7d2fe" />
+        <rect x="570" y="410" width="100" height="16" rx="8" fill="#c7d2fe" />
+        <circle cx="660" cy="450" r="12" fill="#6366f1" />
+        <circle cx="700" cy="450" r="12" fill="#6366f1" opacity="0.5" />
+        <path d="M600 420c0-30 60-30 60 0s60 30 60 0" stroke="#6366f1" stroke-width="6" fill="none" />
+      </svg>
+    </div>
+    <div class="login-card-simple">
+      <div class="login-logo-simple">
+        <img v-if="logoExists" src="@/assets/logo.jpg" alt="logo" class="logo-img-simple">
+        <span v-else>{{ defaultSettings.title }}</span>
       </div>
-
-      <el-form-item prop="username">
-        <span class="svg-container">
-          <svg-icon icon-class="user" />
-        </span>
-        <el-input
-          ref="username"
-          v-model="loginForm.username"
-          placeholder="用户名"
-          name="username"
-          type="text"
-          tabindex="1"
-          autocomplete="on"
-        />
-      </el-form-item>
-
-      <el-tooltip v-model="capsTooltip" content="Caps lock is On" placement="right" manual>
-        <el-form-item prop="password">
-          <span class="svg-container">
-            <svg-icon icon-class="password" />
-          </span>
+      <h3 class="login-title-simple">欢迎登录 {{ defaultSettings.title }}</h3>
+      <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form-simple" autocomplete="on" label-position="left">
+        <el-form-item prop="username">
           <el-input
-            :key="passwordType"
-            ref="password"
-            v-model="loginForm.password"
-            :type="passwordType"
-            placeholder="密码"
-            name="password"
-            tabindex="2"
+            ref="username"
+            v-model="loginForm.username"
+            placeholder="用户名"
+            name="username"
+            type="text"
+            tabindex="1"
             autocomplete="on"
-            @keyup.native="checkCapslock"
-            @blur="capsTooltip = false"
-            @keyup.enter.native="handleLogin"
+            clearable
+            prefix-icon="el-icon-user"
           />
-          <span class="show-pwd" @click="showPwd">
-            <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-          </span>
         </el-form-item>
-      </el-tooltip>
-
-      <!--clickWord blockPuzzle-->
-      <Verify
-        ref="verify"
-        :mode="'pop'"
-        :captcha-type="'blockPuzzle'"
-        :img-size="{ width: '330px', height: '155px' }"
-        @success="success"
-      />
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
-
-      <div style="position:relative;display: none">
-        <div class="tips">
-          <span>Username : admin</span>
-          <span>Password : any</span>
-        </div>
-        <div class="tips">
-          <span style="margin-right:18px;">Username : editor</span>
-          <span>Password : any</span>
-        </div>
-
-        <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
-          Or connect with
-        </el-button>
-      </div>
-    </el-form>
-
-    <el-dialog title="Or connect with" :visible.sync="showDialog">
-      Can not be simulated on local, so please combine you own business simulation! ! !
-      <br>
-      <br>
-      <br>
-      <social-sign />
-    </el-dialog>
+        <el-tooltip v-model="capsTooltip" content="Caps lock is On" placement="right" manual>
+          <el-form-item prop="password">
+            <el-input
+              :key="passwordType"
+              ref="password"
+              v-model="loginForm.password"
+              :type="passwordType"
+              placeholder="密码"
+              name="password"
+              tabindex="2"
+              autocomplete="on"
+              prefix-icon="el-icon-lock"
+              @keyup.native="checkCapslock"
+              @blur="capsTooltip = false"
+              @keyup.enter.native="handleLogin"
+            />
+            <span class="show-pwd-simple" @click="showPwd">
+              <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+            </span>
+          </el-form-item>
+        </el-tooltip>
+        <Verify
+          ref="verify"
+          :mode="'pop'"
+          :captcha-type="'blockPuzzle'"
+          :img-size="{ width: '330px', height: '155px' }"
+          @success="success"
+        />
+        <el-button :loading="loading" type="primary" class="login-btn-simple" @click.native.prevent="handleLogin">登录</el-button>
+      </el-form>
+    </div>
   </div>
 </template>
 
 <script>
 import { validUsername } from '@/utils/validate'
-import SocialSign from './components/SocialSignin'
 import defaultSettings from '@/settings'
 import Verify from '@/components/Verification/Verify'
 import { getRefreshToken } from '@/utils/auth'
@@ -91,7 +76,7 @@ import { isEmpty } from '@/utils/validate'
 
 export default {
   name: 'Login',
-  components: { SocialSign, Verify },
+  components: { Verify },
   data() {
     const validateUsername = (rule, value, callback) => {
       if (!validUsername(value)) {
@@ -284,135 +269,110 @@ export default {
 }
 </script>
 
-<style lang="scss">
-/* 修复input 背景不协调 和光标变色 */
-/* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
-
-$bg:#283443;
-$light_gray:#fff;
-$cursor: #fff;
-
-@supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
-  .login-container .el-input input {
-    color: $cursor;
-  }
-}
-
-/* reset element-ui css */
-.login-container {
-  .el-input {
-    display: inline-block;
-    height: 47px;
-    width: 85%;
-
-    input {
-      background: transparent;
-      border: 0px;
-      -webkit-appearance: none;
-      border-radius: 0px;
-      padding: 12px 5px 12px 15px;
-      color: $light_gray;
-      height: 47px;
-      caret-color: $cursor;
-
-      &:-webkit-autofill {
-        box-shadow: 0 0 0px 1000px $bg inset !important;
-        -webkit-text-fill-color: $cursor !important;
-      }
-    }
-  }
-
-  .el-form-item {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    color: #454545;
-  }
-}
-</style>
-
 <style lang="scss" scoped>
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
-
-.login-container {
-  min-height: 100%;
-  width: 100%;
-  background-color: $bg;
+.login-bg-simple {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #a5b4fc 100%);
+  position: relative;
   overflow: hidden;
-
-  .login-form {
+}
+.login-illustration-bg {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.95;
+}
+.login-card-simple {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px 0 rgba(31, 38, 135, 0.06);
+  padding: 48px 36px 36px 36px;
+  min-width: 320px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+.login-logo-simple {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 18px;
+  .logo-img-simple {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    margin-right: 8px;
+  }
+  span {
+    font-size: 22px;
+    font-weight: bold;
+    color: #222;
+  }
+}
+.login-title-simple {
+  font-size: 20px;
+  color: #222;
+  margin-bottom: 32px;
+  text-align: center;
+  font-weight: 500;
+}
+.login-form-simple {
+  width: 100%;
+  .el-form-item {
+    margin-bottom: 24px;
     position: relative;
-    width: 520px;
-    max-width: 100%;
-    padding: 160px 35px 0;
-    margin: 0 auto;
-    overflow: hidden;
   }
-
-  .tips {
-    font-size: 14px;
-    color: #fff;
-    margin-bottom: 10px;
-
-    span {
-      &:first-of-type {
-        margin-right: 16px;
-      }
-    }
-  }
-
-  .svg-container {
-    padding: 6px 5px 6px 15px;
-    color: $dark_gray;
-    vertical-align: middle;
-    width: 30px;
-    display: inline-block;
-  }
-
-  .title-container {
-    position: relative;
-
-    .title {
-      font-size: 26px;
-      color: $light_gray;
-      margin: 0px auto 40px auto;
-      text-align: center;
-      font-weight: bold;
-    }
-  }
-
-  .show-pwd {
-    position: absolute;
-    right: 10px;
-    top: 7px;
+  .el-input__inner {
+    border-radius: 8px;
+    height: 44px;
     font-size: 16px;
-    color: $dark_gray;
+  }
+  .show-pwd-simple {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #b0b3b8;
     cursor: pointer;
     user-select: none;
-  }
-
-  .captcha-code {
-    position: absolute;
-    right: 0px;
-    top: 1px;
-    font-size: 16px;
-    color: $dark_gray;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .thirdparty-button {
-    position: absolute;
-    right: 0;
-    bottom: 6px;
-  }
-
-  @media only screen and (max-width: 470px) {
-    .thirdparty-button {
-      display: none;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+    &:hover {
+      color: #6366f1;
     }
+  }
+}
+.login-btn-simple {
+  width: 100%;
+  height: 44px;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-top: 8px;
+  letter-spacing: 2px;
+}
+@media (max-width: 600px) {
+  .login-card-simple {
+    padding: 24px 4vw 16px 4vw;
+    min-width: unset;
+  }
+  .login-title-simple {
+    font-size: 18px;
+  }
+}
+@media (max-width: 900px) {
+  .login-illustration-bg {
+    display: none;
   }
 }
 </style>
