@@ -34,3 +34,12 @@ export function logout(refreshToken) {
     data: { refreshToken: refreshToken }
   })
 }
+
+// 获取授权码
+export function getAuthCode(url) {
+  return request({
+    url: `${namespace}/gen-code`,
+    method: 'get',
+    params: { url }
+  })
+}
