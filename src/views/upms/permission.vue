@@ -113,7 +113,7 @@
           <el-input v-model="record.redirect" placeholder="目录与隐藏地址" />
         </el-form-item>-->
         <el-form-item v-if="record.type === '3' || record.type === '4' || record.type === '5'" :label="$t('label.method')">
-          <el-radio-group v-model="record.method">
+          <el-radio-group :key="'method-' + record.id" v-model="methodValue">
             <el-radio-button label="">ALL</el-radio-button>
             <el-radio-button label="GET" />
             <el-radio-button label="POST" />
@@ -163,7 +163,8 @@ const defaultRecord = {
   code: '',
   sort: 1,
   hidden: false,
-  name: ''
+  name: '',
+  method: ''
 }
 export default {
   name: 'UpmsPermission',
@@ -315,14 +316,15 @@ export default {
     handleEdit(row, index) {
       this.origRecord = Object.assign({}, row)
       this.record = deepClone(row)
+      if (this.record.method === null || this.record.method === undefined) {
+        this.record.method = ''
+      }
       this.recordType = row.type
       this.recordParents = this.record.parentId.split(',')
       if (this.record.parentId === '0') this.record.parentId = undefined
       this.recordStatus = (this.record.status === '1')
       this.dialogType = 'edit'
       this.dialogVisible = true
-      // this.recordForm.codeDisabled = true
-      // this.recordForm.redirectShow = (row.type === '1' || row.type === '4')
       this.changeType(row.type)
     },
     handleCopy(row, index) {
@@ -330,6 +332,9 @@ export default {
       this.record = deepClone(row)
       this.record.id = null
       this.record.sort += 1
+      if (this.record.method === null || this.record.method === undefined) {
+        this.record.method = ''
+      }
       this.recordType = row.type
       this.recordParents = this.record.parentId.split(',')
       if (this.record.parentId === '0') this.record.parentId = undefined

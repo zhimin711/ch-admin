@@ -15,10 +15,10 @@
     </div>
     <div class="login-card-simple">
       <div class="login-logo-simple">
-        <img v-if="logoExists" src="@/assets/logo.jpg" alt="logo" class="logo-img-simple">
-        <span v-else>{{ defaultSettings.title }}</span>
+        <!-- <img v-if="logoExists" src="@/assets/logo.jpg" alt="logo" class="logo-img-simple"> -->
+        <span>{{ defaultSettings.title }}</span>
       </div>
-      <h3 class="login-title-simple">欢迎登录 {{ defaultSettings.title }}</h3>
+      <!-- <h3 class="login-title-simple">欢迎登录 {{ defaultSettings.title }}</h3> -->
       <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form-simple" autocomplete="on" label-position="left">
         <el-form-item prop="username">
           <el-input
