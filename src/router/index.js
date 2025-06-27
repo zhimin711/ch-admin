@@ -239,7 +239,7 @@ export function assemblyAsyncRoutes(menus) {
           children: [
             {
               path: menu.redirect,
-              meta: { title: menu.name, icon: 'link' }
+              meta: { title: menu.name, icon: 'link', mode: 'authCode' }
             }
           ]
         }

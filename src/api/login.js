@@ -1,5 +1,5 @@
 import request from '@/utils/request3'
-import request2 from '@/utils/request2'
+import authRequest from '@/utils/request2'
 
 // const namespace = '/vue-element-admin'
 const namespace = '/auth'
@@ -20,7 +20,7 @@ export function getInfo() {
 }
 
 export function getPermissions(data) {
-  return request2({
+  return authRequest({
     url: `${namespace}/user/permissions`,
     method: 'post',
     data
@@ -37,8 +37,8 @@ export function logout(refreshToken) {
 
 // 获取授权码
 export function getAuthCode(url) {
-  return request({
-    url: `${namespace}/gen-code`,
+  return authRequest({
+    url: `${namespace}/login/access/code`,
     method: 'get',
     params: { url }
   })

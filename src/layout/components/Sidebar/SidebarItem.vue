@@ -1,11 +1,18 @@
 <template>
   <div v-if="!item.hidden">
     <template v-if="hasOneShowingChild(item.children,item) && (!onlyOneChild.children||onlyOneChild.noShowingChildren)&&!item.alwaysShow">
-      <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
+      <!-- 需要验证码的链接 -->
+      <AuthLink v-if="onlyOneChild.meta && onlyOneChild.meta.mode === 'authCode'" :ref="'authLink_' + onlyOneChild.path" :to="resolvePath(onlyOneChild.path)" :meta="onlyOneChild.meta" @click.prevent="handleMenuClick(onlyOneChild, $event)">
         <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{'submenu-title-noDropdown':!isNest}">
           <item :icon="onlyOneChild.meta.icon||(item.meta&&item.meta.icon)" :title="translatedRouteTitle(onlyOneChild.meta.code, onlyOneChild.meta.title)" />
         </el-menu-item>
-      </app-link>
+      </AuthLink>
+      <!-- 不需要验证码的链接 -->
+      <AppLink v-else-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
+        <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{'submenu-title-noDropdown':!isNest}">
+          <item :icon="onlyOneChild.meta.icon||(item.meta&&item.meta.icon)" :title="translatedRouteTitle(onlyOneChild.meta.code, onlyOneChild.meta.title)" />
+        </el-menu-item>
+      </AppLink>
     </template>
 
     <el-submenu v-else ref="subMenu" :index="resolvePath(item.path)" popper-append-to-body>
@@ -31,11 +38,12 @@ import { translatedRouteTitle } from '@/i18n/i18n'
 
 import Item from './Item'
 import AppLink from './Link'
+import AuthLink from './AuthLink'
 import FixiOSBug from './FixiOSBug'
 
 export default {
   name: 'SidebarItem',
-  components: { Item, AppLink },
+  components: { Item, AppLink, AuthLink },
   mixins: [FixiOSBug],
   props: {
     // route object
@@ -92,6 +100,17 @@ export default {
         return this.basePath
       }
       return path.resolve(this.basePath, routePath)
+    },
+    handleMenuClick(item, event) {
+      console.log(item)
+      if (item.meta && item.meta.mode === 'authCode') {
+        event.preventDefault()
+        const refName = 'authLink_' + item.path
+        const linkRef = this.$refs[refName]
+        if (linkRef && linkRef.handleAuthCode) {
+          linkRef.handleAuthCode(item)
+        }
+      }
     }
   }
 }
