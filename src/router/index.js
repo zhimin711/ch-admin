@@ -230,6 +230,34 @@ export function assemblyAsyncRoutes(menus) {
         route.children = assemblyAsyncRoutes(menu.children)
       }
       list.push(route)
+    } else {
+      if (menu.type === '2' && menu.redirect && menu.redirect.startsWith('http')) {
+        // 外部链接
+        route = {
+          path: menu.url || menu.code,
+          component: Layout,
+          children: [
+            {
+              path: menu.redirect,
+              meta: { title: menu.name, icon: 'link' }
+            }
+          ]
+        }
+        list.push(route)
+      } else if (menu.type === '1' && menu.children && menu.children.length > 0) {
+        route = {
+          path: menu.url || menu.code,
+          component: Layout,
+          alwaysShow: true, // will always show the root menu
+          name: menu.code,
+          meta: {
+            title: menu.name,
+            icon: menu.icon
+          }
+        }
+        route.children = assemblyAsyncRoutes(menu.children)
+        list.push(route)
+      }
     }
   })
   return list
