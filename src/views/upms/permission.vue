@@ -121,7 +121,7 @@
             <el-radio-button label="DELETE" />
           </el-radio-group>
         </el-form-item>
-        <el-form-item v-if="record.type === '2' || record.type === '5'" :label="record.type === '2'?'是否隐藏':'需用户登录'">
+        <el-form-item v-if="recordHiddenName[record.type]" :label="recordHiddenName[record.type]">
           <!--<el-radio v-model="record.hidden" :label="false">{{ record.type === '2'?'否':'是' }}</el-radio>
           <el-radio v-model="record.hidden" :label="true">{{ record.type === '2'?'是':'否' }}</el-radio>-->
           <el-radio v-model="record.hidden" :label="false">否</el-radio>
@@ -171,6 +171,11 @@ export default {
   components: { IconSelector },
   data() {
     return {
+      recordHiddenName: {
+        '2': '是否隐藏',
+        '4': '是否临时授权',
+        '5': '需用户登录'
+      },
       treeData1: [],
       tableA: {
         loading: true,
