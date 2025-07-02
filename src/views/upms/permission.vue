@@ -121,13 +121,17 @@
             <el-radio-button label="DELETE" />
           </el-radio-group>
         </el-form-item>
-        <el-form-item v-if="recordHiddenName[record.type]" :label="recordHiddenName[record.type]">
+        <el-form-item v-if="record.type === '4'" :label="recordHiddenName[record.type]">
+          <el-radio v-model="record.hidden" :label="true">角色</el-radio>
+          <el-radio v-model="record.hidden" :label="false">授权码</el-radio>
+        </el-form-item>
+        <el-form-item v-if="record.type === '2' || record.type === '5'" :label="recordHiddenName[record.type]">
           <!--<el-radio v-model="record.hidden" :label="false">{{ record.type === '2'?'否':'是' }}</el-radio>
           <el-radio v-model="record.hidden" :label="true">{{ record.type === '2'?'是':'否' }}</el-radio>-->
           <el-radio v-model="record.hidden" :label="false">否</el-radio>
           <el-radio v-model="record.hidden" :label="true">是</el-radio>
         </el-form-item>
-        <el-form-item v-if="record.type === '3'" label="Cookie访问">
+        <el-form-item v-if="record.hidden && (record.type === '3' || record.type === '5')" label="Cookie访问">
           <el-radio v-model="record.enableCookie" :label="false">否</el-radio>
           <el-radio v-model="record.enableCookie" :label="true">是</el-radio>
         </el-form-item>
@@ -173,7 +177,7 @@ export default {
     return {
       recordHiddenName: {
         '2': '是否隐藏',
-        '4': '是否临时授权',
+        '4': '授权类型',
         '5': '需用户登录'
       },
       treeData1: [],

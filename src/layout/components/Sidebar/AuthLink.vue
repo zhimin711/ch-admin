@@ -15,7 +15,7 @@
 
 <script>
 import { isExternal } from '@/utils/validate'
-import { getAuthCode } from '@/api/login'
+import { genAuthCode } from '@/utils/request-token'
 
 export default {
   props: {
@@ -38,10 +38,10 @@ export default {
       if (this.meta && this.meta.mode === 'authCode') {
         e && e.preventDefault && e.preventDefault()
         try {
-          const res = await getAuthCode(this.to)
+          const res = await genAuthCode(this.to)
           if (res.success) {
             let url = this.to
-            url += (url.indexOf('?') > -1 ? '&' : '?') + 'token=' + encodeURIComponent(res.data)
+            url += (url.indexOf('?') > -1 ? '&' : '?') + 'code=' + encodeURIComponent(res.rows[0])
             window.open(url, '_blank')
           } else {
             this.$message && this.$message.error(res.message)
