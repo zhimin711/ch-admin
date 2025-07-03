@@ -113,7 +113,7 @@
           <el-input v-model="record.redirect" placeholder="目录与隐藏地址" />
         </el-form-item>-->
         <el-form-item v-if="record.type === '3' || record.type === '4' || record.type === '5'" :label="$t('label.method')">
-          <el-radio-group :key="'method-' + record.id" v-model="methodValue">
+          <el-radio-group v-model="record.method">
             <el-radio-button label="">ALL</el-radio-button>
             <el-radio-button label="GET" />
             <el-radio-button label="POST" />
