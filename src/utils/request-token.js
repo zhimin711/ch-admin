@@ -27,13 +27,3 @@ export async function refreshToken() {
 }
 // export default instance
 
-export async function genAuthCode() {
-  const resp = await instance.get(`/auth/login/access/code`, {
-    headers: {
-      'X-TOKEN': getToken(),
-      'X-REFRESH-TOKEN': getRefreshToken()
-    }
-  })
-  const { data } = resp
-  return data
-}

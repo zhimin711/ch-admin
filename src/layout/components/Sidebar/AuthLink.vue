@@ -15,7 +15,7 @@
 
 <script>
 import { isExternal } from '@/utils/validate'
-import { genAuthCode } from '@/utils/request-token'
+import { genAuthCode } from '@/api/login'
 
 export default {
   props: {

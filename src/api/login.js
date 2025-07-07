@@ -6,7 +6,7 @@ const namespace = '/auth'
 
 export function login(data) {
   return request({
-    url: `${namespace}/login/token/access`,
+    url: `${namespace}/login/access`,
     method: 'post',
     data
   })
@@ -16,6 +16,14 @@ export function getInfo() {
   return request({
     url: `${namespace}/user/info`,
     method: 'get'
+  })
+}
+
+export async function genAuthCode(url) {
+  return request({
+    url: `${namespace}/user/auth-code`,
+    method: 'get',
+    params: { url }
   })
 }
 
