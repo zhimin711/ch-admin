@@ -128,6 +128,7 @@ export default {
     add: 'Add Permission',
     edit: 'Edit Permission',
     switchRoles: 'Switch roles',
+    importInterface: 'Import Interface',
     tips: 'In some cases, using v-permission will have no effect. For example: Element-UI  el-tab or el-table-column and other scenes that dynamically render dom. You can only do this with v-if.'
   },
   department: {

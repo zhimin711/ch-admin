@@ -16,6 +16,9 @@
       <el-button v-permission="['UPMS_PERMISSION_ADD']" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
         {{ $t('permission.add') }}
       </el-button>
+      <el-button v-permission="['UPMS_PERMISSION_ADD']" class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-download" @click="handleImportInterface">
+        {{ $t('permission.importInterface') }}
+      </el-button>
     </div>
 
     <el-table
@@ -153,6 +156,121 @@
         <el-button type="danger" :loading="dialogLoading" @click="dialogVisible = false">{{ $t('btn.cancel') }}</el-button>
       </div>
     </el-dialog>
+
+    <!-- 导入接口对话框 -->
+    <el-dialog :visible.sync="importDialogVisible" :title="$t('permission.importInterface')" width="800px" :close-on-click-modal="false" class="import-dialog">
+      <!-- 第一步：选择接口 -->
+      <div v-if="importStep === 1">
+        <el-steps :active="1" finish-status="success" simple style="margin-bottom: 20px;">
+          <el-step title="选择接口" />
+          <el-step title="配置权限" />
+        </el-steps>
+
+        <el-form :model="importForm" label-width="100px">
+          <el-form-item label="选择项目">
+            <el-select v-model="importForm.projectId" placeholder="请选择项目" style="width: 100%;" @change="handleProjectChange">
+              <el-option
+                v-for="item in importOptions.projects"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+              />
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="选择模块">
+            <el-select v-model="importForm.moduleId" placeholder="请选择模块" style="width: 100%;" :disabled="!importForm.projectId" @change="handleModuleChange">
+              <el-option
+                v-for="item in importOptions.modules"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+              />
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="选择接口">
+            <el-select v-model="importForm.interfaceId" placeholder="请选择接口" style="width: 100%;" :disabled="!importForm.moduleId" @change="handleInterfaceChange">
+              <el-option
+                v-for="item in importOptions.interfaces"
+                :key="item.id"
+                :label="`${item.name} (${item.method} ${item.url})`"
+                :value="item.id"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+
+        <div style="text-align: right; margin-top: 20px;">
+          <el-button @click="importDialogVisible = false">取消</el-button>
+          <el-button type="primary" :disabled="!importForm.interfaceId" @click="nextStep">下一步</el-button>
+        </div>
+      </div>
+
+      <!-- 第二步：配置权限 -->
+      <div v-if="importStep === 2">
+        <el-steps :active="2" finish-status="success" simple style="margin-bottom: 20px;">
+          <el-step title="选择接口" />
+          <el-step title="配置权限" />
+        </el-steps>
+
+        <el-form ref="importPermissionForm" :model="importPermissionRecord" :rules="importRules" label-width="100px">
+          <el-form-item :label="$t('label.type')">
+            <el-radio-group v-model="importPermissionRecord.type" @change="changeImportType">
+              <el-radio-button label="3">{{ $t('label.btn') }}</el-radio-button>
+              <el-radio-button label="4">授权{{ $t('label.interface') }}</el-radio-button>
+              <el-radio-button label="5">开放{{ $t('label.interface') }}</el-radio-button>
+            </el-radio-group>
+          </el-form-item>
+
+          <el-form-item :label="$t('label.parent')">
+            <el-cascader ref="importCategoryCascader" v-model="importRecordParents" :options="options.parents" :show-all-levels="false" :props="recordParentsProps" clearable />
+            <el-icon v-show="dialogLoadingVisible" class="el-icon-loading" />
+          </el-form-item>
+
+          <el-form-item :label="$t('label.code')" prop="code">
+            <el-input v-model="importPermissionRecord.code" placeholder="权限代码" />
+          </el-form-item>
+
+          <el-form-item :label="$t('label.name')" prop="name">
+            <el-input v-model="importPermissionRecord.name" />
+          </el-form-item>
+
+          <el-form-item :label="$t('label.address')">
+            <el-input v-model="importPermissionRecord.url" :disabled="true" placeholder="接口地址" />
+          </el-form-item>
+
+          <el-form-item :label="$t('label.method')">
+            <el-input v-model="importPermissionRecord.method" :disabled="true" placeholder="请求方法" />
+          </el-form-item>
+
+          <el-form-item v-if="importPermissionRecord.type === '4'" :label="recordHiddenName[importPermissionRecord.type]">
+            <el-radio v-model="importPermissionRecord.hidden" :label="true">角色</el-radio>
+            <el-radio v-model="importPermissionRecord.hidden" :label="false">授权码</el-radio>
+          </el-form-item>
+
+          <el-form-item v-if="importPermissionRecord.type === '5'" :label="recordHiddenName[importPermissionRecord.type]">
+            <el-radio v-model="importPermissionRecord.hidden" :label="false">否</el-radio>
+            <el-radio v-model="importPermissionRecord.hidden" :label="true">是</el-radio>
+          </el-form-item>
+
+          <el-form-item v-if="importPermissionRecord.hidden && importPermissionRecord.type === '5'" label="Cookie访问">
+            <el-radio v-model="importPermissionRecord.enableCookie" :label="false">否</el-radio>
+            <el-radio v-model="importPermissionRecord.enableCookie" :label="true">是</el-radio>
+          </el-form-item>
+
+          <el-form-item :label="$t('label.sort')">
+            <el-input-number v-model="importPermissionRecord.sort" />
+          </el-form-item>
+        </el-form>
+
+        <div style="text-align: right; margin-top: 20px;">
+          <el-button @click="prevStep">上一步</el-button>
+          <el-button type="primary" :loading="importDialogLoading" @click="handleImportSubmit">保存</el-button>
+          <el-button @click="importDialogVisible = false">取消</el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -161,6 +279,7 @@ import IconSelector from '@/components/IconSelector'
 import { deepClone } from '@/utils'
 import { isEmpty } from '@/utils/validate'
 import { treePermission, pagePermission, addPermission, editPermission, delPermission, getPermissionChildren } from '@/api/upms/permission'
+import { getProjects, getModules, getInterfaces, getInterfaceDetail } from '@/api/upms/interface'
 
 const defaultRecord = {
   type: '1',
@@ -228,6 +347,44 @@ export default {
       },
       options: {
         parents: []
+      },
+      // 导入接口相关数据
+      importDialogVisible: false,
+      importStep: 1,
+      importDialogLoading: false,
+      importForm: {
+        projectId: null,
+        moduleId: null,
+        interfaceId: null
+      },
+      importOptions: {
+        projects: [],
+        modules: [],
+        interfaces: []
+      },
+      importPermissionRecord: {
+        type: '3',
+        code: '',
+        sort: 1,
+        hidden: false,
+        name: '',
+        method: '',
+        url: '',
+        enableCookie: false
+      },
+      importRecordParents: [],
+      importRules: {
+        name: [
+          { required: true, message: '名称不能为空', trigger: 'blur' }
+        ],
+        code: [
+          { required: true, message: '权限代码不能为空' },
+          {
+            pattern: /^[A-Za-z0-9_]+$/,
+            message: '请输入正确的权限代码',
+            trigger: 'blur'
+          }
+        ]
       }
     }
   },
@@ -430,6 +587,165 @@ export default {
         this.recordParentsProps.checkStrictly = true
       }
       this.getTree(type)
+    },
+
+    // 导入接口相关方法
+    handleImportInterface() {
+      this.importDialogVisible = true
+      this.importStep = 1
+      this.resetImportForm()
+      this.loadProjects()
+    },
+
+    resetImportForm() {
+      this.importForm = {
+        projectId: null,
+        moduleId: null,
+        interfaceId: null
+      }
+      this.importOptions.modules = []
+      this.importOptions.interfaces = []
+      this.importPermissionRecord = {
+        type: '3',
+        code: '',
+        sort: 1,
+        hidden: false,
+        name: '',
+        method: '',
+        url: '',
+        enableCookie: false
+      }
+      this.importRecordParents = []
+    },
+
+    async loadProjects() {
+      try {
+        const response = await getProjects()
+        if (response.success) {
+          this.importOptions.projects = response.rows || []
+        }
+      } catch (error) {
+        console.error('加载项目列表失败:', error)
+        this.$message.error('加载项目列表失败')
+      }
+    },
+
+    async handleProjectChange(projectId) {
+      this.importForm.moduleId = null
+      this.importForm.interfaceId = null
+      this.importOptions.modules = []
+      this.importOptions.interfaces = []
+
+      if (!projectId) return
+
+      try {
+        const response = await getModules(projectId)
+        if (response.success) {
+          this.importOptions.modules = response.rows || []
+        }
+      } catch (error) {
+        console.error('加载模块列表失败:', error)
+        this.$message.error('加载模块列表失败')
+      }
+    },
+
+    async handleModuleChange(moduleId) {
+      this.importForm.interfaceId = null
+      this.importOptions.interfaces = []
+
+      if (!moduleId) return
+
+      try {
+        const response = await getInterfaces(moduleId)
+        if (response.success) {
+          this.importOptions.interfaces = response.rows || []
+        }
+      } catch (error) {
+        console.error('加载接口列表失败:', error)
+        this.$message.error('加载接口列表失败')
+      }
+    },
+
+    async handleInterfaceChange(interfaceId) {
+      if (!interfaceId) return
+
+      try {
+        const response = await getInterfaceDetail(interfaceId)
+        if (response.success) {
+          const interfaceData = response.data
+          // 预填充权限记录
+          this.importPermissionRecord.name = interfaceData.name || ''
+          this.importPermissionRecord.url = interfaceData.url || ''
+          this.importPermissionRecord.method = interfaceData.method || 'GET'
+          this.importPermissionRecord.code = interfaceData.code || interfaceData.name || ''
+        }
+      } catch (error) {
+        console.error('加载接口详情失败:', error)
+        this.$message.error('加载接口详情失败')
+      }
+    },
+
+    nextStep() {
+      if (!this.importForm.interfaceId) {
+        this.$message.warning('请先选择接口')
+        return
+      }
+
+      this.importStep = 2
+      // 加载权限树
+      this.getTree('3')
+    },
+
+    prevStep() {
+      this.importStep = 1
+    },
+
+    changeImportType(value) {
+      let type = value
+      this.recordParentsProps.checkStrictly = false
+      if (value === '4' || value === '5') {
+        type = '3'
+      }
+      this.getTree(type)
+    },
+
+    async handleImportSubmit() {
+      const _this = this
+
+      try {
+        await this.$refs['importPermissionForm'].validate()
+      } catch (error) {
+        return
+      }
+
+      if (this.importRecordParents.length > 0) {
+        this.importPermissionRecord.parentId = this.importRecordParents.join(',')
+      } else {
+        this.importPermissionRecord.parentId = null
+      }
+
+      // 设置状态为启用
+      this.importPermissionRecord.status = '1'
+
+      this.importDialogLoading = true
+
+      try {
+        const resp = await addPermission(this.importPermissionRecord)
+        if (resp && resp.success) {
+          this.importDialogVisible = false
+          this.$message({
+            type: 'success',
+            message: `导入接口 ${this.importPermissionRecord.name} 成功!`
+          })
+          this.isRefreshExpand = true
+          _this.getList()
+        }
+      } catch (error) {
+        console.error('导入接口失败:', error)
+        this.$message.error('导入接口失败')
+      } finally {
+        this.importDialogLoading = false
+      }
     }
   }
 }
@@ -443,5 +759,18 @@ export default {
   position: absolute;
   right: 15px;
   top: 10px;
+}
+
+/* 导入接口对话框样式 */
+.import-dialog .el-steps {
+  margin-bottom: 20px;
+}
+
+.import-dialog .el-form-item {
+  margin-bottom: 18px;
+}
+
+.import-dialog .el-select {
+  width: 100%;
 }
 </style>
