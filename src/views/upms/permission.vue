@@ -221,8 +221,8 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="record.type === '4'" :label="recordHiddenName[record.type]">
-          <el-radio v-model="record.hidden" :label="true">角色</el-radio>
-          <el-radio v-model="record.hidden" :label="false">授权码</el-radio>
+          <el-radio v-model="record.hidden" :label="false">角色</el-radio>
+          <el-radio v-model="record.hidden" :label="true">授权码</el-radio>
         </el-form-item>
         <el-form-item v-if="record.type === '2' || record.type === '5'" :label="recordHiddenName[record.type]">
           <!--<el-radio v-model="record.hidden" :label="false">{{ record.type === '2'?'否':'是' }}</el-radio>
@@ -700,7 +700,9 @@ export default {
       if (value === '4' || value === '5') {
         type = '3'
         this.record.method = 'GET'
-        this.record.hidden = value === '4'
+        if (this.dialogType !== 'edit') {
+          this.record.hidden = !value === '4'
+        }
       } else if (value === '3') {
         this.recordForm.descDisabled = false
       } else if (value === '2') {

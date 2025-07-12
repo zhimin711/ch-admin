@@ -17,6 +17,8 @@
         :expand-on-click-node="false"
         :filter-node-method="filterProjects"
         default-expand-all
+        :props="{ label: 'label' }"
+        :render-content="renderProjectNode"
         @node-click="handleProjectClick"
       />
     </div>
@@ -69,6 +71,62 @@ export default {
       this.$emit('change', data.value)
       // this.projects = data.value
       // this.fetchData()
+    },
+    renderProjectNode(h, { node, data, store }) {
+      // 创建label节点
+      const labelVNode = h(
+        'span',
+        {
+          class: 'el-tree-node__label',
+          style: {
+            display: 'inline-block',
+            maxWidth: '160px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            verticalAlign: 'middle'
+          },
+          ref: 'labelSpan',
+          refInFor: true
+        },
+        data.label
+      )
+
+      // 用一个div包裹，等渲染后判断是否溢出
+      return h(
+        'div',
+        {
+          style: { display: 'inline-block', width: '100%' },
+          ref: 'labelWrapper',
+          refInFor: true,
+          on: {
+            mouseenter: (e) => {
+              // 动态判断是否溢出
+              const span = e.currentTarget.querySelector('.el-tree-node__label')
+              if (span && span.scrollWidth > span.clientWidth) {
+                this.$set(data, '_showTooltip', true)
+              } else {
+                this.$set(data, '_showTooltip', false)
+              }
+            }
+          }
+        },
+        [
+          (data._showTooltip
+            ? h(
+              'el-tooltip',
+              {
+                props: {
+                  content: data.label,
+                  placement: 'right',
+                  effect: 'dark'
+                }
+              },
+              [labelVNode]
+            )
+            : labelVNode)
+        ]
+      )
     },
     loadData() {
       const tenant = this.$store.getters.tenant

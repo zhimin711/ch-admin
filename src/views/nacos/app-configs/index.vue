@@ -1,289 +1,562 @@
 <template>
   <div class="app-container">
-    <el-row :gutter="20">
-      <!--部门数据-->
-      <el-col :span="5" :xs="24">
-        <project-menu @change="handleSelectProject" />
-      </el-col>
-      <!--用户数据-->
-      <el-col :span="19" :xs="24" style="border-left: 1px solid #dedede; min-height: 500px">
-        <project-namespace v-model="namespaceId" :project-id="projectId" @change="handleNamespaceChange" @finish="loadNamespacesFinish" />
-        <el-alert
-          v-if="!showSearch && projectId==='' && namespaceId!=='apply'"
-          title="未选择项目或未加载项目的配置集群"
-          type="info"
-          description="若未选择项目请从左侧先选择项目，若未加载到集群请联系管理员..."
-          show-icon
-        />
-        <el-alert
-          v-if="!showSearch && projectId!=='' && namespaceId!=='apply'"
-          title="未授权当前项目集群或命名空间"
-          type="info"
-          description="若项目集群为空请直接联系管理员；若存在集群可选择后点击选择申请空间，提交申请后等待管理员审核..."
-          show-icon
-        />
-        <div v-show="showSearch" class="query-container">
-          <el-button v-if="canWrite" v-permission="'NACOS_PROJECT_CONFIG_ADD'" type="primary" @click="handleCreate()">创建配置</el-button>
-          <el-button v-if="canWrite" v-permission="'NACOS_PROJECT_CONFIGS_CLONE'" type="primary" plain @click="handleClone()">克隆配置</el-button>
-          <el-button v-if="canWrite" v-permission="'NACOS_PROJECT_CONFIGS_IMPORT'" type="primary" plain @click="handleImports()">导入配置</el-button>
-          <el-button v-permission="'NACOS_PROJECT_CONFIGS_EXPORT'" type="warning" plain @click="handleExports()">导出配置</el-button>
-          <el-button type="primary" icon="el-icon-refresh" plain @click="queryData()">刷新</el-button>
-          <el-button v-permission="'NACOS_PROJECT_INSTANCES'" type="primary" icon="el-icon-s-platform" plain @click="handleInstances">服务实例</el-button>
+    <div class="main-layout">
+      <!-- 左侧项目菜单 -->
+      <div class="sidebar">
+        <div class="sidebar-inner">
+          <project-menu @change="handleSelectProject" />
         </div>
-        <el-table
-          v-show="showSearch"
-          v-loading="listLoading"
-          :data="list"
-          element-loading-text="Loading"
-          border
-          fit
-          highlight-current-row
-          @selection-change="handleSelectionChange"
-        >
-          <el-table-column
-            type="selection"
-            align="center"
-            width="55"
-          />
-          <el-table-column label="Data Id" min-width="200" prop="dataId" />
-          <el-table-column label="Group" min-width="200" prop="group" />
-          <el-table-column align="center" prop="created_at" label="操作" min-width="180">
-            <template slot-scope="{row}">
-              <el-button v-if="canWrite" v-permission="'NACOS_PROJECT_CONFIG_EDIT'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
-              <el-button v-permission="'NACOS_PROJECT_CONFIG_COMPARE'" type="text" @click.native="handleCompare(row)">比较配置</el-button>
-              <el-button v-permission="'NACOS_PROJECT_CONFIG_DETAIL'" type="text" @click.native="handleDetail(row)">详情</el-button>
-              <el-button v-permission="'NACOS_PROJECT_CONFIG_HISTORY'" type="text" @click.native="handleHistory(row)">变更历史</el-button>
-              <el-button v-if="canWrite" v-permission="'NACOS_PROJECT_CONFIG_DELETE'" type="text" @click.native="onDelete(row)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <pagination v-show="showSearch&&count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
-      </el-col>
-    </el-row>
-    <el-dialog title="导入配置" :visible.sync="dialogVisible2Import" width="400px">
-      <el-form label-width="100px">
-        <el-form-item label="目标空间">
-          <el-tag>{{ namespaceName }}</el-tag>
-        </el-form-item>
-        <el-form-item label="相同配置">
-          <el-select v-model="policy" placeholder="请选择">
-            <el-option
-              v-for="item in options.policies"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <el-alert
-        title="文件上传后将直接导入配置，请务必谨慎操作！"
-        type="info"
-        center
-        :closable="false"
-        show-icon
-      />
-      <single-file :url="importUrl" :data="{'policy': policy}" @success="importSuccess" />
-      <span slot="footer" class="dialog-footer">
-        <el-button :loading="dialogLoading" @click="dialogVisible2Import = false">关闭</el-button>
-      </span>
-    </el-dialog>
-    <el-dialog :title="titles.importResult" :visible.sync="dialogVisible2ImportResult">
-      <el-tag type="info" style="margin-bottom: 10px">{{ importMessage }}</el-tag>
-      <el-alert
-        v-if="tables.importFail.length>0"
-        :title="titles.fail"
-        type="error"
-        :closable="false"
-        show-icon
-      />
-      <el-table v-if="tables.importFail.length>0" :data="tables.importFail">
-        <el-table-column property="dataId" label="Data Id" />
-        <el-table-column property="group" label="Group" />
-      </el-table>
-      <el-alert
-        v-if="tables.importSkip.length>0"
-        :title="titles.skip"
-        type="warning"
-        :closable="false"
-        show-icon
-      />
-      <el-table v-if="tables.importSkip.length>0" :data="tables.importSkip">
-        <el-table-column property="dataId" label="Data Id" />
-        <el-table-column property="group" label="Group" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button :loading="dialogLoading" @click="dialogVisible2ImportResult = false">关闭</el-button>
-      </span>
-    </el-dialog>
-    <el-dialog title="克隆配置" :visible.sync="dialogVisible2Clone">
-      <el-form ref="cloneForm" :model="record" label-width="120px">
-        <el-form-item label="源空间">
-          <el-tag>{{ namespaceName }}</el-tag>
-        </el-form-item>
-        <el-form-item label="目标空间" prop="toNamespace">
-          <el-select v-model="toNamespace" placeholder="请选择目标空间">
-            <el-option v-for="item in namespaces" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="相同配置">
-          <el-select v-model="policy" placeholder="请选择">
-            <el-option
-              v-for="item in options.policies"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <el-alert
-        title="修改 Data Id 和 Group (可选操作)"
-        type="success"
-        :closable="false"
-        show-icon
-      />
-      <el-table :data="tables.clone">
-        <el-table-column property="dataId" label="Data Id">
-          <template slot-scope="{row}">
-            <el-input v-model="row.dataId" class="edit-input" size="small" />
-          </template>
-        </el-table-column>
-        <el-table-column property="group" label="Group">
-          <template slot-scope="{row}">
-            <el-input v-model="row.group" class="edit-input" size="small" disabled />
-          </template>
-        </el-table-column>
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button :loading="dialogLoading" @click="dialogVisible2Clone = false">关闭</el-button>
-        <el-button type="primary" :loading="dialogLoading" @click="onClone">开始克隆</el-button>
-      </span>
-    </el-dialog>
+      </div>
 
-    <el-dialog title="更新记录" :visible.sync="dialogVisible2History" width="80%">
-      <el-table
-        v-if="!showHistoryContent"
-        v-loading="historyLoading"
-        :data="tables.history"
-        element-loading-text="Loading"
-        border
-        fit
-        highlight-current-row
-      >
-        <el-table-column label="更新人" min-width="100" prop="srcUser" />
-        <el-table-column label="更新类型" min-width="80" prop="opType">
-          <template slot-scope="{row}">
-            <el-tag v-if="row.opType === 'I'">新增</el-tag>
-            <el-tag v-else-if="row.opType === 'D'">删除</el-tag>
-            <el-tag v-else>更新</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="更新时间" prop="lastModifiedTime" :formatter="dateFormat" />
-        <el-table-column align="center" label="操作" width="180">
-          <template slot-scope="{row}">
-            <el-button v-permission="'NACOS_PROJECT_CONFIG_HISTORY_DETAIL'" type="text" icon="el-icon-view" @click.native="handleHistoryDetail(row)">详情</el-button>
-            <el-button v-if="canWrite" v-permission="'NACOS_PROJECT_CONFIGS_ROLLBACK'" type="text" icon="el-icon-refresh-left" @click.native="handleHistoryDetail(row)">回滚</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <pagination v-show="!showHistoryContent&&historyCount>0" :total="historyCount" :page.sync="historyQuery.pageNo" :limit.sync="historyQuery.pageSize" @pagination="pageHistory()" />
-      <el-card v-if="showHistoryContent" class="box-card">
-        <div slot="header" class="clearfix">
-          <span>历史配置 {{ dateFormat2(historyRecord.lastModifiedTime) }}</span>
-          <el-button v-permission="'NACOS_PROJECT_CONFIGS_ROLLBACK'" style="float: right; padding: 3px 0" type="text" @click="handleHistoryRollback">回滚</el-button>
+      <!-- 右侧内容区域 -->
+      <div class="content-area">
+        <!-- 命名空间选择 -->
+        <div class="namespace-section">
+          <project-namespace
+            v-model="namespaceId"
+            :project-id="projectId"
+            @change="handleNamespaceChange"
+            @finish="loadNamespacesFinish"
+          />
         </div>
-        <div class="text item">
-          <el-input v-model="historyRecord.content" type="textarea" :autosize="{ minRows: 10, maxRows: 14}" />
+
+        <!-- 提示信息 -->
+        <div v-show="!showSearch" class="alert-section">
+          <el-alert
+            v-if="!showSearch && projectId==='' && namespaceId!=='apply'"
+            title="未选择项目或未加载项目的配置集群"
+            type="info"
+            description="若未选择项目请从左侧先选择项目，若未加载到集群请联系管理员..."
+            show-icon
+            :closable="false"
+          />
+          <el-alert
+            v-if="!showSearch && projectId!=='' && namespaceId!=='apply'"
+            title="未授权当前项目集群或命名空间"
+            type="info"
+            description="若项目集群为空请直接联系管理员；若存在集群可选择后点击选择申请空间，提交申请后等待管理员审核..."
+            show-icon
+            :closable="false"
+          />
         </div>
-      </el-card>
-      <span slot="footer" class="dialog-footer">
-        <el-button v-if="showHistoryContent" @click="showHistoryContent = false">返回</el-button>
-        <el-button @click="dialogVisible2History = false">关闭</el-button>
-      </span>
-    </el-dialog>
-    <el-dialog title="服务实例" :visible.sync="dialogVisible2Instances" width="80%">
-      <div v-for="(item2,index) in tables.instances" :key="'instances'+index">
-        <el-card v-for="(item, k) in item2.clusterMap" :key="'consumeGroup'+k" class="box-card route-broker">
-          <div slot="header" class="clearfix">
-            <span>分组	:	<el-tag>{{ item2.groupName }}</el-tag></span>
-            <span>集群	:	<el-tag>{{ k }}</el-tag></span>
+
+        <!-- 操作按钮区域 -->
+        <div v-show="showSearch" class="action-bar">
+          <div class="action-left">
+            <el-button
+              v-if="canWrite"
+              v-permission="'NACOS_PROJECT_CONFIG_ADD'"
+              type="primary"
+              icon="el-icon-plus"
+              @click="handleCreate()"
+            >
+              创建配置
+            </el-button>
+            <el-button
+              v-if="canWrite"
+              v-permission="'NACOS_PROJECT_CONFIGS_CLONE'"
+              type="success"
+              icon="el-icon-copy-document"
+              @click="handleClone()"
+            >
+              克隆配置
+            </el-button>
+            <el-button
+              v-if="canWrite"
+              v-permission="'NACOS_PROJECT_CONFIGS_IMPORT'"
+              type="warning"
+              icon="el-icon-upload2"
+              @click="handleImports()"
+            >
+              导入配置
+            </el-button>
           </div>
-          <el-table :data="item.hosts" border>
-            <el-table-column label="IP" width="150" prop="ip" />
-            <el-table-column label="端口" width="60" prop="port" />
-            <el-table-column label="上线" width="100" align="center" prop="enabled">
+
+          <div class="action-right">
+            <el-button
+              v-permission="'NACOS_PROJECT_CONFIGS_EXPORT'"
+              type="info"
+              icon="el-icon-download"
+              @click="handleExports()"
+            >
+              导出配置
+            </el-button>
+            <el-button
+              type="primary"
+              icon="el-icon-refresh"
+              @click="queryData()"
+            >
+              刷新
+            </el-button>
+            <el-button
+              v-permission="'NACOS_PROJECT_INSTANCES'"
+              type="primary"
+              icon="el-icon-s-platform"
+              @click="handleInstances"
+            >
+              服务实例
+            </el-button>
+          </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <div v-show="showSearch" class="table-section">
+          <el-table
+            v-loading="listLoading"
+            :data="list"
+            element-loading-text="Loading"
+            border
+            stripe
+            highlight-current-row
+            class="config-table"
+            :header-cell-style="{ background: '#f5f7fa', color: '#606266', fontWeight: '600' }"
+            @selection-change="handleSelectionChange"
+          >
+            <el-table-column
+              type="selection"
+              align="center"
+              width="55"
+            />
+            <el-table-column label="Data Id" min-width="200" prop="dataId">
               <template slot-scope="{row}">
-                {{ row.enabled }}
+                <div class="data-id">
+                  <i class="el-icon-document" />
+                  <span>{{ row.dataId }}</span>
+                </div>
               </template>
             </el-table-column>
-            <el-table-column label="权重" width="60" align="center" prop="weight" />
-            <el-table-column label="健康状态" width="100" align="center" prop="valid">
+            <el-table-column label="Group" min-width="200" prop="group">
               <template slot-scope="{row}">
-                {{ row.valid }}
+                <el-tag type="info" size="small">
+                  {{ row.group }}
+                </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="元数据" min-width="100">
+            <el-table-column align="center" label="操作" min-width="280" fixed="right">
               <template slot-scope="{row}">
-                {{ JSON.stringify(row.metadata) }}
+                <div class="action-buttons">
+                  <el-link
+                    v-if="canWrite"
+                    v-permission="'NACOS_PROJECT_CONFIG_EDIT'"
+                    type="primary"
+                    icon="el-icon-edit"
+                    @click="handleUpdate(row)"
+                  >
+                    编辑
+                  </el-link>
+                  <el-link
+                    v-permission="'NACOS_PROJECT_CONFIG_COMPARE'"
+                    type="success"
+                    icon="el-icon-s-operation"
+                    @click="handleCompare(row)"
+                  >
+                    比较配置
+                  </el-link>
+                  <el-link
+                    v-permission="'NACOS_PROJECT_CONFIG_DETAIL'"
+                    type="info"
+                    icon="el-icon-view"
+                    @click="handleDetail(row)"
+                  >
+                    详情
+                  </el-link>
+                  <el-link
+                    v-permission="'NACOS_PROJECT_CONFIG_HISTORY'"
+                    type="warning"
+                    icon="el-icon-time"
+                    @click="handleHistory(row)"
+                  >
+                    变更历史
+                  </el-link>
+                  <el-link
+                    v-if="canWrite"
+                    v-permission="'NACOS_PROJECT_CONFIG_DELETE'"
+                    type="danger"
+                    icon="el-icon-delete"
+                    @click="onDelete(row)"
+                  >
+                    删除
+                  </el-link>
+                </div>
               </template>
             </el-table-column>
           </el-table>
-        </el-card>
+
+          <!-- 分页 -->
+          <div class="pagination-wrapper">
+            <pagination
+              v-show="showSearch&&count>0"
+              :total="count"
+              :page.sync="listQuery.pageNo"
+              :limit.sync="listQuery.pageSize"
+              @pagination="fetchData()"
+            />
+          </div>
+        </div>
       </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible2Instances = false">关闭</el-button>
-      </span>
+    </div>
+    <!-- 导入配置弹窗 -->
+    <el-dialog
+      title="导入配置"
+      :visible.sync="dialogVisible2Import"
+      width="500px"
+      class="import-dialog"
+    >
+      <div class="dialog-content">
+        <el-form label-width="100px" class="import-form">
+          <el-form-item label="目标空间">
+            <el-tag type="primary">{{ namespaceName }}</el-tag>
+          </el-form-item>
+          <el-form-item label="相同配置">
+            <el-select v-model="policy" placeholder="请选择处理策略" class="policy-select">
+              <el-option
+                v-for="item in options.policies"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+
+        <el-alert
+          title="文件上传后将直接导入配置，请务必谨慎操作！"
+          type="warning"
+          center
+          :closable="false"
+          show-icon
+        />
+
+        <div class="upload-section">
+          <single-file :url="importUrl" :data="{'policy': policy}" @success="importSuccess" />
+        </div>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2Import = false">关闭</el-button>
+      </div>
+    </el-dialog>
+    <!-- 导入结果弹窗 -->
+    <el-dialog
+      :title="titles.importResult"
+      :visible.sync="dialogVisible2ImportResult"
+      width="600px"
+      class="result-dialog"
+    >
+      <div class="dialog-content">
+        <el-tag type="info" class="result-message">{{ importMessage }}</el-tag>
+
+        <div v-if="tables.importFail.length>0" class="fail-section">
+          <el-alert
+            :title="titles.fail"
+            type="error"
+            :closable="false"
+            show-icon
+          />
+          <el-table :data="tables.importFail" border stripe class="result-table">
+            <el-table-column property="dataId" label="Data Id" />
+            <el-table-column property="group" label="Group" />
+          </el-table>
+        </div>
+
+        <div v-if="tables.importSkip.length>0" class="skip-section">
+          <el-alert
+            :title="titles.skip"
+            type="warning"
+            :closable="false"
+            show-icon
+          />
+          <el-table :data="tables.importSkip" border stripe class="result-table">
+            <el-table-column property="dataId" label="Data Id" />
+            <el-table-column property="group" label="Group" />
+          </el-table>
+        </div>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2ImportResult = false">关闭</el-button>
+      </div>
+    </el-dialog>
+    <!-- 克隆配置弹窗 -->
+    <el-dialog
+      title="克隆配置"
+      :visible.sync="dialogVisible2Clone"
+      width="700px"
+      class="clone-dialog"
+    >
+      <div class="dialog-content">
+        <el-form ref="cloneForm" :model="record" label-width="120px" class="clone-form">
+          <el-form-item label="源空间">
+            <el-tag type="primary">{{ namespaceName }}</el-tag>
+          </el-form-item>
+          <el-form-item label="目标空间" prop="toNamespace">
+            <el-select v-model="toNamespace" placeholder="请选择目标空间" class="namespace-select">
+              <el-option v-for="item in namespaces" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="相同配置">
+            <el-select v-model="policy" placeholder="请选择处理策略" class="policy-select">
+              <el-option
+                v-for="item in options.policies"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+
+        <el-alert
+          title="修改 Data Id 和 Group (可选操作)"
+          type="success"
+          :closable="false"
+          show-icon
+        />
+
+        <div class="clone-table-section">
+          <el-table :data="tables.clone" border stripe class="clone-table">
+            <el-table-column property="dataId" label="Data Id">
+              <template slot-scope="{row}">
+                <el-input v-model="row.dataId" class="edit-input" size="small" />
+              </template>
+            </el-table-column>
+            <el-table-column property="group" label="Group">
+              <template slot-scope="{row}">
+                <el-input v-model="row.group" class="edit-input" size="small" disabled />
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2Clone = false">关闭</el-button>
+        <el-button type="primary" :loading="dialogLoading" @click="onClone">开始克隆</el-button>
+      </div>
     </el-dialog>
 
-    <el-dialog title="可比较配置列表" :visible.sync="dialogCompareListVisible" width="60%">
-      <el-table
-        :data="compareData.list"
-        element-loading-text="Loading"
-        border
-        fit
-        highlight-current-row
-      >
-        <el-table-column label="集群环境" min-width="100" prop="appName" />
-        <el-table-column label="空间" prop="tenant" />
-        <el-table-column align="center" label="操作" width="180">
-          <template slot-scope="{row}">
-            <el-button type="text" icon="el-icon-view" @click.native="doCompare(row)">比较</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogCompareListVisible = false">关闭</el-button>
-      </span>
+    <!-- 更新记录弹窗 -->
+    <el-dialog
+      title="更新记录"
+      :visible.sync="dialogVisible2History"
+      width="80%"
+      class="history-dialog"
+    >
+      <div class="dialog-content">
+        <el-table
+          v-if="!showHistoryContent"
+          v-loading="historyLoading"
+          :data="tables.history"
+          element-loading-text="Loading"
+          border
+          stripe
+          highlight-current-row
+          class="history-table"
+          :header-cell-style="{ background: '#f5f7fa', color: '#606266', fontWeight: '600' }"
+        >
+          <el-table-column label="更新人" min-width="100" prop="srcUser" />
+          <el-table-column label="更新类型" min-width="80" prop="opType">
+            <template slot-scope="{row}">
+              <el-tag v-if="row.opType === 'I'" type="success">新增</el-tag>
+              <el-tag v-else-if="row.opType === 'D'" type="danger">删除</el-tag>
+              <el-tag v-else type="warning">更新</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="更新时间" prop="lastModifiedTime" :formatter="dateFormat" />
+          <el-table-column align="center" label="操作" width="180">
+            <template slot-scope="{row}">
+              <div class="action-buttons">
+                <el-link
+                  v-permission="'NACOS_PROJECT_CONFIG_HISTORY_DETAIL'"
+                  type="primary"
+                  icon="el-icon-view"
+                  @click="handleHistoryDetail(row)"
+                >
+                  详情
+                </el-link>
+                <el-link
+                  v-if="canWrite"
+                  v-permission="'NACOS_PROJECT_CONFIGS_ROLLBACK'"
+                  type="warning"
+                  icon="el-icon-refresh-left"
+                  @click="handleHistoryDetail(row)"
+                >
+                  回滚
+                </el-link>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="pagination-wrapper">
+          <pagination
+            v-show="!showHistoryContent&&historyCount>0"
+            :total="historyCount"
+            :page.sync="historyQuery.pageNo"
+            :limit.sync="historyQuery.pageSize"
+            @pagination="pageHistory()"
+          />
+        </div>
+
+        <div v-if="showHistoryContent" class="history-content">
+          <div class="history-header">
+            <span class="history-title">历史配置 {{ dateFormat2(historyRecord.lastModifiedTime) }}</span>
+            <el-button
+              v-permission="'NACOS_PROJECT_CONFIGS_ROLLBACK'"
+              type="warning"
+              icon="el-icon-refresh-left"
+              @click="handleHistoryRollback"
+            >
+              回滚
+            </el-button>
+          </div>
+          <div class="history-body">
+            <el-input
+              v-model="historyRecord.content"
+              type="textarea"
+              :autosize="{ minRows: 10, maxRows: 14}"
+              readonly
+            />
+          </div>
+        </div>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button v-if="showHistoryContent" @click="showHistoryContent = false">返回</el-button>
+        <el-button @click="dialogVisible2History = false">关闭</el-button>
+      </div>
     </el-dialog>
+    <!-- 服务实例弹窗 -->
+    <el-dialog
+      title="服务实例"
+      :visible.sync="dialogVisible2Instances"
+      width="80%"
+      class="instances-dialog"
+    >
+      <div class="dialog-content">
+        <div v-for="(item2,index) in tables.instances" :key="'instances'+index" class="instance-group">
+          <div v-for="(item, k) in item2.clusterMap" :key="'consumeGroup'+k" class="cluster-section">
+            <div class="cluster-header">
+              <span class="group-info">
+                <i class="el-icon-s-grid" />
+                分组: <el-tag type="primary">{{ item2.groupName }}</el-tag>
+              </span>
+              <span class="cluster-info">
+                <i class="el-icon-s-home" />
+                集群: <el-tag type="success">{{ k }}</el-tag>
+              </span>
+            </div>
+            <el-table :data="item.hosts" border stripe class="instance-table">
+              <el-table-column label="IP" width="150" prop="ip" />
+              <el-table-column label="端口" width="60" prop="port" />
+              <el-table-column label="上线" width="100" align="center" prop="enabled">
+                <template slot-scope="{row}">
+                  <el-tag :type="row.enabled ? 'success' : 'danger'" size="small">
+                    {{ row.enabled ? '是' : '否' }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="权重" width="60" align="center" prop="weight" />
+              <el-table-column label="健康状态" width="100" align="center" prop="valid">
+                <template slot-scope="{row}">
+                  <el-tag :type="row.valid ? 'success' : 'danger'" size="small">
+                    {{ row.valid ? '健康' : '异常' }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column label="元数据" min-width="100">
+                <template slot-scope="{row}">
+                  <span class="metadata">{{ JSON.stringify(row.metadata) }}</span>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </div>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2Instances = false">关闭</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 可比较配置列表弹窗 -->
+    <el-dialog
+      title="可比较配置列表"
+      :visible.sync="dialogCompareListVisible"
+      width="60%"
+      class="compare-list-dialog"
+    >
+      <div class="dialog-content">
+        <el-table
+          :data="compareData.list"
+          element-loading-text="Loading"
+          border
+          stripe
+          highlight-current-row
+          class="compare-table"
+          :header-cell-style="{ background: '#f5f7fa', color: '#606266', fontWeight: '600' }"
+        >
+          <el-table-column label="集群环境" min-width="100" prop="appName" />
+          <el-table-column label="空间" prop="tenant" />
+          <el-table-column align="center" label="操作" width="180">
+            <template slot-scope="{row}">
+              <el-link
+                type="primary"
+                icon="el-icon-view"
+                @click="doCompare(row)"
+              >
+                比较
+              </el-link>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogCompareListVisible = false">关闭</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 配置内容比较弹窗 -->
     <el-dialog
       title="配置内容比较"
       :visible.sync="dialogCompareVisible"
       :width="'80%'"
+      class="compare-dialog"
     >
-      <div>
-        <el-form :inline="false" label-width="120px" label-position="left">
-          <el-row :gutter="10">
-            <el-col :span="12">
-              <el-form-item label="当前配置内容：" />
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="比较配置内容：">
-                <el-input
-                  v-model="compareData.rightEnv"
-                  placeholder="请输入内容"
-                  :disabled="true"
-                />
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </el-form>
-        <code-diff :old-string="compareData.left.content" :new-string="compareData.right.content" :context="10" output-format="side-by-side" />
+      <div class="dialog-content">
+        <div class="compare-header">
+          <el-form :inline="false" label-width="120px" label-position="left">
+            <el-row :gutter="10">
+              <el-col :span="12">
+                <el-form-item label="当前配置内容：" />
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="比较配置内容：">
+                  <el-input
+                    v-model="compareData.rightEnv"
+                    placeholder="请输入内容"
+                    :disabled="true"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </div>
+        <div class="compare-body">
+          <code-diff
+            :old-string="compareData.left.content"
+            :new-string="compareData.right.content"
+            :context="10"
+            output-format="side-by-side"
+          />
+        </div>
       </div>
-      <span slot="footer" class="dialog-footer">
+
+      <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="backCompareList">返回比较列表</el-button>
         <el-button @click="dialogCompareVisible = false">关闭</el-button>
-      </span>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -749,3 +1022,409 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.app-container {
+  height: 100vh;
+  background: #f5f7fa;
+}
+
+.main-layout {
+  display: flex;
+  height: 100%;
+}
+
+// 左侧边栏
+.sidebar {
+  width: 220px;
+  min-width: 160px;
+  max-width: 220px !important;
+  background: #fff;
+  border-right: 1px solid #e4e7ed;
+  overflow-y: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.sidebar-inner {
+  width: 100% !important;
+  max-width: 220px !important;
+  box-sizing: border-box;
+  padding: 16px 8px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+// 针对 el-menu 或自定义菜单按钮的样式美化
+.sidebar-inner .el-menu,
+.sidebar-inner ul {
+  background: transparent !important;
+  border: none !important;
+  padding: 0;
+}
+.sidebar-inner .el-menu-item,
+.sidebar-inner li,
+.sidebar-inner .project-menu-item {
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  border: 1px solid #e4e7ed;
+  font-size: 15px;
+  color: #333;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 18px;
+  transition: all 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.sidebar-inner .el-menu-item:last-child,
+.sidebar-inner li:last-child,
+.sidebar-inner .project-menu-item:last-child {
+  margin-bottom: 0;
+}
+.sidebar-inner .el-menu-item:hover,
+.sidebar-inner li:hover,
+.sidebar-inner .project-menu-item:hover {
+  background: #f0f9ff;
+  color: #409EFF;
+  border-color: #b3d8ff;
+}
+.sidebar-inner .el-menu-item.is-active,
+.sidebar-inner li.active,
+.sidebar-inner .project-menu-item.active {
+  background: linear-gradient(90deg,#e3f2fd 0%,#bbdefb 100%);
+  color: #1976d2;
+  border-color: #90caf9;
+  font-weight: bold;
+}
+
+// 右侧内容区域
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// 命名空间区域
+.namespace-section {
+  padding: 0px 20px 16px 20px;
+  background: #fff;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+// 提示信息区域
+.alert-section {
+  padding: 0 20px;
+  margin-top: 16px;
+}
+
+// 操作按钮区域
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 20px 8px 20px;
+  background: #fff;
+  border-bottom: 1px solid #e4e7ed;
+  margin-top: 0px;
+  min-height: 48px;
+}
+.action-left,
+.action-right {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.action-bar .el-button {
+  min-width: 80px;
+  height: 36px;
+  font-size: 14px;
+  padding: 0 14px;
+}
+
+// 表格区域
+.table-section {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.config-table {
+  border-radius: 6px;
+  overflow: hidden;
+
+  .el-table__row:hover {
+    background-color: #f0f9ff !important;
+  }
+}
+
+.data-id {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Courier New', monospace;
+
+  i {
+    color: #409EFF;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.action-buttons .el-link {
+  padding: 0 4px;
+  font-size: 13px;
+  height: 28px;
+  line-height: 28px;
+  min-width: 0;
+}
+.action-buttons .el-link + .el-link {
+  margin-left: 0;
+}
+
+// 分页区域
+.pagination-wrapper {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+// 弹窗样式
+.import-dialog,
+.result-dialog,
+.clone-dialog,
+.history-dialog,
+.instances-dialog,
+.compare-list-dialog,
+.compare-dialog {
+  .el-dialog__header {
+    background: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
+  }
+
+  .el-dialog__title {
+    font-weight: 600;
+    color: #303133;
+  }
+}
+
+.dialog-content {
+  padding: 0;
+}
+
+.dialog-footer {
+  text-align: right;
+  padding-top: 20px;
+  border-top: 1px solid #e4e7ed;
+}
+
+// 导入弹窗
+.import-form {
+  margin-bottom: 20px;
+}
+
+.policy-select,
+.namespace-select {
+  width: 100%;
+}
+
+.upload-section {
+  margin-top: 20px;
+}
+
+// 结果弹窗
+.result-message {
+  margin-bottom: 20px;
+  display: block;
+}
+
+.fail-section,
+.skip-section {
+  margin-bottom: 20px;
+}
+
+.result-table {
+  margin-top: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+// 克隆弹窗
+.clone-form {
+  margin-bottom: 20px;
+}
+
+.clone-table-section {
+  margin-top: 20px;
+}
+
+.clone-table {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.edit-input {
+  width: 100%;
+}
+
+// 历史记录弹窗
+.history-table {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.history-content {
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e4e7ed;
+  }
+
+  .history-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #303133;
+  }
+
+  .history-body {
+    .el-textarea__inner {
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+  }
+}
+
+// 服务实例弹窗
+.instance-group {
+  margin-bottom: 24px;
+}
+
+.cluster-section {
+  margin-bottom: 16px;
+
+  .cluster-header {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 4px;
+
+    .group-info,
+    .cluster-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      i {
+        color: #409EFF;
+      }
+    }
+  }
+}
+
+.instance-table {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.metadata {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #606266;
+  word-break: break-all;
+}
+
+// 比较弹窗
+.compare-table {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.compare-header {
+  margin-bottom: 20px;
+}
+
+.compare-body {
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+// 链接样式优化
+.el-link {
+  font-size: 13px;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+// 标签样式优化
+.el-tag {
+  border-radius: 4px;
+}
+
+// 响应式设计
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 180px;
+    min-width: 160px;
+    max-width: 180px !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 160px;
+    min-width: 140px;
+    max-width: 160px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+  }
+
+  .action-bar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .action-left,
+  .action-right {
+    justify-content: center;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .cluster-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+</style>
