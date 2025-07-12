@@ -1,29 +1,5 @@
 <template>
   <div class="app-container">
-    <!-- 页面标题 -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-title">
-          <i class="el-icon-s-order" />
-          <span>RocketMQ 主题管理</span>
-        </div>
-        <div class="header-actions">
-          <el-button
-            type="primary"
-            icon="el-icon-refresh"
-            size="small"
-            :loading="table.main.loading"
-            @click="refreshData"
-          >
-            刷新数据
-          </el-button>
-        </div>
-      </div>
-      <div class="header-description">
-        管理RocketMQ主题的创建、配置、监控和消息发送
-      </div>
-    </div>
-
     <!-- 筛选条件卡片 -->
     <el-card class="filter-card" shadow="hover">
       <div slot="header" class="filter-header">
@@ -997,41 +973,6 @@ export default {
   min-height: calc(100vh - 84px);
 }
 
-// 页面标题
-.page-header {
-  background: #fff;
-  border-radius: 8px;
-  padding: 24px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.header-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-  display: flex;
-  align-items: center;
-
-  i {
-    margin-right: 12px;
-    color: #409EFF;
-    font-size: 28px;
-  }
-}
-
-.header-description {
-  color: #606266;
-  font-size: 14px;
-}
-
 // 筛选卡片
 .filter-card {
   margin-bottom: 20px;
@@ -1287,18 +1228,6 @@ export default {
 @media (max-width: 768px) {
   .app-container {
     padding: 10px;
-  }
-
-  .page-header {
-    padding: 16px;
-  }
-
-  .header-title {
-    font-size: 20px;
-
-    i {
-      font-size: 24px;
-    }
   }
 
   .filter-item-wrapper {
