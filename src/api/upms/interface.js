@@ -24,7 +24,7 @@ export function getModules(projectId) {
 // 根据模块获取接口列表
 export function getInterfaces(moduleId) {
   return request({
-    url: `${namespace}/interfaces`,
+    url: `${namespace}/paths`,
     method: 'get',
     params: {
       moduleId: moduleId

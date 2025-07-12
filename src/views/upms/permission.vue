@@ -1,22 +1,118 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
-      <el-input v-model="tableA.params.code" :placeholder="$t('label.code')" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
-      <el-input v-model="tableA.params.name" :placeholder="$t('label.name')" style="width: 200px;" class="filter-item" />
-      <el-select v-model="tableA.params.status" :placeholder="$t('label.status')" class="filter-item" clearable>
-        <el-option :label="$t('label.enable')" value="1" />
-        <el-option :label="$t('label.disable')" value="0" />
-      </el-select>
-      <el-button v-loading="tableA.loading" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        {{ $t('btn.search') }}
-      </el-button>
-      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="tableA.params = {}">
-        {{ $t('btn.reset') }}
-      </el-button>
-      <el-button v-permission="['UPMS_PERMISSION_ADD']" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+    <!-- 搜索筛选区域 -->
+    <div class="search-filter-container">
+      <el-card class="filter-card" shadow="never">
+        <div slot="header" class="filter-header">
+          <span class="filter-title">
+            <i class="el-icon-search" />
+            搜索筛选
+          </span>
+          <div class="filter-actions">
+            <el-button
+              type="text"
+              size="small"
+              icon="el-icon-refresh"
+              :disabled="tableA.loading"
+              class="header-btn"
+              @click="resetFilters"
+            >
+              重置
+            </el-button>
+            <el-button
+              type="text"
+              size="small"
+              icon="el-icon-arrow-up"
+              class="header-btn"
+              @click="toggleFilterCollapse"
+            >
+              {{ filterCollapsed ? '展开' : '收起' }}
+            </el-button>
+          </div>
+        </div>
+
+        <div v-show="!filterCollapsed" class="filter-content">
+          <div class="filter-row">
+            <div class="filter-item">
+              <el-input
+                v-model="tableA.params.code"
+                :placeholder="$t('label.code')"
+                class="filter-input"
+                clearable
+                @keyup.enter.native="getList"
+                @clear="getList"
+              >
+                <i slot="prefix" class="el-input__icon el-icon-document" />
+              </el-input>
+            </div>
+            <div class="filter-item">
+              <el-input
+                v-model="tableA.params.name"
+                :placeholder="$t('label.name')"
+                class="filter-input"
+                clearable
+                @keyup.enter.native="getList"
+                @clear="getList"
+              >
+                <i slot="prefix" class="el-input__icon el-icon-edit-outline" />
+              </el-input>
+            </div>
+            <div class="filter-item">
+              <el-select
+                v-model="tableA.params.status"
+                :placeholder="$t('label.status')"
+                class="filter-select"
+                clearable
+                @change="getList"
+              >
+                <el-option :label="$t('label.enable')" value="1">
+                  <span style="float: left">
+                    <i class="el-icon-success" style="color: #67C23A; margin-right: 5px;" />
+                    {{ $t('label.enable') }}
+                  </span>
+                </el-option>
+                <el-option :label="$t('label.disable')" value="0">
+                  <span style="float: left">
+                    <i class="el-icon-error" style="color: #F56C6C; margin-right: 5px;" />
+                    {{ $t('label.disable') }}
+                  </span>
+                </el-option>
+              </el-select>
+            </div>
+            <div class="filter-item">
+              <el-button
+                v-loading="tableA.loading"
+                type="primary"
+                icon="el-icon-search"
+                class="search-btn"
+                @click="getList"
+              >
+                {{ $t('btn.search') }}
+              </el-button>
+            </div>
+          </div>
+        </div>
+      </el-card>
+    </div>
+
+    <!-- 操作按钮区域 -->
+    <div class="action-container">
+      <el-button
+        v-permission="['UPMS_PERMISSION_ADD']"
+        type="primary"
+        icon="el-icon-plus"
+        class="action-btn"
+        @click="handleAdd"
+      >
         {{ $t('permission.add') }}
       </el-button>
-      <el-button v-permission="['UPMS_PERMISSION_ADD']" class="filter-item" style="margin-left: 10px;" type="success" icon="el-icon-download" @click="handleImportInterface">
+      <el-button
+        v-permission="['UPMS_PERMISSION_ADD']"
+        type="success"
+        icon="el-icon-download"
+        class="action-btn"
+        @click="handleImportInterface"
+      >
         {{ $t('permission.importInterface') }}
       </el-button>
     </div>
@@ -190,12 +286,18 @@
           </el-form-item>
 
           <el-form-item label="选择接口">
-            <el-select v-model="importForm.interfaceId" placeholder="请选择接口" style="width: 100%;" :disabled="!importForm.moduleId" @change="handleInterfaceChange">
+            <el-select
+              v-model="importForm.interfaceId"
+              placeholder="请选择接口"
+              style="width: 100%;"
+              :disabled="!importForm.moduleId"
+              @change="handleInterfaceChange"
+            >
               <el-option
                 v-for="item in importOptions.interfaces"
-                :key="item.id"
+                :key="item.code"
                 :label="`${item.name} (${item.method} ${item.url})`"
-                :value="item.id"
+                :value="item.code"
               />
             </el-select>
           </el-form-item>
@@ -203,7 +305,13 @@
 
         <div style="text-align: right; margin-top: 20px;">
           <el-button @click="importDialogVisible = false">取消</el-button>
-          <el-button type="primary" :disabled="!importForm.interfaceId" @click="nextStep">下一步</el-button>
+          <el-button
+            type="primary"
+            :disabled="!importForm.interfaceId || !importPermissionRecord.name || !importPermissionRecord.url"
+            @click="nextStep"
+          >
+            下一步
+          </el-button>
         </div>
       </div>
 
@@ -279,7 +387,7 @@ import IconSelector from '@/components/IconSelector'
 import { deepClone } from '@/utils'
 import { isEmpty } from '@/utils/validate'
 import { treePermission, pagePermission, addPermission, editPermission, delPermission, getPermissionChildren } from '@/api/upms/permission'
-import { getProjects, getModules, getInterfaces, getInterfaceDetail } from '@/api/upms/interface'
+import { getProjects, getModules, getInterfaces } from '@/api/upms/interface'
 
 const defaultRecord = {
   type: '1',
@@ -385,7 +493,9 @@ export default {
             trigger: 'blur'
           }
         ]
-      }
+      },
+      // 筛选相关
+      filterCollapsed: false
     }
   },
   created() {
@@ -572,6 +682,15 @@ export default {
         _this.getList()
       }
     },
+    // 重置筛选条件
+    resetFilters() {
+      this.tableA.params = {}
+      this.getList()
+    },
+    // 切换筛选区域展开/收起
+    toggleFilterCollapse() {
+      this.filterCollapsed = !this.filterCollapsed
+    },
     changeType(value) {
       let type = value
       this.recordForm.urlDisabled = value <= 1
@@ -581,6 +700,7 @@ export default {
       if (value === '4' || value === '5') {
         type = '3'
         this.record.method = 'GET'
+        this.record.hidden = value === '4'
       } else if (value === '3') {
         this.recordForm.descDisabled = false
       } else if (value === '2') {
@@ -595,6 +715,13 @@ export default {
       this.importStep = 1
       this.resetImportForm()
       this.loadProjects()
+
+      // 确保在对话框打开后清除验证错误
+      this.$nextTick(() => {
+        if (this.$refs['importPermissionForm']) {
+          this.$refs['importPermissionForm'].clearValidate()
+        }
+      })
     },
 
     resetImportForm() {
@@ -616,6 +743,13 @@ export default {
         enableCookie: false
       }
       this.importRecordParents = []
+
+      // 清除表单验证错误
+      this.$nextTick(() => {
+        if (this.$refs['importPermissionForm']) {
+          this.$refs['importPermissionForm'].clearValidate()
+        }
+      })
     },
 
     async loadProjects() {
@@ -666,22 +800,39 @@ export default {
       }
     },
 
-    async handleInterfaceChange(interfaceId) {
-      if (!interfaceId) return
+    async handleInterfaceChange(interfaceCode) {
+      if (!interfaceCode) {
+        // 清空权限记录
+        this.importPermissionRecord.name = ''
+        this.importPermissionRecord.url = ''
+        this.importPermissionRecord.method = ''
+        this.importPermissionRecord.code = ''
+        return
+      }
 
-      try {
-        const response = await getInterfaceDetail(interfaceId)
-        if (response.success) {
-          const interfaceData = response.data
-          // 预填充权限记录
-          this.importPermissionRecord.name = interfaceData.name || ''
-          this.importPermissionRecord.url = interfaceData.url || ''
-          this.importPermissionRecord.method = interfaceData.method || 'GET'
-          this.importPermissionRecord.code = interfaceData.code || interfaceData.name || ''
-        }
-      } catch (error) {
-        console.error('加载接口详情失败:', error)
-        this.$message.error('加载接口详情失败')
+      // 从接口列表中查找对应的接口数据
+      const selectedInterface = this.importOptions.interfaces.find(item => item.code === interfaceCode)
+
+      if (selectedInterface) {
+        // 直接使用接口列表中的数据，不需要再调用API
+        this.importPermissionRecord.name = selectedInterface.name || ''
+        this.importPermissionRecord.url = selectedInterface.url || ''
+        this.importPermissionRecord.method = selectedInterface.method || 'GET'
+        this.importPermissionRecord.code = selectedInterface.code || selectedInterface.name || ''
+
+        // 清除表单验证错误（如果已经在第二步）
+        this.$nextTick(() => {
+          if (this.importStep === 2 && this.$refs['importPermissionForm']) {
+            this.$refs['importPermissionForm'].clearValidate()
+          }
+        })
+      } else {
+        this.$message.error('未找到对应的接口数据')
+        // 清空权限记录
+        this.importPermissionRecord.name = ''
+        this.importPermissionRecord.url = ''
+        this.importPermissionRecord.method = ''
+        this.importPermissionRecord.code = ''
       }
     },
 
@@ -691,9 +842,22 @@ export default {
         return
       }
 
+      // 检查是否已获取到接口详情
+      if (!this.importPermissionRecord.name || !this.importPermissionRecord.url) {
+        this.$message.warning('接口信息不完整，请重新选择接口')
+        return
+      }
+
       this.importStep = 2
       // 加载权限树
       this.getTree('3')
+
+      // 清除表单验证错误
+      this.$nextTick(() => {
+        if (this.$refs['importPermissionForm']) {
+          this.$refs['importPermissionForm'].clearValidate()
+        }
+      })
     },
 
     prevStep() {
@@ -759,6 +923,114 @@ export default {
   position: absolute;
   right: 15px;
   top: 10px;
+}
+
+/* 搜索筛选区域样式 */
+.search-filter-container {
+  margin-bottom: 15px;
+}
+
+.filter-card {
+  border-radius: 8px;
+  border: 1px solid #e4e7ed;
+}
+
+.filter-card .el-card__header {
+  padding: 8px 8px;
+  background: #fafafa;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.filter-title i {
+  margin-right: 5px;
+  color: #409eff;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.header-btn {
+  font-size: 13px;
+  padding: 4px 8px;
+}
+
+.filter-content {
+  padding: 0px 0px;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.filter-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-item:last-child {
+  flex: 0 0 auto;
+  width: 100px;
+}
+
+.filter-input,
+.filter-select {
+  width: 100%;
+}
+
+.filter-input .el-input__inner,
+.filter-select .el-input__inner {
+  border-radius: 4px;
+  height: 40px;
+  line-height: 40px;
+}
+
+.search-btn {
+  width: 100%;
+  height: 40px;
+  border-radius: 4px;
+}
+
+/* 操作按钮区域样式 */
+.action-container {
+  margin-bottom: 15px;
+  padding: 10px 0;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.action-btn {
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* 表格样式优化 */
+.el-table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.el-table th {
+  background-color: #fafafa;
+  color: #606266;
+  font-weight: 500;
 }
 
 /* 导入接口对话框样式 */
