@@ -3,50 +3,156 @@
 
     <el-row :gutter="20">
       <!--部门数据-->
-      <el-col :span="4" :xs="24">
-        <div class="head-container">
-          <el-input
-            v-model="departmentName"
-            :placeholder="$t('input.tips.departmentName')"
-            clearable
-            size="small"
-            prefix-icon="el-icon-search"
-            style="margin-bottom: 20px"
-          />
-        </div>
-        <div class="head-container">
-          <el-tree
-            ref="tree"
-            :data="options.departments"
-            :expand-on-click-node="false"
-            :filter-node-method="filterDepartments"
-            default-expand-all
-            @node-click="handleDepartmentClick"
-          />
-        </div>
+      <el-col :span="5" :xs="24">
+        <el-card class="department-card" shadow="never">
+          <div slot="header" class="department-header">
+            <span class="department-title">
+              <i class="el-icon-office-building" />
+              部门管理
+            </span>
+          </div>
+          <div class="department-search">
+            <el-input
+              v-model="departmentName"
+              :placeholder="$t('input.tips.departmentName')"
+              clearable
+              size="small"
+              prefix-icon="el-icon-search"
+              @clear="clearDepartmentFilter"
+            />
+          </div>
+          <div class="department-tree">
+            <el-tree
+              ref="tree"
+              :data="options.departments"
+              :expand-on-click-node="false"
+              :filter-node-method="filterDepartments"
+              :props="{ children: 'children', label: 'label' }"
+              default-expand-all
+              node-key="value"
+              highlight-current
+              @node-click="handleDepartmentClick"
+            >
+              <span slot-scope="{ node }" class="custom-tree-node">
+                <i v-if="!node.isLeaf" class="el-icon-folder" />
+                <i v-else class="el-icon-document" />
+                <span>{{ node.label }}</span>
+              </span>
+            </el-tree>
+          </div>
+        </el-card>
       </el-col>
       <!--用户数据-->
-      <el-col :span="20" :xs="24" style="border-left: 1px solid #dedede;">
-        <div class="filter-container">
-          <el-input v-model="tableA.params.userId" :placeholder="$t('input.tips.userId')" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
-          <el-input v-model="tableA.params.username" :placeholder="$t('input.tips.username')" style="width: 200px;" class="filter-item" />
-          <el-input v-model="tableA.params.realName" :placeholder="$t('input.tips.realName')" style="width: 200px;" class="filter-item" />
-          <el-select v-model="tableA.params.status" :placeholder="$t('label.status')" class="filter-item" clearable>
-            <el-option :label="$t('label.enable')" value="1">{{ $t('label.enable') }}</el-option>
-            <el-option :label="$t('label.disable')" value="0">{{ $t('label.disable') }}</el-option>
-          </el-select>
-          <el-button v-waves :loading="tableA.loading" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-            {{ $t('btn.search') }}
-          </el-button>
-          <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="tableA.params = {}">
-            {{ $t('btn.reset') }}
-          </el-button>
-          <el-button v-permission="['UPMS_USER_ADD']" class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleAdd">
+      <el-col :span="19" :xs="24">
+        <!-- 搜索筛选区域 -->
+        <div class="search-filter-container">
+          <el-card class="filter-card" shadow="never">
+            <div slot="header" class="filter-header">
+              <span class="filter-title">
+                <i class="el-icon-search" />
+                用户筛选
+              </span>
+              <div class="filter-actions">
+                <el-button
+                  type="text"
+                  size="small"
+                  icon="el-icon-refresh"
+                  :disabled="tableA.loading"
+                  @click="resetFilters"
+                >
+                  重置
+                </el-button>
+              </div>
+            </div>
+
+            <div class="filter-content">
+              <el-row :gutter="15">
+                <el-col :span="6">
+                  <div class="filter-item-wrapper">
+                    <label class="filter-label">用户ID</label>
+                    <el-input
+                      v-model="tableA.params.userId"
+                      :placeholder="$t('input.tips.userId')"
+                      class="filter-input"
+                      clearable
+                      @keyup.enter.native="getList"
+                      @clear="getList"
+                    >
+                      <i slot="prefix" class="el-input__icon el-icon-user" />
+                    </el-input>
+                  </div>
+                </el-col>
+                <el-col :span="6">
+                  <div class="filter-item-wrapper">
+                    <label class="filter-label">用户名</label>
+                    <el-input
+                      v-model="tableA.params.username"
+                      :placeholder="$t('input.tips.username')"
+                      class="filter-input"
+                      clearable
+                      @keyup.enter.native="getList"
+                      @clear="getList"
+                    >
+                      <i slot="prefix" class="el-input__icon el-icon-user-solid" />
+                    </el-input>
+                  </div>
+                </el-col>
+                <el-col :span="6">
+                  <div class="filter-item-wrapper">
+                    <label class="filter-label">真实姓名</label>
+                    <el-input
+                      v-model="tableA.params.realName"
+                      :placeholder="$t('input.tips.realName')"
+                      class="filter-input"
+                      clearable
+                      @keyup.enter.native="getList"
+                      @clear="getList"
+                    >
+                      <i slot="prefix" class="el-input__icon el-icon-edit-outline" />
+                    </el-input>
+                  </div>
+                </el-col>
+                <el-col :span="6">
+                  <div class="filter-item-wrapper">
+                    <label class="filter-label">状态</label>
+                    <el-select
+                      v-model="tableA.params.status"
+                      :placeholder="$t('label.status')"
+                      class="filter-select"
+                      clearable
+                      @change="getList"
+                    >
+                      <el-option :label="$t('label.enable')" value="1">
+                        <span style="float: left">
+                          <i class="el-icon-success" style="color: #67C23A; margin-right: 5px;" />
+                          {{ $t('label.enable') }}
+                        </span>
+                      </el-option>
+                      <el-option :label="$t('label.disable')" value="0">
+                        <span style="float: left">
+                          <i class="el-icon-error" style="color: #F56C6C; margin-right: 5px;" />
+                          {{ $t('label.disable') }}
+                        </span>
+                      </el-option>
+                    </el-select>
+                  </div>
+                </el-col>
+              </el-row>
+            </div>
+          </el-card>
+        </div>
+
+        <!-- 操作按钮区域 -->
+        <div class="action-container">
+          <el-button
+            v-permission="['UPMS_USER_ADD']"
+            type="primary"
+            icon="el-icon-plus"
+            class="action-btn"
+            @click="handleAdd"
+          >
             {{ $t('user.add') }}
           </el-button>
-          <!--<el-button v-permission="['UPMS_USER_PASSWORD_INIT']" class="filter-item" style="margin-left: 10px;" type="warning" icon="el-icon-refresh" @click="handleAdd">
-        初始化用户密码
-      </el-button>-->
         </div>
         <el-table :loading="tableA.loading" :data="tableA.list" border fit highlight-current-row style="width: 100%">
           <el-table-column width="180px" :label="$t('user.department')" prop="department">
@@ -516,6 +622,18 @@ export default {
         title: '角色授权' + (resp && resp.success ? '成功!' : '失败...'),
         type: resp && resp.success ? 'success' : 'error'
       })
+    },
+
+    // 重置筛选条件
+    resetFilters() {
+      this.tableA.params = {}
+      this.getList()
+    },
+
+    // 清除部门筛选
+    clearDepartmentFilter() {
+      this.departmentName = ''
+      this.$refs.tree.filter('')
     }
   }
 }
@@ -530,6 +648,162 @@ export default {
   right: 15px;
   top: 10px;
 }
+
+/* 部门卡片样式 */
+.department-card {
+  border-radius: 8px;
+  border: 1px solid #e4e7ed;
+  height: calc(100vh - 200px);
+  overflow: hidden;
+}
+
+.department-card .el-card__header {
+  padding: 12px 15px;
+  background: #fafafa;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.department-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.department-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.department-title i {
+  margin-right: 5px;
+  color: #409eff;
+}
+
+.department-search {
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.department-tree {
+  padding: 10px;
+  height: calc(100vh - 320px);
+  overflow-y: auto;
+}
+
+/* 自定义树节点样式 */
+.custom-tree-node {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.custom-tree-node i {
+  margin-right: 5px;
+  color: #909399;
+}
+
+.custom-tree-node .el-icon-folder {
+  color: #e6a23c;
+}
+
+.custom-tree-node .el-icon-document {
+  color: #409eff;
+}
+
+/* 搜索筛选区域样式 */
+.search-filter-container {
+  margin-bottom: 15px;
+}
+
+.filter-card {
+  border-radius: 8px;
+  border: 1px solid #e4e7ed;
+}
+
+.filter-card .el-card__header {
+  padding: 8px 15px;
+  background: #fafafa;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.filter-title i {
+  margin-right: 5px;
+  color: #409eff;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-content {
+  padding: 0px;
+}
+
+.filter-item-wrapper {
+  margin-bottom: 8px;
+}
+
+.filter-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #606266;
+  font-weight: 500;
+}
+
+.filter-input,
+.filter-select {
+  width: 100%;
+}
+
+.filter-input .el-input__inner,
+.filter-select .el-input__inner {
+  border-radius: 4px;
+  height: 40px;
+  line-height: 40px;
+}
+
+/* 操作按钮区域样式 */
+.action-container {
+  margin-bottom: 15px;
+  padding: 10px 0;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.action-btn {
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+/* 表格样式优化 */
+.el-table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.el-table th {
+  background-color: #fafafa;
+  color: #606266;
+  font-weight: 500;
+}
+
 .el-tree-node__label {
   font-size: 14px;
 }

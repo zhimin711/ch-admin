@@ -100,7 +100,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/profile/index'),
         name: 'Profile',
-        meta: { title: '个人资料', icon: 'user', affix: true, noCache: true }
+        meta: { title: '个人资料', icon: 'user', affix: false, noCache: true }
       }
     ]
   }
