@@ -1,84 +1,148 @@
 <template>
   <div class="app-container">
-    <!-- 顶部筛选区美化 -->
-    <div class="filter-container">
-      <div class="filter-section">
-        <el-select
-          v-model="table.main.params.clusterName"
-          :placeholder="$t('input.tips.select')"
-          class="filter-item"
-          clearable
-        >
-          <el-option
-            v-for="item in options.clusters"
-            :key="item.clusterName"
-            :label="item.clusterName"
-            :value="item.clusterName"
-          />
-        </el-select>
-        <el-input
-          v-model="table.main.params.topicName"
-          placeholder="主题名称"
-          class="filter-item"
-          clearable
-        />
-        <el-input
-          v-model="table.main.params.groupName"
-          placeholder="消费组名称"
-          class="filter-item"
-          clearable
-        />
+    <!-- 筛选条件卡片 -->
+    <el-card class="filter-card" shadow="hover">
+      <div slot="header" class="filter-header">
+        <span class="filter-title">
+          <i class="el-icon-s-operation" />
+          消费组筛选
+        </span>
+        <div class="filter-actions">
+          <el-button
+            v-permission="'ROCKET_MQ_CONSUMER_ADD'"
+            type="primary"
+            icon="el-icon-plus"
+            size="small"
+            @click="handleAdd"
+          >
+            添加订阅
+          </el-button>
+        </div>
       </div>
-      <div class="action-section">
-        <el-button
-          v-permission="'ROCKETMQ_CONSUMER_GROUPS'"
-          class="filter-item"
-          type="primary"
-          icon="el-icon-search"
-          @click="getList"
-        >
-          {{ $t('btn.search') }}
-        </el-button>
-        <el-button
-          class="filter-item"
-          type="default"
-          icon="el-icon-refresh"
-          @click="handleReset"
-        >
-          {{ $t('btn.reset') }}
-        </el-button>
-        <el-button
-          v-permission="'ROCKET_MQ_CONSUMER_ADD'"
-          class="filter-item"
-          type="success"
-          icon="el-icon-plus"
-          @click="handleAdd"
-        >
-          添加订阅
-        </el-button>
-      </div>
-    </div>
 
-    <!-- 表格美化 -->
-    <div class="table-container">
+      <el-form :inline="true" class="filter-form">
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <div class="filter-item-wrapper">
+              <label class="filter-label">
+                <i class="el-icon-s-home" />
+                集群选择
+              </label>
+              <el-select
+                v-model="nameSrvAddr"
+                placeholder="请选择集群"
+                class="filter-select"
+                @change="changeNameSvr"
+              >
+                <el-option
+                  v-for="item in options.nameSrvList"
+                  :key="item.addr"
+                  :label="item.name + ' - ' + item.addr"
+                  :value="item.addr"
+                >
+                  <span style="float: left">
+                    <i class="el-icon-s-home" style="color: #409EFF; margin-right: 5px;" />
+                    {{ item.name }}
+                  </span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">
+                    {{ item.addr }}
+                  </span>
+                </el-option>
+              </el-select>
+            </div>
+          </el-col>
+
+          <el-col :span="8">
+            <div class="filter-item-wrapper">
+              <label class="filter-label">
+                <i class="el-icon-s-order" />
+                主题名称
+              </label>
+              <el-input
+                v-model="table.main.params.topicName"
+                placeholder="请输入主题名称"
+                class="filter-input"
+                clearable
+                @clear="getList"
+              >
+                <i slot="prefix" class="el-input__icon el-icon-search" />
+              </el-input>
+            </div>
+          </el-col>
+
+          <el-col :span="8">
+            <div class="filter-item-wrapper">
+              <label class="filter-label">
+                <i class="el-icon-s-custom" />
+                消费组名称
+              </label>
+              <el-input
+                v-model="table.main.params.groupName"
+                placeholder="请输入消费组名称"
+                class="filter-input"
+                clearable
+                @clear="getList"
+              >
+                <i slot="prefix" class="el-input__icon el-icon-search" />
+              </el-input>
+            </div>
+          </el-col>
+        </el-row>
+
+        <div class="filter-buttons">
+          <el-button
+            v-permission="'ROCKETMQ_CONSUMER_GROUPS'"
+            type="primary"
+            icon="el-icon-search"
+            @click="getList"
+          >
+            {{ $t('btn.search') }}
+          </el-button>
+          <el-button
+            type="default"
+            icon="el-icon-refresh"
+            @click="handleReset"
+          >
+            {{ $t('btn.reset') }}
+          </el-button>
+        </div>
+      </el-form>
+    </el-card>
+
+    <!-- 数据表格卡片 -->
+    <el-card class="table-card" shadow="hover">
+      <div slot="header" class="table-header">
+        <span class="table-title">
+          <i class="el-icon-s-data" />
+          消费组列表
+        </span>
+        <div class="table-actions">
+          <el-tag type="info" size="small">
+            共 {{ table.main.data.length }} 个消费组
+          </el-tag>
+        </div>
+      </div>
+
       <el-table
         v-loading="table.main.loading"
         :data="table.main.data"
         border
-        fit
-        highlight-current-row
-        style="width: 100%"
-        :header-cell-style="{ background: '#f5f7fa', color: '#606266', fontWeight: 'bold' }"
+        stripe
+        class="consumer-table"
+        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
         :row-class-name="tableRowClassName"
       >
-        <el-table-column label="消费组名称" prop="group" min-width="180">
+        <el-table-column label="消费组名称" prop="group" min-width="200">
           <template slot-scope="scope">
-            <span
-              class="group-name-link"
-              @click="handleRoute(scope.row, scope.$index)"
-            >
-              {{ scope.row.group }}
-            </span>
+            <div class="group-name">
+              <i class="el-icon-s-custom" />
+              <span
+                class="group-name-link"
+                @click="handleRoute(scope.row, scope.$index)"
+              >
+                {{ scope.row.group }}
+              </span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="数量" prop="count" width="80" align="center">
@@ -131,46 +195,44 @@
         </el-table-column>
         <el-table-column align="center" :label="$t('label.actions')" width="280" fixed="right">
           <template slot-scope="scope">
-            <el-link
-              v-permission="'ROCKETMQ_CONSUMER_CONNECTION'"
-              size="mini"
-              type="warning"
-              icon="el-icon-view"
-              @click="handleStatus(scope.row, scope.$index)"
-            >
-              {{ $t('label.status') }}
-            </el-link>
-            <el-link
-              v-permission="'ROCKET_MQ_CONSUMER_DETAIL'"
-              size="mini"
-              type="primary"
-              icon="el-icon-share"
-              @click="handleRoute(scope.row, scope.$index)"
-            >
-              {{ $t('label.detail') }}
-            </el-link>
-            <el-link
-              v-permission="'ROCKET_MQ_CONSUMER_CONFIG'"
-              size="mini"
-              type="info"
-              icon="el-icon-set-up"
-              @click="handleEdit(scope.row, scope.$index)"
-            >
-              配置
-            </el-link>
-            <el-link
-              v-permission="'ROCKET_MQ_CONSUMER_DELETE'"
-              size="mini"
-              type="danger"
-              icon="el-icon-delete"
-              @click="handleDel(scope.row)"
-            >
-              {{ $t('btn.delete') }}
-            </el-link>
+            <div class="action-links">
+              <el-link
+                v-permission="'ROCKETMQ_CONSUMER_CONNECTION'"
+                type="warning"
+                icon="el-icon-view"
+                @click="handleStatus(scope.row, scope.$index)"
+              >
+                {{ $t('label.status') }}
+              </el-link>
+              <el-link
+                v-permission="'ROCKET_MQ_CONSUMER_DETAIL'"
+                type="primary"
+                icon="el-icon-share"
+                @click="handleRoute(scope.row, scope.$index)"
+              >
+                {{ $t('label.detail') }}
+              </el-link>
+              <el-link
+                v-permission="'ROCKET_MQ_CONSUMER_CONFIG'"
+                type="info"
+                icon="el-icon-set-up"
+                @click="handleEdit(scope.row, scope.$index)"
+              >
+                配置
+              </el-link>
+              <el-link
+                v-permission="'ROCKET_MQ_CONSUMER_DELETE'"
+                type="danger"
+                icon="el-icon-delete"
+                @click="handleDel(scope.row)"
+              >
+                {{ $t('btn.delete') }}
+              </el-link>
+            </div>
           </template>
         </el-table-column>
       </el-table>
-    </div>
+    </el-card>
 
     <pagination
       v-show="table.main.total>0"
@@ -532,6 +594,7 @@ import { deepClone } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { isEmpty } from '@/utils/validate'
 import { listRocketMQ } from '@/api/rocketmq/cluster'
+import { listRocketMQNameSrv } from '@/api/rocketmq/name-srv'
 import {
   listRocketMQConsumerGroups,
   getRocketMQConsumerStatus,
@@ -543,6 +606,7 @@ import {
   editRocketMQConsumer,
   deleteRocketMQConsumer
 } from '@/api/rocketmq/consumer'
+import Cookies from 'js-cookie'
 
 const defaultRecord = {
   brokerNameList: [],
@@ -620,16 +684,36 @@ export default {
       options: {
         clusters: [],
         brokers: [],
-        topics: []
+        topics: [],
+        nameSrvList: []
       },
+      nameSrvAddr: '',
       loading: false
     }
   },
   created() {
+    this.listNameSvr()
     this.getList()
     // this.getClusters()
   },
   methods: {
+    listNameSvr() {
+      this.nameSrvAddr = Cookies.get('nameSrvAddr')
+      listRocketMQNameSrv().then(resp => {
+        if (resp.success) {
+          this.options.nameSrvList = resp.rows
+          if (this.options.nameSrvList.length > 0) {
+            if (!this.nameSrvAddr) {
+              this.nameSrvAddr = this.options.nameSrvList[0].addr
+            }
+          }
+        }
+      })
+    },
+    changeNameSvr() {
+      Cookies.set('nameSrvAddr', this.nameSrvAddr)
+      this.getList()
+    },
     // 获取延迟标签类型
     getDelayTagType(delay) {
       if (!delay || delay === 0) return 'success'
@@ -646,6 +730,9 @@ export default {
     // 重置筛选条件
     handleReset() {
       this.table.main.params = {}
+      this.getList()
+    },
+    refreshData() {
       this.getList()
     },
     async getClusters() {
@@ -828,44 +915,124 @@ export default {
   min-height: calc(100vh - 84px);
 }
 
-// 筛选区样式
-.filter-container {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+// 筛选卡片
+.filter-card {
   margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.filter-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
+  padding: 0;
+}
 
-  .filter-section {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    flex: 1;
-  }
+.filter-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  display: flex;
+  align-items: center;
 
-  .action-section {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .filter-item {
-    min-width: 180px;
+  i {
+    margin-right: 8px;
+    color: #409EFF;
   }
 }
 
-// 表格容器
-.table-container {
-  background: white;
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-form {
+  padding: 0;
+}
+
+.filter-item-wrapper {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.filter-label {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+
+  i {
+    margin-right: 6px;
+    color: #409EFF;
+  }
+}
+
+.filter-select,
+.filter-input {
+  width: 100%;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
+}
+
+// 表格卡片
+.table-card {
   border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+}
+
+.table-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+  display: flex;
+  align-items: center;
+
+  i {
+    margin-right: 8px;
+    color: #409EFF;
+  }
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.consumer-table {
+  border-radius: 6px;
   overflow: hidden;
-  margin-bottom: 20px;
+}
+
+.action-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .el-link {
+    margin-right: 0;
+    font-size: 13px;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
 }
 
 // 表格样式
@@ -891,6 +1058,17 @@ export default {
 
   .warning-row {
     background-color: #fdf6ec;
+  }
+}
+
+// 消费组名称
+.group-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  i {
+    color: #409EFF;
   }
 }
 
@@ -1070,16 +1248,19 @@ export default {
   border-top: 1px solid #ebeef5;
 }
 
-// 响应式适配
+// 响应式设计
 @media (max-width: 768px) {
-  .filter-container {
-    flex-direction: column;
-    align-items: stretch;
+  .app-container {
+    padding: 10px;
+  }
 
-    .filter-section,
-    .action-section {
-      justify-content: center;
-    }
+  .filter-item-wrapper {
+    margin-bottom: 10px;
+  }
+
+  .action-links {
+    flex-direction: column;
+    gap: 5px;
   }
 
   .route-header .route-info {
@@ -1087,5 +1268,31 @@ export default {
     align-items: flex-start;
     gap: 10px;
   }
+}
+
+// 卡片悬停效果
+.filter-card:hover,
+.table-card:hover,
+.route-card:hover,
+.queue-card:hover,
+.consumer-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+// 按钮样式优化
+.el-button--mini {
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+// 标签样式优化
+.el-tag {
+  border-radius: 4px;
+}
+
+// 表格悬停效果
+.consumer-table .el-table__row:hover {
+  background-color: #f0f9ff !important;
 }
 </style>
