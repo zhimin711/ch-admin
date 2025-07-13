@@ -73,13 +73,12 @@
       >
         <el-table-column label="消费组名称" prop="group" min-width="180">
           <template slot-scope="scope">
-            <el-link
-              type="primary"
+            <span
               class="group-name-link"
               @click="handleRoute(scope.row, scope.$index)"
             >
               {{ scope.row.group }}
-            </el-link>
+            </span>
           </template>
         </el-table-column>
         <el-table-column label="数量" prop="count" width="80" align="center">
@@ -132,16 +131,16 @@
         </el-table-column>
         <el-table-column align="center" :label="$t('label.actions')" width="280" fixed="right">
           <template slot-scope="scope">
-            <el-button
-              v-permission="'ROCKET_MQ_CONSUMER_STATUS'"
+            <el-link
+              v-permission="'ROCKETMQ_CONSUMER_CONNECTION'"
               size="mini"
               type="warning"
               icon="el-icon-view"
               @click="handleStatus(scope.row, scope.$index)"
             >
               {{ $t('label.status') }}
-            </el-button>
-            <el-button
+            </el-link>
+            <el-link
               v-permission="'ROCKET_MQ_CONSUMER_DETAIL'"
               size="mini"
               type="primary"
@@ -149,8 +148,8 @@
               @click="handleRoute(scope.row, scope.$index)"
             >
               {{ $t('label.detail') }}
-            </el-button>
-            <el-button
+            </el-link>
+            <el-link
               v-permission="'ROCKET_MQ_CONSUMER_CONFIG'"
               size="mini"
               type="info"
@@ -158,8 +157,8 @@
               @click="handleEdit(scope.row, scope.$index)"
             >
               配置
-            </el-button>
-            <el-button
+            </el-link>
+            <el-link
               v-permission="'ROCKET_MQ_CONSUMER_DELETE'"
               size="mini"
               type="danger"
@@ -167,7 +166,7 @@
               @click="handleDel(scope.row)"
             >
               {{ $t('btn.delete') }}
-            </el-button>
+            </el-link>
           </template>
         </el-table-column>
       </el-table>
@@ -898,10 +897,18 @@ export default {
 // 消费组名称链接
 .group-name-link {
   font-weight: 500;
-  text-decoration: none;
+  color: #409eff;
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: all 0.3s ease;
 
   &:hover {
-    text-decoration: underline;
+    color: #66b1ff;
+    text-decoration: underline !important;
+  }
+
+  &:active {
+    color: #3a8ee6;
   }
 }
 
@@ -1049,10 +1056,10 @@ export default {
 // 客户端链接
 .client-link {
   color: #409eff;
-  text-decoration: none;
+  text-decoration: none !important;
 
   &:hover {
-    text-decoration: underline;
+    text-decoration: underline !important;
   }
 }
 

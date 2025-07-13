@@ -146,7 +146,7 @@
           {{ scope.row.code }}
         </template>
       </el-table-column>
-      <el-table-column :label="$t('label.address')" min-width="280" :show-overflow-tooltip="true">
+      <el-table-column :label="$t('label.address')" min-width="350" :show-overflow-tooltip="true">
         <template slot-scope="{row}">
           <el-tag v-if="row.type === '3' || row.type === '4' || row.type === '5'">{{ row.method || 'ALL' }}</el-tag>
           <span v-if="row.type === '3' || row.type === '4' || row.type === '5'">{{ row.url }}</span>
@@ -1097,10 +1097,9 @@ export default {
         // 关闭对话框并刷新列表
         if (successResults.length > 0) {
           this.importDialogVisible = false
-          this.$nextTick(() => {
-            this.isRefreshExpand = true
-            _this.getList()
-          })
+          this.isRefreshExpand = true
+          this.resetImportForm() // 重置导入表单
+          _this.getList()
         }
       } catch (error) {
         console.error('批量导入失败:', error)
