@@ -311,14 +311,22 @@
                     v-for="item in importOptions.interfaces"
                     :key="item.id"
                     class="interface-item"
+                    :class="{ 'disabled-item': item.parentId }"
                   >
-                    <el-checkbox :label="item.id" class="interface-checkbox">
+                    <el-checkbox
+                      :label="item.id"
+                      class="interface-checkbox"
+                      :disabled="item.parentId"
+                    >
                       <div class="interface-content">
                         <div class="interface-main">
                           <div class="interface-title">
                             <span class="interface-name">{{ item.name }}</span>
                             <el-tag size="mini" :type="getMethodTagType(item.method)" class="method-tag">
                               {{ item.method || 'ALL' }}
+                            </el-tag>
+                            <el-tag v-if="item.parentId" size="mini" type="danger" class="status-tag">
+                              权限已存在[{{ item.parentId }}]
                             </el-tag>
                           </div>
                           <div class="interface-path">
@@ -844,6 +852,7 @@ export default {
         startSort: 1
       }
       this.importRecordParents = []
+      this.record.parentId = null
     },
 
     async loadProjects() {
@@ -900,7 +909,10 @@ export default {
     // 全选/取消全选
     handleSelectAllChange(val) {
       if (val) {
-        this.selectedInterfaces = this.importOptions.interfaces.map(item => item.id)
+        // 只选择没有parentId的接口
+        this.selectedInterfaces = this.importOptions.interfaces
+          .filter(item => !item.parentId)
+          .map(item => item.id)
       } else {
         this.selectedInterfaces = []
       }
@@ -913,8 +925,9 @@ export default {
     // 接口选择变化
     handleInterfaceSelectionChange(value) {
       const checkedCount = value.length
-      this.selectAll = checkedCount === this.importOptions.interfaces.length
-      this.isIndeterminate = checkedCount > 0 && checkedCount < this.importOptions.interfaces.length
+      const availableInterfaces = this.importOptions.interfaces.filter(item => !item.parentId)
+      this.selectAll = checkedCount === availableInterfaces.length && availableInterfaces.length > 0
+      this.isIndeterminate = checkedCount > 0 && checkedCount < availableInterfaces.length
 
       // 更新选中的接口详情
       this.updateSelectedInterfaceDetails()
@@ -985,6 +998,15 @@ export default {
       if (!this.importRecordParents || this.importRecordParents.length === 0) {
         this.$message.warning('请选择上级权限')
         return
+      }
+
+      // 检查选择的上级第一级是否在当前列表的ID中
+      const firstLevelId = this.importRecordParents[0]
+      const isFirstLevelInList = this.tableA.list.some(item => item.id === firstLevelId)
+
+      if (isFirstLevelInList) {
+        // 将上级ID（包含每一级）写入到this.record.parentId
+        this.record.parentId = this.importRecordParents.join(',')
       }
 
       this.importStep = 3
@@ -1329,6 +1351,20 @@ export default {
   background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
 }
 
+.interface-item.disabled-item {
+  opacity: 0.6;
+  background-color: #f5f5f5;
+}
+
+.interface-item.disabled-item:hover {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.status-tag {
+  margin-left: 8px;
+}
+
 .interface-checkbox {
   width: 100%;
   margin: 0;
@@ -1421,6 +1457,14 @@ export default {
 
 .interface-checkbox:hover .el-checkbox__input .el-checkbox__inner {
   border-color: #409eff;
+}
+
+.interface-checkbox.is-disabled {
+  cursor: not-allowed;
+}
+
+.interface-checkbox.is-disabled .el-checkbox__label {
+  color: #c0c4cc;
 }
 
 /* 上级权限配置区域 */
