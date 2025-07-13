@@ -3,12 +3,6 @@
 
     <!-- 搜索类型标签页 -->
     <el-card class="search-card" shadow="hover">
-      <div slot="header" class="search-header">
-        <span class="search-title">
-          <i class="el-icon-search" />
-          搜索配置
-        </span>
-      </div>
 
       <!-- 集群选择区域 -->
       <div class="cluster-section">
