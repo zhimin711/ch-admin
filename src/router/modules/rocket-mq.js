@@ -112,6 +112,14 @@ const routerMap = {
     meta: {
       title: '消息搜索'
     }
+  },
+  RocketMQConsumer: {
+    path: 'consumer',
+    component: () => import('@/views/rocketMQ/consumer'),
+    name: 'RocketMQConsumer',
+    meta: {
+      title: '消费者管理'
+    }
   }
 }
 

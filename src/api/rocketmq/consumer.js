@@ -2,10 +2,15 @@ import request from '@/utils/request2'
 
 const namespace = '/devops/rocketmq/consumer'
 
-export function listRocketMQConsumerGroups() {
+export function listRocketMQConsumerGroups(page, pageSize, params) {
   return request({
     url: `${namespace}/groups`,
-    method: 'get'
+    method: 'get',
+    params: {
+      page,
+      pageSize,
+      ...params
+    }
   })
 }
 

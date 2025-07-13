@@ -20,7 +20,7 @@
         添加订阅
       </el-button>
     </div>
-    <el-table v-loading="table.main.loading" :data="table.main.data.slice((table.main.page - 1) * table.main.limit, (table.main.page - 1) * table.main.limit + table.main.limit)" border fit highlight-current-row style="width: 100%">
+    <el-table v-loading="table.main.loading" :data="table.main.data" border fit highlight-current-row style="width: 100%">
       <el-table-column label="订阅组名称" prop="group" />
       <el-table-column label="数量" prop="count" width="50" align="center" />
       <el-table-column label="版本" prop="version" />
@@ -346,14 +346,17 @@ export default {
       })
     },
     handlePageChange(val) {
-      // this.table.main.page = val;
+      this.table.main.page = val.page
+      this.table.main.limit = val.limit
+      this.getList()
     },
     getList() {
       this.table.main.loading = true
-      listRocketMQConsumerGroups().then(resp => {
+      console.log(this.table.main.page, this.table.main.limit, this.table.main.params)
+      listRocketMQConsumerGroups(this.table.main.page, this.table.main.limit, this.table.main.params).then(resp => {
         if (resp.success) {
-          this.table.main.data = resp.rows
-          this.table.main.total = resp.rows.length
+          this.table.main.data = resp.data.rows
+          this.table.main.total = resp.data.total
         }
       }).finally(() => { this.table.main.loading = false })
     },
