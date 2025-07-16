@@ -243,16 +243,16 @@
             class="message-table"
             :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
           >
-            <el-table-column width="80px" align="center" label="索引">
+            <el-table-column width="100px" align="center" label="索引">
               <template slot-scope="scope">
                 <div class="offset-index">
-                  <i class="el-icon-s-data" />
+                  <!-- <i class="el-icon-s-data" /> -->
                   <span>{{ scope.row.offset }}</span>
                 </div>
               </template>
             </el-table-column>
 
-            <el-table-column width="120px" align="center" label="Key">
+            <el-table-column width="135px" align="center" label="Key">
               <template slot-scope="scope">
                 <el-tag v-if="scope.row.key" type="info" size="small">
                   {{ scope.row.key }}
@@ -278,7 +278,7 @@
               </template>
             </el-table-column>
 
-            <el-table-column align="center" label="操作" width="150" fixed="right">
+            <el-table-column align="center" label="操作" width="180" fixed="right">
               <template slot-scope="scope">
                 <div class="message-actions">
                   <el-link
