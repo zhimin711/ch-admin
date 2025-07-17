@@ -4,7 +4,8 @@
       <!-- 左侧项目菜单 -->
       <div class="sidebar">
         <div class="sidebar-inner">
-          <project-menu @change="handleSelectProject" />
+          <!-- <project-menu @change="handleSelectProject" /> -->
+          <ProjectList v-model="projectId" @change="onProjectChange" />
         </div>
       </div>
 
@@ -564,7 +565,8 @@
 <script>
 import SingleFile from '@/components/Upload/SingleFile2'
 import ProjectNamespace from '../components/ProjectNamespace' // 粘性header组件
-import ProjectMenu from '../components/ProjectMenu' // 粘性header组件
+// import ProjectMenu from '../components/ProjectMenu' // 粘性header组件
+import ProjectList from '../components/ProjectList'
 import CodeDiff from 'vue-code-diff'
 
 import { deepClone, parseTime } from '@/utils'
@@ -586,7 +588,7 @@ const opName = {
 }
 export default {
   name: 'NacosProjectConfigsIndex',
-  components: { ProjectNamespace, SingleFile, ProjectMenu, CodeDiff },
+  components: { ProjectNamespace, SingleFile, ProjectList, CodeDiff },
   data() {
     return {
       list: null,
