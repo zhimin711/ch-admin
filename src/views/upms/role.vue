@@ -1,63 +1,207 @@
 <template>
   <div class="app-container">
+    <!-- 页面标题区域 -->
+
+    <!-- 搜索过滤区域 -->
     <div class="filter-container">
-      <el-input v-model="tableA.params.code" :placeholder="$t('label.code')" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="tableA.params.name" :placeholder="$t('label.name')" style="width: 200px;" class="filter-item" />
-      <el-select v-model="tableA.params.status" :placeholder="$t('label.status')" class="filter-item" clearable>
-        <el-option :label="$t('label.enable')" value="1" />
-        <el-option :label="$t('label.disable')" value="0" />
-      </el-select>
-      <el-button v-loading="tableA.loading" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        {{ $t('btn.search') }}
-      </el-button>
-      <el-button class="filter-item" type="" icon="el-icon-refresh" @click="tableA.params={}">
-        {{ $t('btn.reset') }}
-      </el-button>
-      <el-button v-permission="['UPMS_ROLE_ADD']" type="primary" class="filter-item" icon="el-icon-plus" @click="handleAdd">
-        {{ $t('role.add') }}
-      </el-button>
+      <el-form :inline="true" class="filter-form" label-width="80px">
+        <el-form-item label="角色代码">
+          <el-input
+            v-model="tableA.params.code"
+            :placeholder="$t('label.code')"
+            style="width: 200px;"
+            class="filter-input"
+            prefix-icon="el-icon-key"
+          />
+        </el-form-item>
+        <el-form-item label="角色名称">
+          <el-input
+            v-model="tableA.params.name"
+            :placeholder="$t('label.name')"
+            style="width: 200px;"
+            class="filter-input"
+            prefix-icon="el-icon-user"
+          />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select
+            v-model="tableA.params.status"
+            :placeholder="$t('label.status')"
+            class="filter-select"
+            clearable
+          >
+            <el-option :label="$t('label.enable')" value="1" />
+            <el-option :label="$t('label.disable')" value="0" />
+          </el-select>
+        </el-form-item>
+        <el-form-item class="filter-buttons">
+          <el-button
+            v-loading="tableA.loading"
+            class="search-btn"
+            type="primary"
+            icon="el-icon-search"
+            @click="handleFilter"
+          >
+            {{ $t('btn.search') }}
+          </el-button>
+          <el-button
+            class="reset-btn"
+            type="default"
+            icon="el-icon-refresh"
+            @click="tableA.params={}"
+          >
+            {{ $t('btn.reset') }}
+          </el-button>
+          <el-button
+            v-permission="['UPMS_ROLE_ADD']"
+            type="success"
+            class="add-btn"
+            icon="el-icon-plus"
+            @click="handleAdd"
+          >
+            {{ $t('role.add') }}
+          </el-button>
+        </el-form-item>
+      </el-form>
     </div>
 
-    <el-table v-loading="tableA.loading" :data="tableA.list" style="width: 100%;" border>
-      <el-table-column :label="$t('label.code')" width="220">
-        <template slot-scope="scope">
-          {{ scope.row.code }}
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('label.name')" width="220">
-        <template slot-scope="scope">
-          {{ scope.row.name }}
-        </template>
-      </el-table-column>
-      <el-table-column align="header-center" :label="$t('label.description')">
-        <template slot-scope="scope">
-          {{ scope.row.description }}
-        </template>
-      </el-table-column>
-      <el-table-column prop="status" :label="$t('label.status')" width="90">
-        <template slot-scope="scope">
-          <el-tag v-if="scope.row.status === '0'" type="warning">{{ $t('label.disable') }}</el-tag>
-          <el-tag v-else-if="scope.row.status === '1'" type="success">{{ $t('label.enable') }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" :label="$t('label.actions')" width="300">
-        <template v-if="scope.row.type !== '0'" slot-scope="scope">
-          <el-link v-permission="['UPMS_ROLE_EDIT']" type="primary" icon="el-icon-edit" @click="handleEdit(scope.row, scope.$index)">{{ $t('btn.edit') }}</el-link>
-          <el-link v-if="scope.row.status === '1'" v-permission="['UPMS_ROLE_PERMISSION']" type="warning" icon="el-icon-menu" @click="handleAuth(scope.row)">{{ $t('role.permissions') }}</el-link>
-          <el-link v-if="scope.row.status === '1'" v-permission="['UPMS_ROLE_PERMISSION_INTERFACE']" type="info" icon="el-icon-s-grid" @click="handleAuth(scope.row, '4')">接口授权</el-link>
-          <el-link v-permission="['UPMS_ROLE_DELETE']" type="danger" icon="el-icon-delete" @click="handleDel(scope.row)">{{ $t('btn.delete') }}</el-link>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="tableA.total>0" :total="tableA.total" :page.sync="tableA.num" :limit.sync="tableA.size" @pagination="getList" />
+    <!-- 数据表格区域 -->
+    <div class="table-container">
+      <el-table
+        v-loading="tableA.loading"
+        :data="tableA.list"
+        class="role-table"
+        border
+        fit
+        highlight-current-row
+        :header-cell-style="{ background: '#f8f9fa', color: '#606266', fontWeight: '600' }"
+      >
+        <el-table-column :label="$t('label.code')" width="220" align="center">
+          <template slot-scope="scope">
+            <div class="code-cell">
+              <i class="el-icon-key" />
+              <span>{{ scope.row.code }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column :label="$t('label.name')" width="220" align="center">
+          <template slot-scope="scope">
+            <div class="name-cell">
+              <i class="el-icon-user" />
+              <span>{{ scope.row.name }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" :label="$t('label.description')" min-width="300">
+          <template slot-scope="scope">
+            <div class="description-cell">
+              <i class="el-icon-document" />
+              <span>{{ scope.row.description || '暂无描述' }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" :label="$t('label.status')" width="100" align="center">
+          <template slot-scope="scope">
+            <el-tag
+              v-if="scope.row.status === '0'"
+              type="danger"
+              size="medium"
+              effect="dark"
+            >
+              <i class="el-icon-close" />
+              {{ $t('label.disable') }}
+            </el-tag>
+            <el-tag
+              v-else-if="scope.row.status === '1'"
+              type="success"
+              size="medium"
+              effect="dark"
+            >
+              <i class="el-icon-check" />
+              {{ $t('label.enable') }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" :label="$t('label.actions')" width="350" fixed="right">
+          <template v-if="scope.row.type !== '0'" slot-scope="scope">
+            <div class="action-buttons">
+              <el-link
+                v-permission="['UPMS_ROLE_EDIT']"
+                type="primary"
+                size="mini"
+                icon="el-icon-edit"
+                @click="handleEdit(scope.row, scope.$index)"
+              >
+                {{ $t('btn.edit') }}
+              </el-link>
+              <el-link
+                v-if="scope.row.status === '1'"
+                v-permission="['UPMS_ROLE_PERMISSION']"
+                type="warning"
+                size="mini"
+                icon="el-icon-menu"
+                @click="handleAuth(scope.row)"
+              >
+                {{ $t('role.permissions') }}
+              </el-link>
+              <el-link
+                v-if="scope.row.status === '1'"
+                v-permission="['UPMS_ROLE_PERMISSION_INTERFACE']"
+                type="info"
+                size="mini"
+                icon="el-icon-s-grid"
+                @click="handleAuth(scope.row, '4')"
+              >
+                接口授权
+              </el-link>
+              <el-link
+                v-permission="['UPMS_ROLE_DELETE']"
+                type="danger"
+                size="mini"
+                icon="el-icon-delete"
+                @click="handleDel(scope.row)"
+              >
+                {{ $t('btn.delete') }}
+              </el-link>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
 
-    <el-dialog :visible.sync="dialogVisible" :title="dialogType==='edit'?$t('role.edit'): $t('role.add')">
-      <el-form :model="role" label-width="100px" label-position="left">
+      <!-- 分页组件 -->
+      <div class="pagination-wrapper">
+        <pagination
+          v-show="tableA.total>0"
+          :total="tableA.total"
+          :page.sync="tableA.num"
+          :limit.sync="tableA.size"
+          @pagination="getList"
+        />
+      </div>
+    </div>
+
+    <!-- 角色编辑对话框 -->
+    <el-dialog
+      :visible.sync="dialogVisible"
+      :title="dialogType==='edit'?$t('role.edit'): $t('role.add')"
+      class="role-dialog"
+      width="500px"
+    >
+      <el-form :model="role" label-width="100px" label-position="left" class="role-form">
         <el-form-item :label="$t('label.code')" prop="code">
-          <el-input v-model="role.code" :placeholder="$t('label.code')" :disabled="dataForm.codeDisabled" />
+          <el-input
+            v-model="role.code"
+            :placeholder="$t('label.code')"
+            :disabled="dataForm.codeDisabled"
+            prefix-icon="el-icon-key"
+          />
         </el-form-item>
         <el-form-item :label="$t('label.name')">
-          <el-input v-model="role.name" :placeholder="$t('label.name')" />
+          <el-input
+            v-model="role.name"
+            :placeholder="$t('label.name')"
+            prefix-icon="el-icon-user"
+          />
         </el-form-item>
         <el-form-item :label="$t('label.description')">
           <el-input
@@ -68,11 +212,6 @@
           />
         </el-form-item>
         <el-form-item :label="$t('label.status')">
-          <!--<el-select v-model="role.status" placeholder="请选择">
-            <el-option key="enabled" label="启用" value="1" />
-            <el-option key="disabled" label="禁用" value="0" />
-          </el-select>-->
-
           <el-switch
             v-model="recordStatus"
             active-color="#13ce66"
@@ -82,12 +221,25 @@
           />
         </el-form-item>
       </el-form>
-      <div style="text-align:center;">
-        <el-button type="primary" @click="confirmRole">{{ $t('btn.save') }}</el-button>
-        <el-button type="danger" @click="dialogVisible=false">{{ $t('btn.cancel') }}</el-button>
+      <div class="dialog-footer">
+        <el-button type="primary" class="save-btn" @click="confirmRole">
+          <i class="el-icon-check" />
+          {{ $t('btn.save') }}
+        </el-button>
+        <el-button type="danger" class="cancel-btn" @click="dialogVisible=false">
+          <i class="el-icon-close" />
+          {{ $t('btn.cancel') }}
+        </el-button>
       </div>
     </el-dialog>
-    <el-dialog :visible.sync="dialogVisible2" :title="$t('role.permissions')">
+
+    <!-- 权限配置对话框 -->
+    <el-dialog
+      :visible.sync="dialogVisible2"
+      :title="$t('role.permissions')"
+      class="permission-dialog"
+      width="600px"
+    >
       <el-form :model="role" label-width="80px" label-position="left">
         <el-form-item :label="$t('label.menu')">
           <el-tree
@@ -104,15 +256,32 @@
             <span slot-scope="{ node, data }" class="custom-tree-node">
               <span>{{ node.label }}</span>
               <span>
-                <el-tag :type="fromPermissionKeyType(data.key)">{{ fromPermissionKeyName(data.key) }}</el-tag>
+                <el-tag :type="fromPermissionKeyType(data.key)" size="mini">
+                  {{ fromPermissionKeyName(data.key) }}
+                </el-tag>
               </span>
             </span>
           </el-tree>
         </el-form-item>
       </el-form>
-      <div style="text-align:center;">
-        <el-button :loading="treeLoading" type="primary" @click="confirmAuth">{{ $t('btn.save') }}</el-button>
-        <el-button type="danger" @click="dialogVisible2=false">{{ $t('btn.cancel') }}</el-button>
+      <div class="dialog-footer">
+        <el-button
+          :loading="treeLoading"
+          type="primary"
+          class="save-btn"
+          @click="confirmAuth"
+        >
+          <i class="el-icon-check" />
+          {{ $t('btn.save') }}
+        </el-button>
+        <el-button
+          type="danger"
+          class="cancel-btn"
+          @click="dialogVisible2=false"
+        >
+          <i class="el-icon-close" />
+          {{ $t('btn.cancel') }}
+        </el-button>
       </div>
     </el-dialog>
   </div>
@@ -373,12 +542,418 @@ export default {
 
 <style lang="scss" scoped>
 .app-container {
-  .roles-table {
-    margin-top: 30px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  padding: 20px;
+
+  // 页面标题区域
+  .page-header {
+    margin-bottom: 24px;
+
+    .header-content {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      padding: 24px;
+      color: white;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+
+      .page-title {
+        margin: 0 0 8px 0;
+        font-size: 24px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        i {
+          font-size: 28px;
+          color: rgba(255, 255, 255, 0.9);
+        }
+      }
+
+      .page-description {
+        margin: 0;
+        font-size: 14px;
+        opacity: 0.9;
+        line-height: 1.5;
+      }
+    }
   }
-  .permission-tree {
-    margin-bottom: 30px;
+
+  // 搜索过滤区域
+  .filter-container {
+    margin-bottom: 24px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(10px);
+
+    .filter-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-end;
+
+      .el-form-item {
+        margin-bottom: 0;
+        margin-right: 0;
+
+        .el-form-item__label {
+          font-weight: 500;
+          color: #606266;
+        }
+
+        .filter-input {
+          ::v-deep .el-input__inner {
+            border-radius: 8px;
+            border: 2px solid #e4e7ed;
+            transition: all 0.3s;
+
+            &:focus {
+              border-color: #667eea;
+              box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+          }
+        }
+
+        .filter-select {
+          ::v-deep .el-input__inner {
+            border-radius: 8px;
+            border: 2px solid #e4e7ed;
+            transition: all 0.3s;
+
+            &:focus {
+              border-color: #667eea;
+              box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+          }
+        }
+      }
+
+      .filter-buttons {
+        margin-left: auto;
+        display: flex;
+        gap: 12px;
+
+        .search-btn {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border: none;
+          border-radius: 8px;
+          padding: 10px 20px;
+          font-weight: 500;
+          transition: all 0.3s;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+          }
+        }
+
+        .reset-btn {
+          border-radius: 8px;
+          padding: 10px 20px;
+          transition: all 0.3s;
+
+          &:hover {
+            background: #f5f7fa;
+            transform: translateY(-1px);
+          }
+        }
+
+        .add-btn {
+          background: linear-gradient(135deg, #67c23a 0%, #85ce61 100%);
+          border: none;
+          border-radius: 8px;
+          padding: 10px 20px;
+          font-weight: 500;
+          transition: all 0.3s;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(103, 194, 58, 0.3);
+          }
+        }
+      }
+    }
   }
+
+  // 数据表格区域
+  .table-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 0px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(10px);
+
+    .role-table {
+      border-radius: 8px;
+      overflow: hidden;
+
+      ::v-deep .el-table__header-wrapper {
+        .el-table__header {
+          th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #495057;
+          }
+        }
+      }
+
+      ::v-deep .el-table__body-wrapper {
+        .el-table__body {
+          tr {
+            transition: all 0.3s;
+
+            &:hover {
+              background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+              transform: scale(1.01);
+            }
+          }
+        }
+      }
+
+      .code-cell,
+      .name-cell,
+      .description-cell {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        i {
+          color: #667eea;
+          font-size: 14px;
+          flex-shrink: 0;
+        }
+
+        span {
+          color: #606266;
+          font-weight: 500;
+        }
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        .el-button {
+          transition: all 0.3s;
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          }
+        }
+      }
+    }
+
+    .pagination-wrapper {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+    }
+  }
+
+  // 对话框样式
+  .role-dialog,
+  .permission-dialog {
+    ::v-deep .el-dialog {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+
+      .el-dialog__header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 24px;
+
+        .el-dialog__title {
+          color: white;
+          font-weight: 600;
+        }
+
+        .el-dialog__headerbtn {
+          .el-dialog__close {
+            color: white;
+
+            &:hover {
+              color: rgba(255, 255, 255, 0.8);
+            }
+          }
+        }
+      }
+
+      .el-dialog__body {
+        padding: 24px;
+      }
+    }
+
+    .role-form {
+      .el-form-item {
+        .el-form-item__label {
+          font-weight: 500;
+          color: #606266;
+        }
+
+        .el-input {
+          ::v-deep .el-input__inner {
+            border-radius: 8px;
+            border: 2px solid #e4e7ed;
+            transition: all 0.3s;
+
+            &:focus {
+              border-color: #667eea;
+              box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+          }
+        }
+
+        .el-textarea {
+          ::v-deep .el-textarea__inner {
+            border-radius: 8px;
+            border: 2px solid #e4e7ed;
+            transition: all 0.3s;
+
+            &:focus {
+              border-color: #667eea;
+              box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            }
+          }
+        }
+      }
+    }
+
+    .permission-tree {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #e4e7ed;
+      border-radius: 8px;
+      padding: 16px;
+
+      ::v-deep .el-tree-node__content {
+        padding: 8px 0;
+        border-radius: 4px;
+        transition: all 0.3s;
+
+        &:hover {
+          background: rgba(102, 126, 234, 0.1);
+        }
+      }
+    }
+
+    .dialog-footer {
+      text-align: right;
+      padding-top: 20px;
+      border-top: 1px solid #ebeef5;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+
+      .save-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 500;
+        transition: all 0.3s;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+      }
+
+      .cancel-btn {
+        border-radius: 8px;
+        padding: 10px 20px;
+        transition: all 0.3s;
+
+        &:hover {
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .app-container {
+    padding: 16px;
+
+    .page-header .header-content {
+      padding: 20px;
+
+      .page-title {
+        font-size: 20px;
+      }
+
+      .page-description {
+        font-size: 13px;
+      }
+    }
+
+    .filter-container {
+      padding: 20px;
+
+      .filter-form {
+        flex-direction: column;
+        gap: 12px;
+
+        .el-form-item {
+          width: 100%;
+
+          .el-input,
+          .el-select {
+            width: 100% !important;
+          }
+        }
+
+        .filter-buttons {
+          margin-left: 0;
+          justify-content: center;
+
+          .el-button {
+            flex: 1;
+          }
+        }
+      }
+    }
+
+    .table-container {
+      padding: 16px;
+      overflow-x: auto;
+    }
+  }
+}
+
+// 动画效果
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.app-container {
+  animation: fadeInUp 0.6s ease-out;
+
+  .page-header,
+  .filter-container,
+  .table-container {
+    animation: fadeInUp 0.6s ease-out;
+  }
+}
+
+.permission-tree {
+  margin-bottom: 30px;
 }
 </style>
 <style>
