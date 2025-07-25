@@ -1,16 +1,18 @@
 <template>
   <div class="app-container">
+    <!-- 搜索过滤区域 -->
     <div class="filter-container">
-      <el-form ref="queryForm" :model="tables.a.params" :inline="true" label-width="120px">
+      <el-form ref="queryForm" :model="tables.a.params" :inline="true" label-width="80px" class="filter-form">
         <el-form-item label="名称" prop="name">
           <el-input
             v-model="tables.a.params.name"
-            placeholder="请输入名称"
+            placeholder="请输入租户名称"
             clearable
+            style="width: 200px"
           />
         </el-form-item>
         <el-form-item label="状态" prop="status">
-          <el-select v-model="tables.a.params.status" placeholder="请选择状态" clearable>
+          <el-select v-model="tables.a.params.status" placeholder="请选择状态" clearable style="width: 150px">
             <el-option
               v-for="dict in options.status"
               :key="dict.value"
@@ -22,48 +24,78 @@
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" @click="handleSearch">{{ $t('btn.search') }}</el-button>
           <el-button icon="el-icon-refresh" @click="handleReset">{{ $t('btn.reset') }}</el-button>
-          <el-button v-permission="'UPMS_TENANT_ADD'" icon="el-icon-plus" @click="handleAdd">{{ $t('btn.add') }}</el-button>
+          <el-button v-permission="'UPMS_TENANT_ADD'" type="success" icon="el-icon-plus" @click="handleAdd">{{ $t('btn.add') }}</el-button>
         </el-form-item>
       </el-form>
     </div>
-    <el-table
-      v-loading="tables.a.loading"
-      :data="tables.a.data"
-      border
-      fit
-      highlight-current-row
-    >
-      <el-table-column label="所属部门" prop="departmentName" />
-      <el-table-column label="名称" prop="name" />
-      <el-table-column label="负责人" prop="manager" width="100" />
-      <el-table-column label="排序" prop="sort" width="80" align="center" />
-      <el-table-column label="状态" prop="status" width="80" align="center">
-        <template slot-scope="{row}">
-          <el-tag :type="row.status | statusFilter">
-            {{ row.status | enableStatusNameFilter }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createAt" width="170">
-        <template slot-scope="scope">
-          <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="操作" width="120">
-        <template slot-scope="{row}">
-          <el-button v-permission="'UPMS_TENANT_EDIT'" type="text" @click.native="handleEdit(row)">{{ $t('btn.edit') }}</el-button>
-          <el-button v-permission="'UPMS_TENANT_DELETE'" type="text" @click.native="handleDel(row)">{{ $t('btn.delete') }}</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="tables.a.total>0" :total="tables.a.total" :page.sync="tables.a.page" :limit.sync="tables.a.limit" @pagination="handleSearch" />
+
+    <!-- 数据表格区域 -->
+    <div class="table-container">
+      <el-table
+        v-loading="tables.a.loading"
+        :data="tables.a.data"
+        border
+        fit
+        highlight-current-row
+        class="tenant-table"
+      >
+        <el-table-column label="所属部门" prop="departmentName" min-width="120" />
+        <el-table-column label="名称" prop="name" min-width="150" />
+        <el-table-column label="负责人" prop="manager" width="120" />
+        <el-table-column label="排序" prop="sort" width="80" align="center" />
+        <el-table-column label="状态" prop="status" width="100" align="center">
+          <template slot-scope="{row}">
+            <el-tag :type="row.status | statusFilter" size="medium">
+              {{ row.status | enableStatusNameFilter }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="创建时间" align="center" prop="createAt" width="180">
+          <template slot-scope="scope">
+            <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="操作" width="150" fixed="right">
+          <template slot-scope="{row}">
+            <el-button
+              v-permission="'UPMS_TENANT_EDIT'"
+              type="text"
+              size="small"
+              @click.native="handleEdit(row)"
+            >
+              {{ $t('btn.edit') }}
+            </el-button>
+            <el-button
+              v-permission="'UPMS_TENANT_DELETE'"
+              type="text"
+              size="small"
+              @click.native="handleDel(row)"
+            >
+              {{ $t('btn.delete') }}
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 分页组件 -->
+      <div class="pagination-wrapper">
+        <pagination
+          v-show="tables.a.total>0"
+          :total="tables.a.total"
+          :page.sync="tables.a.page"
+          :limit.sync="tables.a.limit"
+          @pagination="handleSearch"
+        />
+      </div>
+    </div>
 
     <!-- 添加或修改业务-租户对话框 -->
-    <el-dialog :visible.sync="dialogs.a.visible" :title="dialogs.a.type==='edit'?'修改租户':'创建租户'">
+    <el-dialog
+      :visible.sync="dialogs.a.visible"
+      :title="dialogs.a.type==='edit'?'修改租户':'创建租户'"
+      :close-on-click-modal="false"
+    >
       <el-form ref="form" :model="record" :rules="rules" label-width="100px" label-position="left">
-        <!--<el-form-item label="所属部门" prop="department">
-          <el-input v-model="record.department" placeholder="请输入所属部门" />
-        </el-form-item>-->
         <el-form-item :label="$t('user.department')" prop="recordDepartments">
           <el-cascader ref="categoryCascader" v-model="recordDepartments" :options="options.departments" :show-all-levels="false" :props="{ checkStrictly: true }" clearable />
         </el-form-item>
@@ -91,8 +123,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleSubmit">{{ $t('btn.confirm') }}</el-button>
         <el-button @click="handleCancel">{{ $t('btn.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ $t('btn.confirm') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -234,3 +266,88 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.app-container {
+  padding: 20px;
+
+  // 搜索过滤区域
+  .filter-container {
+    margin-bottom: 20px;
+    padding: 20px 5px 0px 5px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .filter-form {
+      .el-form-item {
+        margin-bottom: 16px;
+        margin-right: 20px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  // 数据表格区域
+  .table-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+
+    .tenant-table {
+      ::v-deep .el-table__header-wrapper {
+        .el-table__header {
+          th {
+            background: #f5f7fa;
+            color: #606266;
+            font-weight: 600;
+          }
+        }
+      }
+
+      ::v-deep .el-table__body-wrapper {
+        .el-table__body {
+          tr {
+            &:hover {
+              background: #f5f7fa;
+            }
+          }
+        }
+      }
+    }
+
+    .pagination-wrapper {
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .app-container {
+    padding: 16px;
+
+    .filter-container {
+      padding: 16px;
+
+      .filter-form {
+        .el-form-item {
+          margin-right: 0;
+          margin-bottom: 12px;
+
+          .el-input,
+          .el-select {
+            width: 100% !important;
+          }
+        }
+      }
+    }
+  }
+}
+</style>
