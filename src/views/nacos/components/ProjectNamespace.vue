@@ -108,20 +108,20 @@ export default {
   computed: {
     tenant: {
       get() {
-        return this.value
+        return String(this.value)
       },
       set(val) {
-        this.$emit('input', val)
+        this.$emit('input', String(val))
       }
     },
     namespaceTabs() {
       // 普通空间tab + 申请tab
-      const tabs = this.namespaces.map(item => ({ label: item.namespaceName, value: item.namespaceId }))
+      const tabs = this.namespaces.map(item => ({ label: item.namespaceName, value: String(item.namespaceId) }))
       tabs.push({ label: '申请空间', value: 'apply' })
       return tabs
     },
     currentNamespace() {
-      return this.namespaces.filter(item => item.namespaceId === this.tenant)
+      return this.namespaces.filter(item => String(item.namespaceId) === String(this.tenant))
     }
   },
   watch: {
@@ -160,8 +160,9 @@ export default {
         if (resp.success) {
           this.namespaces = resp.rows
           if (this.namespaces.length > 0) {
-            this.$emit('input', this.namespaces[0].namespaceId)
-            this.$emit('change', this.namespaces[0].namespaceId)
+            const namespaceId = String(this.namespaces[0].namespaceId)
+            this.$emit('input', namespaceId)
+            this.$emit('change', namespaceId)
           } else {
             this.$emit('input', this.tenant)
           }
@@ -235,8 +236,9 @@ export default {
       })
     },
     selectNamespace(val) {
-      this.$emit('change', val)
-      sessionStorage.setItem('projectNamespace', val)
+      // 确保发送的是字符串类型
+      this.$emit('change', String(val))
+      sessionStorage.setItem('projectNamespace', String(val))
     },
     selectNamespace2Custom(val) {
       // 兼容原el-tabs的tab对象
@@ -245,7 +247,8 @@ export default {
       } else if (val === 'apply') {
         this.applyNamespace(this.activeCluster)
       }
-      this.$emit('change', val)
+      // 确保发送的是字符串类型
+      this.$emit('change', String(val))
     }
   }
 }
