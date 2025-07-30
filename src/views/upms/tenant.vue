@@ -41,7 +41,18 @@
       >
         <el-table-column label="所属部门" prop="departmentName" min-width="120" />
         <el-table-column label="名称" prop="name" min-width="150" />
-        <el-table-column label="负责人" prop="manager" width="120" />
+        <el-table-column label="负责人" prop="manager" width="200">
+          <template slot-scope="{row}">
+            <el-tag
+              v-for="(manager, index) in getManagerList(row.manager)"
+              :key="manager.id || index"
+              size="small"
+              style="margin-right: 5px; margin-bottom: 2px;"
+            >
+              {{ manager.name || manager.realName || manager.username }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="排序" prop="sort" width="80" align="center" />
         <el-table-column label="状态" prop="status" width="100" align="center">
           <template slot-scope="{row}">
@@ -103,7 +114,27 @@
           <el-input v-model="record.name" placeholder="请输入名称(默认部门名称)" />
         </el-form-item>
         <el-form-item label="负责人" prop="manager">
-          <el-input v-model="record.manager" placeholder="请输入负责人(默认部门负责人)" />
+          <el-select
+            v-model="recordManagers"
+            multiple
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请选择负责人"
+            :remote-method="remoteSearchUsers"
+            :loading="options.usersLoading"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="user in options.users"
+              :key="user.username"
+              :label="user.realName || user.username"
+              :value="user.username"
+            >
+              <span style="float: left">{{ user.realName || user.username }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">{{ user.username }}</span>
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="排序" prop="sort">
           <el-input-number v-model="record.sort" placeholder="请输入排序" />
@@ -133,6 +164,7 @@
 <script>
 import { pageTenant, addTenant, editTenant, delTenant } from '@/api/upms/tenant'
 import { treeDepartment } from '@/api/upms/department'
+import { findUserList } from '@/api/upms/user'
 
 const defaultRecord = {
   code: null,
@@ -167,12 +199,16 @@ export default {
       },
       record: Object.assign({}, defaultRecord),
       recordDepartments: [],
+      recordManagers: [], // 新增：负责人多选数组
       list: {
         loading: false
       },
       options: {
         loading: false,
         departments: [],
+        users: [], // 新增：用户列表
+        usersLoading: false, // 新增：用户加载状态
+        userCache: new Map(), // 新增：用户缓存，用于保存搜索过的用户信息
         // 状态：0.失效 1.生效
         status: [
           { value: '1', label: '启用' },
@@ -196,6 +232,80 @@ export default {
         }
       })
     },
+    // 新增：远程搜索用户
+    remoteSearchUsers(query) {
+      if (query !== '') {
+        this.options.usersLoading = true
+        findUserList(query).then(resp => {
+          if (resp.success) {
+            // 合并搜索结果和已选中的用户，避免重复
+            const searchResults = resp.rows || []
+
+            // 将搜索结果添加到缓存中
+            searchResults.forEach(user => {
+              this.options.userCache.set(user.username, user)
+            })
+
+            // 保留当前已选中的用户信息（包括之前搜索过的）
+            const currentSelectedUsers = this.options.users.filter(user =>
+              this.recordManagers.includes(user.username)
+            )
+
+            const allUsers = [...currentSelectedUsers]
+
+            // 添加搜索结果中不重复的用户
+            searchResults.forEach(user => {
+              if (!allUsers.find(u => u.username === user.username)) {
+                allUsers.push(user)
+              }
+            })
+
+            this.options.users = allUsers
+          }
+        }).finally(() => {
+          this.options.usersLoading = false
+        })
+      } else {
+        // 当搜索框为空时，保留已选中的用户
+        const selectedUsers = this.options.users.filter(user =>
+          this.recordManagers.includes(user.username)
+        )
+        this.options.users = selectedUsers
+      }
+    },
+    // 新增：解析负责人字符串为数组
+    getManagerList(managerStr) {
+      if (!managerStr) return []
+
+      // 如果已经是数组，直接处理
+      if (Array.isArray(managerStr)) {
+        return managerStr.map(manager => ({
+          id: manager.username, // 使用 username 作为 id
+          name: manager.realName || manager.username, // 显示名称
+          username: manager.username,
+          realName: manager.realName
+        }))
+      }
+
+      // 如果是字符串，尝试解析JSON
+      if (typeof managerStr === 'string') {
+        try {
+          const managers = JSON.parse(managerStr)
+          // 处理简化后的用户信息格式
+          return managers.map(manager => ({
+            id: manager.username, // 使用 username 作为 id
+            name: manager.realName || manager.username, // 显示名称
+            username: manager.username,
+            realName: manager.realName
+          }))
+        } catch (e) {
+          // 如果不是JSON格式，按逗号分割
+          return managerStr.split(',').map(name => ({ name: name.trim() }))
+        }
+      }
+
+      return []
+    },
     handleSearch() {
       this.tables.a.loading = true
       pageTenant(this.tables.a).then(resp => {
@@ -210,6 +320,7 @@ export default {
     },
     handleAdd() {
       this.record = Object.assign({}, defaultRecord)
+      this.recordManagers = [] // 重置负责人选择
       this.dialogs.a.visible = true
       this.dialogs.a.type = 'new'
     },
@@ -217,6 +328,61 @@ export default {
       this.record = Object.assign({}, row)
       this.recordDepartments = []
       this.recordDepartments = row.departmentId.split(',')
+
+      // 处理负责人数据
+      this.recordManagers = []
+      if (row.manager) {
+        // 如果已经是数组，直接处理
+        if (Array.isArray(row.manager)) {
+          const managers = row.manager
+          this.recordManagers = managers.map(m => m.username || m)
+
+          // 将简化后的用户信息转换为完整格式，用于显示
+          const fullUsers = managers.map(user => ({
+            username: user.username,
+            realName: user.realName || user.username,
+            id: user.username
+          }))
+
+          // 将已配置的管理员添加到用户列表中，确保多选组件能正确显示
+          this.options.users = fullUsers
+
+          // 将编辑时的用户信息也添加到缓存中
+          fullUsers.forEach(user => {
+            this.options.userCache.set(user.username, user)
+          })
+        } else if (typeof row.manager === 'string') {
+          // 如果是字符串，尝试解析JSON
+          try {
+            const managers = JSON.parse(row.manager)
+            this.recordManagers = managers.map(m => m.username || m)
+
+            // 将简化后的用户信息转换为完整格式，用于显示
+            const fullUsers = managers.map(user => ({
+              username: user.username,
+              realName: user.realName || user.username,
+              id: user.username
+            }))
+
+            // 将已配置的管理员添加到用户列表中，确保多选组件能正确显示
+            this.options.users = fullUsers
+
+            // 将编辑时的用户信息也添加到缓存中
+            fullUsers.forEach(user => {
+              this.options.userCache.set(user.username, user)
+            })
+          } catch (e) {
+            // 如果不是JSON格式，清空选择
+            this.recordManagers = []
+            this.options.users = []
+          }
+        } else {
+          this.options.users = []
+        }
+      } else {
+        this.options.users = []
+      }
+
       this.dialogs.a.visible = true
       this.dialogs.a.type = 'edit'
     },
@@ -241,10 +407,44 @@ export default {
       const _this = this
       let resp = null
       let opName = '添加'
-      // this.record.dutyList = []
+
       if (this.recordDepartments.length > 0) {
         this.record.departmentId = this.recordDepartments.join(',')
       }
+
+      // 处理负责人数据
+      if (this.recordManagers.length > 0) {
+        // 根据选中的用户名获取用户信息
+        const selectedUsers = this.options.users.filter(user =>
+          this.recordManagers.includes(user.username)
+        )
+
+        // 如果从当前用户列表中找不到某些用户，从缓存中获取
+        if (selectedUsers.length !== this.recordManagers.length) {
+          const missingUsernames = this.recordManagers.filter(username =>
+            !selectedUsers.find(user => user.username === username)
+          )
+
+          // 从缓存中获取缺失的用户信息
+          missingUsernames.forEach(username => {
+            const cachedUser = this.options.userCache.get(username)
+            if (cachedUser) {
+              selectedUsers.push(cachedUser)
+            }
+          })
+        }
+
+        // 只保留 username 和 realName 字段
+        const simplifiedUsers = selectedUsers.map(user => ({
+          username: user.username,
+          realName: user.realName || user.username
+        }))
+
+        this.record.manager = simplifiedUsers
+      } else {
+        this.record.manager = null
+      }
+
       if (this.dialogs.a.type === 'new') {
         resp = await addTenant(this.record)
       } else if (this.dialogs.a.type === 'edit') {
