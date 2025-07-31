@@ -45,7 +45,7 @@
         <div v-show="showSearch" class="action-bar">
           <div class="action-left">
             <el-button
-              v-if="canWrite"
+              v-if="forceCanWrite"
               v-permission="'NACOS_PROJECT_CONFIG_ADD'"
               type="primary"
               icon="el-icon-plus"
@@ -54,7 +54,7 @@
               创建配置
             </el-button>
             <el-button
-              v-if="canWrite"
+              v-if="forceCanWrite"
               v-permission="'NACOS_PROJECT_CONFIGS_CLONE'"
               type="success"
               icon="el-icon-copy-document"
@@ -63,7 +63,7 @@
               克隆配置
             </el-button>
             <el-button
-              v-if="canWrite"
+              v-if="forceCanWrite"
               v-permission="'NACOS_PROJECT_CONFIGS_IMPORT'"
               type="warning"
               icon="el-icon-upload2"
@@ -85,7 +85,7 @@
             <el-button
               type="primary"
               icon="el-icon-refresh"
-              @click="queryData()"
+              @click="handleRefresh()"
             >
               刷新
             </el-button>
@@ -137,7 +137,7 @@
               <template slot-scope="{row}">
                 <div class="action-buttons">
                   <el-link
-                    v-if="canWrite"
+                    v-if="forceCanWrite"
                     v-permission="'NACOS_PROJECT_CONFIG_EDIT'"
                     type="primary"
                     icon="el-icon-edit"
@@ -170,7 +170,7 @@
                     变更历史
                   </el-link>
                   <el-link
-                    v-if="canWrite"
+                    v-if="forceCanWrite"
                     v-permission="'NACOS_PROJECT_CONFIG_DELETE'"
                     type="danger"
                     icon="el-icon-delete"
@@ -376,7 +376,7 @@
                   详情
                 </el-link>
                 <el-link
-                  v-if="canWrite"
+                  v-if="forceCanWrite"
                   v-permission="'NACOS_PROJECT_CONFIGS_ROLLBACK'"
                   type="warning"
                   icon="el-icon-refresh-left"
@@ -628,6 +628,7 @@ export default {
       dialogCompareListVisible: false,
       dialogCompareVisible: false,
       canWrite: false,
+      permissionCheckTimer: null, // 权限检查定时器
       importMessage: '',
       record: {},
       compareData: {
@@ -675,9 +676,9 @@ export default {
   },
   computed: {
     namespaceName() {
-      const tmp = this.namespaceId
+      const tmp = String(this.namespaceId)
       const tenant = this.namespaces.find(tenant => {
-        return tenant.value === tmp
+        return String(tenant.value) === tmp
       })
       if (tenant) {
         return tenant.label
@@ -686,46 +687,233 @@ export default {
     },
     importUrl() {
       return `/api/devops/nacos/user/${this.projectId}/configs/import?namespaceId=${this.namespaceId}`
+    },
+    // 添加计算属性作为 canWrite 的备用方案
+    computedCanWrite() {
+      if (!this.namespaceId || this.namespaceId === 'apply' || this.namespaceId === '') {
+        return false
+      }
+
+      const namespace = this.namespaces.find(tenant => {
+        return String(tenant.namespaceId) === String(this.namespaceId)
+      })
+
+      if (namespace && namespace.permission) {
+        const hasWritePermission = namespace.permission.includes('w')
+        console.log('计算属性权限检查:', this.namespaceId, 'canWrite:', hasWritePermission, 'permission:', namespace.permission)
+        return hasWritePermission
+      }
+
+      return false
+    },
+
+    // 添加一个强制刷新的计算属性
+    forceCanWrite() {
+      // 强制触发计算属性重新计算
+      this.$forceUpdate()
+      return this.canWrite || this.computedCanWrite
+    }
+  },
+  // 添加 watch 监听器来监听命名空间数据变化
+  watch: {
+    namespaces: {
+      handler(newNamespaces) {
+        console.log('namespaces数据变化:', newNamespaces.length, '个命名空间')
+        // 当命名空间列表更新时，如果当前有选中的命名空间，重新检查权限
+        if (this.namespaceId && this.namespaceId !== 'apply' && this.namespaceId !== '') {
+          this.$nextTick(() => {
+            this.updateCanWritePermission(this.namespaceId)
+          })
+        }
+      },
+      deep: true
+    },
+    // 监听 namespaceId 变化
+    namespaceId: {
+      handler(newNamespaceId, oldNamespaceId) {
+        console.log('namespaceId变化:', oldNamespaceId, '->', newNamespaceId)
+        if (newNamespaceId && newNamespaceId !== 'apply' && newNamespaceId !== '') {
+          this.$nextTick(() => {
+            this.updateCanWritePermission(newNamespaceId)
+          })
+        }
+      },
+      immediate: true
     }
   },
   // { min: 2, max: 5, message: '长度在 2 到 5 个字符', trigger: 'change' }
   created() {
     // this.fetchData()
   },
+  beforeDestroy() {
+    // 清理定时器
+    if (this.permissionCheckTimer) {
+      clearInterval(this.permissionCheckTimer)
+      this.permissionCheckTimer = null
+    }
+  },
   methods: {
     handleSelectProject(val) {
+      console.log('项目切换:', val)
       if (this.projectId === val) {
         return
       }
       this.projectId = val
       this.listQuery.appName = val
       this.list = []
-      this.namespaceId = ''
+      this.$set(this, 'namespaceId', '')
       this.listQuery.namespaceId = ''
       this.namespaces = []
       this.showSearch = false
+      this.$set(this, 'canWrite', false) // 使用$set确保响应式更新
+      console.log('项目切换完成，权限已重置')
+    },
+    // 添加 onProjectChange 方法作为 handleSelectProject 的别名
+    onProjectChange(val) {
+      this.handleSelectProject(val)
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
     loadNamespacesFinish(data) {
+      console.log('命名空间列表加载完成:', data)
       this.namespaces = data
       this.showSearch = data.length > 0
+
+      // 强制更新UI
+      this.$forceUpdate()
+
+      // 延迟检查权限，确保UI更新完成
+      setTimeout(() => {
+        // 如果当前有选中的命名空间，重新更新权限
+        if (this.namespaceId && this.namespaceId !== 'apply' && this.namespaceId !== '') {
+          this.updateCanWritePermission(this.namespaceId)
+        } else if (data.length > 0) {
+          // 如果没有选中的命名空间但有可用的命名空间，自动选择第一个并更新权限
+          const firstNamespace = data[0]
+          if (firstNamespace && firstNamespace.namespaceId) {
+            const namespaceId = String(firstNamespace.namespaceId)
+            this.$set(this, 'namespaceId', namespaceId)
+            this.listQuery.namespaceId = namespaceId
+            this.updateCanWritePermission(namespaceId)
+            console.log('自动选择第一个命名空间:', namespaceId)
+          }
+        }
+
+        // 添加持续检查机制，确保权限状态正确
+        this.startPermissionCheck()
+      }, 100) // 延迟100ms确保UI更新完成
     },
     handleNamespaceChange(val) {
-      if (val === 'apply' || val === '') {
+      console.log('命名空间切换:', val)
+
+      // 确保 namespaceId 是字符串类型
+      const namespaceId = String(val)
+
+      if (namespaceId === 'apply' || namespaceId === '') {
         this.listQuery.namespaceId = ''
         this.showSearch = false
+        this.$set(this, 'canWrite', false) // 使用$set确保响应式更新
         return
       }
-      const namespace = this.namespaces.find(tenant => {
-        return tenant.namespaceId === val
-      })
-      if (namespace) {
-        this.canWrite = namespace.permission.includes('w')
-      }
-      this.listQuery.namespaceId = val
+
+      // 立即更新 canWrite 权限
+      this.updateCanWritePermission(namespaceId)
+
+      this.$set(this, 'namespaceId', namespaceId)
+      this.listQuery.namespaceId = namespaceId
       this.queryData()
+    },
+
+    // 新增方法：更新写入权限
+    updateCanWritePermission(namespaceId) {
+      console.log('开始更新权限:', namespaceId, '当前namespaces数量:', this.namespaces.length)
+
+      // 确保 namespaceId 是字符串类型
+      const namespaceIdStr = String(namespaceId)
+
+      if (!namespaceIdStr || namespaceIdStr === 'apply' || namespaceIdStr === '') {
+        this.$set(this, 'canWrite', false) // 使用$set确保响应式更新
+        console.log('权限重置为false，原因: 无效的namespaceId')
+        this.$forceUpdate() // 强制更新UI
+        return
+      }
+
+      const namespace = this.namespaces.find(tenant => {
+        return String(tenant.namespaceId) === namespaceIdStr
+      })
+
+      console.log('找到的namespace:', namespace)
+
+      if (namespace && namespace.permission) {
+        const newCanWrite = namespace.permission.includes('w')
+        this.$set(this, 'canWrite', newCanWrite) // 使用$set确保响应式更新
+        console.log('权限更新成功:', namespaceId, 'canWrite:', newCanWrite, 'permission:', namespace.permission)
+        this.$forceUpdate() // 强制更新UI
+      } else {
+        this.$set(this, 'canWrite', false) // 使用$set确保响应式更新
+        console.log('权限更新失败:', namespaceId, 'namespace not found or no permission')
+        console.log('当前namespaces列表:', this.namespaces)
+        this.$forceUpdate() // 强制更新UI
+
+        // 如果权限更新失败且namespaces为空，延迟重试
+        if (this.namespaces.length === 0) {
+          console.log('namespaces为空，延迟500ms后重试权限更新')
+          setTimeout(() => {
+            this.updateCanWritePermission(namespaceId)
+          }, 500)
+        }
+      }
+    },
+
+    // 强制刷新权限的方法
+    forceRefreshPermission() {
+      console.log('强制刷新权限')
+      if (this.namespaceId && this.namespaceId !== 'apply' && this.namespaceId !== '') {
+        this.updateCanWritePermission(String(this.namespaceId))
+      }
+    },
+
+    // 处理刷新操作
+    handleRefresh() {
+      console.log('执行刷新操作')
+      this.forceRefreshPermission() // 先刷新权限
+      this.queryData() // 再刷新数据
+    },
+
+    // 开始权限检查
+    startPermissionCheck() {
+      // 清除之前的定时器
+      if (this.permissionCheckTimer) {
+        clearInterval(this.permissionCheckTimer)
+      }
+
+      // 设置定时器，每500ms检查一次权限状态
+      this.permissionCheckTimer = setInterval(() => {
+        if (this.namespaceId && this.namespaceId !== 'apply' && this.namespaceId !== '') {
+          const namespace = this.namespaces.find(tenant => {
+            return String(tenant.namespaceId) === String(this.namespaceId)
+          })
+
+          if (namespace && namespace.permission) {
+            const shouldHaveWritePermission = namespace.permission.includes('w')
+            if (this.canWrite !== shouldHaveWritePermission) {
+              console.log('权限状态不一致，正在修正:', this.canWrite, '->', shouldHaveWritePermission)
+              this.$set(this, 'canWrite', shouldHaveWritePermission)
+              this.$forceUpdate()
+            }
+          }
+        }
+      }, 500)
+
+      // 5秒后停止检查
+      setTimeout(() => {
+        if (this.permissionCheckTimer) {
+          clearInterval(this.permissionCheckTimer)
+          this.permissionCheckTimer = null
+          console.log('权限检查定时器已停止')
+        }
+      }, 5000)
     },
     fetchData() {
       if (!this.listQuery.namespaceId || this.listQuery.namespaceId === '') {
