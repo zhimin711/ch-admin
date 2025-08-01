@@ -1,122 +1,111 @@
 <template>
   <div class="app-container">
-    <el-form ref="queryForm" :model="recordPage.params" :inline="true" label-width="68px">
-      <el-form-item label="职位编码" prop="code">
-        <el-input
-          v-model="recordPage.params.code"
-          placeholder="请输入职位编码"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="职位名称" prop="name">
-        <el-input
-          v-model="recordPage.params.name"
-          placeholder="请输入职位名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="状态" prop="status">
-        <el-select v-model="recordPage.params.status" placeholder="职位状态" clearable size="small">
-          <el-option
-            v-for="dict in dict.type.status"
-            :key="dict.value"
-            :label="dict.label"
-            :value="dict.value"
+    <!-- 搜索过滤区域 -->
+    <div class="filter-container">
+      <el-form ref="queryForm" :model="recordPage.params" :inline="true" label-width="80px" class="filter-form">
+        <el-form-item label="职位编码" prop="code">
+          <el-input
+            v-model="recordPage.params.code"
+            placeholder="请输入职位编码"
+            clearable
+            style="width: 200px"
           />
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+        </el-form-item>
+        <el-form-item label="职位名称" prop="name">
+          <el-input
+            v-model="recordPage.params.name"
+            placeholder="请输入职位名称"
+            clearable
+            style="width: 200px"
+          />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="recordPage.params.status" placeholder="请选择状态" clearable style="width: 150px">
+            <el-option
+              v-for="dict in dict.type.status"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" @click="handleQuery">{{ $t('btn.search') }}</el-button>
+          <el-button icon="el-icon-refresh" @click="resetQuery">{{ $t('btn.reset') }}</el-button>
+          <el-button v-permission="['UPMS_POSITION_ADD']" type="success" icon="el-icon-plus" @click="handleAdd">{{ $t('btn.add') }}</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          v-permission="['UPMS_POSITION_ADD']"
-          type="primary"
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          v-permission="['UPMS_POSITION_EDIT']"
-          type="success"
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          v-permission="['UPMS_POSITION_DEL']"
-          type="danger"
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          v-permission="['UPMS_POSITION_EXPORT']"
-          type="warning"
-          icon="el-icon-download"
-          size="mini"
-          @click="handleExport"
-        >导出</el-button>
-      </el-col>
-    </el-row>
+    <!-- 数据表格区域 -->
+    <div class="table-container">
+      <el-table
+        v-loading="recordPage.loading"
+        :data="recordPage.list"
+        border
+        fit
+        highlight-current-row
+        class="position-table"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column label="职位编码" align="center" prop="code" min-width="120" />
+        <el-table-column label="职位名称" align="center" prop="name" min-width="150" />
+        <el-table-column label="职位排序" align="center" prop="sort" width="100" />
+        <el-table-column label="状态" align="center" width="100">
+          <template slot-scope="{row}">
+            <el-tag :type="row.status | statusFilter" size="medium">
+              {{ row.status | enableStatusNameFilter }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="创建时间" align="center" prop="createAt" width="180">
+          <template slot-scope="scope">
+            <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="操作" width="150" fixed="right">
+          <template slot-scope="{row}">
+            <el-button
+              v-permission="['UPMS_POSITION_EDIT']"
+              type="text"
+              size="small"
+              @click.native="handleUpdate(row)"
+            >
+              {{ $t('btn.edit') }}
+            </el-button>
+            <el-button
+              v-permission="['UPMS_POSITION_DEL']"
+              type="text"
+              size="small"
+              @click.native="handleDelete(row)"
+            >
+              {{ $t('btn.delete') }}
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
-    <el-table v-loading="recordPage.loading" :data="recordPage.list" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="职位编码" align="center" prop="code" />
-      <el-table-column label="职位名称" align="center" prop="name" />
-      <el-table-column label="职位排序" align="center" prop="sort" />
-      <el-table-column class-name="status-col" label="状态" width="110">
-        <template slot-scope="{row}">
-          <el-tag :type="row.status | statusFilter">
-            {{ row.status | enableStatusNameFilter }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createAt" width="180">
-        <template slot-scope="scope">
-          <span>{{ scope.row.createAt | parseTime('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template slot-scope="scope">
-          <el-button
-            v-permission="['UPMS_POSITION_EDIT']"
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-          >修改</el-button>
-          <el-button
-            v-permission="['UPMS_POSITION_DEL']"
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-          >删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="recordPage.total>0" :total="recordPage.total" :page.sync="recordPage.num" :limit.sync="recordPage.size" @pagination="getList" />
+      <!-- 分页组件 -->
+      <div class="pagination-wrapper">
+        <pagination
+          v-show="recordPage.total>0"
+          :total="recordPage.total"
+          :page.sync="recordPage.num"
+          :limit.sync="recordPage.size"
+          @pagination="getList"
+        />
+      </div>
+    </div>
 
     <!-- 添加或修改职位对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="record" :rules="rules" label-width="80px">
+    <el-dialog
+      :visible.sync="open"
+      :title="title"
+      :close-on-click-modal="false"
+      width="600px"
+    >
+      <el-form ref="form" :model="record" :rules="rules" label-width="100px" label-position="left">
         <el-form-item label="职位名称" prop="name">
           <el-input v-model="record.name" placeholder="请输入职位名称" />
         </el-form-item>
@@ -124,24 +113,24 @@
           <el-input v-model="record.code" placeholder="请输入编码名称" />
         </el-form-item>
         <el-form-item label="职位顺序" prop="sort">
-          <el-input-number v-model="record.sort" controls-position="right" :min="0" />
+          <el-input-number v-model="record.sort" controls-position="right" :min="0" style="width: 100%" />
         </el-form-item>
         <el-form-item label="状态">
           <el-switch
             v-model="recordStatus"
             active-color="#13ce66"
             inactive-color="#ff4949"
-            active-text="开启"
+            active-text="启用"
             inactive-text="禁用"
           />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="record.remark" type="textarea" placeholder="请输入内容" />
+          <el-input v-model="record.remark" type="textarea" placeholder="请输入内容" :rows="3" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button @click="cancel">{{ $t('btn.cancel') }}</el-button>
+        <el-button type="primary" @click="submitForm">{{ $t('btn.confirm') }}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -149,7 +138,6 @@
 
 <script>
 import { pagePosition, delPosition, addPosition, editPosition } from '@/api/upms/position'
-
 import { deepClone } from '@/utils'
 
 const defaultRecord = { pid: '0', sort: 1, status: '1' }
@@ -311,3 +299,88 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.app-container {
+  padding: 20px;
+
+  // 搜索过滤区域
+  .filter-container {
+    margin-bottom: 20px;
+    padding: 20px 5px 0px 5px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .filter-form {
+      .el-form-item {
+        margin-bottom: 16px;
+        margin-right: 20px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  // 数据表格区域
+  .table-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+
+    .position-table {
+      ::v-deep .el-table__header-wrapper {
+        .el-table__header {
+          th {
+            background: #f5f7fa;
+            color: #606266;
+            font-weight: 600;
+          }
+        }
+      }
+
+      ::v-deep .el-table__body-wrapper {
+        .el-table__body {
+          tr {
+            &:hover {
+              background: #f5f7fa;
+            }
+          }
+        }
+      }
+    }
+
+    .pagination-wrapper {
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .app-container {
+    padding: 16px;
+
+    .filter-container {
+      padding: 16px;
+
+      .filter-form {
+        .el-form-item {
+          margin-right: 0;
+          margin-bottom: 12px;
+
+          .el-input,
+          .el-select {
+            width: 100% !important;
+          }
+        }
+      }
+    }
+  }
+}
+</style>
