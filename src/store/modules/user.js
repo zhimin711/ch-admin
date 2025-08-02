@@ -215,8 +215,10 @@ const actions = {
       // dynamically add accessible routes
       router.addRoutes(accessRoutes)
 
+      // 获取当前路由信息，保留当前页面
+      const currentRoute = router.currentRoute
       // reset visited views and cached views
-      dispatch('tagsView/delAllViews', null, { root: true })
+      dispatch('tagsView/delOthersViews', currentRoute, { root: true })
 
       resolve()
     })
