@@ -48,7 +48,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ env.IMG_NAME }} -f build/Dockerfile dist
+          docker build -t ${{ env.IMG_NAME }} -f build/Dockerfile .
           docker tag ${{ env.IMG_NAME }} ${{ env.FULL_IMAGE }}
 
       - name: Log in to Docker Hub
