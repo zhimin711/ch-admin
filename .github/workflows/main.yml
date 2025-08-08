@@ -1,0 +1,60 @@
+name: Build and Push Docker Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Git branch to build'
+        required: true
+        default: 'master'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    env:
+      APP_NAME: ch-admin
+      IMG_NAMESPACE: chaohua
+      HUB_ADDR: docker.io
+      DATETIME: ${{ github.run_id }} # 或者用 date 获取更灵活
+      NODE_VERSION: 18.20.4
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Vue project
+        run: npm run build:prod
+
+      - name: Set image name
+        id: image_name
+        run: |
+          DATETIME=$(date +'%Y%m%d%H%M%S')
+          echo "IMG_NAME=${{ env.APP_NAME }}:${DATETIME}" >> $GITHUB_ENV
+          echo "FULL_IMAGE=${{ env.APP_NAME }}:${DATETIME}" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.IMG_NAME }} -f build/Dockerfile dist
+          docker tag ${{ env.IMG_NAME }} ${{ env.FULL_IMAGE }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.FULL_IMAGE }}
+          docker rmi ${{ env.FULL_IMAGE }} ${{ env.IMG_NAME }}
