@@ -29,9 +29,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install editor
-        run: npm install --save tui-editor
         
       - name: Install dependencies
         run: npm install
@@ -48,7 +45,6 @@ jobs:
 
       - name: Build Docker image
         run: |
-          ls -R
           docker build -t ${{ env.IMG_NAME }} -f Dockerfile .
           docker tag ${{ env.IMG_NAME }} ${{ env.FULL_IMAGE }}
 
