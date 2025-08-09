@@ -6,7 +6,7 @@ on:
       branch:
         description: 'Git branch to build'
         required: true
-        default: 'master'
+        default: 'featrue/2.1.0-token-v2'
 
 jobs:
   build-and-push:
