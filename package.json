@@ -1,7 +1,7 @@
 {
   "name": "chao-hua-admin",
-  "version": "1.1.0",
-  "description": "Chao Hua admin System. An Element UI solution for devops applications.",
+  "version": "2.1.0",
+  "description": "Chao Hua Admin System - An enterprise-level DevOps management platform based on Vue 2 + Element UI for cloud-native and microservices architecture.",
   "author": "zhimin711 <zhimin711@sina.com>",
   "scripts": {
     "dev": "vue-cli-service serve",
@@ -90,7 +90,7 @@
     "last 2 versions"
   ],
   "bugs": {
-    "url": "https://github.com/PanJiaChen/vue-element-admin/issues"
+    "url": "https://github.com/zhimin711/ch-admin2/issues"
   },
   "engines": {
     "node": ">=12.0",
@@ -101,8 +101,14 @@
     "admin",
     "dashboard",
     "element-ui",
-    "ch-admin",
-    "management-system"
+    "devops",
+    "microservices",
+    "nacos",
+    "rocketmq",
+    "canal",
+    "management-system",
+    "enterprise",
+    "cloud-native"
   ],
   "license": "MIT",
   "lint-staged": {
@@ -118,6 +124,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PanJiaChen/vue-element-admin.git"
-  }
+    "url": "git+https://github.com/zhimin711/ch-admin2.git"
+  },
+  "homepage": "https://github.com/zhimin711/ch-admin2#readme"
 }
