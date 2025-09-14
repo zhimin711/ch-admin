@@ -1,10 +1,6 @@
 # Chao Hua Admin System
 
 <p align="center">
-  <img width="320" src="src/assets/logo.jpg" alt="Chao Hua Admin">
-</p>
-
-<p align="center">
   <a href="https://github.com/vuejs/vue">
     <img src="https://img.shields.io/badge/vue-2.6.10-brightgreen.svg" alt="vue">
   </a>
