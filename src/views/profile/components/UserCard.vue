@@ -8,12 +8,12 @@
       <div class="box-center">
         <pan-thumb :image="user.avatar" :height="'100px'" :width="'100px'" :hoverable="false">
           <div>Hello</div>
-          {{ user.role.name }}
+          {{ user.role && user.role.name ? user.role.name : '未知角色' }}
         </pan-thumb>
       </div>
       <div class="box-center">
         <div class="user-name text-center">{{ user.name }}</div>
-        <div class="user-role text-center text-muted">{{ user.role.name }}</div>
+        <div class="user-role text-center text-muted">{{ user.role && user.role.name ? user.role.name : '未知角色' }}</div>
       </div>
       <div class="box-center">
         <div class="user-role text-center text-muted">
