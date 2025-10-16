@@ -120,8 +120,8 @@
             />
             <el-table-column label="Data Id" min-width="200" prop="dataId">
               <template slot-scope="{row}">
-                <div class="data-id">
-                  <i class="el-icon-document" />
+                <div class="data-id copyable" :title="'点击复制: ' + row.dataId" @click="copyToClipboard(row.dataId)">
+                  <i class="el-icon-copy-document copy-icon" />
                   <span>{{ row.dataId }}</span>
                 </div>
               </template>
@@ -753,6 +753,46 @@ export default {
     }
   },
   methods: {
+    // 复制到剪贴板
+    copyToClipboard(text) {
+      if (!text) {
+        this.$message.warning('没有可复制的内容')
+        return
+      }
+
+      // 创建临时文本区域
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+
+      try {
+        const successful = document.execCommand('copy')
+        if (successful) {
+          this.$message.success('复制成功: ' + text)
+        } else {
+          // 降级方案：使用现代API
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+              this.$message.success('复制成功: ' + text)
+            }).catch(() => {
+              this.$message.error('复制失败')
+            })
+          } else {
+            this.$message.error('复制失败')
+          }
+        }
+      } catch (err) {
+        this.$message.error('复制失败')
+      } finally {
+        document.body.removeChild(textArea)
+      }
+    },
+
     handleSelectProject(val) {
       console.log('项目切换:', val)
       if (this.projectId === val) {
@@ -1361,6 +1401,39 @@ export default {
 
   i {
     color: #409EFF;
+  }
+
+  &.copyable {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    position: relative;
+
+    &:hover {
+      background: #f0f9ff;
+      border: 1px solid #91d5ff;
+
+      .copy-icon {
+        opacity: 1;
+        color: #1890ff;
+      }
+    }
+
+    .copy-icon {
+      opacity: 0;
+      transition: all 0.2s ease;
+      color: #999;
+      font-size: 12px;
+      margin-left: auto;
+    }
+
+    span {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 }
 
