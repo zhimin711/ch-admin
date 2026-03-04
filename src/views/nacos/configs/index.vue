@@ -4,53 +4,60 @@
       <!--部门数据-->
       <!--用户数据-->
       <el-col :span="24" :xs="24">
-        <sticky :z-index="10" :class-name="'sub-navbar3 '">
-          <tenant v-model="namespaceId" @change="handleNamespaceChange" @finish="loadNamespacesFinish" />
+        <sticky :z-index="1000" :class-name="'sub-navbar3 sticky-header'">
+          <div class="tenant-wrapper">
+            <tenant v-model="namespaceId" @change="handleNamespaceChange" @finish="loadNamespacesFinish" />
+          </div>
         </sticky>
-        <div class="query-container">
-          <el-form ref="queryForm" :model="listQuery" :inline="true">
-            <el-form-item label="Data ID">
-              <el-input v-model="listQuery.dataId" placeholder="请输入Data ID" style="width: 200px;" />
-            </el-form-item>
-            <el-form-item label="Group">
-              <el-input v-model="listQuery.group" placeholder="请输入Group" style="width: 200px;" />
-            </el-form-item>
-          </el-form>
-          <el-button type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
-          <el-button v-permission="'NacosConfigsIndexAdd'" type="primary" @click="handleCreate()">创建配置</el-button>
-          <el-button v-permission="'NacosConfigsIndexDelete'" type="danger" @click="onDelete2()">删除</el-button>
-          <!--<el-button type="primary" @click="handleCreate()">导出查询结果</el-button>-->
-          <el-button v-permission="'NacosConfigsIndexExport'" type="success" plain @click="handleExports()">导出配置</el-button>
-          <el-button v-permission="'NacosConfigsIndexImport'" type="primary" @click="handleImports()">导入配置</el-button>
-          <el-button v-permission="'NacosConfigsIndexClone'" type="primary" plain @click="handleClone()">克隆配置</el-button>
+        <div class="content-wrapper">
+          <div class="query-container">
+            <el-form ref="queryForm" :model="listQuery" :inline="true">
+              <el-form-item label="Data ID">
+                <el-input v-model="listQuery.dataId" placeholder="请输入Data ID" style="width: 200px;" />
+              </el-form-item>
+              <el-form-item label="Group">
+                <el-input v-model="listQuery.group" placeholder="请输入Group" style="width: 200px;" />
+              </el-form-item>
+            </el-form>
+            <div class="button-group">
+              <el-button type="primary" icon="el-icon-search" plain @click="queryData()">查询</el-button>
+              <el-button v-permission="'NacosConfigsIndexAdd'" type="primary" @click="handleCreate()">创建配置</el-button>
+              <el-button v-permission="'NacosConfigsIndexDelete'" type="danger" @click="onDelete2()">删除</el-button>
+              <el-button v-permission="'NacosConfigsIndexExport'" type="success" plain @click="handleExports()">导出配置</el-button>
+              <el-button v-permission="'NacosConfigsIndexImport'" type="primary" @click="handleImports()">导入配置</el-button>
+              <el-button v-permission="'NacosConfigsIndexClone'" type="primary" plain @click="handleClone()">克隆配置</el-button>
+            </div>
+          </div>
+          <div class="table-container">
+            <el-table
+              v-loading="listLoading"
+              :data="list"
+              element-loading-text="Loading"
+              border
+              fit
+              highlight-current-row
+              @selection-change="handleSelectionChange"
+            >
+              <el-table-column
+                type="selection"
+                align="center"
+                width="55"
+              />
+              <el-table-column label="Data Id" min-width="200" prop="dataId" />
+              <el-table-column label="Group" min-width="200" prop="group" />
+              <!--          <el-table-column label="归属应用" min-width="100" prop="appName" />-->
+              <el-table-column align="center" prop="created_at" label="操作" min-width="150">
+                <template slot-scope="{row}">
+                  <el-button v-permission="'NacosConfigsIndexSearch'" type="text" @click.native="handleDetail(row)">详情</el-button>
+                  <el-button type="text" @click.native="handleCode(row)">示例代码</el-button>
+                  <el-button v-permission="'NacosConfigsIndexEdit'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
+                  <el-button v-permission="'NacosConfigsIndexDelete'" type="text" @click.native="onDelete(row)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <pagination v-show="count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
+          </div>
         </div>
-        <el-table
-          v-loading="listLoading"
-          :data="list"
-          element-loading-text="Loading"
-          border
-          fit
-          highlight-current-row
-          @selection-change="handleSelectionChange"
-        >
-          <el-table-column
-            type="selection"
-            align="center"
-            width="55"
-          />
-          <el-table-column label="Data Id" min-width="200" prop="dataId" />
-          <el-table-column label="Group" min-width="200" prop="group" />
-          <!--          <el-table-column label="归属应用" min-width="100" prop="appName" />-->
-          <el-table-column align="center" prop="created_at" label="操作" min-width="150">
-            <template slot-scope="{row}">
-              <el-button v-permission="'NacosConfigsIndexSearch'" type="text" @click.native="handleDetail(row)">详情</el-button>
-              <el-button type="text" @click.native="handleCode(row)">示例代码</el-button>
-              <el-button v-permission="'NacosConfigsIndexEdit'" type="text" @click.native="handleUpdate(row)">编辑</el-button>
-              <el-button v-permission="'NacosConfigsIndexDelete'" type="text" @click.native="onDelete(row)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <pagination v-show="count>0" :total="count" :page.sync="listQuery.pageNo" :limit.sync="listQuery.pageSize" @pagination="fetchData()" />
       </el-col>
     </el-row>
     <el-dialog title="删除配置" :visible.sync="dialogVisible2Del" width="380px">
@@ -470,3 +477,185 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.app-container {
+  padding: 20px;
+}
+
+.sticky-header {
+  background: #fff !important;
+  border-bottom: 1px solid #e4e7ed;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 25px;
+  border-radius: 6px;
+  min-height: 160px;
+  position: relative;
+  z-index: 1000;
+
+  // 确保在fixed定位时也有背景
+  &.fixed {
+    background: #fff !important;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+  }
+
+  .tenant-wrapper {
+    padding: 10px 0;
+    background: #fff;
+  }
+
+  // 确保容器元素有白色背景
+  ::v-deep .container {
+    background-color: #fff !important;
+  }
+
+  ::v-deep .el-row {
+    background-color: #fff !important;
+  }
+
+  ::v-deep .el-col {
+    background-color: #fff !important;
+  }
+
+  ::v-deep .el-menu {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  ::v-deep .el-menu-item {
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+    margin-bottom: 0;
+    background-color: #fff !important;
+
+    &:hover {
+      background-color: #f5f7fa !important;
+    }
+
+    &.is-active {
+      border-bottom-color: #409eff;
+      color: #409eff;
+      background-color: #fff !important;
+    }
+  }
+
+  // 确保tenant组件内容不溢出
+  ::v-deep .el-row {
+    margin-bottom: 0;
+  }
+
+  ::v-deep .el-col {
+    margin-bottom: 0;
+  }
+
+  // 控制el-tabs的样式，防止重叠
+  ::v-deep .el-tabs {
+    margin-bottom: 0;
+    background-color: #fff !important;
+  }
+
+  ::v-deep .el-tabs__header {
+    margin-bottom: 0;
+    background-color: #fff !important;
+  }
+
+  ::v-deep .el-tabs__nav-wrap {
+    margin-bottom: 0;
+    background-color: #fff !important;
+  }
+
+  ::v-deep .el-tabs__content {
+    display: none; // 隐藏tabs内容，因为只需要标签
+  }
+
+  ::v-deep .el-tabs__item {
+    padding: 0 15px;
+    height: 40px;
+    line-height: 40px;
+    background-color: #fff !important;
+  }
+}
+
+.content-wrapper {
+  margin-top: 10px;
+}
+
+.query-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+
+  .el-form {
+    margin-bottom: 16px;
+  }
+
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .el-button {
+      margin: 0;
+    }
+  }
+}
+
+.table-container {
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  .el-table {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .pagination {
+    padding: 20px;
+    text-align: center;
+    border-top: 1px solid #e4e7ed;
+    background: #fafafa;
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .app-container {
+    padding: 10px;
+  }
+
+  .query-container {
+    padding: 15px;
+
+    .el-form-item {
+      margin-bottom: 10px;
+    }
+
+    .button-group {
+      flex-direction: column;
+
+      .el-button {
+        width: 100%;
+      }
+    }
+  }
+
+  .sticky-header {
+    padding: 0 10px;
+  }
+
+  .table-container {
+    .pagination {
+      padding: 15px;
+    }
+  }
+}
+</style>

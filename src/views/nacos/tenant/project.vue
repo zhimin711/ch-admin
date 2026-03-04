@@ -1,43 +1,94 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
-      <el-input v-model="listQuery.params.name" placeholder="名称" style="width: 200px;" class="filter-item" />
-      <el-button v-permission="['NACOS_PROJECT_PAGE']" class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        查询
-      </el-button>
-      <el-button class="filter-item" type="default" icon="el-icon-refresh" @click="listQuery.params = {}">
-        重置
-      </el-button>
+    <div class="main-layout">
+      <!-- 左侧项目列表 -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h3 class="sidebar-title">项目列表</h3>
+          <div class="search-box">
+            <el-input
+              v-model="listQuery.params.name"
+              placeholder="搜索项目..."
+              size="small"
+              clearable
+              prefix-icon="el-icon-search"
+              @input="handleSearch"
+            />
+          </div>
+        </div>
+        <div class="project-list">
+          <div
+            v-for="project in listQuery.list"
+            :key="project.id"
+            :class="['project-item', { active: selectedProject && selectedProject.id === project.id }]"
+            @click="selectProject(project)"
+          >
+            <div class="project-info">
+              <div class="project-name">{{ project.name }}</div>
+              <div class="project-code">{{ project.code }}</div>
+            </div>
+            <div class="project-actions">
+              <el-button
+                v-permission="['NACOS_PROJECTS_NAMESPACES_USERS']"
+                type="text"
+                size="mini"
+                icon="el-icon-user"
+                @click.stop="handleProjectUsers(project)"
+              >
+                用户权限
+              </el-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination-wrapper">
+          <pagination
+            v-show="listQuery.total > 0"
+            :total="listQuery.total"
+            :page.sync="listQuery.page"
+            :limit.sync="listQuery.limit"
+            layout="prev, pager, next"
+            small
+            @pagination="getList"
+          />
+        </div>
+      </div>
+
+      <!-- 右侧内容区域 -->
+      <div class="content-area">
+        <div v-if="!selectedProject" class="empty-state">
+          <i class="el-icon-folder-opened empty-icon" />
+          <h3>请选择项目</h3>
+          <p>从左侧选择一个项目来查看详细信息</p>
+        </div>
+
+        <div v-else class="project-detail">
+          <div class="project-header">
+            <h2 class="project-title">{{ selectedProject.name }}</h2>
+            <div class="project-meta">
+              <el-tag type="info">{{ selectedProject.code }}</el-tag>
+              <span class="manager">
+                <i class="el-icon-user" />
+                {{ selectedProject.manager }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 命名空间管理区域 -->
+          <div class="namespace-management">
+            <div class="section-title">
+              <i class="el-icon-menu" />
+              命名空间管理
+            </div>
+            <ProjectNamespaceManager
+              :project="selectedProject"
+              @update="handleProjectUpdate"
+            />
+          </div>
+        </div>
+      </div>
     </div>
-    <el-table v-loading="listLoading" :data="listQuery.list" border fit highlight-current-row style="width: 100%">
-      <el-table-column label="租户" prop="tenantName" />
-      <el-table-column label="项目代码">
-        <template slot-scope="scope">
-          <span v-if="scope.row.parentCode">{{ scope.row.parentCode + ':' + scope.row.code }}</span>
-          <span v-else>{{ scope.row.code }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="项目名称">
-        <template slot-scope="scope">
-          <span>{{ scope.row.name }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="负责人">
-        <template slot-scope="scope">
-          <span>{{ scope.row.manager }}</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column align="center" label="操作" width="200">
-        <template slot-scope="scope">
-          <el-link v-permission="['NACOS_PROJECTS_NAMESPACES_CHANGE']" type="primary" icon="el-icon-menu" @click="handleProjectNamespaces(scope.row)">分配空间</el-link>
-          <!--  v-permission="['NACOS_PROJECTS_NAMESPACES_USERS']" -->
-          <el-link v-permission="['NACOS_PROJECTS_NAMESPACES_USERS']" type="primary" icon="el-icon-user" @click="handleProjectUsers(scope.row)">用户权限</el-link>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <pagination v-show="listQuery.total>0" :total="listQuery.total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :visible.sync="dialogVisible2" :title="'项目['+record.name+']分配空间'" width="635px">
       <el-alert
@@ -159,6 +210,7 @@
 <script>
 import { pageProjects, getProjectNamespaces, editProjectNamespaces, listNacosProjectUsers, listNacosProjectUserPermission, updateNacosProjectUserPermission } from '@/api/devops/nacos/projects'
 import { listNacosCluster, listNacosClusterNamespaces } from '@/api/devops/nacos/cluster'
+import ProjectNamespaceManager from '../components/ProjectNamespaceManager.vue'
 
 const roleMap = {
   'MGR': '项目负责人',
@@ -167,10 +219,14 @@ const roleMap = {
 }
 export default {
   name: 'NacosProjectNamespaces',
+  components: {
+    ProjectNamespaceManager
+  },
   data() {
     return {
       loadingSave: false,
       listLoading: true,
+      selectedProject: null,
       listQuery: {
         page: 1,
         limit: 10,
@@ -198,6 +254,22 @@ export default {
     this.listNacosClusters()
   },
   methods: {
+    // 选择项目
+    selectProject(project) {
+      this.selectedProject = project
+    },
+
+    // 搜索项目
+    handleSearch() {
+      this.listQuery.page = 1
+      this.getList()
+    },
+
+    // 项目更新处理
+    handleProjectUpdate() {
+      this.getList()
+    },
+
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
       if (columnIndex === 0) {
         if (row.clusterCount > 0) {
@@ -390,10 +462,226 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.app-container {
+  height: calc(100vh - 84px);
+  overflow: hidden;
+}
+
+.main-layout {
+  display: flex;
+  height: 100%;
+  gap: 16px;
+}
+
+// 左侧边栏
+.sidebar {
+  width: 350px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
+
+    .sidebar-title {
+      margin: 0 0 12px 0;
+      color: #303133;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .search-box {
+      .el-input {
+        width: 100%;
+      }
+    }
+  }
+
+  .project-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+
+    .project-item {
+      padding: 12px;
+      margin-bottom: 8px;
+      border: 1px solid #e4e7ed;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+
+      &:hover {
+        border-color: #409eff;
+        box-shadow: 0 2px 8px rgba(64, 158, 255, 0.2);
+      }
+
+      &.active {
+        border-color: #409eff;
+        background: #f0f8ff;
+        box-shadow: 0 2px 8px rgba(64, 158, 255, 0.2);
+      }
+
+      .project-info {
+        .project-name {
+          font-size: 14px;
+          font-weight: 600;
+          color: #303133;
+          margin-bottom: 4px;
+        }
+
+        .project-code {
+          font-size: 12px;
+          color: #909399;
+          margin-bottom: 6px;
+        }
+
+        .project-manager {
+          font-size: 12px;
+          color: #606266;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+      }
+
+      .project-actions {
+        margin-top: 8px;
+        display: flex;
+        gap: 8px;
+
+        .el-button {
+          padding: 4px 8px;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+
+  .pagination-wrapper {
+    padding: 12px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+// 右侧内容区域
+.content-area {
+  flex: 1;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #909399;
+
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      color: #606266;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+    }
+  }
+
+  .project-detail {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .project-header {
+      padding: 24px;
+      border-bottom: 1px solid #f0f0f0;
+
+      .project-title {
+        margin: 0 0 12px 0;
+        color: #303133;
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .project-meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        .manager {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          color: #606266;
+          font-size: 14px;
+        }
+      }
+    }
+
+    .namespace-management {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 20px;
+        color: #303133;
+        font-size: 16px;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 1200px) {
+  .main-layout {
+    flex-direction: column;
+
+    .sidebar {
+      width: 100%;
+      height: 300px;
+
+      .project-list {
+        .project-item {
+          .project-actions {
+            flex-wrap: wrap;
+          }
+        }
+      }
+    }
+
+    .content-area {
+      height: calc(100vh - 400px);
+    }
+  }
+}
+
+// 原有样式保留
 .edit-input {
   padding-right: 100px;
 }
+
 .cancel-btn {
   position: absolute;
   right: 15px;
@@ -403,5 +691,4 @@ export default {
 ::v-deep .select-w .el-input__inner {
   width: 360px;
 }
-
 </style>
