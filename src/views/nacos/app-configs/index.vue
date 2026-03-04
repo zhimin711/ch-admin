@@ -288,11 +288,11 @@
       <div class="dialog-content">
         <el-form ref="cloneForm" :model="record" label-width="120px" class="clone-form">
           <el-form-item label="源空间">
-            <el-tag type="primary">{{ namespaceName }}</el-tag>
+            <el-tag type="primary">{{ currentNamespaceName }}</el-tag>
           </el-form-item>
           <el-form-item label="目标空间" prop="toNamespace">
             <el-select v-model="toNamespace" placeholder="请选择目标空间" class="namespace-select">
-              <el-option v-for="item in namespaces" :key="item.value" :label="item.label" :value="item.value" />
+              <el-option v-for="item in targetNamespaces" :key="item.namespaceId" :label="item.namespaceName" :value="String(item.namespaceId)" />
             </el-select>
           </el-form-item>
           <el-form-item label="相同配置">
@@ -678,12 +678,25 @@ export default {
     namespaceName() {
       const tmp = String(this.namespaceId)
       const tenant = this.namespaces.find(tenant => {
-        return String(tenant.value) === tmp
+        return String(tenant.namespaceId) === tmp
       })
       if (tenant) {
-        return tenant.label
+        return tenant.namespaceName
       }
       return '-'
+    },
+    currentNamespaceName() {
+      const tmp = String(this.namespaceId)
+      const tenant = this.namespaces.find(tenant => {
+        return String(tenant.namespaceId) === tmp
+      })
+      if (tenant) {
+        return tenant.namespaceName
+      }
+      return '-'
+    },
+    targetNamespaces() {
+      return this.namespaces.filter(item => String(item.namespaceId) !== String(this.namespaceId))
     },
     importUrl() {
       return `/api/devops/nacos/user/${this.projectId}/configs/import?namespaceId=${this.namespaceId}`
@@ -1122,6 +1135,7 @@ export default {
         this.$message.warning('请选择要克隆的配置！')
         return
       }
+      this.toNamespace = ''
       this.dialogVisible2Clone = true
       this.tables.clone = deepClone(this.multipleSelection)
     },
@@ -1196,12 +1210,14 @@ export default {
       })
     },
     onClone() {
+      if (!this.toNamespace) {
+        this.$message.warning('请选择目标空间！')
+        return
+      }
       const params = {}
-      const tenant = this.namespaces.find(tenant => {
-        return tenant.value === this.toNamespace
-      })
       params.policy = this.policy
-      params.namespaceId = tenant.value || tenant.label
+      params.namespaceId = this.toNamespace
+      params.fromNamespaceId = this.namespaceId
       const data = this.tables.clone.map(item => {
         return { cfgId: item.id, dataId: item.dataId, group: item.group }
       })
