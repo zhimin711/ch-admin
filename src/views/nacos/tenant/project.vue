@@ -29,13 +29,20 @@
             </div>
             <div class="project-actions">
               <el-button
-                v-permission="['NACOS_PROJECTS_NAMESPACES_USERS']"
                 type="text"
                 size="mini"
                 icon="el-icon-user"
                 @click.stop="handleProjectUsers(project)"
               >
-                用户权限
+                用户空间权限
+              </el-button>
+              <el-button
+                type="text"
+                size="mini"
+                icon="el-icon-files"
+                @click.stop="handleProjectUsers(project)"
+              >
+                用户文件权限
               </el-button>
             </div>
           </div>
@@ -181,10 +188,18 @@
             />
             <el-table-column
               prop="permission"
+              label="列表"
+            >
+              <template slot-scope="{row}">
+                <el-checkbox :checked="row.list" @change="row.list = !row.list" />
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="permission"
               label="只读"
             >
               <template slot-scope="{row}">
-                <el-checkbox :checked="row.read" @change="row.read=!row.read" />
+                <el-checkbox :checked="row.read" @change="row.read = !row.read" />
               </template>
             </el-table-column>
             <el-table-column
@@ -192,7 +207,7 @@
               label="修改"
             >
               <template slot-scope="{row}">
-                <el-checkbox :checked="row.write" @change="row.write=!row.write" />
+                <el-checkbox :checked="row.write" @change="row.write = !row.write" />
               </template>
             </el-table-column>
           </el-table>
@@ -304,14 +319,21 @@ export default {
             if (merge.namespaceId === row.namespaceId) {
               row.clusterCount = clusterIdMap[row.clusterId].count
             }
+            const permission = (row.permission || '').toLowerCase()
+            // row.permission 包含L标记为列表
+            if (permission.includes('l')) {
+              row.list = true
+            } else {
+              row.list = false
+            }
             // row.permission 包含R标记为只读
-            if (row.permission.includes('r')) {
+            if (permission.includes('r')) {
               row.read = true
             } else {
               row.read = false
             }
             // row.permission 包含W标记为修改
-            if (row.permission.includes('w')) {
+            if (permission.includes('w')) {
               row.write = true
             } else {
               row.write = false
@@ -322,18 +344,29 @@ export default {
     },
     handleSubmitUserPermissions() {
       this.loadingSave = true
-      this.recordUserPermissions.forEach(row => {
-        row.permission = row.read ? 'r' : ''
-        row.permission += row.write ? 'w' : ''
+      const payload = this.recordUserPermissions.map(row => {
+        const permission = `${row.list ? 'l' : ''}${row.read ? 'r' : ''}${row.write ? 'w' : ''}`
+        row.permission = permission
+        return {
+          ...row,
+          projectId: row.projectId || this.record.id,
+          userId: row.userId || this.activeUser,
+          permission,
+          list: !!row.list,
+          read: !!row.read,
+          write: !!row.write
+        }
       })
-      updateNacosProjectUserPermission(this.record.id, this.recordUserPermissions).then(resp => {
+      updateNacosProjectUserPermission(this.record.id, payload).then(resp => {
         if (resp.success) {
           this.dialogVisible3 = false
           this.$message.success('保存成功！')
         } else {
           this.$message.error('保存失败！' + resp.message)
         }
-      }).finally(this.loadingSave = false)
+      }).finally(() => {
+        this.loadingSave = false
+      })
     },
     handleProjectUsers(row) {
       this.dialogVisible3 = true
