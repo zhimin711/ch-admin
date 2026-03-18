@@ -76,6 +76,7 @@
 
           <div class="action-right">
             <el-button
+              v-if="canRead"
               v-permission="'NACOS_PROJECT_CONFIGS_EXPORT'"
               type="info"
               icon="el-icon-download"
@@ -651,8 +652,10 @@ export default {
       dialogCompareListVisible: false,
       dialogCompareVisible: false,
       canWrite: false,
+      canRead: false,
       currentClusterId: '',
       applyingPermissionKey: '',
+      configListRequestToken: 0,
       permissionCheckTimer: null, // 权限检查定时器
       importMessage: '',
       record: {},
@@ -791,6 +794,11 @@ export default {
     }
   },
   methods: {
+    clearConfigList() {
+      this.list = []
+      this.count = 0
+      this.multipleSelection = []
+    },
     // 复制到剪贴板
     copyToClipboard(text) {
       if (!text) {
@@ -838,13 +846,15 @@ export default {
       }
       this.projectId = val
       this.listQuery.appName = val
-      this.list = []
+      this.clearConfigList()
       this.$set(this, 'namespaceId', '')
       this.listQuery.namespaceId = ''
       this.namespaces = []
       this.showSearch = false
       this.currentClusterId = ''
       this.applyingPermissionKey = ''
+      this.configListRequestToken += 1
+      this.listLoading = false
       this.$set(this, 'canWrite', false) // 使用$set确保响应式更新
       console.log('项目切换完成，权限已重置')
     },
@@ -862,6 +872,9 @@ export default {
       console.log('命名空间列表加载完成:', data)
       this.namespaces = data
       this.showSearch = data.length > 0
+      if (!this.showSearch) {
+        this.clearConfigList()
+      }
 
       // 强制更新UI
       this.$forceUpdate()
@@ -897,7 +910,11 @@ export default {
         this.listQuery.namespaceId = ''
         this.showSearch = false
         this.applyingPermissionKey = ''
+        this.clearConfigList()
+        this.configListRequestToken += 1
+        this.listLoading = false
         this.$set(this, 'canWrite', false) // 使用$set确保响应式更新
+        this.$set(this, 'canRead', false) // 使用$set确保响应式更新
         return
       }
 
@@ -1068,9 +1085,14 @@ export default {
     },
     fetchData() {
       if (!this.listQuery.namespaceId || this.listQuery.namespaceId === '') {
+        this.clearConfigList()
         this.$message.error('请选择空间...')
         return
       }
+      const requestToken = this.configListRequestToken + 1
+      this.configListRequestToken = requestToken
+      const requestProjectId = String(this.projectId || '')
+      const requestNamespaceId = String(this.listQuery.namespaceId || '')
       this.listLoading = true
       this.listQuery.search = 'accurate'
       if (this.listQuery.dataId || this.listQuery.group) {
@@ -1078,12 +1100,25 @@ export default {
       }
       this.showSearch = true
       pageNacosUserConfigs(this.projectId, this.listQuery).then(resp => {
+        if (requestToken !== this.configListRequestToken ||
+          requestProjectId !== String(this.projectId || '') ||
+          requestNamespaceId !== String(this.listQuery.namespaceId || '')) {
+          return
+        }
         if (resp.success) {
-          this.list = resp.rows
-          this.count = resp.total
+          this.list = resp.rows || []
+          this.count = resp.total || 0
+        } else {
+          this.clearConfigList()
+        }
+      }).catch(() => {
+        if (requestToken === this.configListRequestToken) {
+          this.clearConfigList()
         }
       }).finally(() => {
-        this.listLoading = false
+        if (requestToken === this.configListRequestToken) {
+          this.listLoading = false
+        }
       })
     },
     queryData() {
@@ -1566,6 +1601,12 @@ export default {
 }
 .action-buttons .el-link + .el-link {
   margin-left: 0;
+}
+::v-deep .action-buttons .el-link.is-underline:hover:after {
+  border-bottom: none !important;
+}
+::v-deep .action-buttons .el-link .el-link--inner {
+  text-decoration: none !important;
 }
 
 // 分页区域
