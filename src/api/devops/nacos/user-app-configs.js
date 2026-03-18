@@ -24,6 +24,14 @@ export function applyNacosUserNamespaces(id, clusterId, data) {
   })
 }
 
+export function applyNacosUserConfigs(projectId, clusterId, namespaceId, data) {
+  return request({
+    url: `${namespace}/apply/${projectId}/${clusterId}/${namespaceId}/configs`,
+    method: 'post',
+    data
+  })
+}
+
 export function getNacosUserProjectInstances(projectId, params) {
   return request({
     url: `${namespace}/${projectId}/instances`,

@@ -16,6 +16,7 @@
           <project-namespace
             v-model="namespaceId"
             :project-id="projectId"
+            @cluster-change="handleClusterChange"
             @change="handleNamespaceChange"
             @finish="loadNamespacesFinish"
           />
@@ -133,11 +134,11 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column align="center" label="操作" min-width="280" fixed="right">
+            <el-table-column align="center" label="操作" min-width="360" fixed="right">
               <template slot-scope="{row}">
                 <div class="action-buttons">
                   <el-link
-                    v-if="forceCanWrite"
+                    v-if="canWriteConfig(row)"
                     v-permission="'NACOS_PROJECT_CONFIG_EDIT'"
                     type="primary"
                     icon="el-icon-edit"
@@ -146,14 +147,7 @@
                     编辑
                   </el-link>
                   <el-link
-                    v-permission="'NACOS_PROJECT_CONFIG_COMPARE'"
-                    type="success"
-                    icon="el-icon-s-operation"
-                    @click="handleCompare(row)"
-                  >
-                    比较配置
-                  </el-link>
-                  <el-link
+                    v-if="canReadConfig(row)"
                     v-permission="'NACOS_PROJECT_CONFIG_DETAIL'"
                     type="info"
                     icon="el-icon-view"
@@ -162,12 +156,40 @@
                     详情
                   </el-link>
                   <el-link
+                    v-if="canReadConfig(row)"
+                    v-permission="'NACOS_PROJECT_CONFIG_COMPARE'"
+                    type="success"
+                    icon="el-icon-s-operation"
+                    @click="handleCompare(row)"
+                  >
+                    比较配置
+                  </el-link>
+                  <el-link
+                    v-if="canReadConfig(row)"
                     v-permission="'NACOS_PROJECT_CONFIG_HISTORY'"
                     type="warning"
                     icon="el-icon-time"
                     @click="handleHistory(row)"
                   >
                     变更历史
+                  </el-link>
+                  <el-link
+                    v-if="showApplyReadPermission(row)"
+                    :disabled="isApplyingConfigPermission(row, 'R')"
+                    type="primary"
+                    icon="el-icon-key"
+                    @click="handleApplyConfigPermission(row, 'R')"
+                  >
+                    申请读权限
+                  </el-link>
+                  <el-link
+                    v-if="showApplyWritePermission(row)"
+                    :disabled="isApplyingConfigPermission(row, 'W')"
+                    type="warning"
+                    icon="el-icon-lock"
+                    @click="handleApplyConfigPermission(row, 'W')"
+                  >
+                    申请写权限
                   </el-link>
                   <el-link
                     v-if="forceCanWrite"
@@ -577,6 +599,7 @@ import {
   listNacosUserCompareConfigs
 } from '@/api/devops/nacos/user-configs'
 import {
+  applyNacosUserConfigs,
   getNacosUserProjectHistory,
   getNacosUserProjectHistoryDetail,
   getNacosUserProjectInstances
@@ -628,6 +651,8 @@ export default {
       dialogCompareListVisible: false,
       dialogCompareVisible: false,
       canWrite: false,
+      currentClusterId: '',
+      applyingPermissionKey: '',
       permissionCheckTimer: null, // 权限检查定时器
       importMessage: '',
       record: {},
@@ -818,6 +843,8 @@ export default {
       this.listQuery.namespaceId = ''
       this.namespaces = []
       this.showSearch = false
+      this.currentClusterId = ''
+      this.applyingPermissionKey = ''
       this.$set(this, 'canWrite', false) // 使用$set确保响应式更新
       console.log('项目切换完成，权限已重置')
     },
@@ -827,6 +854,9 @@ export default {
     },
     handleSelectionChange(val) {
       this.multipleSelection = val
+    },
+    handleClusterChange(clusterId) {
+      this.currentClusterId = String(clusterId || '')
     },
     loadNamespacesFinish(data) {
       console.log('命名空间列表加载完成:', data)
@@ -866,6 +896,7 @@ export default {
       if (namespaceId === 'apply' || namespaceId === '') {
         this.listQuery.namespaceId = ''
         this.showSearch = false
+        this.applyingPermissionKey = ''
         this.$set(this, 'canWrite', false) // 使用$set确保响应式更新
         return
       }
@@ -874,8 +905,75 @@ export default {
       this.updateCanWritePermission(namespaceId)
 
       this.$set(this, 'namespaceId', namespaceId)
+      this.applyingPermissionKey = ''
       this.listQuery.namespaceId = namespaceId
       this.queryData()
+    },
+    supportsConfigPermission(row) {
+      return typeof row.hasReadPermission === 'boolean' ||
+        typeof row.hasWritePermission === 'boolean' ||
+        typeof row.configPermission === 'string'
+    },
+    normalizeConfigPermission(row) {
+      return typeof row.configPermission === 'string'
+        ? row.configPermission.toLowerCase()
+        : ''
+    },
+    canReadConfig(row) {
+      if (typeof row.hasReadPermission === 'boolean') {
+        return row.hasReadPermission
+      }
+      return this.normalizeConfigPermission(row).includes('r')
+    },
+    canWriteConfig(row) {
+      if (typeof row.hasWritePermission === 'boolean') {
+        return row.hasWritePermission
+      }
+      const configPermission = this.normalizeConfigPermission(row)
+      if (configPermission) {
+        return configPermission.includes('w')
+      }
+      return this.forceCanWrite
+    },
+    showApplyReadPermission(row) {
+      return this.supportsConfigPermission(row) && !this.canReadConfig(row)
+    },
+    showApplyWritePermission(row) {
+      const hasWritePermission = this.canWriteConfig(row)
+      return this.supportsConfigPermission(row) && hasWritePermission === false
+    },
+    getConfigPermissionKey(row, permission) {
+      const group = row.group || row.groupName || ''
+      return `${row.dataId || ''}:${group}:${permission}`
+    },
+    isApplyingConfigPermission(row, permission) {
+      return this.applyingPermissionKey === this.getConfigPermissionKey(row, permission)
+    },
+    handleApplyConfigPermission(row, permission) {
+      if (!this.projectId || !this.currentClusterId || !this.namespaceId) {
+        this.$message.warning('当前项目、集群或命名空间信息不完整，无法申请权限')
+        return
+      }
+
+      const permissionLabel = permission === 'W' ? '写' : '读'
+      const applyKey = this.getConfigPermissionKey(row, permission)
+      const group = row.group || row.groupName
+      if (!group) {
+        this.$message.warning('当前配置缺少 Group 信息，无法申请权限')
+        return
+      }
+      const data = [{ dataId: row.dataId, group, permission }]
+
+      this.applyingPermissionKey = applyKey
+      applyNacosUserConfigs(this.projectId, this.currentClusterId, this.namespaceId, data).then(resp => {
+        if (resp.success) {
+          this.$message.success(`${row.dataId} 的${permissionLabel}权限申请已提交，请等待管理员审核...`)
+        }
+      }).finally(() => {
+        if (this.applyingPermissionKey === applyKey) {
+          this.applyingPermissionKey = ''
+        }
+      })
     },
 
     // 新增方法：更新写入权限

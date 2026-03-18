@@ -25,6 +25,13 @@
       fit
       highlight-current-row
     >
+      <el-table-column label="申请类型" width="120" align="center">
+        <template slot-scope="{row}">
+          <el-tag :type="isConfigApply(row) ? 'warning' : 'info'">
+            {{ isConfigApply(row) ? '配置权限' : '空间权限' }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="申请项目" width="180" prop="namespaceShowName">
         <template slot-scope="{row}">
           {{ parseProjectName(row) }}
@@ -38,6 +45,11 @@
       <el-table-column label="申请空间" prop="namespace">
         <template slot-scope="{row}">
           {{ parseProjectNamespace(row) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="申请内容" min-width="300">
+        <template slot-scope="{row}">
+          <span :title="parseApplyContent(row)">{{ parseApplyContent(row) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="申请人" width="100" align="center" prop="createBy" />
@@ -68,12 +80,15 @@
     </el-table>
     <pagination v-show="count>0" :total="count" :page.sync="listQuery.page" :limit.sync="listQuery.size" @pagination="fetchData()" />
     <el-dialog
-      title="空间申请审核"
+      :title="dialogTitle"
       :visible.sync="dialogApproveVisible"
       width="60%"
     >
       <el-card class="box-card">
         <el-form ref="form" :model="record" label-width="150px">
+          <el-form-item label="申请类型:">
+            {{ isRecordConfigApply ? '配置文件权限申请' : '命名空间权限申请' }}
+          </el-form-item>
           <el-form-item label="申请项目:">
             {{ recordContent.projectName }}
           </el-form-item>
@@ -81,7 +96,23 @@
             {{ recordContent.clusterName }}
           </el-form-item>
           <el-form-item label="申请空间:">
-            {{ recordContent.namespaceNames }}
+            {{ isRecordConfigApply ? recordContent.namespaceName : recordContent.namespaceNames }}
+          </el-form-item>
+          <el-form-item v-if="isRecordConfigApply" label="申请配置:">
+            <span>{{ parseConfigNames(recordContent.configList) }}</span>
+          </el-form-item>
+          <el-form-item v-if="isRecordConfigApply" label="配置权限明细:">
+            <el-table :data="recordConfigList" size="mini" border style="width: 100%">
+              <el-table-column label="DataId" prop="dataId" min-width="180" />
+              <el-table-column label="Group" prop="group" min-width="180" />
+              <el-table-column label="权限" min-width="100" align="center">
+                <template slot-scope="scope">
+                  <el-tag size="mini" :type="permissionTagType(scope.row.permission)">
+                    {{ formatPermission(scope.row.permission) }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+            </el-table>
           </el-form-item>
           <el-form-item label="申请人:">
             {{ record.createBy }}
@@ -125,6 +156,7 @@ export default {
       },
       record: {},
       recordContent: {},
+      recordConfigList: [],
       rules: {
         namespaceShowName: [{ required: true, message: '命名空间名称不能为空', trigger: 'change' }],
         namespaceDesc: [{ required: true, message: '命名空间描述不能为空', trigger: 'change' }]
@@ -132,21 +164,106 @@ export default {
       dialogStatus: 'create'
     }
   },
+  computed: {
+    isRecordConfigApply() {
+      return this.recordContent.applyType === 'config'
+    },
+    dialogTitle() {
+      return this.isRecordConfigApply ? '配置文件权限申请审核' : '空间申请审核'
+    }
+  },
   created() {
     this.fetchData()
   },
   methods: {
+    parseContent(row) {
+      if (!row) {
+        return {}
+      }
+      if (row._parsedApplyContent) {
+        return row._parsedApplyContent
+      }
+      let obj = {}
+      try {
+        obj = JSON.parse(row.content || '{}')
+      } catch (e) {
+        obj = {}
+      }
+      this.$set(row, '_parsedApplyContent', obj)
+      return obj
+    },
+    isConfigApply(row) {
+      const obj = this.parseContent(row)
+      return obj.applyType === 'config'
+    },
     parseProjectName(row) {
-      const obj = JSON.parse(row.content)
+      const obj = this.parseContent(row)
       return obj.projectName
     },
     parseClusterName(row) {
-      const obj = JSON.parse(row.content)
+      const obj = this.parseContent(row)
       return obj.clusterName
     },
     parseProjectNamespace(row) {
-      const obj = JSON.parse(row.content)
-      return obj.namespaceNames
+      const obj = this.parseContent(row)
+      return this.isConfigApply(row) ? obj.namespaceName : obj.namespaceNames
+    },
+    parseApplyContent(row) {
+      const obj = this.parseContent(row)
+      if (this.isConfigApply(row)) {
+        return obj.configNames || this.parseConfigNames(obj.configList)
+      }
+      return obj.namespaceNames || '-'
+    },
+    parseConfigNames(configList) {
+      const rows = this.normalizeConfigList(configList)
+      if (!rows.length) {
+        return '-'
+      }
+      return rows.map(item => `${item.dataId}#${item.group}(${this.formatPermission(item.permission)})`).join(' | ')
+    },
+    normalizeConfigList(configList) {
+      if (!Array.isArray(configList)) {
+        return []
+      }
+      return configList.map(item => {
+        const row = item || {}
+        const permission = row.permission && row.permission.code ? row.permission.code : row.permission
+        return {
+          dataId: row.dataId || '-',
+          group: row.group || row.groupName || '-',
+          permission: permission || '-'
+        }
+      })
+    },
+    permissionCodes(permission) {
+      if (!permission) {
+        return []
+      }
+      const code = String(permission).toUpperCase()
+      return Array.from(code).filter(item => ['L', 'R', 'W'].includes(item))
+    },
+    formatPermission(permission) {
+      const map = {
+        L: '列表',
+        R: '读',
+        W: '写'
+      }
+      const codes = this.permissionCodes(permission)
+      if (!codes.length) {
+        return permission || '-'
+      }
+      return codes.map(code => map[code]).join('+')
+    },
+    permissionTagType(permission) {
+      const codes = this.permissionCodes(permission)
+      if (codes.includes('W')) {
+        return 'danger'
+      }
+      if (codes.includes('R')) {
+        return 'success'
+      }
+      return 'info'
     },
     fetchData() {
       this.listLoading = true
@@ -165,6 +282,8 @@ export default {
     },
     resetModel() {
       this.record = {}
+      this.recordContent = {}
+      this.recordConfigList = []
     },
     submitApprove(status) {
       this.record.status = status
@@ -182,7 +301,8 @@ export default {
     handleApprove(row) {
       this.resetModel()
       this.record = Object.assign({}, row)
-      this.recordContent = JSON.parse(row.content)
+      this.recordContent = this.parseContent(row)
+      this.recordConfigList = this.normalizeConfigList(this.recordContent.configList)
       this.dialogStatus = 'approve'
       this.dialogApproveVisible = true
     }
