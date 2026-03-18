@@ -40,7 +40,7 @@
                 type="text"
                 size="mini"
                 icon="el-icon-files"
-                @click.stop="handleProjectUsers(project)"
+                @click.stop="handleProjectConfigPermissions(project)"
               >
                 用户文件权限
               </el-button>
@@ -191,7 +191,7 @@
               label="列表"
             >
               <template slot-scope="{row}">
-                <el-checkbox :checked="row.list" @change="row.list = !row.list" />
+                <el-checkbox v-model="row.list" />
               </template>
             </el-table-column>
             <el-table-column
@@ -199,7 +199,7 @@
               label="只读"
             >
               <template slot-scope="{row}">
-                <el-checkbox :checked="row.read" @change="row.read = !row.read" />
+                <el-checkbox v-model="row.read" />
               </template>
             </el-table-column>
             <el-table-column
@@ -207,7 +207,7 @@
               label="修改"
             >
               <template slot-scope="{row}">
-                <el-checkbox :checked="row.write" @change="row.write = !row.write" />
+                <el-checkbox v-model="row.write" />
               </template>
             </el-table-column>
           </el-table>
@@ -218,12 +218,79 @@
         <el-button type="danger" @click="dialogVisible3=false">取消</el-button>
       </div>
     </el-dialog>
+    <el-dialog :visible.sync="dialogVisible4" :title="'项目[' + record.name + ']的用户文件权限'" width="85%">
+      <el-row>
+        <el-col :span="6">
+          <el-menu
+            v-if="dialogVisible4"
+            :default-active="activeConfigUser"
+            :unique-opened="true"
+            :default-openeds="activeConfigUsers"
+            class="el-menu-vertical-demo"
+            @open="handleOpen"
+            @select="handleSelectConfigUser"
+          >
+            <el-submenu v-for="item in users" :key="item.value + '-config'" :index="item.value + '-config'">
+              <template slot="title">
+                <i class="el-icon-s-unfold" />
+                <span>{{ item.label }}</span>
+              </template>
+              <el-menu-item v-for="item2 in item.children" :key="item2.value + '-config'" :index="item2.value + ''">
+                <template slot="title">
+                  <i class="el-icon-user" />
+                  <span>{{ item2.label }}</span>
+                </template>
+              </el-menu-item>
+            </el-submenu>
+          </el-menu>
+        </el-col>
+        <el-col :span="18">
+          <div style="margin-left: 5px;">
+            <el-alert
+              title="显示该用户已授权的配置文件；支持直接调整读/写权限（可新增、可取消）"
+              type="info"
+              :closable="false"
+              style="margin-bottom: 8px;"
+            />
+            <el-table
+              v-loading="configPermissionLoading"
+              :data="recordUserConfigPermissions"
+              border
+              style="width: 100%;"
+            >
+              <el-table-column prop="clusterName" label="集群名称" width="160" />
+              <el-table-column prop="namespaceName" label="空间名称" width="180" />
+              <el-table-column prop="dataId" label="DataId" min-width="220" />
+              <el-table-column prop="groupName" label="Group" width="180" />
+              <el-table-column label="读权限" width="90" align="center">
+                <template slot-scope="{row}">
+                  <el-checkbox
+                    v-model="row.read"
+                  />
+                </template>
+              </el-table-column>
+              <el-table-column label="写权限" width="90" align="center">
+                <template slot-scope="{row}">
+                  <el-checkbox
+                    v-model="row.write"
+                  />
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </el-col>
+      </el-row>
+      <div style="text-align:center;margin-top:10px">
+        <el-button :loading="configPermissionSaving" type="primary" @click="handleSubmitUserConfigPermissions">保存</el-button>
+        <el-button type="danger" @click="dialogVisible4=false">取消</el-button>
+      </div>
+    </el-dialog>
 
   </div>
 </template>
 
 <script>
-import { pageProjects, getProjectNamespaces, editProjectNamespaces, listNacosProjectUsers, listNacosProjectUserPermission, updateNacosProjectUserPermission } from '@/api/devops/nacos/projects'
+import { pageProjects, getProjectNamespaces, editProjectNamespaces, listNacosProjectUsers, listNacosProjectUserPermission, updateNacosProjectUserPermission, listNacosProjectUserConfigPermission, updateNacosProjectUserConfigPermission } from '@/api/devops/nacos/projects'
 import { listNacosCluster, listNacosClusterNamespaces } from '@/api/devops/nacos/cluster'
 import ProjectNamespaceManager from '../components/ProjectNamespaceManager.vue'
 
@@ -252,6 +319,7 @@ export default {
       record: {},
       dialogVisible2: false,
       dialogVisible3: false,
+      dialogVisible4: false,
       activeCluster: '',
       activeUser: '',
       activeUsers: [],
@@ -261,7 +329,12 @@ export default {
       namespaceList: [],
       recordNamespaces: [],
       users: [],
-      recordUserPermissions: []
+      recordUserPermissions: [],
+      activeConfigUser: '',
+      activeConfigUsers: [],
+      recordUserConfigPermissions: [],
+      configPermissionLoading: false,
+      configPermissionSaving: false
     }
   },
   created() {
@@ -304,41 +377,34 @@ export default {
       console.log(key, keyPath)
     },
     handleSelectUser(key, keyPath) {
+      this.activeUser = key
       listNacosProjectUserPermission(this.record.id, key).then(resp => {
         if (resp.success) {
-          this.recordUserPermissions = resp.rows
-          const clusterIdMap = resp.rows.reduce((acc, row) => {
+          const rows = (resp.rows || []).map(row => ({ ...row }))
+          const clusterIdMap = rows.reduce((acc, row) => {
             if (!acc[row.clusterId]) {
               acc[row.clusterId] = { clusterId: row.clusterId, count: 0, namespaceId: row.namespaceId }
             }
             acc[row.clusterId].count++
             return acc
           }, {})
-          this.recordUserPermissions.forEach(row => {
+          this.recordUserPermissions = rows.map(row => {
             const merge = clusterIdMap[row.clusterId]
+            let clusterCount = 0
             if (merge.namespaceId === row.namespaceId) {
-              row.clusterCount = clusterIdMap[row.clusterId].count
+              clusterCount = clusterIdMap[row.clusterId].count
             }
             const permission = (row.permission || '').toLowerCase()
-            // row.permission 包含L标记为列表
-            if (permission.includes('l')) {
-              row.list = true
-            } else {
-              row.list = false
-            }
-            // row.permission 包含R标记为只读
-            if (permission.includes('r')) {
-              row.read = true
-            } else {
-              row.read = false
-            }
-            // row.permission 包含W标记为修改
-            if (permission.includes('w')) {
-              row.write = true
-            } else {
-              row.write = false
+            return {
+              ...row,
+              clusterCount,
+              list: permission.includes('l'),
+              read: permission.includes('r'),
+              write: permission.includes('w')
             }
           })
+        } else {
+          this.recordUserPermissions = []
         }
       })
     },
@@ -373,8 +439,31 @@ export default {
       this.record = Object.assign({}, row)
       this.users = []
       this.recordUserPermissions = []
-      listNacosProjectUsers(row.id).then(resp => {
+      this.loadProjectUsers(row.id, () => {
+        this.activeUser = this.findFirstUserId()
+        this.activeUsers = ['MGR']
+        if (this.activeUser) {
+          this.handleSelectUser(this.activeUser)
+        }
+      })
+    },
+    handleProjectConfigPermissions(row) {
+      this.dialogVisible4 = true
+      this.record = Object.assign({}, row)
+      this.users = []
+      this.recordUserConfigPermissions = []
+      this.loadProjectUsers(row.id, () => {
+        this.activeConfigUser = this.findFirstUserId()
+        this.activeConfigUsers = ['MGR-config']
+        if (this.activeConfigUser) {
+          this.handleSelectConfigUser(this.activeConfigUser)
+        }
+      })
+    },
+    loadProjectUsers(projectId, onSuccess) {
+      listNacosProjectUsers(projectId).then(resp => {
         if (resp.success) {
+          this.users = []
           const userGroup = resp.rows.reduce((acc, user) => {
             if (!acc[user.role]) {
               acc[user.role] = []
@@ -391,10 +480,77 @@ export default {
               })
             }
           })
-          console.log(this.users)
-          this.activeUser = ''
-          this.activeUsers = ['MGR']
+          if (onSuccess) {
+            onSuccess()
+          }
         }
+      })
+    },
+    findFirstUserId() {
+      const firstGroup = this.users.find(group => group.children && group.children.length > 0)
+      if (!firstGroup) {
+        return ''
+      }
+      return `${firstGroup.children[0].value}`
+    },
+    handleSelectConfigUser(key) {
+      this.activeConfigUser = key
+      this.configPermissionLoading = true
+      listNacosProjectUserConfigPermission(this.record.id, key).then(resp => {
+        if (resp.success) {
+          this.recordUserConfigPermissions = (resp.rows || []).map(row => {
+            const permission = String(row.permission || '').toLowerCase()
+            const read = permission.includes('r')
+            const write = permission.includes('w')
+            return {
+              ...row,
+              read,
+              write,
+              originalRead: read,
+              originalWrite: write
+            }
+          })
+        } else {
+          this.recordUserConfigPermissions = []
+        }
+      }).finally(() => {
+        this.configPermissionLoading = false
+      })
+    },
+    handleSubmitUserConfigPermissions() {
+      if (!this.activeConfigUser) {
+        this.$message.warning('请先选择用户')
+        return
+      }
+      const payload = this.recordUserConfigPermissions.map(row => {
+        const permission = `${row.read ? 'r' : ''}${row.write ? 'w' : ''}`
+        const originalPermission = `${row.originalRead ? 'r' : ''}${row.originalWrite ? 'w' : ''}`
+        if (permission === originalPermission) {
+          return null
+        }
+        return {
+          projectId: this.record.id,
+          userId: this.activeConfigUser,
+          namespaceId: row.namespaceId,
+          dataId: row.dataId,
+          groupName: row.groupName || row.group,
+          permission
+        }
+      }).filter(Boolean)
+      if (payload.length <= 0) {
+        this.$message.warning('没有权限变更')
+        return
+      }
+      this.configPermissionSaving = true
+      updateNacosProjectUserConfigPermission(this.record.id, payload).then(resp => {
+        if (resp.success) {
+          this.$message.success('文件权限保存成功！')
+          this.dialogVisible4 = false
+        } else {
+          this.$message.error('文件权限保存失败！' + resp.message)
+        }
+      }).finally(() => {
+        this.configPermissionSaving = false
       })
     },
     listNacosClusters() {

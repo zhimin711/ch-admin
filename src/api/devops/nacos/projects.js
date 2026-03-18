@@ -69,3 +69,21 @@ export function updateNacosProjectUserPermission(projectId, data) {
     data
   })
 }
+
+export function listNacosProjectUserConfigPermission(projectId, userId) {
+  return request({
+    url: `${namespace}/${projectId}/user-config-permission`,
+    method: 'get',
+    params: {
+      username: userId
+    }
+  })
+}
+
+export function updateNacosProjectUserConfigPermission(projectId, data) {
+  return request({
+    url: `${namespace}/${projectId}/user-config-permission`,
+    method: 'post',
+    data
+  })
+}
