@@ -58,7 +58,8 @@ export default {
   },
   watch: {
     role(val) {
-      this.user.role = val
+      this.user.role = val || {}
+      this.user.roleId = val && val.id ? val.id : null
     }
   },
   created() {
@@ -69,8 +70,8 @@ export default {
       this.user = {
         name: this.name,
         roles: this.roles,
-        role: this.role,
-        roleId: this.role.id,
+        role: this.role || {},
+        roleId: this.role && this.role.id ? this.role.id : null,
         email: 'admin@test.com',
         avatar: this.avatar
       }

@@ -16,6 +16,7 @@
           <project-namespace
             v-model="namespaceId"
             :project-id="projectId"
+            @cluster-change="handleClusterChange"
             @change="handleNamespaceChange"
             @finish="loadNamespacesFinish"
           />
@@ -75,6 +76,7 @@
 
           <div class="action-right">
             <el-button
+              v-if="canRead"
               v-permission="'NACOS_PROJECT_CONFIGS_EXPORT'"
               type="info"
               icon="el-icon-download"
@@ -120,8 +122,8 @@
             />
             <el-table-column label="Data Id" min-width="200" prop="dataId">
               <template slot-scope="{row}">
-                <div class="data-id">
-                  <i class="el-icon-document" />
+                <div class="data-id copyable" :title="'点击复制: ' + row.dataId" @click="copyToClipboard(row.dataId)">
+                  <i class="el-icon-copy-document copy-icon" />
                   <span>{{ row.dataId }}</span>
                 </div>
               </template>
@@ -133,11 +135,11 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column align="center" label="操作" min-width="280" fixed="right">
+            <el-table-column align="center" label="操作" min-width="360" fixed="right">
               <template slot-scope="{row}">
                 <div class="action-buttons">
                   <el-link
-                    v-if="forceCanWrite"
+                    v-if="canWriteConfig(row)"
                     v-permission="'NACOS_PROJECT_CONFIG_EDIT'"
                     type="primary"
                     icon="el-icon-edit"
@@ -146,14 +148,7 @@
                     编辑
                   </el-link>
                   <el-link
-                    v-permission="'NACOS_PROJECT_CONFIG_COMPARE'"
-                    type="success"
-                    icon="el-icon-s-operation"
-                    @click="handleCompare(row)"
-                  >
-                    比较配置
-                  </el-link>
-                  <el-link
+                    v-if="canReadConfig(row)"
                     v-permission="'NACOS_PROJECT_CONFIG_DETAIL'"
                     type="info"
                     icon="el-icon-view"
@@ -162,12 +157,40 @@
                     详情
                   </el-link>
                   <el-link
+                    v-if="canReadConfig(row)"
+                    v-permission="'NACOS_PROJECT_CONFIG_COMPARE'"
+                    type="success"
+                    icon="el-icon-s-operation"
+                    @click="handleCompare(row)"
+                  >
+                    比较配置
+                  </el-link>
+                  <el-link
+                    v-if="canReadConfig(row)"
                     v-permission="'NACOS_PROJECT_CONFIG_HISTORY'"
                     type="warning"
                     icon="el-icon-time"
                     @click="handleHistory(row)"
                   >
                     变更历史
+                  </el-link>
+                  <el-link
+                    v-if="showApplyReadPermission(row)"
+                    :disabled="isApplyingConfigPermission(row, 'R')"
+                    type="primary"
+                    icon="el-icon-key"
+                    @click="handleApplyConfigPermission(row, 'R')"
+                  >
+                    申请读权限
+                  </el-link>
+                  <el-link
+                    v-if="showApplyWritePermission(row)"
+                    :disabled="isApplyingConfigPermission(row, 'W')"
+                    type="warning"
+                    icon="el-icon-lock"
+                    @click="handleApplyConfigPermission(row, 'W')"
+                  >
+                    申请写权限
                   </el-link>
                   <el-link
                     v-if="forceCanWrite"
@@ -288,11 +311,11 @@
       <div class="dialog-content">
         <el-form ref="cloneForm" :model="record" label-width="120px" class="clone-form">
           <el-form-item label="源空间">
-            <el-tag type="primary">{{ namespaceName }}</el-tag>
+            <el-tag type="primary">{{ currentNamespaceName }}</el-tag>
           </el-form-item>
           <el-form-item label="目标空间" prop="toNamespace">
             <el-select v-model="toNamespace" placeholder="请选择目标空间" class="namespace-select">
-              <el-option v-for="item in namespaces" :key="item.value" :label="item.label" :value="item.value" />
+              <el-option v-for="item in targetNamespaces" :key="item.namespaceId" :label="item.namespaceName" :value="String(item.namespaceId)" />
             </el-select>
           </el-form-item>
           <el-form-item label="相同配置">
@@ -577,6 +600,7 @@ import {
   listNacosUserCompareConfigs
 } from '@/api/devops/nacos/user-configs'
 import {
+  applyNacosUserConfigs,
   getNacosUserProjectHistory,
   getNacosUserProjectHistoryDetail,
   getNacosUserProjectInstances
@@ -628,6 +652,10 @@ export default {
       dialogCompareListVisible: false,
       dialogCompareVisible: false,
       canWrite: false,
+      canRead: false,
+      currentClusterId: '',
+      applyingPermissionKey: '',
+      configListRequestToken: 0,
       permissionCheckTimer: null, // 权限检查定时器
       importMessage: '',
       record: {},
@@ -678,12 +706,25 @@ export default {
     namespaceName() {
       const tmp = String(this.namespaceId)
       const tenant = this.namespaces.find(tenant => {
-        return String(tenant.value) === tmp
+        return String(tenant.namespaceId) === tmp
       })
       if (tenant) {
-        return tenant.label
+        return tenant.namespaceName
       }
       return '-'
+    },
+    currentNamespaceName() {
+      const tmp = String(this.namespaceId)
+      const tenant = this.namespaces.find(tenant => {
+        return String(tenant.namespaceId) === tmp
+      })
+      if (tenant) {
+        return tenant.namespaceName
+      }
+      return '-'
+    },
+    targetNamespaces() {
+      return this.namespaces.filter(item => String(item.namespaceId) !== String(this.namespaceId))
     },
     importUrl() {
       return `/api/devops/nacos/user/${this.projectId}/configs/import?namespaceId=${this.namespaceId}`
@@ -753,6 +794,51 @@ export default {
     }
   },
   methods: {
+    clearConfigList() {
+      this.list = []
+      this.count = 0
+      this.multipleSelection = []
+    },
+    // 复制到剪贴板
+    copyToClipboard(text) {
+      if (!text) {
+        this.$message.warning('没有可复制的内容')
+        return
+      }
+
+      // 创建临时文本区域
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+
+      try {
+        const successful = document.execCommand('copy')
+        if (successful) {
+          this.$message.success('复制成功: ' + text)
+        } else {
+          // 降级方案：使用现代API
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+              this.$message.success('复制成功: ' + text)
+            }).catch(() => {
+              this.$message.error('复制失败')
+            })
+          } else {
+            this.$message.error('复制失败')
+          }
+        }
+      } catch (err) {
+        this.$message.error('复制失败')
+      } finally {
+        document.body.removeChild(textArea)
+      }
+    },
+
     handleSelectProject(val) {
       console.log('项目切换:', val)
       if (this.projectId === val) {
@@ -760,11 +846,15 @@ export default {
       }
       this.projectId = val
       this.listQuery.appName = val
-      this.list = []
+      this.clearConfigList()
       this.$set(this, 'namespaceId', '')
       this.listQuery.namespaceId = ''
       this.namespaces = []
       this.showSearch = false
+      this.currentClusterId = ''
+      this.applyingPermissionKey = ''
+      this.configListRequestToken += 1
+      this.listLoading = false
       this.$set(this, 'canWrite', false) // 使用$set确保响应式更新
       console.log('项目切换完成，权限已重置')
     },
@@ -775,10 +865,16 @@ export default {
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
+    handleClusterChange(clusterId) {
+      this.currentClusterId = String(clusterId || '')
+    },
     loadNamespacesFinish(data) {
       console.log('命名空间列表加载完成:', data)
       this.namespaces = data
       this.showSearch = data.length > 0
+      if (!this.showSearch) {
+        this.clearConfigList()
+      }
 
       // 强制更新UI
       this.$forceUpdate()
@@ -813,7 +909,12 @@ export default {
       if (namespaceId === 'apply' || namespaceId === '') {
         this.listQuery.namespaceId = ''
         this.showSearch = false
+        this.applyingPermissionKey = ''
+        this.clearConfigList()
+        this.configListRequestToken += 1
+        this.listLoading = false
         this.$set(this, 'canWrite', false) // 使用$set确保响应式更新
+        this.$set(this, 'canRead', false) // 使用$set确保响应式更新
         return
       }
 
@@ -821,8 +922,75 @@ export default {
       this.updateCanWritePermission(namespaceId)
 
       this.$set(this, 'namespaceId', namespaceId)
+      this.applyingPermissionKey = ''
       this.listQuery.namespaceId = namespaceId
       this.queryData()
+    },
+    supportsConfigPermission(row) {
+      return typeof row.hasReadPermission === 'boolean' ||
+        typeof row.hasWritePermission === 'boolean' ||
+        typeof row.configPermission === 'string'
+    },
+    normalizeConfigPermission(row) {
+      return typeof row.configPermission === 'string'
+        ? row.configPermission.toLowerCase()
+        : ''
+    },
+    canReadConfig(row) {
+      if (typeof row.hasReadPermission === 'boolean') {
+        return row.hasReadPermission
+      }
+      return this.normalizeConfigPermission(row).includes('r')
+    },
+    canWriteConfig(row) {
+      if (typeof row.hasWritePermission === 'boolean') {
+        return row.hasWritePermission
+      }
+      const configPermission = this.normalizeConfigPermission(row)
+      if (configPermission) {
+        return configPermission.includes('w')
+      }
+      return this.forceCanWrite
+    },
+    showApplyReadPermission(row) {
+      return this.supportsConfigPermission(row) && !this.canReadConfig(row)
+    },
+    showApplyWritePermission(row) {
+      const hasWritePermission = this.canWriteConfig(row)
+      return this.supportsConfigPermission(row) && hasWritePermission === false
+    },
+    getConfigPermissionKey(row, permission) {
+      const group = row.group || row.groupName || ''
+      return `${row.dataId || ''}:${group}:${permission}`
+    },
+    isApplyingConfigPermission(row, permission) {
+      return this.applyingPermissionKey === this.getConfigPermissionKey(row, permission)
+    },
+    handleApplyConfigPermission(row, permission) {
+      if (!this.projectId || !this.currentClusterId || !this.namespaceId) {
+        this.$message.warning('当前项目、集群或命名空间信息不完整，无法申请权限')
+        return
+      }
+
+      const permissionLabel = permission === 'W' ? '写' : '读'
+      const applyKey = this.getConfigPermissionKey(row, permission)
+      const group = row.group || row.groupName
+      if (!group) {
+        this.$message.warning('当前配置缺少 Group 信息，无法申请权限')
+        return
+      }
+      const data = [{ dataId: row.dataId, group, permission }]
+
+      this.applyingPermissionKey = applyKey
+      applyNacosUserConfigs(this.projectId, this.currentClusterId, this.namespaceId, data).then(resp => {
+        if (resp.success) {
+          this.$message.success(`${row.dataId} 的${permissionLabel}权限申请已提交，请等待管理员审核...`)
+        }
+      }).finally(() => {
+        if (this.applyingPermissionKey === applyKey) {
+          this.applyingPermissionKey = ''
+        }
+      })
     },
 
     // 新增方法：更新写入权限
@@ -917,9 +1085,14 @@ export default {
     },
     fetchData() {
       if (!this.listQuery.namespaceId || this.listQuery.namespaceId === '') {
+        this.clearConfigList()
         this.$message.error('请选择空间...')
         return
       }
+      const requestToken = this.configListRequestToken + 1
+      this.configListRequestToken = requestToken
+      const requestProjectId = String(this.projectId || '')
+      const requestNamespaceId = String(this.listQuery.namespaceId || '')
       this.listLoading = true
       this.listQuery.search = 'accurate'
       if (this.listQuery.dataId || this.listQuery.group) {
@@ -927,12 +1100,25 @@ export default {
       }
       this.showSearch = true
       pageNacosUserConfigs(this.projectId, this.listQuery).then(resp => {
+        if (requestToken !== this.configListRequestToken ||
+          requestProjectId !== String(this.projectId || '') ||
+          requestNamespaceId !== String(this.listQuery.namespaceId || '')) {
+          return
+        }
         if (resp.success) {
-          this.list = resp.rows
-          this.count = resp.total
+          this.list = resp.rows || []
+          this.count = resp.total || 0
+        } else {
+          this.clearConfigList()
+        }
+      }).catch(() => {
+        if (requestToken === this.configListRequestToken) {
+          this.clearConfigList()
         }
       }).finally(() => {
-        this.listLoading = false
+        if (requestToken === this.configListRequestToken) {
+          this.listLoading = false
+        }
       })
     },
     queryData() {
@@ -1082,6 +1268,7 @@ export default {
         this.$message.warning('请选择要克隆的配置！')
         return
       }
+      this.toNamespace = ''
       this.dialogVisible2Clone = true
       this.tables.clone = deepClone(this.multipleSelection)
     },
@@ -1156,12 +1343,14 @@ export default {
       })
     },
     onClone() {
+      if (!this.toNamespace) {
+        this.$message.warning('请选择目标空间！')
+        return
+      }
       const params = {}
-      const tenant = this.namespaces.find(tenant => {
-        return tenant.value === this.toNamespace
-      })
       params.policy = this.policy
-      params.namespaceId = tenant.value || tenant.label
+      params.namespaceId = this.toNamespace
+      params.fromNamespaceId = this.namespaceId
       const data = this.tables.clone.map(item => {
         return { cfgId: item.id, dataId: item.dataId, group: item.group }
       })
@@ -1362,6 +1551,39 @@ export default {
   i {
     color: #409EFF;
   }
+
+  &.copyable {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    position: relative;
+
+    &:hover {
+      background: #f0f9ff;
+      border: 1px solid #91d5ff;
+
+      .copy-icon {
+        opacity: 1;
+        color: #1890ff;
+      }
+    }
+
+    .copy-icon {
+      opacity: 0;
+      transition: all 0.2s ease;
+      color: #999;
+      font-size: 12px;
+      margin-left: auto;
+    }
+
+    span {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 }
 
 .action-buttons {
@@ -1379,6 +1601,12 @@ export default {
 }
 .action-buttons .el-link + .el-link {
   margin-left: 0;
+}
+::v-deep .action-buttons .el-link.is-underline:hover:after {
+  border-bottom: none !important;
+}
+::v-deep .action-buttons .el-link .el-link--inner {
+  text-decoration: none !important;
 }
 
 // 分页区域

@@ -13,7 +13,7 @@
         >
           {{ item.name }}
         </el-button>
-        <el-button type="success" icon="el-icon-plus" class="cluster-selector-btn" @click="showAddDialog = true">添加集群</el-button>
+        <el-button type="success" icon="el-icon-plus" class="cluster-selector-btn" @click="handleAdd">添加集群</el-button>
       </div>
 
       <!-- 当前集群信息和节点信息 -->
@@ -22,6 +22,7 @@
           <div class="cluster-info-main">
             <span class="cluster-title"><i class="el-icon-s-home" />{{ record.name }}</span>
             <el-tag type="primary"><i class="el-icon-location" />{{ record.url }}</el-tag>
+            <el-tag :type="record.version === 'v3' ? 'success' : 'warning'"><i class="el-icon-connection" />Nacos {{ record.version || 'v1' }}</el-tag>
             <el-tag v-if="record.description" type="info"><i class="el-icon-info" />{{ record.description }}</el-tag>
           </div>
           <div class="cluster-info-ops">
@@ -101,9 +102,9 @@
     <el-dialog :visible.sync="showAddDialog" title="新增集群" width="700px" class="add-cluster-dialog">
       <el-card class="cluster-form-card" shadow="hover">
         <el-form
-          ref="dataForm"
+          ref="addFormRef"
           :rules="rules"
-          :model="record"
+          :model="addForm"
           label-position="left"
           label-width="140px"
           class="cluster-form"
@@ -111,7 +112,7 @@
           <el-row :gutter="24">
             <el-col :span="24">
               <el-form-item label="集群名称" prop="name">
-                <el-input v-model="record.name" placeholder="请输入集群名称" class="form-input">
+                <el-input v-model="addForm.name" placeholder="请输入集群名称" class="form-input">
                   <i slot="prefix" class="el-input__icon el-icon-s-home" />
                 </el-input>
               </el-form-item>
@@ -120,7 +121,7 @@
           <el-row :gutter="24">
             <el-col :span="24">
               <el-form-item label="集群地址" prop="url">
-                <el-input v-model="record.url" placeholder="localhost:8848" class="form-input">
+                <el-input v-model="addForm.url" placeholder="localhost:8848" class="form-input">
                   <i slot="prefix" class="el-input__icon el-icon-location" />
                 </el-input>
               </el-form-item>
@@ -128,9 +129,19 @@
           </el-row>
           <el-row :gutter="24">
             <el-col :span="24">
+              <el-form-item label="Nacos版本" prop="version">
+                <el-radio-group v-model="addForm.version" class="form-radio-group">
+                  <el-radio label="v1">v1</el-radio>
+                  <el-radio label="v3">v3</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row :gutter="24">
+            <el-col :span="24">
               <el-form-item label="集群描述" prop="description">
                 <el-input
-                  v-model="record.description"
+                  v-model="addForm.description"
                   type="textarea"
                   :rows="3"
                   placeholder="请输入集群描述信息"
@@ -142,14 +153,14 @@
           <el-row :gutter="24">
             <el-col :span="12">
               <el-form-item label="管理员账号" prop="username">
-                <el-input v-model="record.username" placeholder="请输入管理员账号" class="form-input">
+                <el-input v-model="addForm.username" placeholder="请输入管理员账号" class="form-input">
                   <i slot="prefix" class="el-input__icon el-icon-user" />
                 </el-input>
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="管理员密码" prop="password">
-                <el-input v-model="record.password" placeholder="请输入管理员密码" show-password class="form-input">
+                <el-input v-model="addForm.password" placeholder="请输入管理员密码" show-password class="form-input">
                   <i slot="prefix" class="el-input__icon el-icon-lock" />
                 </el-input>
               </el-form-item>
@@ -158,8 +169,8 @@
         </el-form>
       </el-card>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" icon="el-icon-check" @click="handleSubmit">提交</el-button>
-        <el-button icon="el-icon-close" @click="showAddDialog = false">取消</el-button>
+        <el-button type="primary" icon="el-icon-check" @click="handleAddSubmit">提交</el-button>
+        <el-button icon="el-icon-close" @click="handleCancelAdd">取消</el-button>
       </div>
     </el-dialog>
 
@@ -199,6 +210,16 @@
               >
                 <i slot="prefix" class="el-input__icon el-icon-location" />
               </el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="Nacos版本" prop="version">
+              <el-radio-group v-model="record.version" class="form-radio-group">
+                <el-radio label="v1">v1</el-radio>
+                <el-radio label="v3">v3</el-radio>
+              </el-radio-group>
             </el-form-item>
           </el-col>
         </el-row>
@@ -286,6 +307,7 @@ export default {
       cardId: '0',
       cardTitle: '',
       record: {},
+      addForm: {},
       list: [],
       listLoading: true,
       loading2: false,
@@ -316,6 +338,10 @@ export default {
     },
     selectCluster(id) {
       this.cardId = id + ''
+      const cluster = this.clusters.find(c => c.id + '' === id + '')
+      if (cluster) {
+        this.record = { ...cluster }
+      }
       this.fetchDetail(id)
     },
     handleTab() {
@@ -324,15 +350,23 @@ export default {
     fetchDetail(id) {
       if (id === '0') {
         this.record = {}
+        this.list = []
         return
       }
+      this.listLoading = true
       getNacosCluster(id).then(resp => {
         if (resp.success) {
           this.record = resp.rows[0]
           this.cardId = this.record.id + ''
           this.cardTitle = this.record.url
-          this.list = resp.extra.nodes
+          this.list = resp.extra ? resp.extra.nodes : []
+        } else {
+          this.list = []
         }
+      }).catch(() => {
+        this.list = []
+      }).finally(() => {
+        this.listLoading = false
       })
     },
     toggleExpand(row) {
@@ -347,42 +381,60 @@ export default {
     handleEdit() {
       this.isEdit = true
     },
-    handleSubmit() {
-      this.$refs['dataForm'].validate(valid => {
-        if (valid) {
-          this.submit()
+    handleAdd() {
+      this.addForm = { version: 'v1' }
+      this.showAddDialog = true
+      this.$nextTick(() => {
+        if (this.$refs['addFormRef']) {
+          this.$refs['addFormRef'].clearValidate()
         }
       })
     },
-    resetForm() {
-      this.$refs['dataForm'].resetFields()
-      this.record = {}
+    handleCancelAdd() {
+      this.showAddDialog = false
+      this.addForm = { version: 'v1' }
+      this.$nextTick(() => {
+        if (this.$refs['addFormRef']) {
+          this.$refs['addFormRef'].clearValidate()
+        }
+      })
     },
-    submit() {
-      if (this.isEdit) {
-        editNacosCluster(this.record).then(resp => {
-          if (resp.success) {
-            this.$message.success('修改集群成功')
-            this.fetchDetail(this.record.id)
-            this.isEdit = false
+    handleAddSubmit() {
+      this.$refs['addFormRef'].validate(valid => {
+        if (valid) {
+          this.loading2 = true
+          const data = { ...this.addForm }
+          if (!data.version) {
+            data.version = 'v1'
           }
-        }).finally(() => {
-          this.loading2 = false
-        })
-      } else {
-        this.loading2 = true
-        addNacosCluster(this.record).then(resp => {
-          if (resp.success) {
-            this.$message.success('添加集群成功')
-            this.fetchData()
-            this.clusterView = resp.rows[0]
-            this.resetForm()
-            this.showAddDialog = false
-          }
-        }).finally(() => {
-          this.loading2 = false
-        })
-      }
+          addNacosCluster(data).then(resp => {
+            if (resp.success) {
+              this.$message.success('添加集群成功')
+              this.fetchData()
+              this.addForm = { version: 'v1' }
+              this.showAddDialog = false
+            }
+          }).finally(() => {
+            this.loading2 = false
+          })
+        }
+      })
+    },
+    handleSubmit() {
+      this.$refs['dataForm'].validate(valid => {
+        if (valid) {
+          this.loading2 = true
+          editNacosCluster(this.record).then(resp => {
+            if (resp.success) {
+              this.$message.success('修改集群成功')
+              this.fetchDetail(this.record.id)
+              this.isEdit = false
+            }
+          }).finally(() => {
+            this.loading2 = false
+          })
+        }
+      })
     }
   }
 }
@@ -597,6 +649,19 @@ export default {
   :deep(.el-textarea__inner) {
     font-size: 14px;
     line-height: 1.6;
+  }
+}
+
+.form-radio-group {
+  :deep(.el-radio) {
+    margin-right: 20px;
+  }
+  :deep(.el-radio__input.is-checked .el-radio__inner) {
+    border-color: #409EFF;
+    background: #409EFF;
+  }
+  :deep(.el-radio__input.is-checked + .el-radio__label) {
+    color: #409EFF;
   }
 }
 @media (max-width: 768px) {

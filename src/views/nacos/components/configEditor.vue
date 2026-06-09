@@ -22,7 +22,7 @@
             <el-input v-model="record.dataId" placeholder="请输入Data ID" :disabled="isEdit" />
           </el-form-item>
           <el-form-item label="分组" prop="group">
-            <el-input v-model="record.group" placeholder="分组名称" :disabled="true" />
+            <el-input v-model="record.group" placeholder="分组名称" :disabled="isApp" />
           </el-form-item>
           <el-form-item label="标签">
             <el-input v-model="record.configTags" placeholder="标签" />

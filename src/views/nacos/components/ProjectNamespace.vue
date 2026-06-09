@@ -47,18 +47,29 @@
                 />
                 <el-table-column
                   prop="permission"
-                  label="只读"
+                  label="列表（配置文件列表）"
+                  align="center"
                 >
                   <template slot-scope="{row}">
-                    <el-checkbox :checked="row.read" :disabled="row.readOnly" @change="row.read=!row.read" />
+                    <el-checkbox :checked="row.list" :disabled="row.listOnly" @change="onListChange(row)" />
                   </template>
                 </el-table-column>
                 <el-table-column
                   prop="permission"
-                  label="修改"
+                  label="只读（详情、变更历史、比较配置）"
+                  align="center"
                 >
                   <template slot-scope="{row}">
-                    <el-checkbox :checked="row.write" :disabled="row.writeOnly" @change="row.write=!row.write" />
+                    <el-checkbox :checked="row.read" :disabled="row.readOnly" @change="onReadChange(row)" />
+                  </template>
+                </el-table-column>
+                <el-table-column
+                  prop="permission"
+                  label="编辑（新增、修改、删除）"
+                  align="center"
+                >
+                  <template slot-scope="{row}">
+                    <el-checkbox :checked="row.write" :disabled="row.writeOnly" @change="onWriteChange(row)" />
                   </template>
                 </el-table-column>
               </el-table>
@@ -156,6 +167,7 @@ export default {
       if (clusterId === '') {
         return
       }
+      this.$emit('cluster-change', clusterId)
       listNacosUserNamespaces(this.projectId, clusterId).then((resp) => {
         if (resp.success) {
           this.namespaces = resp.rows
@@ -183,8 +195,14 @@ export default {
       this.projectNamespaces = []
       getNacosUserApplyNamespaces(this.projectId, clusterId).then(resp => {
         if (resp.success) {
-          this.projectNamespaces = resp.rows.filter(e => e.permission !== 'rw')
+          this.projectNamespaces = resp.rows.filter(e => e.permission !== 'lrw')
           this.projectNamespaces.forEach(row => {
+            if (row.permission && row.permission.includes('l')) {
+              row.list = true
+              row.listOnly = true
+            } else {
+              row.list = false
+            }
             if (row.permission && row.permission.includes('r')) {
               row.read = true
               row.readOnly = true
@@ -202,10 +220,13 @@ export default {
       })
     },
     handleSubmitApply() {
-      const applyList = this.projectNamespaces.filter(e => (e.read && !e.readOnly) || (e.write && !e.writeOnly)).map(row => {
+      const applyList = this.projectNamespaces.filter(e => (e.list && !e.listOnly) || (e.read && !e.readOnly) || (e.write && !e.writeOnly)).map(row => {
         var permission = ''
+        if (row.list && !row.listOnly) {
+          permission = 'L'
+        }
         if (row.read && !row.readOnly) {
-          permission = 'R'
+          permission += 'R'
         }
         if (row.write && !row.writeOnly) {
           permission += 'W'
@@ -224,6 +245,26 @@ export default {
       }).finally(() => {
         this.loadingApprove = false
       })
+    },
+    onListChange(row) {
+      row.list = !row.list
+      if (row.list) {
+        // row.read = false
+        // row.write = false
+      }
+    },
+    onReadChange(row) {
+      row.read = !row.read
+      if (row.read) {
+        // row.list = false
+      }
+    },
+    onWriteChange(row) {
+      row.write = !row.write
+      if (row.write) {
+        // row.list = false
+        // row.read = true
+      }
     },
     loadData() {
       const data = this.$store.getters.tenants
