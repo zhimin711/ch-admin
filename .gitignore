@@ -217,3 +217,7 @@ yarn.lock
 *.local
 
 nul
+
+openspec/
+.codex/
+.spec-workflow/

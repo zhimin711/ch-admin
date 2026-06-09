@@ -1,6 +1,6 @@
 import router from './router'
 import store from './store'
-import { MessageBox } from 'element-ui'
+import { Message, MessageBox } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
 import { getRefreshToken } from '@/utils/auth' // get token from cookie
@@ -27,7 +27,20 @@ router.beforeEach(async(to, from, next) => {
     } else {
       // determine whether the user has obtained his permission roles through getInfo
       const hasRoles = store.getters.roles && store.getters.roles.length > 0
-      if (hasRoles) {
+      // 标记用户已确认无角色，避免无角色用户被持续拦截在登录流程中
+      const noRole = store.getters.noRole
+      const userInfoLoaded = hasRoles || noRole
+      if (userInfoLoaded) {
+        if (noRole) {
+          // 未分配角色：仅允许进入首页与个人中心（用于切换角色），其他路由统一跳转首页
+          if (to.path === '/' || to.path === '/dashboard' || to.path === '/profile' || to.path === '/profile/index') {
+            next()
+          } else {
+            next('/')
+          }
+          NProgress.done()
+          return
+        }
         if (to.matched.length === 0) {
           next('/404') // 判断此跳转路由的来源路由是否存在，存在的情况跳转到来源路由，否则跳转到404页面
         } else {
@@ -38,6 +51,26 @@ router.beforeEach(async(to, from, next) => {
         try {
           // get user info
           const user = await store.dispatch('user/getInfo')
+          if (user.noRole) {
+            // 未分配角色：提示用户并放行首页，同时拉取可切换角色列表供个人中心使用
+            Message({
+              message: '未分配用户角色, 请联系管理员!',
+              type: 'warning',
+              duration: 5000
+            })
+            try {
+              await store.dispatch('user/getPermissions', user)
+            } catch (e) {
+              console.log('src/permission.js no-role fetch permissions error ==> ' + JSON.stringify(e))
+            }
+            if (to.path === '/' || to.path === '/dashboard' || to.path === '/profile' || to.path === '/profile/index') {
+              next()
+            } else {
+              next('/')
+            }
+            NProgress.done()
+            return
+          }
           const menuList = await store.dispatch('user/getPermissions', user)
 
           const accessRoutes = await store.dispatch('permission/assemblyRouters', menuList)

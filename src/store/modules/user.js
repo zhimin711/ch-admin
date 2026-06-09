@@ -15,7 +15,9 @@ const state = {
   tenant: {},
   tenants: [],
   project: '',
-  namespace: ''
+  namespace: '',
+  // 标记当前用户是否未分配角色：true 时仅允许进入首页
+  noRole: false
 }
 
 const mutations = {
@@ -54,6 +56,9 @@ const mutations = {
   },
   SET_NAMESPACE: (state, namespace) => {
     state.namespace = namespace
+  },
+  SET_NO_ROLE: (state, noRole) => {
+    state.noRole = !!noRole
   }
 }
 
@@ -89,15 +94,21 @@ const actions = {
         }
         const { username, roleId, avatar, introduction, tenantId, tenantName } = response.rows[0]
 
-        // roles must be a non-empty array
-        if (!roleId || roleId <= 0) {
-          return reject('未分配用户角色, 请联系管理员!')
-        }
-
         commit('SET_NAME', username)
         commit('SET_AVATAR', avatar || 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
         commit('SET_INTRODUCTION', introduction)
         commit('SET_TENANT', { id: tenantId, name: tenantName })
+
+        // 角色未分配时不再阻断登录流程，标记状态后由路由守卫统一提示并放行首页
+        if (!roleId || roleId <= 0) {
+          commit('SET_ROLE', {})
+          commit('SET_ROLES', [])
+          commit('SET_PERMISSIONS', [])
+          commit('SET_NO_ROLE', true)
+          return resolve({ roleId: null, noRole: true })
+        }
+
+        commit('SET_NO_ROLE', false)
         resolve({ roleId: roleId })
       }).catch(error => {
         console.log('store/user.js getInfo error: ', error)
@@ -119,9 +130,9 @@ const actions = {
         if (!roleList || roleList.length <= 0) {
           return reject('未分配用户角色!')
         }
-        const role = roleList.find(item => item.id === user.roleId)
+        const role = user && user.roleId ? roleList.find(item => item.id === user.roleId) : null
 
-        commit('SET_ROLE', role)
+        commit('SET_ROLE', role || {})
         commit('SET_ROLES', roleList)
         commit('SET_PERMISSIONS', btnList)
 
@@ -143,6 +154,7 @@ const actions = {
         commit('SET_ROLE', {})
         commit('SET_ROLES', [])
         commit('SET_PERMISSIONS', [])
+        commit('SET_NO_ROLE', false)
         removeToken()
         removeRefreshToken()
         removeExpired()
@@ -187,6 +199,7 @@ const actions = {
       commit('SET_ROLE', {})
       commit('SET_ROLES', [])
       commit('SET_PERMISSIONS', [])
+      commit('SET_NO_ROLE', false)
       resetRouter()
       removeToken()
       removeRefreshToken()
@@ -198,6 +211,8 @@ const actions = {
   // dynamically modify permissions
   async changeRoles({ commit, dispatch }, role) {
     let accessRoutes = []
+    // 切换到有效角色后清除“无角色”标志，由路由守卫恢复正常流程
+    commit('SET_NO_ROLE', false)
     if (role === '-1') {
       // const currRoles = state.roles.filter(item => { return item.id === role })
       commit('SET_ROLE', { id: role, name: '示例角色', code: 'EXAMPLE' })
